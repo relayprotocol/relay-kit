@@ -14,7 +14,7 @@ export const RelayClientContext = createContext<RelayClient | null>(null)
 export const RelayClientProvider: FC<RelayClientProviderProps> = function ({
   children,
   options
-}: RelayClientProviderProps): JSX.Element {
+}: RelayClientProviderProps) {
   const [clientContext] = useState<RelayClient | null>(
     createClient({ ...options, uiVersion: UI_VERSION })
   )

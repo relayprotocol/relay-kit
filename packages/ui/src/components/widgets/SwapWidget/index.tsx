@@ -120,7 +120,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   onSwapSuccess,
   onSwapValidating,
   onSwapError
-}): JSX.Element => {
+}) => {
   const onAnalyticEvent = useCallback(
     (eventName: string, data?: any) => {
       try {

@@ -79,7 +79,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
   onSetPrimaryWallet,
   onAnalyticEvent: _onAnalyticEvent,
   onSuccess
-}): JSX.Element => {
+}) => {
   const onAnalyticEvent = useCallback(
     (eventName: string, data?: any) => {
       try {
