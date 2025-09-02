@@ -537,7 +537,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       }
     )
   const originChainSupportsProtocolv2 =
-    fromChain?.protocol?.v2?.depository !== undefined
+    fromChain?.protocol?.v2?.depository !== undefined &&
+    toChain?.protocol?.v2?.chainId !== undefined
 
   const quoteProtocol = useMemo(() => {
     //Enabled only on certain chains
@@ -615,7 +616,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
           protocolVersion: quoteProtocol,
-          explicitDeposit: explicitDeposit
+          ...(quoteProtocol === 'preferV2' && explicitDeposit !== undefined && {
+            explicitDeposit: explicitDeposit
+          })
         }
       : undefined
 
