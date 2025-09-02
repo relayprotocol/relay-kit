@@ -86,7 +86,7 @@ type Props = {
 }
 
 const Dropdown = forwardRef<
-  ElementRef<typeof DropdownMenuPrimitive.Root>,
+  HTMLDivElement,
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root> & Props
 >(({ children, trigger, contentProps, ...props }, forwardedRef) => {
   const [open, setOpen] = useState(false)

@@ -39,8 +39,8 @@
     "next": "latest",
     "next-remote-watch": "^1.0.0",
     "next-themes": "^0.2.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "usehooks-ts": "^3.1.0",
     "viem": ">=2.26.0",
     "wagmi": "^2.15.6"
@@ -48,8 +48,8 @@
   "devDependencies": {
     "@dynamic-labs/types": "4.10.4",
     "@types/node": "^12.12.21",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "typescript": "5.4.5"
   }
 }
