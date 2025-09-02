@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useEffect, useState, useRef } from 'react'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 
 /**
@@ -11,135 +11,68 @@ const useEOADetection = (
   chainId?: number,
   chainVmType?: string
 ): boolean | undefined => {
-  // Internal state to track the detected EOA value
-  const [detectedExplicitDeposit, setDetectedExplicitDeposit] = useState<boolean | undefined>(
-    undefined
-  )
-  
-  // Track the conditions for which we detected the current value
-  const [detectionConditions, setDetectionConditions] = useState<{
-    walletVmType?: string
-    chainVmType?: string
-    walletIsEOA?: boolean
-    protocolVersion?: string
-    chainId?: number
-  }>({})
+  const [detectionState, setDetectionState] = useState<{
+    value: boolean | undefined
+    conditionKey: string
+  }>({ value: undefined, conditionKey: '' })
+
+  const walletRef = useRef<AdaptedWallet | undefined>(wallet)
+  const walletId = useRef<number>(0)
+
+  if (walletRef.current !== wallet) {
+    walletRef.current = wallet
+    walletId.current += 1
+  }
+
+  const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${protocolVersion}:${chainId}:${walletId.current}`
 
   const shouldDetect = useMemo(() => {
-    // Check if wallet and chain VM types are compatible
-    const isWalletChainCompatible = wallet?.vmType === 'evm' && chainVmType === 'evm'
-    
-    const result = !!(
+    return !!(
       wallet?.isEOA &&
       protocolVersion === 'preferV2' &&
       chainId &&
-      isWalletChainCompatible
+      wallet?.vmType === 'evm' &&
+      chainVmType === 'evm'
     )
-    console.log('🎯 useEOADetection shouldDetect:', {
-      hasWalletIsEOA: !!wallet?.isEOA,
-      walletVmType: wallet?.vmType,
-      chainVmType,
-      isWalletChainCompatible,
-      protocolVersion,
-      isPreferV2: protocolVersion === 'preferV2',
-      chainId,
-      shouldDetect: result
-    })
-    return result
   }, [wallet?.isEOA, wallet?.vmType, protocolVersion, chainId, chainVmType])
 
   // Synchronously return undefined when conditions change
   const explicitDeposit = useMemo(() => {
-    const currentConditions = {
-      walletVmType: wallet?.vmType,
-      chainVmType,
-      walletIsEOA: !!wallet?.isEOA,
-      protocolVersion,
-      chainId
-    }
-    
-    // If conditions changed, immediately return undefined (synchronous reset)
-    const conditionsChanged = (
-      detectionConditions.walletVmType !== currentConditions.walletVmType ||
-      detectionConditions.chainVmType !== currentConditions.chainVmType ||
-      detectionConditions.walletIsEOA !== currentConditions.walletIsEOA ||
-      detectionConditions.protocolVersion !== currentConditions.protocolVersion ||
-      detectionConditions.chainId !== currentConditions.chainId
-    )
-    
-    if (conditionsChanged || !shouldDetect) {
-      console.log('🎯 Synchronous reset: conditions changed or shouldDetect=false, returning undefined immediately')
+    if (detectionState.conditionKey !== conditionKey || !shouldDetect) {
       return undefined
     }
-    
-    // Conditions are stable and we should detect, return the detected value
-    return detectedExplicitDeposit
-  }, [
-    wallet?.vmType,
-    chainVmType,
-    wallet?.isEOA,
-    protocolVersion,
-    chainId,
-    shouldDetect,
-    detectedExplicitDeposit,
-    detectionConditions
-  ])
+
+    return detectionState.value
+  }, [conditionKey, shouldDetect, detectionState])
 
   useEffect(() => {
-    console.log('🎯 EOA Detection useEffect triggered:', {
-      shouldDetect,
-      walletVmType: wallet?.vmType,
-      walletAddress: wallet?.address,
-      chainId
-    })
-
-    const currentConditions = {
-      walletVmType: wallet?.vmType,
-      chainVmType,
-      walletIsEOA: !!wallet?.isEOA,
-      protocolVersion,
-      chainId
-    }
-    
-    // Update conditions tracking
-    setDetectionConditions(currentConditions)
-    
-    // Reset detected value when conditions change
-    setDetectedExplicitDeposit(undefined)
+    setDetectionState({ value: undefined, conditionKey })
 
     if (!shouldDetect) {
-      console.log(
-        '🎯 EOA detection skipped - shouldDetect is false, keeping explicitDeposit undefined'
-      )
       return
     }
-
-    console.log('🎯 Starting EOA detection for explicitDeposit calculation...')
 
     const detectEOA = async () => {
       try {
         const isEOA = await wallet!.isEOA!(chainId!)
         const explicitDepositValue = !isEOA
 
-        console.log('🎯 EOA Detection Hook Result:', {
-          isEOA,
-          explicitDepositValue,
-          logic: 'explicitDeposit = !isEOA',
-          meaning: isEOA
-            ? 'EOA -> explicitDeposit=false (single tx)'
-            : 'Smart Wallet -> explicitDeposit=true (batched tx)'
-        })
-
-        // Only set the value if conditions haven't changed since we started detection
-        setDetectedExplicitDeposit(explicitDepositValue)
+        setDetectionState((current) =>
+          current.conditionKey === conditionKey
+            ? { value: explicitDepositValue, conditionKey }
+            : current
+        )
       } catch (error) {
-        console.error('🎯 EOA Detection Hook Error:', error)
-        setDetectedExplicitDeposit(undefined)
+        setDetectionState((current) =>
+          current.conditionKey === conditionKey
+            ? { value: undefined, conditionKey }
+            : current
+        )
       }
     }
 
     detectEOA()
-  }, [wallet?.isEOA, wallet?.vmType, protocolVersion, chainId, chainVmType, shouldDetect])
+  }, [conditionKey, shouldDetect, wallet, chainId])
 
   return explicitDeposit
 }
