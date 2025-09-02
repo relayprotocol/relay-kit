@@ -78,8 +78,8 @@ export interface RelayKitTheme {
 }
 
 export const defaultTheme: RelayKitTheme = {
-  font: 'Barlow, -apple-system, Helvetica, sans-serif',
-  fontHeading: 'Chivo, -apple-system, Helvetica, sans-serif',
+  font: 'Inter, -apple-system, Helvetica, sans-serif',
+  fontHeading: 'Inter, -apple-system, Helvetica, sans-serif',
   primaryColor: 'primary9',
   focusColor: 'primary7',
   subtleBackgroundColor: 'gray1',

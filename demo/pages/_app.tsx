@@ -38,6 +38,7 @@ import { Barlow, Chivo } from 'next/font/google'
 
 export const chivo = Chivo({
   weight: ['700', '800'],
+  style: ['italic'],
   display: 'swap',
   subsets: ['latin'],
   variable: '--font-chivo'
