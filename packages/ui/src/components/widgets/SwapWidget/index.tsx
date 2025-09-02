@@ -138,7 +138,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   const relayClient = useRelayClient()
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
-  const [transactionModalOpen, setTransactionModalOpen] = useState(false)
+  const [transactionModalOpen, setTransactionModalOpen] = useState(true) // Always show modal for styling
   const [depositAddressModalOpen, setDepositAddressModalOpen] = useState(false)
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [pendingSuccessFlush, setPendingSuccessFlush] = useState(false)
@@ -151,6 +151,185 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   const [tokenInputCache, setTokenInputCache] = useState('')
   const hasLockedToken = lockFromToken || lockToToken
   const isSingleChainLocked = singleChainMode && lockChainId !== undefined
+
+  // Mock data for styling the modal - comprehensive real-world example
+  const mockSteps = [{
+    id: 'approve',
+    action: 'Approve ETH',
+    description: 'Approve spending of ETH tokens',
+    kind: 'transaction',
+    items: [{
+      status: 'complete',
+      txHashes: [
+        { chainId: 1, txHash: '0xa1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456', isBatchTx: false }
+      ],
+      receipt: {
+        blockHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        blockNumber: 18500000,
+        contractAddress: null,
+        cumulativeGasUsed: 21000,
+        effectiveGasPrice: 25000000000,
+        from: '0x742d35Cc6634C0532925a3b8D61D72D14d4de1B0',
+        gasUsed: 21000,
+        status: 'success',
+        to: '0xA0b86a33E6412e1F25D6E5A8E5C7C8d9E0F1a2b3',
+        transactionHash: '0xa1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456',
+        transactionIndex: 45,
+        type: 'eip1559'
+      },
+      check: { status: 'success' },
+      checkStatus: 'success',
+      data: {
+        amount: '1000000000000000000',
+        token: '0x0000000000000000000000000000000000000000'
+      },
+      orderIds: ['order_123456789'],
+      internalTxHashes: [],
+      isValidatingSignature: false
+    }]
+  }, {
+    id: 'swap',
+    action: 'Swap ETH to USDC',
+    description: 'Execute cross-chain swap from Ethereum to Polygon',
+    kind: 'transaction',
+    requestId: 'relay_abc123def456',
+    items: [{
+      status: 'complete',
+      txHashes: [
+        { chainId: 1, txHash: '0x7c4a8d09ca3762af61e59520943dc26494f8941b5ba4a1e3b89de98f83d11ce4', isBatchTx: false },
+        { chainId: 137, txHash: '0x2b4c8e7f5a6b0d8c9e3f1a2b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d', isBatchTx: false }
+      ],
+      receipt: {
+        blockHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+        blockNumber: 18500125,
+        contractAddress: null,
+        cumulativeGasUsed: 85432,
+        effectiveGasPrice: 28000000000,
+        from: '0x742d35Cc6634C0532925a3b8D61D72D14d4de1B0',
+        gasUsed: 65432,
+        status: 'success',
+        to: '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD',
+        transactionHash: '0x7c4a8d09ca3762af61e59520943dc26494f8941b5ba4a1e3b89de98f83d11ce4',
+        transactionIndex: 87,
+        type: 'eip1559'
+      },
+      check: { 
+        status: 'success',
+        destinationTxHash: '0x2b4c8e7f5a6b0d8c9e3f1a2b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d',
+        filledAmount: '2500000000',
+        bridgeUsed: 'Relay Protocol'
+      },
+      checkStatus: 'success',
+      data: {
+        fromAmount: '1000000000000000000',
+        toAmount: '2500000000',
+        fromToken: '0x0000000000000000000000000000000000000000',
+        toToken: '0x2791Bca1f2de4661ED88A30C99A7A9449Aa84174',
+        recipient: '0x742d35Cc6634C0532925a3b8D61D72D14d4de1B0'
+      },
+      orderIds: ['order_987654321', 'fill_456789123'],
+      internalTxHashes: [
+        { chainId: 42161, txHash: '0x8d3e2f1a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e', isBatchTx: false }
+      ],
+      isValidatingSignature: false
+    }]
+  }] as any
+
+  const mockQuoteInProgress = {
+    details: {
+      currencyIn: {
+        amount: '1000000000000000000', // 1 ETH in wei
+        amountFormatted: '1.0',
+        amountUsd: '2500.00',
+        currency: {
+          chainId: 1,
+          address: '0x0000000000000000000000000000000000000000',
+          symbol: 'ETH',
+          name: 'Ethereum',
+          decimals: 18,
+          logoURI: 'https://wallet-asset.matic.network/img/tokens/eth.svg',
+          metadata: {
+            logoURI: 'https://wallet-asset.matic.network/img/tokens/eth.svg',
+            verified: true
+          }
+        }
+      },
+      currencyOut: {
+        amount: '2500000000', // 2500 USDC (6 decimals)
+        amountFormatted: '2500.0',
+        amountUsd: '2500.00',
+        currency: {
+          chainId: 137,
+          address: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+          symbol: 'USDC',
+          name: 'USD Coin',
+          decimals: 6,
+          logoURI: 'https://wallet-asset.matic.network/img/tokens/usdc.svg',
+          metadata: {
+            logoURI: 'https://wallet-asset.matic.network/img/tokens/usdc.svg',
+            verified: true
+          }
+        }
+      },
+      currencyGasTopup: {
+        amount: '5000000000000000', // 0.005 ETH gas top-up
+        amountUsd: '12.50',
+        currency: {
+          chainId: 137,
+          address: '0x0000000000000000000000000000000000001010',
+          symbol: 'MATIC',
+          name: 'Polygon',
+          decimals: 18,
+          logoURI: 'https://wallet-asset.matic.network/img/tokens/matic.svg'
+        }
+      },
+      operation: 'swap',
+      timeEstimate: 30,
+      requestId: 'relay_abc123def456',
+      totalImpact: {
+        percent: '-0.12',
+        usd: '-3.00'
+      },
+      slippageTolerance: {
+        origin: { percent: '0.50' },
+        destination: { percent: '1.00' }
+      },
+      route: 'Relay Protocol → Polygon Bridge',
+      estimatedTime: '2-3 minutes',
+      bridgeFee: '0.1%',
+      networkFee: '0.002 ETH'
+    },
+    steps: mockSteps,
+    fees: {
+      gas: { 
+        amount: '2000000000000000', // 0.002 ETH
+        amountFormatted: '0.002',
+        amountUsd: '5.00',
+        currency: {
+          symbol: 'ETH',
+          decimals: 18
+        }
+      },
+      relayer: { 
+        amount: '1500000', // 1.5 USDC  
+        amountFormatted: '1.50',
+        amountUsd: '1.50',
+        currency: {
+          symbol: 'USDC',
+          decimals: 6
+        }
+      },
+      app: {
+        amount: '500000', // 0.5 USDC
+        amountFormatted: '0.50',
+        amountUsd: '0.50',
+        currency: {
+          symbol: 'USDC',
+          decimals: 6
+        }
+      }
+    }
+  } as any
 
   //Handle external unverified tokens
   useEffect(() => {
@@ -259,7 +438,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         setUseExternalLiquidity,
         invalidateBalanceQueries,
         invalidateQuoteQuery,
-        quoteInProgress,
         setQuoteInProgress,
         abortController,
         fromTokenPriceData,
@@ -667,11 +845,11 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         return (
           <>
             <WidgetContainer
-              steps={steps}
+              steps={mockSteps}
               setSteps={setSteps}
-              quoteInProgress={quoteInProgress}
+              quoteInProgress={mockQuoteInProgress}
               setQuoteInProgress={setQuoteInProgress}
-              transactionModalOpen={transactionModalOpen}
+              transactionModalOpen={true}
               setTransactionModalOpen={setTransactionModalOpen}
               depositAddressModalOpen={depositAddressModalOpen}
               setDepositAddressModalOpen={setDepositAddressModalOpen}
