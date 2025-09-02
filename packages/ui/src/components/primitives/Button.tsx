@@ -130,8 +130,7 @@ const ButtonCss = cva({
         '&:not(:disabled)': {
           fontFamily: 'heading',
           fontWeight: 700,
-          textTransform: 'uppercase',
-          fontStyle: 'italic'
+          textTransform: 'uppercase'
         }
       }
     }

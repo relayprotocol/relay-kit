@@ -128,8 +128,8 @@ export default defineConfig({
         'widget-card-section-gutter': { value: '6px' }
       },
       fonts: {
-        body: { value: 'var(--font-barlow), sans-serif' },
-        heading: { value: 'var(--font-chivo), sans-serif' }
+        body: { value: 'var(--font-inter), sans-serif' },
+        heading: { value: 'var(--font-inter), sans-serif' }
       },
       colors: Colors,
       gradients: {
