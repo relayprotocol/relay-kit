@@ -36,10 +36,7 @@ import { eclipse, solana } from '../../../utils/solana.js'
 import { bitcoin } from '../../../utils/bitcoin.js'
 import { ChainFilterSidebar } from './ChainFilterSidebar.js'
 import { SuggestedTokens } from './SuggestedTokens.js'
-import {
-  convertApiCurrencyToToken,
-  mergeTokenLists
-} from '../../../utils/tokens.js'
+import { mergeTokenLists } from '../../../utils/tokens.js'
 import {
   bitcoinDeadAddress,
   evmDeadAddress,

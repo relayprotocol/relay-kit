@@ -51,7 +51,7 @@ export const adaptBitcoinWallet = (
       })
 
       const dynamicParams: DynamicSignPsbtParams = {
-        allowedSighash: [1], // Only allow SIGHASH_ALL
+        allowedSighash: [0, 1],
         unsignedPsbtBase64: psbt.toBase64(), // The unsigned PSBT in Base64 format
         signature
       }

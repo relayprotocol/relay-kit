@@ -1,5 +1,53 @@
 # @reservoir0x/relay-sdk
 
+## 2.4.2
+
+### Patch Changes
+
+- 2ad3c52: Update relay branding
+
+## 0.0.0-canary-20250822183549
+
+### Patch Changes
+
+- 4395d49: Fix Unverified modal buttons
+
+## 0.0.0-canary-20250822181909
+
+### Patch Changes
+
+- cd12eb9: Implement final share link
+
+## 0.0.0-canary-20250820191554
+
+### Patch Changes
+
+- 7badf0a: Sync with main branch
+
+## 0.0.0-canary-20250820191315
+
+### Patch Changes
+
+- e3566e9: Sync with the latest main branch
+
+## 0.0.0-canary-20250814020954
+
+### Patch Changes
+
+- 1d46491: Rebuild canary build
+
+## 0.0.0-canary-20250813132716
+
+### Minor Changes
+
+- ef840d0: Update theme to better match Relay brand
+
+## 2.4.1
+
+### Patch Changes
+
+- fd0b328: Add gas sponsorship functionality
+
 ## 2.4.0
 
 ### Minor Changes

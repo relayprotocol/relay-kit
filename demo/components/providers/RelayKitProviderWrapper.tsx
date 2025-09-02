@@ -9,6 +9,13 @@ import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
 import { FC, ReactNode, useEffect, useState } from 'react'
 
+const DEFAULT_APP_FEES = [
+  {
+    fee: '1000',
+    recipient: '0x03508bB71268BBA25ECaCC8F620e01866650532c'
+  }
+]
+
 export const RelayKitProviderWrapper: FC<{
   relayApi?: string
   dynamicChains: RelayChain[]
@@ -17,6 +24,7 @@ export const RelayKitProviderWrapper: FC<{
   const { theme } = useTheme()
   const router = useRouter()
   const [websocketsEnabled, setWebsocketsEnabled] = useState(false)
+  const appFeesEnabled = router.query.appFees === 'true'
 
   // Handle websocket configuration from query params
   useEffect(() => {
@@ -46,7 +54,9 @@ export const RelayKitProviderWrapper: FC<{
         websocket: {
           enabled: websocketsEnabled,
           url: MAINNET_RELAY_WS
-        }
+        },
+        secureBaseUrl: process.env.NEXT_PUBLIC_RELAY_SECURE_API_URL,
+        appFees: appFeesEnabled ? DEFAULT_APP_FEES : undefined
       }}
     >
       {children}

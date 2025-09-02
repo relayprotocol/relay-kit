@@ -358,15 +358,15 @@ importers:
       '@radix-ui/react-visually-hidden':
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@18.3.5(@types/react@18.3.18))(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@relayprotocol/relay-design-system':
-        specifier: workspace:^
-        version: link:../design-system
       '@relayprotocol/relay-kit-hooks':
         specifier: workspace:*
         version: link:../hooks
       '@relayprotocol/relay-sdk':
         specifier: workspace:*
         version: link:../sdk
+      '@relayprotocol/relay-design-system':
+        specifier: workspace:^
+        version: link:../design-system
       '@tanstack/react-query':
         specifier: '>=5.0.0'
         version: 5.66.9(react@18.3.1)

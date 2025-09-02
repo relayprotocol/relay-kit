@@ -161,6 +161,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
                 to track your transaction.
               </Text>
               <Button
+                cta={true}
                 color="warning"
                 css={{
                   display: 'flex',

@@ -4,19 +4,6 @@ import postcss from 'postcss'
 import postcssCascadeLayers from '@csstools/postcss-cascade-layers'
 
 export const Colors = {
-  // Primary
-  primary1: { value: '{colors.violet.1}' },
-  primary2: { value: '{colors.violet.2}' },
-  primary3: { value: '{colors.violet.3}' },
-  primary4: { value: '{colors.violet.4}' },
-  primary5: { value: '{colors.violet.5}' },
-  primary6: { value: '{colors.violet.6}' },
-  primary7: { value: '{colors.violet.7}' },
-  primary8: { value: '{colors.violet.8}' },
-  primary9: { value: '{colors.violet.9}' },
-  primary10: { value: '{colors.violet.10}' },
-  primary11: { value: '{colors.violet.11}' },
-  primary12: { value: '{colors.violet.12}' },
   // Gray
   gray1: { value: '{colors.slate.1}' },
   gray2: { value: '{colors.slate.2}' },
@@ -35,22 +22,22 @@ export const Colors = {
   // Blue
   blue12: { value: '{colors.blue.12}' },
   // Red
-  red2: { value: '{colors.red.2}' },
-  red3: { value: '{colors.red.3}' },
-  red4: { value: '{colors.red.4}' },
-  red5: { value: '{colors.red.5}' },
-  red6: { value: '{colors.red.6}' },
-  red9: { value: '{colors.red.9}' },
-  red10: { value: '{colors.red.10}' },
-  red11: { value: '{colors.red.11}' },
-  red12: { value: '{colors.red.12}' },
+  red2: { value: '{colors.tomato.2}' },
+  red3: { value: '{colors.tomato.3}' },
+  red4: { value: '{colors.tomato.4}' },
+  red5: { value: '{colors.tomato.5}' },
+  red6: { value: '{colors.tomato.6}' },
+  red9: { value: '{colors.tomato.9}' },
+  red10: { value: '{colors.tomato.10}' },
+  red11: { value: '{colors.tomato.11}' },
+  red12: { value: '{colors.tomato.12}' },
   // Green
-  green2: { value: '{colors.green.2}' },
-  green3: { value: '{colors.green.3}' },
-  green9: { value: '{colors.green.9}' },
-  green10: { value: '{colors.green.10}' },
-  green11: { value: '{colors.green.11}' },
-  green12: { value: '{colors.green.12}' },
+  green2: { value: '{colors.grass.2}' },
+  green3: { value: '{colors.grass.3}' },
+  green9: { value: '{colors.grass.9}' },
+  green10: { value: '{colors.grass.10}' },
+  green11: { value: '{colors.grass.11}' },
+  green12: { value: '{colors.grass.12}' },
   // Yellow
   yellow9: { value: '{colors.yellow.9}' },
   yellow10: { value: '{colors.yellow.10}' },
@@ -94,11 +81,10 @@ export default defineConfig({
       },
       colorScales: [
         'amber',
-        'green',
+        'grass',
         'slate',
         'gray',
-        'violet',
-        'red',
+        'tomato',
         'black',
         'yellow',
         'blue'
@@ -142,7 +128,8 @@ export default defineConfig({
         'widget-card-section-gutter': { value: '6px' }
       },
       fonts: {
-        body: { value: 'var(--font-inter), sans-serif' }
+        body: { value: 'var(--font-barlow), sans-serif' },
+        heading: { value: 'var(--font-chivo), sans-serif' }
       },
       colors: Colors,
       gradients: {
@@ -152,6 +139,51 @@ export default defineConfig({
 
     semanticTokens: {
       colors: {
+        primary1: {
+          value: { base: '{colors.violet.1}', _dark: '{colors.violetDark.1}' }
+        },
+        primary2: {
+          value: { base: '{colors.violet.2}', _dark: '{colors.violetDark.2}' }
+        },
+        primary3: {
+          value: { base: '{colors.violet.3}', _dark: '{colors.violetDark.3}' }
+        },
+        primary4: {
+          value: { base: '{colors.violet.4}', _dark: '{colors.violetDark.4}' }
+        },
+        primary5: {
+          value: { base: '{colors.violet.5}', _dark: '{colors.violetDark.5}' }
+        },
+        primary6: {
+          value: { base: '{colors.violet.6}', _dark: '{colors.violetDark.6}' }
+        },
+        primary7: {
+          value: { base: '{colors.violet.7}', _dark: '{colors.violetDark.7}' }
+        },
+        primary8: {
+          value: { base: '{colors.violet.8}', _dark: '{colors.violetDark.8}' }
+        },
+        primary9: {
+          value: { base: '{colors.violet.9}', _dark: '{colors.violetDark.9}' }
+        },
+        primary10: {
+          value: {
+            base: '{colors.violet.10}',
+            _dark: '{colors.violetDark.10}'
+          }
+        },
+        primary11: {
+          value: {
+            base: '{colors.violet.11}',
+            _dark: '{colors.violetDark.11}'
+          }
+        },
+        primary12: {
+          value: {
+            base: '{colors.violet.12}',
+            _dark: '{colors.violetDark.12}'
+          }
+        },
         'primary-color': { value: { base: '{colors.primary9}' } },
         'focus-color': { value: { base: '{colors.primary7}' } },
         'subtle-background-color': { value: { base: '{colors.gray.1}' } },
@@ -161,8 +193,8 @@ export default defineConfig({
         'text-default': { value: { base: '{colors.gray.12}' } },
         'text-subtle': { value: { base: '{colors.gray.11}' } },
         'text-subtle-secondary': { value: { base: '{colors.gray.11}' } },
-        'text-error': { value: { base: '{colors.red.12}' } },
-        'text-success': { value: { base: '{colors.green.11}' } },
+        'text-error': { value: { base: '{colors.tomato.12}' } },
+        'text-success': { value: { base: '{colors.grass.11}' } },
 
         // Primary Button
         'primary-button-background': { value: { base: '{colors.primary9}' } },
@@ -182,16 +214,6 @@ export default defineConfig({
         },
         'secondary-button-hover-color': {
           value: { base: '{colors.gray12}' }
-        },
-
-        // Tertiary Button
-        'tertiary-button-background': { value: { base: '{colors.gray1}' } },
-        'tertiary-button-color': { value: { base: '{colors.primary11}' } },
-        'tertiary-button-hover-background': {
-          value: { base: '{colors.primary2}' }
-        },
-        'tertiary-button-hover-color': {
-          value: { base: '{colors.primary11}' }
         },
 
         // Disabled Button
@@ -262,6 +284,38 @@ export default defineConfig({
       }
     },
     extend: {
+      tokens: {
+        colors: {
+          violet: {
+            1: { value: '#FDFDFF' },
+            2: { value: '#F7F8FF' },
+            3: { value: '#EFF1FF' },
+            4: { value: '#E4E7FF' },
+            5: { value: '#D7DBFF' },
+            6: { value: '#C8CCFF' },
+            7: { value: '#B4B8FF' },
+            8: { value: '#989AFF' },
+            9: { value: '#4615C8' },
+            10: { value: '#3B00B4' },
+            11: { value: '#5A45DF' },
+            12: { value: '#2A226E' }
+          },
+          violetDark: {
+            1: { value: '#0E0E23' },
+            2: { value: '#141331' },
+            3: { value: '#216' },
+            4: { value: '#2F0093' },
+            5: { value: '#3800A8' },
+            6: { value: '#4016B8' },
+            7: { value: '#4C24D1' },
+            8: { value: '#5B2AF9' },
+            9: { value: '#4615C8' },
+            10: { value: '#3901AA' },
+            11: { value: '#A7AAFF' },
+            12: { value: '#DBDEFF' }
+          }
+        }
+      },
       breakpoints: {
         sm: '600px',
         md: '900px',

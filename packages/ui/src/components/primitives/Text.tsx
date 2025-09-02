@@ -12,6 +12,12 @@ const TextCss = cva({
   },
   variants: {
     style: {
+      h1: {
+        fontWeight: 800,
+        fontSize: '64px',
+        fontStyle: 'italic',
+        fontFamily: 'heading'
+      },
       h2: {
         fontWeight: 700,
         fontSize: '48px'

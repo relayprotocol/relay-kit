@@ -2,7 +2,7 @@
 
 Relay is the Fastest and Cheapest Way to Bridge and Transact Across Chains.
 
-This SDK facilitates interacting with Reservoir's Relay infrastructure. Learn more about Relay by checking out the <a href="https://docs.relay.link">docs</a>.
+This SDK facilitates interacting with the Relay protocol. Learn more about Relay by checking out the <a href="https://docs.relay.link">docs</a>.
 Head over to the <a href="https://docs.relay.link/references/sdk/getting-started">sdk docs</a> to learn more about configuring and using the SDK in your application.
 </br>
 </br>
@@ -30,7 +30,7 @@ When you're ready to contribute, submit a pull request with your changes. Our te
 ---
 
 <p align="center">
-  <a href="https://reservoir.tools/">Home</a> • <a href="https://docs.relay.link">Documentation</a> • <a href="https://github.com/reservoir-tools/relay-sdk">GitHub</a>
+  <a href="https://relay.link/">Home</a> • <a href="https://docs.relay.link">Documentation</a> • <a href="https://github.com/reservoirprotocol/relay-kit">GitHub</a>
 </p>
 
-<p align="center"> Made with <span style="color: #e25555;">&hearts;</span> by the team @ <a href="https://reservoir.tools/">Reservoir</a></p>
+<p align="center"> Made with <span style="color: #e25555;">&hearts;</span> by the team @ <a href="https://relay.link">Relay</a></p>

@@ -1,5 +1,102 @@
 # @reservoir0x/relay-kit-ui
 
+## 3.0.2
+
+### Patch Changes
+
+- 34fa345: Enable protocolv2 only if destination chain supports settlement
+- de102bb: Fix share icon color
+
+## 3.0.1
+
+### Patch Changes
+
+- 0dae775: Add data tracking for gas subsidization
+
+## 3.0.0
+
+### Major Changes
+
+- 2ad3c52: Update relay branding
+
+### Patch Changes
+
+- Updated dependencies [2ad3c52]
+  - @relayprotocol/relay-kit-hooks@1.13.0
+  - @relayprotocol/relay-sdk@2.4.2
+
+## 0.0.0-canary-20250822183549
+
+### Patch Changes
+
+- 4395d49: Fix Unverified modal buttons
+- Updated dependencies [4395d49]
+  - @relayprotocol/relay-kit-hooks@0.0.0-canary-20250822183549
+  - @relayprotocol/relay-sdk@0.0.0-canary-20250822183549
+
+## 0.0.0-canary-20250822181909
+
+### Patch Changes
+
+- cd12eb9: Implement final share link
+- Updated dependencies [cd12eb9]
+  - @relayprotocol/relay-kit-hooks@0.0.0-canary-20250822181909
+  - @relayprotocol/relay-sdk@0.0.0-canary-20250822181909
+
+## 0.0.0-canary-20250820191554
+
+### Patch Changes
+
+- 7badf0a: Sync with main branch
+- Updated dependencies [7badf0a]
+  - @relayprotocol/relay-kit-hooks@0.0.0-canary-20250820191554
+  - @relayprotocol/relay-sdk@0.0.0-canary-20250820191554
+
+## 0.0.0-canary-20250820191315
+
+### Patch Changes
+
+- e3566e9: Sync with the latest main branch
+- Updated dependencies [e3566e9]
+  - @relayprotocol/relay-kit-hooks@0.0.0-canary-20250820191315
+  - @relayprotocol/relay-sdk@0.0.0-canary-20250820191315
+
+## 0.0.0-canary-20250814020954
+
+### Patch Changes
+
+- 1d46491: Rebuild canary build
+- Updated dependencies [1d46491]
+  - @reservoir0x/relay-kit-hooks@0.0.0-canary-20250814020954
+  - @reservoir0x/relay-sdk@0.0.0-canary-20250814020954
+
+## 0.0.0-canary-20250813132716
+
+### Minor Changes
+
+- ef840d0: Update theme to better match Relay brand
+
+### Patch Changes
+
+- Updated dependencies [ef840d0]
+  - @reservoir0x/relay-sdk@0.0.0-canary-20250813132716
+  - @reservoir0x/relay-kit-hooks@0.0.0-canary-20250813132716
+
+## 2.17.5
+
+### Patch Changes
+
+- 5c97c8d: Fix modal gap on mobile
+
+## 2.17.4
+
+### Patch Changes
+
+- fd0b328: Add gas sponsorship functionality
+- Updated dependencies [fd0b328]
+  - @relayprotocol/relay-kit-hooks@1.12.1
+  - @relayprotocol/relay-sdk@2.4.1
+
 ## 2.17.3
 
 ### Patch Changes

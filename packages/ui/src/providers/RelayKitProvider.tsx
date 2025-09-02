@@ -1,5 +1,5 @@
 import { createContext, useMemo } from 'react'
-import type { FC, ReactNode } from 'react'
+import type { FC, ReactElement, ReactNode } from 'react'
 import { RelayClientProvider } from './RelayClientProvider.js'
 import type { RelayClientOptions, paths } from '@relayprotocol/relay-sdk'
 import type { RelayKitTheme } from '../themes/index.js'
@@ -29,10 +29,6 @@ type RelayKitProviderOptions = {
     apiKey?: string
   }
   /**
-   * Disable the powered by reservoir footer
-   */
-  disablePoweredByReservoir?: boolean
-  /**
    * An objecting mapping either a VM type (evm, svm, bvm) or a chain id to a connector key (metamask, backpacksol, etc).
    * Connector keys are used for differentiating which wallet maps to which vm/chain.
    * Only relevant for eclipse/solana at the moment.
@@ -48,6 +44,19 @@ type RelayKitProviderOptions = {
    * The icon theme to use for the chain icons. Defaults to light.
    */
   themeScheme?: 'dark' | 'light'
+  /**
+   * The loader to use for the loading spinner. Defaults to relay.
+   */
+  loader?: (options?: {
+    width?: number | string
+    height?: number | string
+    fill?: string
+  }) => ReactElement
+  /**
+   * The secure base url for the relay api, if omitted the default will be used. Override this config to protect your api key via a proxy.
+   * Currently only relevant for the quote api in the SwapWidget
+   */
+  secureBaseUrl?: string
 }
 
 export interface RelayKitProviderProps {
@@ -64,6 +73,7 @@ export type ThemeOverridesMap = {
 
 export const themeOverrides: ThemeOverridesMap = {
   font: '--relay-fonts-body',
+  fontHeading: '--relay-fonts-heading',
   primaryColor: '--relay-colors-primary-color',
   focusColor: '--relay-colors-focus-color',
   subtleBackgroundColor: '--relay-colors-subtle-background-color',
@@ -89,14 +99,6 @@ export const themeOverrides: ThemeOverridesMap = {
       hover: {
         color: '--relay-colors-secondary-button-hover-color',
         background: '--relay-colors-secondary-button-hover-background'
-      }
-    },
-    tertiary: {
-      color: '--relay-colors-tertiary-button-color',
-      background: '--relay-colors-tertiary-button-background',
-      hover: {
-        color: '--relay-colors-tertiary-button-hover-color',
-        background: '--relay-colors-tertiary-button-hover-background'
       }
     },
     white: {
@@ -172,10 +174,11 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
       appName: options.appName,
       appFees: options.appFees,
       duneConfig: options.duneConfig,
-      disablePoweredByReservoir: options.disablePoweredByReservoir,
       vmConnectorKeyOverrides: options.vmConnectorKeyOverrides,
       privateChainIds: options.privateChainIds,
-      themeScheme: options.themeScheme
+      themeScheme: options.themeScheme,
+      loader: options.loader,
+      secureBaseUrl: options.secureBaseUrl
     }),
     [options]
   )

@@ -424,8 +424,9 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                         margin: '0 auto',
                         marginBottom: '16px'
                       }}
+                      data-testid="onramp-token-select-button"
                     >
-                      <TokenTrigger isSingleChainLocked={true} token={token} />
+                      <TokenTrigger token={token} />
                     </div>
                   }
                 />
@@ -558,6 +559,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                     disablePasteWalletAddressOption={
                       disablePasteWalletAddressOption
                     }
+                    testId="onramp-wallet-select-button"
                   />
                 ) : null}
                 {!multiWalletSupportEnabled || !toChainWalletVMSupported ? (
@@ -628,6 +630,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
               </Flex>
             </Flex>
             <Button
+              cta={true}
               css={{ width: '100%', justifyContent: 'center' }}
               disabled={notEnoughFiat}
               onClick={() => {

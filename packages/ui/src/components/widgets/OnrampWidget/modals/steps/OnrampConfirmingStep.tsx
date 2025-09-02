@@ -111,6 +111,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
         </Anchor>
       </Text>
       <Button
+        cta={true}
         disabled={!depositAddress || isFetchingQuote}
         css={{ justifyContent: 'center' }}
         onClick={(e) => {

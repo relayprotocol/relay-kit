@@ -22,7 +22,10 @@ import {
 import type { Token } from '../../../types/index.js'
 import { useRequests } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '../../../hooks/index.js'
-import { calculatePriceTimeEstimate } from '../../../utils/quote.js'
+import {
+  calculatePriceTimeEstimate,
+  isGasSponsored
+} from '../../../utils/quote.js'
 export enum TransactionProgressStep {
   Confirmation,
   Success,
@@ -63,6 +66,7 @@ export type ChildrenProps = {
   isLoadingTransaction: boolean
   isAutoSlippage: boolean
   timeEstimate?: { time: number; formattedTime: string }
+  isGasSponsored: boolean
 }
 
 type Props = {
@@ -83,9 +87,6 @@ type Props = {
 
 export const TransactionModalRenderer: FC<Props> = ({
   open,
-  address,
-  fromToken,
-  toToken,
   slippageTolerance,
   wallet,
   steps,
@@ -224,6 +225,7 @@ export const TransactionModalRenderer: FC<Props> = ({
 
   const isAutoSlippage = slippageTolerance === undefined
   const timeEstimate = calculatePriceTimeEstimate(quote?.details)
+  const _isGasSponsored = isGasSponsored(quote as Execute)
 
   return (
     <>
@@ -252,7 +254,8 @@ export const TransactionModalRenderer: FC<Props> = ({
         requestId,
         isLoadingTransaction,
         isAutoSlippage,
-        timeEstimate
+        timeEstimate,
+        isGasSponsored: _isGasSponsored
       })}
     </>
   )

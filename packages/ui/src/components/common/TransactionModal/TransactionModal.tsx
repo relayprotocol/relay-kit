@@ -194,7 +194,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
   toChain,
   isLoadingTransaction,
   setQuote,
-  requestId
+  requestId,
+  isGasSponsored
 }) => {
   useEffect(() => {
     if (!open) {
@@ -232,7 +233,10 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
       css={{
         overflow: 'hidden',
         p: '4',
-        maxWidth: '412px !important'
+        maxWidth: '412px !important',
+        '@media(max-width: 520px)': {
+          maxWidth: 'unset !important'
+        }
       }}
       showCloseButton={true}
       onPointerDownOutside={(e) => {
@@ -287,6 +291,7 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             details={details}
             isLoadingTransaction={isLoadingTransaction}
             requestId={requestId}
+            isGasSponsored={isGasSponsored}
           />
         ) : null}
         {progressStep === TransactionProgressStep.Error ? (

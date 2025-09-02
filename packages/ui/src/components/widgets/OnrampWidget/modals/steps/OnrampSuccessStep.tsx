@@ -124,6 +124,7 @@ export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
             }}
           >
             <Button
+              cta={true}
               color="secondary"
               css={{
                 justifyContent: 'center',
@@ -135,6 +136,7 @@ export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
           </a>
         ) : null}
         <Button
+          cta={true}
           onClick={() => {
             onOpenChange(false)
           }}

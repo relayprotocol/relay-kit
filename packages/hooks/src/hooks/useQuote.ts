@@ -65,7 +65,8 @@ export default function (
   onResponse?: (data: QuoteResponse, options?: QuoteBody) => void,
   queryOptions?: Partial<QueryOptions>,
   onError?: (e: any) => void,
-  config?: AxiosRequestConfig
+  config?: AxiosRequestConfig,
+  baseApiUrl?: string
 ) {
   const queryKey = ['useQuote', options]
   const response = (useQuery as QueryType)({
@@ -75,7 +76,7 @@ export default function (
       if (options && client?.source && !options.referrer) {
         options.referrer = client.source
       }
-      const promise = queryQuote(client?.baseApiUrl, options, {
+      const promise = queryQuote(baseApiUrl ?? client?.baseApiUrl, options, {
         ...config,
         headers: {
           'relay-sdk-version': client?.version ?? 'unknown',

@@ -146,6 +146,7 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
               Cancel
             </Button>
             <Button
+              cta={true}
               onClick={() => {
                 if (data?.token) {
                   const tokenIdentifier = `${data?.token.chainId}:${data?.token.address}`
@@ -167,7 +168,7 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
                 onAcceptToken(data?.token, data?.context)
               }}
               color="warning"
-              css={{ flex: 1, justifyContent: 'center' }}
+              css={{ flex: 1, justifyContent: 'center', px: '16px' }}
             >
               I Understand
             </Button>

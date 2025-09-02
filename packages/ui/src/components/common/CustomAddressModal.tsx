@@ -249,6 +249,7 @@ export const CustomAddressModal: FC<Props> = ({
           ) : null}
         </Flex>
         <Button
+          cta={true}
           disabled={!isValidAddress(toChain?.vmType, address, toChain?.id)}
           css={{ justifyContent: 'center' }}
           onClick={() => {
@@ -261,6 +262,7 @@ export const CustomAddressModal: FC<Props> = ({
             }
             onOpenChange(false)
           }}
+          data-testid="save-button"
         >
           Save
         </Button>

@@ -18,6 +18,7 @@ type MultiWalletDropdownProps = {
   selectedWalletAddress?: string
   chain?: RelayChain
   disablePasteWalletAddressOption?: boolean
+  testId?: string
   onSelect: (wallet: LinkedWallet) => void
   onLinkNewWallet: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
@@ -30,6 +31,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
   selectedWalletAddress,
   chain,
   disablePasteWalletAddressOption,
+  testId,
   onSelect,
   onAnalyticEvent,
   onLinkNewWallet,
@@ -141,6 +143,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
             display: 'flex',
             alignContent: 'center'
           }}
+          data-testid={testId}
         >
           <Flex align="center" css={{ gap: '1' }}>
             {isSupportedSelectedWallet && selectedWallet?.walletLogoUrl ? (

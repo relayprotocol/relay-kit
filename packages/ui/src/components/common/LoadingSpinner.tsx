@@ -1,9 +1,10 @@
-import type { FC, SVGProps } from 'react'
+import { useContext, type FC, type SVGProps } from 'react'
 import {
   cva,
   css as designCss,
   type Styles
 } from '@relayprotocol/relay-design-system/css'
+import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
 
 const SpinnerSVG: FC<SVGProps<SVGSVGElement>> = (props) => {
   return (
@@ -28,9 +29,22 @@ const LoadingSpinnerCss = cva({
 })
 
 export const LoadingSpinner: FC<{ css?: Styles }> = ({ css }) => {
+  const providerOptionsContext = useContext(ProviderOptionsContext)
+  if (providerOptionsContext.loader) {
+    return (
+      <div className={designCss(css)}>
+        {providerOptionsContext.loader({
+          width: (css as any)?.width ?? 20,
+          height: (css as any)?.height ?? 20,
+          fill: (css as any)?.fill
+        })}
+      </div>
+    )
+  }
+
   return (
     <SpinnerSVG
       className={designCss(LoadingSpinnerCss.raw(), designCss.raw(css))}
-    ></SpinnerSVG>
+    />
   )
 }

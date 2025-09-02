@@ -79,7 +79,11 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
       return (
         <Flex justify="between" key={idx}>
           <Flex css={{ alignItems: 'center', gap: '2' }}>
-            <Text style="subtitle2" color="subtle">
+            <Text
+              style="subtitle2"
+              color="subtle"
+              css={{ alignSelf: 'flex-start' }}
+            >
               View {chain?.displayName} Tx
             </Text>
             {isRefundChain ? (
@@ -121,6 +125,7 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
                         alignItems: 'center',
                         gap: '2'
                       }}
+                      data-testid="transaction-link"
                     >
                       {truncateAddress(txHash)}
                       <FontAwesomeIcon
@@ -144,6 +149,7 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
                   alignItems: 'center',
                   gap: '2'
                 }}
+                data-testid="refund-transaction-link"
               >
                 {truncateAddress(refundTx?.txHash)}
                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} width={16} />

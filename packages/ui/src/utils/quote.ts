@@ -8,6 +8,7 @@ import type Text from '../components/primitives/Text.js'
 import { bitcoin } from '../utils/bitcoin.js'
 import axios from 'axios'
 import { sha256 } from './hashing.js'
+import type { FeeBreakdown } from '../types/FeeBreakdown.js'
 
 const formatUsdFee = (
   amountUsd: string | undefined,
@@ -25,19 +26,7 @@ export const parseFees = (
   selectedTo: RelayChain,
   selectedFrom: RelayChain,
   quote?: ReturnType<typeof useQuote>['data']
-): {
-  breakdown: BridgeFee[]
-  totalFees: {
-    usd?: string
-    priceImpactPercentage?: string
-    priceImpact?: string
-    priceImpactColor?: ComponentPropsWithoutRef<typeof Text>['color']
-    swapImpact?: {
-      value: number
-      formatted: string
-    }
-  }
-} => {
+): FeeBreakdown => {
   const fees = quote?.fees
   const gasFee = BigInt(fees?.gas?.amount ?? 0)
   const formattedGasFee = formatBN(
@@ -67,6 +56,7 @@ export const parseFees = (
   const appFee = BigInt(fees?.app?.amount ?? 0)
   const totalFeesUsd =
     Number(fees?.relayer?.amountUsd ?? 0) + Number(fees?.app?.amountUsd ?? 0)
+  const _isGasSponsored = isGasSponsored(quote)
 
   const breakdown: BridgeFee[] = [
     {
@@ -80,9 +70,11 @@ export const parseFees = (
       currency: fees?.gas?.currency
     },
     {
-      raw: relayerGasFee,
-      formatted: `${formattedRelayerGas}`,
-      usd: formatUsdFee(fees?.relayerGas?.amountUsd, true),
+      raw: _isGasSponsored ? 0n : relayerGasFee,
+      formatted: _isGasSponsored ? '0' : `${formattedRelayerGas}`,
+      usd: _isGasSponsored
+        ? { value: 0, formatted: '0' }
+        : formatUsdFee(fees?.relayerGas?.amountUsd, true),
       name: `Fill Gas (${selectedTo.displayName})`,
       tooltip: null,
       type: 'gas',
@@ -90,9 +82,13 @@ export const parseFees = (
       currency: fees?.relayerGas?.currency
     },
     {
-      raw: relayerFee,
-      formatted: `${relayerFeeIsReward ? '+' : '-'}${formattedRelayer}`,
-      usd: formatUsdFee(fees?.relayerService?.amountUsd, true),
+      raw: _isGasSponsored ? 0n : relayerFee,
+      formatted: _isGasSponsored
+        ? '0'
+        : `${relayerFeeIsReward ? '+' : '-'}${formattedRelayer}`,
+      usd: _isGasSponsored
+        ? { value: 0, formatted: '0' }
+        : formatUsdFee(fees?.relayerService?.amountUsd, true),
       name: relayerFeeIsReward ? 'Reward' : 'Relay Fee',
       tooltip: null,
       type: 'relayer',
@@ -107,9 +103,11 @@ export const parseFees = (
       Number(fees?.app?.currency?.decimals ?? 18)
     )
     breakdown.push({
-      raw: appFee,
-      formatted: `${formattedAppFee}`,
-      usd: formatUsdFee(fees?.app?.amountUsd, true),
+      raw: _isGasSponsored ? 0n : appFee,
+      formatted: _isGasSponsored ? '0' : `${formattedAppFee}`,
+      usd: _isGasSponsored
+        ? { value: 0, formatted: '0' }
+        : formatUsdFee(fees?.app?.amountUsd, true),
       name: 'App Fee',
       tooltip: null,
       type: 'relayer',
@@ -131,6 +129,8 @@ export const parseFees = (
       priceImpactColor = 'red'
     } else if (percent > 0) {
       priceImpactColor = 'success'
+    } else if (_isGasSponsored) {
+      priceImpactColor = 'success'
     }
   }
   return {
@@ -140,12 +140,15 @@ export const parseFees = (
       priceImpactPercentage: quote?.details?.totalImpact?.percent
         ? `${quote?.details?.totalImpact?.percent}%`
         : undefined,
-      priceImpact: quote?.details?.totalImpact?.usd
-        ? formatDollar(parseFloat(quote?.details?.totalImpact?.usd ?? 0))
-        : undefined,
+      priceImpact:
+        quote?.details?.totalImpact?.usd &&
+        quote?.details?.totalImpact?.usd != '0'
+          ? formatDollar(parseFloat(quote?.details?.totalImpact?.usd ?? 0))
+          : undefined,
       priceImpactColor,
       swapImpact: formatUsdFee(quote?.details?.swapImpact?.usd, false)
-    }
+    },
+    isGasSponsored: _isGasSponsored
   }
 }
 
@@ -265,6 +268,7 @@ export const getCurrentStep = (steps?: Execute['steps'] | null) => {
 
 export const getSwapEventData = (
   details: Execute['details'],
+  fees: Execute['fees'],
   steps: Execute['steps'] | null,
   connector?: string,
   quoteParameters?: Parameters<typeof useQuote>['2']
@@ -295,9 +299,11 @@ export const getSwapEventData = (
     quote_id: steps ? extractQuoteId(steps) : undefined,
     amount_in: details?.currencyIn?.amount,
     currency_in: details?.currencyIn?.currency?.symbol,
+    currency_in_address: details?.currencyIn?.currency?.address,
     chain_id_in: details?.currencyIn?.currency?.chainId,
     amount_out: details?.currencyOut?.amount,
     currency_out: details?.currencyOut?.currency?.symbol,
+    currency_out_address: details?.currencyOut?.currency?.address,
     chain_id_out: details?.currencyOut?.currency?.chainId,
     currency_in_usd: details?.currencyIn?.amountUsd,
     currency_out_usd: details?.currencyOut?.amountUsd,
@@ -330,7 +336,11 @@ export const getSwapEventData = (
         })
         return checkStatuses
       })
-      .flat()
+      .flat(),
+    subsidized:
+      fees?.subsidized !== undefined && fees.subsidized.amount !== '0'
+        ? true
+        : false
   }
 }
 
@@ -350,4 +360,11 @@ export const calculateUsdValue = (
     }
   }
   return undefined
+}
+
+export const isGasSponsored = (quote?: QuoteResponse) => {
+  return (
+    quote?.fees?.subsidized?.amount != undefined &&
+    quote?.fees?.subsidized?.amount != '0'
+  )
 }

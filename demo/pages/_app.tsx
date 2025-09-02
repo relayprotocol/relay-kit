@@ -34,6 +34,21 @@ import { AbstractEvmWalletConnectors } from '@dynamic-labs-connectors/abstract-g
 import { MoonPayProvider } from 'context/MoonpayProvider'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
 import { RelayKitProviderWrapper } from 'components/providers/RelayKitProviderWrapper'
+import { Barlow, Chivo } from 'next/font/google'
+
+export const chivo = Chivo({
+  weight: ['700', '800'],
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-chivo'
+})
+
+export const barlow = Barlow({
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-barlow'
+})
 
 type AppWrapperProps = {
   children: ReactNode
@@ -86,60 +101,79 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
     )
   })
 
+  useEffect(() => {
+    if (document) {
+      const styleElement = document.createElement('style')
+
+      styleElement.textContent = `
+        :root {
+          --font-chivo: ${chivo.style.fontFamily};
+          --font-barlow: ${barlow.style.fontFamily};
+        }
+      `
+
+      document.body.appendChild(styleElement)
+    }
+  }, [])
+
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <RelayKitProviderWrapper
-        relayApi={relayApi}
-        dynamicChains={dynamicChains}
+    <div>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange
       >
-        <DynamicContextProvider
-          settings={{
-            logLevel: 'INFO',
-            environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID ?? '',
-            walletConnectors: [
-              EthereumWalletConnectors,
-              SolanaWalletConnectors,
-              BitcoinWalletConnectors,
-              EclipseWalletConnectors,
-              SuiWalletConnectors,
-              AbstractEvmWalletConnectors
-            ],
-            cssOverrides: `
+        <RelayKitProviderWrapper
+          relayApi={relayApi}
+          dynamicChains={dynamicChains}
+        >
+          <DynamicContextProvider
+            settings={{
+              logLevel: 'INFO',
+              environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID ?? '',
+              walletConnectors: [
+                EthereumWalletConnectors,
+                SolanaWalletConnectors,
+                BitcoinWalletConnectors,
+                EclipseWalletConnectors,
+                SuiWalletConnectors,
+                AbstractEvmWalletConnectors
+              ],
+              cssOverrides: `
               [data-testid="send-balance-button"] {
                 display: none;
               }
             `,
-            walletsFilter: walletFilter ? FilterChain(walletFilter) : undefined,
-            overrides: {
-              evmNetworks: () => {
-                return (dynamicChains ?? [])
-                  .filter((chain) => chain.vmType === 'evm')
-                  .map((chain) => {
-                    return convertRelayChainToDynamicNetwork(chain)
-                  })
+              walletsFilter: walletFilter
+                ? FilterChain(walletFilter)
+                : undefined,
+              overrides: {
+                evmNetworks: () => {
+                  return (dynamicChains ?? [])
+                    .filter((chain) => chain.vmType === 'evm')
+                    .map((chain) => {
+                      return convertRelayChainToDynamicNetwork(chain)
+                    })
+                }
+              },
+              initialAuthenticationMode: 'connect-only',
+              events: {
+                onAuthFlowClose: () => {
+                  setWalletFilter(undefined)
+                }
               }
-            },
-            initialAuthenticationMode: 'connect-only',
-            events: {
-              onAuthFlowClose: () => {
-                setWalletFilter(undefined)
-              }
-            }
-          }}
-        >
-          <WagmiProvider config={wagmiConfig}>
-            <MoonPayProvider>
-              <DynamicWagmiConnector>{children}</DynamicWagmiConnector>
-            </MoonPayProvider>
-          </WagmiProvider>
-        </DynamicContextProvider>
-      </RelayKitProviderWrapper>
-    </ThemeProvider>
+            }}
+          >
+            <WagmiProvider config={wagmiConfig}>
+              <MoonPayProvider>
+                <DynamicWagmiConnector>{children}</DynamicWagmiConnector>
+              </MoonPayProvider>
+            </WagmiProvider>
+          </DynamicContextProvider>
+        </RelayKitProviderWrapper>
+      </ThemeProvider>
+    </div>
   )
 }
 

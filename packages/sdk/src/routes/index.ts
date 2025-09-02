@@ -14,6 +14,7 @@ export const routes = [
   "/execute/permits",
   "/quote",
   "/price",
+  "/execute",
   "/lives",
   "/intents/status",
   "/intents/status/v2",

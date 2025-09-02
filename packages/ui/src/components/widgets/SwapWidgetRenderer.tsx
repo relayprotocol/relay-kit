@@ -23,7 +23,7 @@ import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useCapabilities } from 'wagmi/experimental'
-import type { BridgeFee, Token } from '../../types/index.js'
+import type { Token } from '../../types/index.js'
 import { useQueryClient } from '@tanstack/react-query'
 import type { ChainVM, Execute } from '@relayprotocol/relay-sdk'
 import {
@@ -40,7 +40,6 @@ import { useQuote, useTokenPrice } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../constants/events.js'
 import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
 import type { DebouncedState } from 'usehooks-ts'
-import type Text from '../../components/primitives/Text.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
 import {
@@ -53,6 +52,7 @@ import { errorToJSON } from '../../utils/errors.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
 import { get15MinuteInterval } from '../../utils/time.js'
+import type { FeeBreakdown } from '../../types/FeeBreakdown.js'
 
 export type TradeType = 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
 
@@ -77,6 +77,7 @@ type SwapWidgetRendererProps = {
   onConnectWallet?: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
+  sponsoredTokens?: string[]
 }
 
 export type ChildrenProps = {
@@ -86,19 +87,7 @@ export type ChildrenProps = {
   swap: () => void
   transactionModalOpen: boolean
   details: null | Execute['details']
-  feeBreakdown: {
-    breakdown: BridgeFee[]
-    totalFees: {
-      usd?: string
-      priceImpactPercentage?: string
-      priceImpact?: string
-      priceImpactColor?: ComponentPropsWithoutRef<typeof Text>['color']
-      swapImpact?: {
-        value: number
-        formatted: string
-      }
-    }
-  } | null
+  feeBreakdown: FeeBreakdown | null
   fromToken?: Token
   setFromToken: Dispatch<React.SetStateAction<Token | undefined>>
   toToken?: Token
@@ -172,6 +161,7 @@ export type ChildrenProps = {
   isLoadingFromTokenPrice: boolean
   toTokenPriceData: ReturnType<typeof useTokenPrice>['data']
   isLoadingToTokenPrice: boolean
+  sponsoredTokens?: string[]
 }
 
 // shared query options for useTokenPrice
@@ -198,6 +188,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   multiWalletSupportEnabled = false,
   linkedWallets,
   supportedWalletVMs,
+  sponsoredTokens,
   children,
   onAnalyticEvent,
   onSwapError
@@ -587,6 +578,18 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromToken?.chainId
   )
 
+  const isGasSponsorshipEnabled =
+    sponsoredTokens &&
+    sponsoredTokens.length > 0 &&
+    toToken &&
+    fromToken &&
+    sponsoredTokens.includes(
+      `${toToken.chainId}:${toToken.address.toLowerCase()}`
+    ) &&
+    sponsoredTokens.includes(
+      `${fromToken.chainId}:${fromToken.address.toLowerCase()}`
+    )
+
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     fromToken && toToken && (quoteProtocol !== 'preferV2' || explicitDeposit !== undefined)
       ? {
@@ -718,7 +721,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         quote_request_id: quoteRequestId,
         status_code: e.response.status ?? e.status ?? ''
       })
-    }
+    },
+    undefined,
+    isGasSponsorshipEnabled ? providerOptionsContext?.secureBaseUrl : undefined
   )
 
   const invalidateQuoteQuery = useCallback(() => {
@@ -910,6 +915,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       const swapEventData = {
         ...getSwapEventData(
           quote?.details,
+          quote?.fees,
           currentSteps ?? null,
           linkedWallet?.connector,
           quoteParameters
@@ -970,6 +976,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     try {
       const swapEventData = getSwapEventData(
         quote?.details,
+        quote?.fees,
         quote?.steps ? (quote?.steps as Execute['steps']) : null,
         linkedWallet?.connector,
         quoteParameters
@@ -1020,6 +1027,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         const { step, stepItem } = getCurrentStep(currentSteps)
         const swapEventData = getSwapEventData(
           quote?.details,
+          quote?.fees,
           currentSteps,
           linkedWallet?.connector,
           quoteParameters

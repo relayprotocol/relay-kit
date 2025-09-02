@@ -51,14 +51,14 @@ const SwapWidgetPage: NextPage = () => {
     symbol: 'ETH',
     logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
   })
-  // const [toToken, setToToken] = useState<Token | undefined>({
-  //   chainId: 10,
-  //   address: '0xbb586ed34974b15049a876fd5366a4c2d1203115',
-  //   decimals: 18,
-  //   name: 'ETH',
-  //   symbol: 'ETH',
-  //   logoURI: 'https://assets.relay.link/icons/currencies/eth.png',
-  // })
+  const [toToken, setToToken] = useState<Token | undefined>({
+    chainId: 10,
+    address: '0x0000000000000000000000000000000000000000',
+    decimals: 18,
+    name: 'ETH',
+    symbol: 'ETH',
+    logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
+  })
   const { setWalletFilter } = useWalletFilter()
   const { setShowAuthFlow, primaryWallet } = useDynamicContext()
   const { theme } = useTheme()
@@ -219,10 +219,20 @@ const SwapWidgetPage: NextPage = () => {
             lockChainId={singleChainMode ? 8453 : undefined}
             singleChainMode={singleChainMode}
             supportedWalletVMs={supportedWalletVMs}
+            sponsoredTokens={
+              toToken?.chainId !== 1
+                ? [
+                    '8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+                    '42161:0xaf88d065e77c8cc2239327c5edb3a432268e5831',
+                    '10:0x0b2c639c533813f4aa9d7837caf62653d097ff85',
+                    '1:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
+                  ]
+                : undefined
+            }
             // popularChainIds={[]}
             // disableInputAutoFocus={true}
-            // toToken={toToken}
-            // setToToken={setToToken}
+            toToken={toToken}
+            setToToken={setToToken}
             // lockToToken={true}
             // lockFromToken={true}
             fromToken={fromToken}

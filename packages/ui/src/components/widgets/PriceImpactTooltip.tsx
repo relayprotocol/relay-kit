@@ -70,9 +70,15 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
                 <Text style="subtitle3" color="subtle" css={{ mr: 'auto' }}>
                   {fee.name}
                 </Text>
-                <Text style="subtitle3" color={getFeeColor(fee.usd.value)}>
-                  {fee.usd.formatted}
-                </Text>
+                {feeBreakdown.isGasSponsored && fee.usd.value === 0 ? (
+                  <Text style="subtitle3" color="success">
+                    Free
+                  </Text>
+                ) : (
+                  <Text style="subtitle3" color={getFeeColor(fee.usd.value)}>
+                    {fee.usd.formatted}
+                  </Text>
+                )}
               </Flex>
             )
           })}

@@ -376,7 +376,10 @@ export interface paths {
             source?: string;
             /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
             refundTo?: string;
-            /** @description Always refund on the origin chain in case of any issues */
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
             refundOnOrigin?: boolean;
             /** @description Enable this to use the exact input rather than exact output */
             useExactInput?: boolean;
@@ -553,7 +556,10 @@ export interface paths {
             source?: string;
             /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
             refundTo?: string;
-            /** @description Always refund on the origin chain in case of any issues */
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
             refundOnOrigin?: boolean;
             /** @description Enable this to use the exact input rather than exact output */
             useExactInput?: boolean;
@@ -825,6 +831,45 @@ export interface paths {
                   amountUsd?: string;
                   minimumAmount?: string;
                 };
+                /**
+                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                subsidized?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
               };
               breakdown?: {
                   /** @description Amount that will be bridged in the estimated time */
@@ -895,7 +940,10 @@ export interface paths {
             appFees?: string[];
             /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
             refundTo?: string;
-            /** @description Always refund on the origin chain in case of any issues */
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
             refundOnOrigin?: boolean;
             source?: string;
             /**
@@ -1079,7 +1127,10 @@ export interface paths {
             appFees?: string[];
             /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
             refundTo?: string;
-            /** @description Always refund on the origin chain in case of any issues */
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
             refundOnOrigin?: boolean;
             source?: string;
             /**
@@ -1344,6 +1395,45 @@ export interface paths {
                   amountUsd?: string;
                   minimumAmount?: string;
                 };
+                /**
+                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                subsidized?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
               };
               /**
                * @example {
@@ -1440,7 +1530,10 @@ export interface paths {
             source?: string;
             /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
             refundTo?: string;
-            /** @description Always refund on the origin chain in case of any issues */
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
             refundOnOrigin?: boolean;
             /**
              * @description Enable this to route payments via a forwarder contract. This contract will emit an event when receiving payments before forwarding to the solver. This is needed when depositing from a smart contract as the payment will be an internal transaction and detecting such a transaction requires obtaining the transaction traces.
@@ -1720,6 +1813,45 @@ export interface paths {
                   amountUsd?: string;
                   minimumAmount?: string;
                 };
+                /**
+                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                subsidized?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
               };
               breakdown?: {
                   /** @description Amount that will be swapped in the estimated time */
@@ -1908,6 +2040,7 @@ export interface paths {
             tradeType: "EXACT_INPUT" | "EXACT_OUTPUT";
             referrer?: string;
             gasLimitForDepositSpecifiedTxs?: number;
+            originGasOverhead?: number;
           };
         };
       };
@@ -2150,6 +2283,45 @@ export interface paths {
                  * }
                  */
                 app?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                subsidized?: {
                   currency?: {
                     chainId?: number;
                     address?: string;
@@ -2417,11 +2589,19 @@ export interface paths {
                 r: string;
                 s: string;
               }[];
+            /** @description Additional data needed for specific routes */
+            additionalData?: {
+              /** @description If the request originates from Bitcoin and the user is a P2SH address, the public key is needed to be able to generate the transaction data */
+              userPublicKey?: string;
+            };
             referrer?: string;
             referrerAddress?: string;
             /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
             refundTo?: string;
-            /** @description Always refund on the origin chain in case of any issues */
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
             refundOnOrigin?: boolean;
             /** @description If set, the destination fill will include a gas topup to the recipient (only supported for EVM chains if the requested currency is not the gas currency on the destination chain) */
             topupGas?: boolean;
@@ -2457,6 +2637,8 @@ export interface paths {
             useDepositAddress?: boolean;
             /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
             slippageTolerance?: string;
+            /** @description Slippage tolerance for destination gas in the event that the deposit occurs after the order deadline, and more gas is required for the solver to execute the destination transaction. */
+            latePaymentSlippageTolerance?: string;
             appFees?: {
                 /** @description Address that will receive the app fee, if not specified then the user address is used */
                 recipient?: string;
@@ -2475,6 +2657,14 @@ export interface paths {
             includedSwapSources?: string[];
             /** @description Swap sources to exclude for swap routing. */
             excludedSwapSources?: string[];
+            /** @description Swap sources to include for swap routing on origin. */
+            includedOriginSwapSources?: string[];
+            /** @description Swap sources to include for swap routing on destination. */
+            includedDestinationSwapSources?: string[];
+            /** @description The gas overhead for the origin chain, this is used to calculate the gas fee for the origin chain when the solver is executing a gasless transaction on the origin chain */
+            originGasOverhead?: number;
+            /** @description The payer to be set for deposit transactions on solana. This account must have enough for fees and rent. */
+            depositFeePayer?: string;
           };
         };
       };
@@ -2739,6 +2929,45 @@ export interface paths {
                   amountUsd?: string;
                   minimumAmount?: string;
                 };
+                /**
+                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                subsidized?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
               };
               /** @description A summary of the swap and what the user should expect to happen given an input */
               details?: {
@@ -2872,6 +3101,24 @@ export interface paths {
                   usd?: string;
                   percent?: string;
                 };
+                expandedPriceImpact?: {
+                  /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
+                  swap?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to cover transaction execution costs */
+                  execution?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to the protocol */
+                  relay?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
+                  app?: {
+                    usd?: string;
+                  };
+                };
                 /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
                 rate?: string;
                 slippageTolerance?: {
@@ -2975,7 +3222,10 @@ export interface paths {
             referrer?: string;
             /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
             refundTo?: string;
-            /** @description Always refund on the origin chain in case of any issues */
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
             refundOnOrigin?: boolean;
             /**
              * @description Enable this to route payments via a receiver contract. This contract will emit an event when receiving payments before forwarding to the solver. This is needed when depositing from a smart contract as the payment will be an internal transaction and detecting such a transaction requires obtaining the transaction traces.
@@ -3202,6 +3452,45 @@ export interface paths {
                   amountUsd?: string;
                   minimumAmount?: string;
                 };
+                /**
+                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                subsidized?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
               };
               /** @description A summary of the swap and what the user should expect to happen given an input */
               details?: {
@@ -3346,6 +3635,105 @@ export interface paths {
             "application/json": {
               message?: string;
               errorCode?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/execute": {
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            /**
+             * @description The kind of gasless transaction to execute. Currently supported: rawCalls
+             * @enum {string}
+             */
+            executionKind: "rawCalls";
+            /** @description Raw call parameters for the gasless transaction */
+            data: {
+              /** @description Chain ID of the EVM network */
+              chainId: number;
+              /** @description Address of the contract to call */
+              to: string;
+              /** @description Encoded function call data */
+              data: string;
+              /** @description ETH value to send with the call (in wei) */
+              value: string;
+              /** @description Authorization list for EIP-7702 transactions to be executed on destination chain */
+              authorizationList?: {
+                  chainId: number;
+                  address: string;
+                  nonce: number;
+                  yParity: number;
+                  r: string;
+                  s: string;
+                }[];
+            };
+            /** @description Options related to gas fee sponsorship and app referrer */
+            executionOptions: {
+              /** @description The referrer of the app which is executing the gasless transaction */
+              referrer: string;
+              /** @description If the app should pay for the fees associated with the request */
+              subsidizeFees: boolean;
+            };
+          };
+        };
+      };
+      responses: {
+        /** @description Transaction successfully queued for execution */
+        200: {
+          content: {
+            "application/json": {
+              /** @example Transaction submitted */
+              message?: string;
+              /** @example 0xabc123... */
+              requestId?: string;
+            };
+          };
+        };
+        /** @description Bad Request - Invalid input or simulation failure */
+        400: {
+          content: {
+            "application/json": {
+              /** @example to is required */
+              error?: string;
+            } | {
+              /** @example data is required */
+              error?: string;
+            } | {
+              /** @example value is required */
+              error?: string;
+            } | {
+              /** @example chainId is required */
+              error?: string;
+            } | {
+              /** @example authorizationList cannot be empty */
+              error?: string;
+            } | {
+              /** @example SimulationError */
+              error?: string;
+              /** @example execution reverted: invalid opcode */
+              message?: string;
+            };
+          };
+        };
+        /** @description Unauthorized - Missing or invalid API key or referrer */
+        401: {
+          content: {
+            "application/json": {
+              /** @example Unauthorized */
+              error?: string;
+            };
+          };
+        };
+        /** @description Internal Server Error */
+        500: {
+          content: {
+            "application/json": {
+              /** @example Internal server error */
+              error?: string;
             };
           };
         };
@@ -4009,6 +4397,8 @@ export interface paths {
                     slippageTolerance?: string;
                     /** @enum {string} */
                     failReason?: "UNKNOWN" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "SLIPPAGE" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "N/A";
+                    /** @enum {string} */
+                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND";
                     fees?: {
                       /** @description Estimated gas cost required for execution, in wei */
                       gas?: string;

@@ -115,7 +115,7 @@ const FeeBreakdown: FC<Props> = ({
             gap: '1',
             color:
               timeEstimate && timeEstimate.time <= 30
-                ? '{colors.green.9}'
+                ? '{colors.grass.9}'
                 : '{colors.amber.9}'
           }}
         >
@@ -325,7 +325,7 @@ const FeeBreakdown: FC<Props> = ({
               gap: '2',
               color:
                 timeEstimate && timeEstimate.time <= 30
-                  ? '{colors.green.9}'
+                  ? '{colors.grass.9}'
                   : '{colors.amber.9}',
               flexShrink: 0
             }}

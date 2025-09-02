@@ -131,6 +131,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
         <AccessibleListItem value="input" asChild>
           <Input
             ref={onInputRef}
+            data-testid="chain-search-input"
             placeholder="Search chains"
             icon={
               <Box css={{ color: 'gray9' }}>

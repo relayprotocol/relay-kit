@@ -181,6 +181,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
               View Details
             </Button>
             <Button
+              cta={true}
               onClick={() => {
                 onOpenChange(false)
               }}
@@ -195,6 +196,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
         </>
       ) : (
         <Button
+          cta={true}
           onClick={() => {
             onOpenChange(false)
           }}

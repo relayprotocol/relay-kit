@@ -14,15 +14,15 @@ import useRelayClient from '../../../../hooks/useRelayClient.js'
 type TokenTriggerProps = {
   token?: Token
   locked?: boolean
-  isSingleChainLocked?: boolean
   address?: string
+  testId?: string
 }
 
 export const TokenTrigger: FC<TokenTriggerProps> = ({
   token,
   locked,
-  isSingleChainLocked,
-  address
+  address,
+  testId
 }) => {
   const relayClient = useRelayClient()
   const chain = relayClient?.chains?.find(
@@ -50,6 +50,7 @@ export const TokenTrigger: FC<TokenTriggerProps> = ({
           backgroundColor: 'widget-selector-background'
         }
       }}
+      data-testid={testId}
     >
       <Flex align="center" css={{ gap: '2' }}>
         <ChainTokenIcon
@@ -86,6 +87,7 @@ export const TokenTrigger: FC<TokenTriggerProps> = ({
     <Button
       color={address ? 'primary' : 'secondary'}
       corners="pill"
+      cta={true}
       css={{
         height: 50,
         minHeight: 50,

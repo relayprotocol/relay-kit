@@ -14,6 +14,7 @@
     "trailingComma": "none"
   },
   "dependencies": {
+    "@dynamic-labs-connectors/abstract-global-wallet-evm": "4.3.1",
     "@dynamic-labs/bitcoin": "4.22.2",
     "@dynamic-labs/eclipse": "4.22.2",
     "@dynamic-labs/ethereum": "4.22.2",
@@ -23,7 +24,7 @@
     "@dynamic-labs/sui": "4.22.2",
     "@dynamic-labs/utils": "4.22.2",
     "@dynamic-labs/wagmi-connector": "4.22.2",
-    "@dynamic-labs-connectors/abstract-global-wallet-evm": "4.3.1",
+    "@moonpay/moonpay-react": "^1.8.3",
     "@privy-io/cross-app-connect": "0.2.2",
     "@radix-ui/colors": "^0.1.8",
     "@relayprotocol/relay-bitcoin-wallet-adapter": "workspace:*",
@@ -42,8 +43,7 @@
     "react-dom": "^18.0.0",
     "usehooks-ts": "^3.1.0",
     "viem": ">=2.26.0",
-    "wagmi": "^2.15.6",
-    "@moonpay/moonpay-react": "^1.8.3"
+    "wagmi": "^2.15.6"
   },
   "devDependencies": {
     "@dynamic-labs/types": "4.10.4",
