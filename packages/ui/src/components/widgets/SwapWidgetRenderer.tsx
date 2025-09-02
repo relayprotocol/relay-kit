@@ -575,7 +575,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const explicitDeposit = useEOADetection(
     wallet,
     quoteProtocol,
-    fromToken?.chainId
+    fromToken?.chainId,
+    fromChain?.vmType
   )
 
   const isGasSponsorshipEnabled =
@@ -591,7 +592,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     )
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
-    fromToken && toToken && (quoteProtocol !== 'preferV2' || explicitDeposit !== undefined)
+    fromToken && toToken && (quoteProtocol !== 'preferV2' || fromChain?.vmType !== 'evm' || explicitDeposit !== undefined)
       ? {
           user: fromAddressWithFallback,
           originChainId: fromToken.chainId,
