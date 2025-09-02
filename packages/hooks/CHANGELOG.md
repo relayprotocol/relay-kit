@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-hooks
 
+## 2.0.0
+
+### Major Changes
+
+- 581937b: Upgrade to React 19
+
 ## 1.13.0
 
 ### Minor Changes

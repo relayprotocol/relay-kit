@@ -1,5 +1,17 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.0
+
+### Major Changes
+
+- 581937b: Upgrade to React 19
+
+### Patch Changes
+
+- Updated dependencies [581937b]
+  - @relayprotocol/relay-design-system@1.0.0
+  - @relayprotocol/relay-kit-hooks@2.0.0
+
 ## 3.0.3
 
 ### Patch Changes
