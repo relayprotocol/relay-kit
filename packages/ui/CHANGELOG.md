@@ -1,5 +1,12 @@
 # @reservoir0x/relay-kit-ui
 
+## 3.0.3
+
+### Patch Changes
+
+- 8dc4d4b: Switch to using queryQuote instead of useQuote hook
+- dc26d7b: Add test ids for automation
+
 ## 3.0.2
 
 ### Patch Changes
