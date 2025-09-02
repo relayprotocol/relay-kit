@@ -3,7 +3,7 @@ import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 
 /**
  * Hook to detect if a wallet is an EOA and return the appropriate explicitDeposit flag
- * Only runs detection when protocol version is 'preferV2'
+ * Only runs detection when protocol version is 'preferV2' and wallet supports EOA detection
  */
 const useEOADetection = (
   wallet?: AdaptedWallet,
@@ -22,18 +22,29 @@ const useEOADetection = (
     )
     console.log('🎯 useEOADetection shouldDetect:', {
       hasWalletIsEOA: !!wallet?.isEOA,
+      walletVmType: wallet?.vmType,
       protocolVersion,
       isPreferV2: protocolVersion === 'preferV2',
       chainId,
       shouldDetect: result
     })
     return result
-  }, [wallet?.isEOA, protocolVersion, chainId])
+  }, [wallet?.isEOA, wallet?.vmType, protocolVersion, chainId])
 
   useEffect(() => {
+    console.log('🎯 EOA Detection useEffect triggered:', {
+      shouldDetect,
+      walletVmType: wallet?.vmType,
+      walletAddress: wallet?.address,
+      chainId
+    })
+
+    setExplicitDeposit(undefined)
+
     if (!shouldDetect) {
-      console.log('🎯 EOA detection skipped - shouldDetect is false')
-      setExplicitDeposit(undefined)
+      console.log(
+        '🎯 EOA detection skipped - shouldDetect is false, keeping explicitDeposit undefined'
+      )
       return
     }
 
@@ -62,7 +73,7 @@ const useEOADetection = (
     }
 
     detectEOA()
-  }, [wallet?.address, chainId, shouldDetect])
+  }, [wallet, chainId, shouldDetect])
 
   return explicitDeposit
 }

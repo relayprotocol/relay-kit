@@ -615,7 +615,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
           protocolVersion: quoteProtocol,
-          explicitDeposit: explicitDeposit
+          ...(quoteProtocol === 'preferV2' && explicitDeposit !== undefined && {
+            explicitDeposit: explicitDeposit
+          })
         }
       : undefined
 
