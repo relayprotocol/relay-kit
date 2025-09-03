@@ -241,18 +241,10 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
     },
     isEOA: async (chainId) => {
       if (!wallet.account) {
-        console.log('🔍 EOA Detection: No wallet account available')
         return false
       }
 
-      const walletAddress = wallet.account.address
-      console.log('🔍 EOA Detection Started:', {
-        address: walletAddress,
-        chainId
-      })
-
       try {
-        console.log('🏗️ Checking deployed code using eth_getCode...')
         const client = getClient()
         const chain = client.chains.find((chain) => chain.id === chainId)
         const rpcUrl = chain?.httpRpcUrl
@@ -261,16 +253,9 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           throw new Error(`Chain ${chainId} not found in relay client`)
         }
 
-        // Create a simple public client for the getCode call
         const viemClient = createPublicClient({
           chain: chain?.viemChain,
           transport: rpcUrl ? http(rpcUrl) : http()
-        })
-
-        console.log('🌐 Making eth_getCode call to:', {
-          rpcUrl,
-          chainId,
-          address: wallet.account.address
         })
 
         let code
@@ -278,47 +263,15 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           code = await viemClient.getCode({
             address: wallet.account.address
           })
-          console.log('📡 Raw getCode response:', { code })
         } catch (getCodeError) {
-          console.error('💥 getCode call failed:', {
-            error: getCodeError instanceof Error ? getCodeError.message : String(getCodeError),
-            rpcUrl,
-            chainId,
-            address: wallet.account.address
-          })
-          // Re-throw to be caught by outer try/catch
           throw getCodeError
         }
 
         const hasCode = code && code !== '0x'
-        console.log('🏗️ Code check:', {
-          code: code && code.length > 10 ? `${code.slice(0, 10)}...` : code,
-          codeLength: code && code.length,
-          hasCode
-        })
-
         const isEOA = !hasCode
-        const reason = hasCode
-          ? 'Has deployed code -> Smart Wallet (including EIP-7702 delegated)'
-          : 'No deployed code -> EOA'
-
-        console.log('✅ EOA Detection Complete:', {
-          address: walletAddress,
-          chainId,
-          hasCode,
-          isEOA,
-          reason,
-          explicitDepositWillBe: !isEOA
-        })
 
         return isEOA
       } catch (error) {
-        console.error('❌ EOA Detection Error:', {
-          address: walletAddress,
-          chainId,
-          error: error instanceof Error ? error.message : String(error)
-        })
-        // If we can't determine, assume it's not an EOA (safer default)
         return false
       }
     }
