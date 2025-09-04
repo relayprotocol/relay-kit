@@ -586,7 +586,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       `${fromToken.chainId}:${fromToken.address.toLowerCase()}`
     )
 
-  // Log the conditions that determine if quote parameters are set
   const shouldSetQuoteParameters =
     fromToken &&
     toToken &&

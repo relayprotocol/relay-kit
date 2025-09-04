@@ -279,12 +279,12 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
         }
 
         // Comprehensive smart wallet detection logic:
-        // 1. No code = EOA
-        // 2. EIP-7702 delegated wallet (0xef01 prefix) = EOA for UX purposes
-        // 3. Any other bytecode = Smart Contract Wallet
+        // 1. No code = EOA (explicitDeposit=false)
+        // 2. EIP-7702 delegated wallet (0xef01 prefix) = Smart Wallet (explicitDeposit=true)
+        // 3. Any other bytecode = Smart Contract Wallet (explicitDeposit=true)
         const hasCode = Boolean(code && code !== '0x')
         const isEIP7702Delegated = Boolean(code && code.toLowerCase().startsWith('0xef01'))
-        const isEOA = !hasCode || isEIP7702Delegated
+        const isEOA = !hasCode && !isEIP7702Delegated
         const totalDuration = Date.now() - startTime
 
         console.log('[ViemWallet] isEOA: Detection complete:', {
