@@ -47,10 +47,11 @@ const useEOADetection = (
 
   // Synchronously return undefined when conditions change
   const explicitDeposit = useMemo(() => {
-    const result = detectionState.conditionKey !== conditionKey || !shouldDetect
-      ? undefined
-      : detectionState.value
-    
+    const result =
+      detectionState.conditionKey !== conditionKey || !shouldDetect
+        ? undefined
+        : detectionState.value
+
     console.log('[EOADetection] explicitDeposit computed:', {
       chainId,
       conditionKeyMatch: detectionState.conditionKey === conditionKey,
@@ -58,7 +59,7 @@ const useEOADetection = (
       detectionStateValue: detectionState.value,
       result
     })
-    
+
     return result
   }, [conditionKey, shouldDetect, detectionState, chainId])
 
@@ -69,7 +70,7 @@ const useEOADetection = (
       chainId,
       walletAddress: wallet?.address
     })
-    
+
     setDetectionState({ value: undefined, conditionKey })
 
     if (!shouldDetect) {
@@ -79,15 +80,21 @@ const useEOADetection = (
 
     const detectEOA = async () => {
       try {
-        console.log('[EOADetection] Starting EOA detection for chainId:', chainId)
+        console.log(
+          '[EOADetection] Starting EOA detection for chainId:',
+          chainId
+        )
         const startTime = Date.now()
-        const isEOA = await wallet!.isEOA!(chainId!)
+        const eoaResult = await wallet!.isEOA!(chainId!)
         const duration = Date.now() - startTime
-        const explicitDepositValue = !isEOA
+
+        const { isEOA, isEIP7702Delegated } = eoaResult
+        const explicitDepositValue = !isEOA || isEIP7702Delegated
 
         console.log('[EOADetection] EOA detection completed:', {
           chainId,
           isEOA,
+          isEIP7702Delegated,
           explicitDepositValue,
           duration: `${duration}ms`,
           conditionKey

@@ -243,10 +243,10 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
 
       return id
     },
-    isEOA: async (chainId: number): Promise<boolean> => {
+    isEOA: async (chainId: number): Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }> => {
       if (!wallet.account) {
         console.log('[ViemWallet] isEOA: No wallet account')
-        return false
+        return { isEOA: false, isEIP7702Delegated: false }
       }
 
       try {
@@ -283,9 +283,9 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
         }
 
         // Comprehensive smart wallet detection logic:
-        // 1. No code = EOA
-        // 2. EIP-7702 delegated wallet (0xef01 prefix) = EOA for UX purposes
-        // 3. Any other bytecode = Smart Contract Wallet
+        // 1. No code = EOA (explicitDeposit=false)
+        // 2. EIP-7702 delegated wallet (0xef01 prefix) = Smart Wallet (explicitDeposit=true)
+        // 3. Any other bytecode = Smart Contract Wallet (explicitDeposit=true)
         const hasCode = Boolean(code && code !== '0x')
         const isEIP7702Delegated = Boolean(code && code.toLowerCase().startsWith('0xef01'))
         const isEOA = !hasCode || isEIP7702Delegated
@@ -302,7 +302,7 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           rpcUrl
         })
 
-        return isEOA
+        return { isEOA, isEIP7702Delegated }
       } catch (error) {
         console.error('[ViemWallet] isEOA: Error occurred:', {
           chainId,
@@ -310,7 +310,7 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           error: error instanceof Error ? error.message : error
         })
         // Return false (smart wallet) as safe default when detection fails
-        return false
+        return { isEOA: false, isEIP7702Delegated: false }
       }
     }
   }
