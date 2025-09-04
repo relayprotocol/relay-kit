@@ -560,7 +560,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     isLoadingFromTokenPrice,
     debouncedInputAmountValue,
     tradeType,
-    originChainSupportsProtocolv2
+    originChainSupportsProtocolv2,
+    fromChain?.id
   ])
 
   const loadingProtocolVersion =
@@ -585,12 +586,16 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       `${fromToken.chainId}:${fromToken.address.toLowerCase()}`
     )
 
-  const quoteParameters: Parameters<typeof useQuote>['2'] =
+  // Log the conditions that determine if quote parameters are set
+  const shouldSetQuoteParameters =
     fromToken &&
     toToken &&
     (quoteProtocol !== 'preferV2' ||
       fromChain?.vmType !== 'evm' ||
       explicitDeposit !== undefined)
+
+  const quoteParameters: Parameters<typeof useQuote>['2'] =
+    shouldSetQuoteParameters
       ? {
           user: fromAddressWithFallback,
           originChainId: fromToken.chainId,
