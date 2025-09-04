@@ -1,10 +1,4 @@
-import type {
-  ComponentPropsWithoutRef,
-  Dispatch,
-  FC,
-  ReactNode,
-  SetStateAction
-} from 'react'
+import type { Dispatch, FC, ReactNode, SetStateAction } from 'react'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   useCurrencyBalance,
@@ -566,7 +560,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     isLoadingFromTokenPrice,
     debouncedInputAmountValue,
     tradeType,
-    originChainSupportsProtocolv2
+    originChainSupportsProtocolv2,
+    fromChain?.id
   ])
 
   const loadingProtocolVersion =
@@ -591,8 +586,16 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       `${fromToken.chainId}:${fromToken.address.toLowerCase()}`
     )
 
+  // Log the conditions that determine if quote parameters are set
+  const shouldSetQuoteParameters =
+    fromToken &&
+    toToken &&
+    (quoteProtocol !== 'preferV2' ||
+      fromChain?.vmType !== 'evm' ||
+      explicitDeposit !== undefined)
+
   const quoteParameters: Parameters<typeof useQuote>['2'] =
-    fromToken && toToken && (quoteProtocol !== 'preferV2' || fromChain?.vmType !== 'evm' || explicitDeposit !== undefined)
+    shouldSetQuoteParameters
       ? {
           user: fromAddressWithFallback,
           originChainId: fromToken.chainId,
@@ -620,9 +623,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
           protocolVersion: quoteProtocol,
-          ...(quoteProtocol === 'preferV2' && explicitDeposit !== undefined && {
-            explicitDeposit: explicitDeposit
-          })
+          ...(quoteProtocol === 'preferV2' &&
+            explicitDeposit !== undefined && {
+              explicitDeposit: explicitDeposit
+            })
         }
       : undefined
 
