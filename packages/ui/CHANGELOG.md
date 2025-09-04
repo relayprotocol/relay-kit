@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.1
+
+### Patch Changes
+
+- 41d48e1: Remove custom fonts from ui kit base theme
+- Updated dependencies [dd8a006]
+  - @relayprotocol/relay-sdk@2.4.3
+  - @relayprotocol/relay-kit-hooks@2.0.1
+
 ## 4.0.0
 
 ### Major Changes
