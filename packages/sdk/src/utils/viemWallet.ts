@@ -239,19 +239,26 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
 
       return id
     },
-    isEOA: async (chainId) => {
+    isEOA: async (chainId: number): Promise<boolean> => {
       if (!wallet.account) {
+        console.log('[ViemWallet] isEOA: No wallet account')
         return false
       }
 
       try {
+        console.log('[ViemWallet] isEOA: Starting detection for chainId:', chainId, 'address:', wallet.account.address)
+        const startTime = Date.now()
+        
         const client = getClient()
         const chain = client.chains.find((chain) => chain.id === chainId)
         const rpcUrl = chain?.httpRpcUrl
 
         if (!chain) {
+          console.error('[ViemWallet] isEOA: Chain not found:', chainId)
           throw new Error(`Chain ${chainId} not found in relay client`)
         }
+
+        console.log('[ViemWallet] isEOA: Using RPC URL:', rpcUrl, 'for chain:', chain.name || chain.id)
 
         const viemClient = createPublicClient({
           chain: chain?.viemChain,
@@ -260,18 +267,45 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
 
         let code
         try {
+          const getCodeStartTime = Date.now()
           code = await viemClient.getCode({
             address: wallet.account.address
           })
+          const getCodeDuration = Date.now() - getCodeStartTime
+          console.log('[ViemWallet] isEOA: getCode completed in', `${getCodeDuration}ms`, 'result:', code)
         } catch (getCodeError) {
+          console.error('[ViemWallet] isEOA: getCode failed:', getCodeError)
           throw getCodeError
         }
 
-        const hasCode = code && code !== '0x'
-        const isEOA = !hasCode
+        // Comprehensive smart wallet detection logic:
+        // 1. No code = EOA
+        // 2. EIP-7702 delegated wallet (0xef01 prefix) = EOA for UX purposes
+        // 3. Any other bytecode = Smart Contract Wallet
+        const hasCode = Boolean(code && code !== '0x')
+        const isEIP7702Delegated = Boolean(code && code.toLowerCase().startsWith('0xef01'))
+        const isEOA = !hasCode || isEIP7702Delegated
+        const totalDuration = Date.now() - startTime
+
+        console.log('[ViemWallet] isEOA: Detection complete:', {
+          chainId,
+          address: wallet.account.address,
+          code,
+          hasCode,
+          isEIP7702Delegated,
+          isEOA,
+          totalDuration: `${totalDuration}ms`,
+          rpcUrl
+        })
 
         return isEOA
       } catch (error) {
+        console.error('[ViemWallet] isEOA: Error occurred:', {
+          chainId,
+          address: wallet.account?.address,
+          error: error instanceof Error ? error.message : error
+        })
+        // Return false (smart wallet) as safe default when detection fails
         return false
       }
     }
