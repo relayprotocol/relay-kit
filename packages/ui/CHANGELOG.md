@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.2
+
+### Patch Changes
+
+- e7d50bb: Porto wallet compatibility
+
 ## 4.0.1
 
 ### Patch Changes
