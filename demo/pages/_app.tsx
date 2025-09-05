@@ -41,7 +41,7 @@ Porto.create()
 
 export const chivo = Chivo({
   weight: ['700', '800'],
-  style: ['italic'],
+  style: ['italic', 'normal'],
   display: 'swap',
   subsets: ['latin'],
   variable: '--font-chivo'
