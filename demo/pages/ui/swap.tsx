@@ -59,6 +59,7 @@ const SwapWidgetPage: NextPage = () => {
     symbol: 'ETH',
     logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
   })
+
   const { setWalletFilter } = useWalletFilter()
   const { setShowAuthFlow, primaryWallet } = useDynamicContext()
   const { theme } = useTheme()

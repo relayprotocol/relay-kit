@@ -60,7 +60,12 @@ export const RelayKitProviderWrapper: FC<{
       }}
       theme={{
         font: 'Barlow, -apple-system, Helvetica, sans-serif',
-        fontHeading: 'Chivo, -apple-system, Helvetica, sans-serif'
+        fontHeading: 'Chivo, -apple-system, Helvetica, sans-serif',
+        buttons: {
+          cta: {
+            fontStyle: 'italic'
+          }
+        }
       }}
     >
       {children}
