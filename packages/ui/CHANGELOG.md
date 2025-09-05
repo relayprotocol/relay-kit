@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.3
+
+### Patch Changes
+
+- 4142310: Add button cta font styling to theme
+
 ## 4.0.2
 
 ### Patch Changes
