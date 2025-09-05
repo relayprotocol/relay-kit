@@ -51,4 +51,6 @@ export type AdaptedWallet = {
     chainId: number,
     items: TransactionStepItem[]
   ) => Promise<string | undefined>
+  // detect if wallet is an EOA (externally owned account)
+  isEOA?: (chainId: number) => Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }>
 }

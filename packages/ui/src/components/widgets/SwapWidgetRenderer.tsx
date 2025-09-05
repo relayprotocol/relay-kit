@@ -1,10 +1,4 @@
-import type {
-  ComponentPropsWithoutRef,
-  Dispatch,
-  FC,
-  ReactNode,
-  SetStateAction
-} from 'react'
+import type { Dispatch, FC, ReactNode, SetStateAction } from 'react'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   useCurrencyBalance,
@@ -16,7 +10,8 @@ import {
   usePreviousValueChange,
   useIsWalletCompatible,
   useFallbackState,
-  useGasTopUpRequired
+  useGasTopUpRequired,
+  useEOADetection
 } from '../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
@@ -565,11 +560,19 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     isLoadingFromTokenPrice,
     debouncedInputAmountValue,
     tradeType,
-    originChainSupportsProtocolv2
+    originChainSupportsProtocolv2,
+    fromChain?.id
   ])
 
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
+
+  const explicitDeposit = useEOADetection(
+    wallet,
+    quoteProtocol,
+    fromToken?.chainId,
+    fromChain?.vmType
+  )
 
   const isGasSponsorshipEnabled =
     sponsoredTokens &&
@@ -583,8 +586,15 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       `${fromToken.chainId}:${fromToken.address.toLowerCase()}`
     )
 
+  const shouldSetQuoteParameters =
+    fromToken &&
+    toToken &&
+    (quoteProtocol !== 'preferV2' ||
+      fromChain?.vmType !== 'evm' ||
+      explicitDeposit !== undefined)
+
   const quoteParameters: Parameters<typeof useQuote>['2'] =
-    fromToken && toToken
+    shouldSetQuoteParameters
       ? {
           user: fromAddressWithFallback,
           originChainId: fromToken.chainId,
@@ -611,7 +621,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
-          protocolVersion: quoteProtocol
+          protocolVersion: quoteProtocol,
+          ...(quoteProtocol === 'preferV2' &&
+            explicitDeposit !== undefined && {
+              explicitDeposit: explicitDeposit
+            })
         }
       : undefined
 
@@ -689,7 +703,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     onQuoteReceived,
     {
       refetchOnWindowFocus: false,
-      enabled: quoteFetchingEnabled,
+      enabled: quoteFetchingEnabled && quoteParameters !== undefined,
       refetchInterval:
         !transactionModalOpen &&
         !depositAddressModalOpen &&
