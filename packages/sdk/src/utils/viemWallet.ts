@@ -251,7 +251,6 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
       }
 
       try {
-        // First check wallet capabilities for smart wallet features
         let hasSmartWalletCapabilities = false
         try {
           const capabilities = await wallet.getCapabilities({
@@ -299,7 +298,6 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
 
         return { isEOA, isEIP7702Delegated }
       } catch (error) {
-        // Return false (smart wallet) as safe default when detection fails
         return { isEOA: false, isEIP7702Delegated: false }
       }
     }
