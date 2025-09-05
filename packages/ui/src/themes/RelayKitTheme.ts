@@ -29,6 +29,9 @@ export interface RelayKitTheme {
       color?: string
       background?: string
     }
+    cta?: {
+      fontStyle?: string
+    }
   }
   input?: {
     background?: string
@@ -110,6 +113,9 @@ export const defaultTheme: RelayKitTheme = {
     disabled: {
       color: 'gray11',
       background: 'gray8'
+    },
+    cta: {
+      fontStyle: 'normal'
     }
   },
   input: {
