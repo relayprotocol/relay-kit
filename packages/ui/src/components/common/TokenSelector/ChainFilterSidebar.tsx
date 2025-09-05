@@ -278,7 +278,7 @@ type ChainFilterRowProps = {
   onClick?: (e: React.MouseEvent) => void
   tag?: string
   value: string
-  activeChainRef?: React.RefObject<HTMLButtonElement>
+  activeChainRef?: React.RefObject<HTMLButtonElement | null>
 }
 
 const ChainFilterRow: FC<ChainFilterRowProps> = ({

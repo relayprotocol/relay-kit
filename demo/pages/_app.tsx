@@ -35,9 +35,13 @@ import { MoonPayProvider } from 'context/MoonpayProvider'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
 import { RelayKitProviderWrapper } from 'components/providers/RelayKitProviderWrapper'
 import { Barlow, Chivo } from 'next/font/google'
+import { Porto } from 'porto'
+
+Porto.create()
 
 export const chivo = Chivo({
   weight: ['700', '800'],
+  style: ['italic'],
   display: 'swap',
   subsets: ['latin'],
   variable: '--font-chivo'

@@ -1,5 +1,39 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.2
+
+### Patch Changes
+
+- e7d50bb: Porto wallet compatibility
+
+## 4.0.1
+
+### Patch Changes
+
+- 41d48e1: Remove custom fonts from ui kit base theme
+- Updated dependencies [dd8a006]
+  - @relayprotocol/relay-sdk@2.4.3
+  - @relayprotocol/relay-kit-hooks@2.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- 581937b: Upgrade to React 19
+
+### Patch Changes
+
+- Updated dependencies [581937b]
+  - @relayprotocol/relay-design-system@1.0.0
+  - @relayprotocol/relay-kit-hooks@2.0.0
+
+## 3.0.3
+
+### Patch Changes
+
+- 8dc4d4b: Switch to using queryQuote instead of useQuote hook
+- dc26d7b: Add test ids for automation
+
 ## 3.0.2
 
 ### Patch Changes

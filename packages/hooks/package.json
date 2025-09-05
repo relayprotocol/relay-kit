@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-kit-hooks",
-  "version": "1.13.0",
+  "version": "2.0.1",
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
@@ -43,15 +43,15 @@
     "typescript-eslint": "^7.13.1"
   },
   "peerDependencies": {
-    "react": "^18.0",
-    "react-dom": "^18.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "viem": ">=2.26.0",
     "@tanstack/react-query": ">=5.0.0"
   },
   "dependencies": {
     "@relayprotocol/relay-sdk": "workspace:*",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "axios": "^1.7.2"
   },
   "keywords": [

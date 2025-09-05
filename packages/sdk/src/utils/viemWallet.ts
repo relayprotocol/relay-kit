@@ -199,7 +199,11 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           chainId
         })
 
-        return capabilities?.atomicBatch?.supported
+        return (
+          capabilities?.atomicBatch?.supported ??
+          (capabilities.atomic?.status &&
+            capabilities.atomic.status === 'supported')
+        )
       } catch {
         return false
       }

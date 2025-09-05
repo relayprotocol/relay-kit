@@ -20,9 +20,9 @@ import {
 } from '../../../utils/relayTransaction.js'
 import type { Token } from '../../../types/index.js'
 import {
-  useQuote,
   useRequests,
-  useExecutionStatus
+  useExecutionStatus,
+  queryQuote
 } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '../../../hooks/index.js'
 import { EventNames } from '../../../constants/events.js'
@@ -34,7 +34,6 @@ import {
   extractQuoteId
 } from '../../../utils/quote.js'
 import { getDeadAddress } from '@relayprotocol/relay-sdk'
-import { useQueryClient } from '@tanstack/react-query'
 import { bitcoin } from '../../../utils/bitcoin.js'
 import { errorToJSON } from '../../../utils/errors.js'
 import { sha256 } from '../../../utils/hashing.js'
@@ -52,7 +51,7 @@ export type TxHashes = { txHash: string; chainId: number }[]
 export type ChildrenProps = {
   progressStep: TransactionProgressStep
   setProgressStep: Dispatch<SetStateAction<TransactionProgressStep>>
-  quote: ReturnType<typeof useQuote>['data']
+  quote?: Execute | null
   isFetchingQuote: boolean
   quoteError: Error | null
   swapError: Error | null
@@ -83,8 +82,8 @@ type Props = {
   invalidateBalanceQueries: () => void
   children: (props: ChildrenProps) => ReactNode
   onSuccess?: (
-    quote: ReturnType<typeof useQuote>['data'],
-    executionStatus: ReturnType<typeof useExecutionStatus>['data']
+    quote?: Execute | null,
+    executionStatus?: ReturnType<typeof useExecutionStatus>['data']
   ) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
@@ -105,7 +104,9 @@ export const DepositAddressModalRenderer: FC<Props> = ({
   onAnalyticEvent,
   onSwapError
 }) => {
-  const queryClient = useQueryClient()
+  const [quoteData, setQuoteData] = useState<Execute | null>(null)
+  const [fetchingQuote, setFetchingQuote] = useState(false)
+  const [quoteError, setQuoteError] = useState<Error | null>(null)
   const [progressStep, setProgressStep] = useState(
     TransactionProgressStep.WaitingForDeposit
   )
@@ -115,103 +116,8 @@ export const DepositAddressModalRenderer: FC<Props> = ({
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const { connector } = useAccount()
   const deadAddress = getDeadAddress(fromChain?.vmType, fromChain?.id)
-  const quoteParameters: Parameters<typeof useQuote>['2'] =
-    fromToken && toToken
-      ? {
-          user: deadAddress,
-          originChainId: fromToken.chainId,
-          destinationChainId: toToken.chainId,
-          originCurrency: fromToken.address,
-          destinationCurrency: toToken.address,
-          recipient: recipient as string,
-          tradeType: 'EXACT_INPUT',
-          appFees: providerOptionsContext.appFees,
-          amount: parseUnits(
-            debouncedInputAmountValue,
-            fromToken.decimals
-          ).toString(),
-          referrer: relayClient?.source ?? undefined,
-          useDepositAddress: true
-        }
-      : undefined
-  const {
-    data: quoteData,
-    isLoading: isFetchingQuote,
-    isRefetching,
-    error: quoteError,
-    queryKey
-  } = useQuote(
-    relayClient ? relayClient : undefined,
-    undefined,
-    quoteParameters,
-    (options, config) => {
-      const interval = get15MinuteInterval()
-      const quoteRequestId = sha256({ ...options, interval })
-      onAnalyticEvent?.(EventNames.QUOTE_REQUESTED, {
-        parameters: options,
-        httpConfig: config,
-        quote_request_id: quoteRequestId,
-        chain_id_in: options?.originChainId,
-        chain_id_out: options?.destinationChainId
-      })
-    },
-    ({ steps, details }, options) => {
-      const interval = get15MinuteInterval()
-      const quoteRequestId = sha256({ ...options, interval })
-      onAnalyticEvent?.(EventNames.QUOTE_RECEIVED, {
-        parameters: options,
-        wallet_connector: connector?.name,
-        quote_id: steps ? extractQuoteId(steps) : undefined,
-        quote_request_id: quoteRequestId,
-        amount_in: details?.currencyIn?.amountFormatted,
-        amount_in_raw: details?.currencyIn?.amount,
-        currency_in: details?.currencyIn?.currency?.symbol,
-        chain_id_in: details?.currencyIn?.currency?.chainId,
-        amount_out: details?.currencyOut?.amountFormatted,
-        amount_out_raw: details?.currencyOut?.amount,
-        currency_out: details?.currencyOut?.currency?.symbol,
-        chain_id_out: details?.currencyOut?.currency?.chainId,
-        slippage_tolerance_destination_percentage:
-          details?.slippageTolerance?.destination?.percent,
-        slippage_tolerance_origin_percentage:
-          details?.slippageTolerance?.origin?.percent,
-        steps
-      })
-    },
-    {
-      enabled: Boolean(
-        open &&
-          progressStep === TransactionProgressStep.WaitingForDeposit &&
-          relayClient &&
-          debouncedInputAmountValue &&
-          debouncedInputAmountValue.length > 0 &&
-          Number(debouncedInputAmountValue) !== 0 &&
-          fromToken !== undefined &&
-          toToken !== undefined
-      ),
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchInterval: false,
-      refetchOnMount: false,
-      retryOnMount: false,
-      staleTime: Infinity
-    },
-    (e: any) => {
-      const errorMessage = errorToJSON(
-        e?.response?.data?.message ? new Error(e?.response?.data?.message) : e
-      )
-      const interval = get15MinuteInterval()
-      const quoteRequestId = sha256({ ...quoteParameters, interval })
-      onAnalyticEvent?.(EventNames.QUOTE_ERROR, {
-        wallet_connector: connector?.name,
-        error_message: errorMessage,
-        parameters: quoteParameters,
-        quote_request_id: quoteRequestId
-      })
-    }
-  )
 
-  const quote = isFetchingQuote || isRefetching ? undefined : quoteData
+  const quote = fetchingQuote ? undefined : quoteData
 
   const requestId = useMemo(
     () => extractDepositRequestId(quote?.steps as Execute['steps']),
@@ -229,10 +135,93 @@ export const DepositAddressModalRenderer: FC<Props> = ({
         onAnalyticEvent?.(EventNames.DEPOSIT_ADDRESS_MODAL_CLOSED)
       }
       setSwapError(null)
-      queryClient.invalidateQueries({ queryKey })
+      setQuoteData(null)
+      setFetchingQuote(false)
+      setQuoteError(null)
     } else {
       setProgressStep(TransactionProgressStep.WaitingForDeposit)
       onAnalyticEvent?.(EventNames.DEPOSIT_ADDRESS_MODAL_OPEN)
+      const quoteParameters: Parameters<typeof queryQuote>['1'] =
+        fromToken && toToken
+          ? {
+              user: deadAddress,
+              originChainId: fromToken.chainId,
+              destinationChainId: toToken.chainId,
+              originCurrency: fromToken.address,
+              destinationCurrency: toToken.address,
+              recipient: recipient as string,
+              tradeType: 'EXACT_INPUT',
+              appFees: providerOptionsContext.appFees,
+              amount: parseUnits(
+                debouncedInputAmountValue,
+                fromToken.decimals
+              ).toString(),
+              referrer: relayClient?.source ?? undefined,
+              useDepositAddress: true
+            }
+          : undefined
+      const interval = get15MinuteInterval()
+      const quoteRequestId = sha256({ ...quoteParameters, interval })
+      onAnalyticEvent?.(EventNames.QUOTE_REQUESTED, {
+        parameters: quoteParameters,
+        quote_request_id: quoteRequestId,
+        chain_id_in: quoteParameters?.originChainId,
+        chain_id_out: quoteParameters?.destinationChainId
+      })
+      queryQuote(relayClient?.baseApiUrl, quoteParameters, {
+        headers: {
+          'relay-sdk-version': relayClient?.version ?? 'unknown',
+          'relay-kit-ui-version': relayClient?.uiVersion ?? 'unknown'
+        }
+      })
+        .then((quote) => {
+          setFetchingQuote(false)
+          if (!open) {
+            return
+          }
+          setQuoteData(quote as Execute)
+          const interval = get15MinuteInterval()
+          const quoteRequestId = sha256({ ...quoteParameters, interval })
+          onAnalyticEvent?.(EventNames.QUOTE_RECEIVED, {
+            parameters: quoteParameters,
+            wallet_connector: connector?.name,
+            quote_id: quote.steps ? extractQuoteId(quote.steps) : undefined,
+            quote_request_id: quoteRequestId,
+            amount_in: quote.details?.currencyIn?.amountFormatted,
+            amount_in_raw: quote.details?.currencyIn?.amount,
+            currency_in: quote.details?.currencyIn?.currency?.symbol,
+            chain_id_in: quote.details?.currencyIn?.currency?.chainId,
+            amount_out: quote.details?.currencyOut?.amountFormatted,
+            amount_out_raw: quote.details?.currencyOut?.amount,
+            currency_out: quote.details?.currencyOut?.currency?.symbol,
+            chain_id_out: quote.details?.currencyOut?.currency?.chainId,
+            slippage_tolerance_destination_percentage:
+              quote.details?.slippageTolerance?.destination?.percent,
+            slippage_tolerance_origin_percentage:
+              quote.details?.slippageTolerance?.origin?.percent,
+            steps: quote.steps
+          })
+        })
+        .catch((e) => {
+          setFetchingQuote(false)
+          if (!open) {
+            return
+          }
+          const errorMessage = errorToJSON(
+            e?.response?.data?.message
+              ? new Error(e?.response?.data?.message)
+              : e
+          )
+          const interval = get15MinuteInterval()
+          const quoteRequestId = sha256({ ...quoteParameters, interval })
+          onAnalyticEvent?.(EventNames.QUOTE_ERROR, {
+            wallet_connector: connector?.name,
+            error_message: errorMessage,
+            parameters: quoteParameters,
+            quote_request_id: quoteRequestId
+          })
+          setQuoteError(e)
+        })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
@@ -371,7 +360,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
         progressStep,
         setProgressStep,
         quote,
-        isFetchingQuote: isFetchingQuote || isRefetching,
+        isFetchingQuote: fetchingQuote,
         quoteError,
         swapError,
         setSwapError,
