@@ -247,29 +247,17 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
       chainId: number
     ): Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }> => {
       if (!wallet.account) {
-        console.log('[ViemWallet] isEOA: No wallet account')
         return { isEOA: false, isEIP7702Delegated: false }
       }
 
       try {
-        console.log(
-          '[ViemWallet] isEOA: Starting detection for chainId:',
-          chainId,
-          'address:',
-          wallet.account.address
-        )
-        const startTime = Date.now()
-
         // First check wallet capabilities for smart wallet features
         let hasSmartWalletCapabilities = false
         try {
-          console.log('[ViemWallet] isEOA: Checking wallet capabilities...')
-          const capabilitiesStartTime = Date.now()
           const capabilities = await wallet.getCapabilities({
             account: wallet.account,
             chainId
           })
-          const capabilitiesDuration = Date.now() - capabilitiesStartTime
 
           hasSmartWalletCapabilities = Boolean(
             capabilities?.atomicBatch?.supported ||
@@ -277,41 +265,15 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
               capabilities?.auxiliaryFunds?.supported ||
               capabilities?.sessionKeys?.supported
           )
-
-          console.log(
-            '[ViemWallet] isEOA: Capabilities check completed in',
-            `${capabilitiesDuration}ms`,
-            {
-              capabilities,
-              hasSmartWalletCapabilities,
-              atomicBatch: capabilities?.atomicBatch?.supported,
-              paymasterService: capabilities?.paymasterService?.supported,
-              auxiliaryFunds: capabilities?.auxiliaryFunds?.supported,
-              sessionKeys: capabilities?.sessionKeys?.supported
-            }
-          )
-        } catch (capabilitiesError) {
-          console.log(
-            '[ViemWallet] isEOA: Capabilities check failed:',
-            capabilitiesError
-          )
-        }
+        } catch (capabilitiesError) {}
 
         const client = getClient()
         const chain = client.chains.find((chain) => chain.id === chainId)
         const rpcUrl = chain?.httpRpcUrl
 
         if (!chain) {
-          console.error('[ViemWallet] isEOA: Chain not found:', chainId)
           throw new Error(`Chain ${chainId} not found in relay client`)
         }
-
-        console.log(
-          '[ViemWallet] isEOA: Using RPC URL:',
-          rpcUrl,
-          'for chain:',
-          chain.name || chain.id
-        )
 
         const viemClient = createPublicClient({
           chain: chain?.viemChain,
@@ -320,19 +282,10 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
 
         let code
         try {
-          const getCodeStartTime = Date.now()
           code = await viemClient.getCode({
             address: wallet.account.address
           })
-          const getCodeDuration = Date.now() - getCodeStartTime
-          console.log(
-            '[ViemWallet] isEOA: getCode completed in',
-            `${getCodeDuration}ms`,
-            'result:',
-            code
-          )
         } catch (getCodeError) {
-          console.error('[ViemWallet] isEOA: getCode failed:', getCodeError)
           throw getCodeError
         }
 
@@ -343,28 +296,9 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
         const isSmartWallet =
           hasSmartWalletCapabilities || hasCode || isEIP7702Delegated
         const isEOA = !isSmartWallet
-        const totalDuration = Date.now() - startTime
-
-        console.log('[ViemWallet] isEOA: Detection complete:', {
-          chainId,
-          address: wallet.account.address,
-          code,
-          hasCode,
-          isEIP7702Delegated,
-          hasSmartWalletCapabilities,
-          isSmartWallet,
-          isEOA,
-          totalDuration: `${totalDuration}ms`,
-          rpcUrl
-        })
 
         return { isEOA, isEIP7702Delegated }
       } catch (error) {
-        console.error('[ViemWallet] isEOA: Error occurred:', {
-          chainId,
-          address: wallet.account?.address,
-          error: error instanceof Error ? error.message : error
-        })
         // Return false (smart wallet) as safe default when detection fails
         return { isEOA: false, isEIP7702Delegated: false }
       }
