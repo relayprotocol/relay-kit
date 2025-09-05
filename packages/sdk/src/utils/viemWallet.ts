@@ -243,16 +243,60 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
 
       return id
     },
-    isEOA: async (chainId: number): Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }> => {
+    isEOA: async (
+      chainId: number
+    ): Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }> => {
       if (!wallet.account) {
         console.log('[ViemWallet] isEOA: No wallet account')
         return { isEOA: false, isEIP7702Delegated: false }
       }
 
       try {
-        console.log('[ViemWallet] isEOA: Starting detection for chainId:', chainId, 'address:', wallet.account.address)
+        console.log(
+          '[ViemWallet] isEOA: Starting detection for chainId:',
+          chainId,
+          'address:',
+          wallet.account.address
+        )
         const startTime = Date.now()
-        
+
+        // First check wallet capabilities for smart wallet features
+        let hasSmartWalletCapabilities = false
+        try {
+          console.log('[ViemWallet] isEOA: Checking wallet capabilities...')
+          const capabilitiesStartTime = Date.now()
+          const capabilities = await wallet.getCapabilities({
+            account: wallet.account,
+            chainId
+          })
+          const capabilitiesDuration = Date.now() - capabilitiesStartTime
+
+          hasSmartWalletCapabilities = Boolean(
+            capabilities?.atomicBatch?.supported ||
+              capabilities?.paymasterService?.supported ||
+              capabilities?.auxiliaryFunds?.supported ||
+              capabilities?.sessionKeys?.supported
+          )
+
+          console.log(
+            '[ViemWallet] isEOA: Capabilities check completed in',
+            `${capabilitiesDuration}ms`,
+            {
+              capabilities,
+              hasSmartWalletCapabilities,
+              atomicBatch: capabilities?.atomicBatch?.supported,
+              paymasterService: capabilities?.paymasterService?.supported,
+              auxiliaryFunds: capabilities?.auxiliaryFunds?.supported,
+              sessionKeys: capabilities?.sessionKeys?.supported
+            }
+          )
+        } catch (capabilitiesError) {
+          console.log(
+            '[ViemWallet] isEOA: Capabilities check failed:',
+            capabilitiesError
+          )
+        }
+
         const client = getClient()
         const chain = client.chains.find((chain) => chain.id === chainId)
         const rpcUrl = chain?.httpRpcUrl
@@ -262,7 +306,12 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           throw new Error(`Chain ${chainId} not found in relay client`)
         }
 
-        console.log('[ViemWallet] isEOA: Using RPC URL:', rpcUrl, 'for chain:', chain.name || chain.id)
+        console.log(
+          '[ViemWallet] isEOA: Using RPC URL:',
+          rpcUrl,
+          'for chain:',
+          chain.name || chain.id
+        )
 
         const viemClient = createPublicClient({
           chain: chain?.viemChain,
@@ -276,19 +325,24 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
             address: wallet.account.address
           })
           const getCodeDuration = Date.now() - getCodeStartTime
-          console.log('[ViemWallet] isEOA: getCode completed in', `${getCodeDuration}ms`, 'result:', code)
+          console.log(
+            '[ViemWallet] isEOA: getCode completed in',
+            `${getCodeDuration}ms`,
+            'result:',
+            code
+          )
         } catch (getCodeError) {
           console.error('[ViemWallet] isEOA: getCode failed:', getCodeError)
           throw getCodeError
         }
 
-        // Comprehensive smart wallet detection logic:
-        // 1. No code = EOA (explicitDeposit=false)
-        // 2. EIP-7702 delegated wallet (0xef01 prefix) = Smart Wallet (explicitDeposit=true)
-        // 3. Any other bytecode = Smart Contract Wallet (explicitDeposit=true)
         const hasCode = Boolean(code && code !== '0x')
-        const isEIP7702Delegated = Boolean(code && code.toLowerCase().startsWith('0xef01'))
-        const isEOA = !hasCode || isEIP7702Delegated
+        const isEIP7702Delegated = Boolean(
+          code && code.toLowerCase().startsWith('0xef01')
+        )
+        const isSmartWallet =
+          hasSmartWalletCapabilities || hasCode || isEIP7702Delegated
+        const isEOA = !isSmartWallet
         const totalDuration = Date.now() - startTime
 
         console.log('[ViemWallet] isEOA: Detection complete:', {
@@ -297,6 +351,8 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           code,
           hasCode,
           isEIP7702Delegated,
+          hasSmartWalletCapabilities,
+          isSmartWallet,
           isEOA,
           totalDuration: `${totalDuration}ms`,
           rpcUrl
