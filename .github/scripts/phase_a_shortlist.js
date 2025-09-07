@@ -62,7 +62,13 @@ function isRedirect(stderr) {
   const tldFile = (process.env.TLD_FILE || "").trim();
   const userAgent = (process.env.USER_AGENT || DEFAULT_UA).trim();
 
-  const baseArgs = ["--registered", "--mx", "--format", "json", "--threads", THREADS];
+  const TIMEOUT = String(process.env.TIMEOUT_SECS || "60");
+  const baseArgs = [
+    "--registered","--mx","--format","json",
+    "--threads", THREADS,
+    "--timeout", TIMEOUT,
+    /* plus --lsh or --phash where applicable */
+  ];
   if (tldFile && fs.existsSync(tldFile)) baseArgs.push("--tld", tldFile);
   if (userAgent) baseArgs.push("--useragent", userAgent);
 
