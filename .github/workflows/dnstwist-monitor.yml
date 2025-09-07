@@ -16,34 +16,36 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     env:
-      # pulled from GitHub Secrets (add these in repo → Settings → Secrets and variables → Actions)
+      # Secrets (set in Settings > Secrets and variables > Actions)
       WATCH_DOMAINS: ${{ secrets.WATCH_DOMAINS }}
       RISKY_KEYWORDS: ${{ secrets.RISKY_KEYWORDS }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      # non-secret tuning knobs (safe to keep public)
-      LSH_THRESHOLD: "75"       # HTML similarity %
-      PHASH_THRESHOLD: "85"     # Screenshot similarity %
-      SHORTLIST_CAP: "120"      # Max domains to screenshot per run
-      TLD_FILE: "tlds.txt"      # Optional file in repo (e.g., ".com,.io,.dev" each on its own line)
+      # Public knobs
+      LSH_THRESHOLD: "75"
+      PHASH_THRESHOLD: "85"
+      SHORTLIST_CAP: "120"
+      TLD_FILE: "tlds.txt"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Chrome
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Chrome (for pHash screenshots)
         id: setup-chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Show Chrome version
-        run: "${{ steps.setup-chrome.outputs.chrome-path }}" --version
-
-      - name: Set up Python
+      - name: Setup Python (to install DNSTwist CLI)
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Install DNSTwist (full features)
+      - name: Install DNSTwist
         run: |
           python -m pip install --upgrade pip
           pip install "dnstwist[full]"
@@ -53,134 +55,27 @@ jobs:
         with:
           path: .dnstwist-cache
           key: dnstwist-${{ github.ref_name }}
-          restore-keys: dnstwist-
+          restore-keys: |
+            dnstwist-
 
       - name: Ensure cache dir
         run: mkdir -p .dnstwist-cache
 
-      # ---------------- Phase A: fast shortlist (registered + mx + LSH) ----------------
-      - name: Generate shortlist (fast pass)
+      - name: Phase A - shortlist with LSH
         id: shortlist
-        shell: python
-        env:
-          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: |
-          import json, os, subprocess, pathlib, sys
+        run: node .github/scripts/phase_a_shortlist.js
 
-          wd = (os.environ.get("WATCH_DOMAINS") or "").strip()
-          if not wd:
-              print("ERROR: WATCH_DOMAINS secret is empty.", file=sys.stderr); sys.exit(1)
-          domains = [d.strip() for d in wd.split(",") if d.strip()]
-
-          tld_file = os.environ.get("TLD_FILE","").strip()
-          args_common = ["--registered","--mx","--format","json","--lsh"]
-          if tld_file and pathlib.Path(tld_file).exists():
-              args_common += ["--tld", tld_file]
-
-          results=[]
-          for d in domains:
-            cmd=["dnstwist",*args_common,d]
-            r = subprocess.run(cmd, capture_output=True, text=True)
-            if r.returncode==0 and r.stdout.strip():
-              try: results.extend(json.loads(r.stdout))
-              except Exception: pass
-
-          active=[r for r in results if (r.get("dns_a") or r.get("mx"))]
-
-          cache = pathlib.Path(".dnstwist-cache/active.json")
-          prev = json.loads(cache.read_text()) if cache.exists() else []
-          prev_set = {x.get("domain") for x in prev}
-
-          risky_words = [w.strip().lower() for w in (os.environ.get("RISKY_KEYWORDS") or "").split(",") if w.strip()]
-          lsh_threshold = int(os.environ.get("LSH_THRESHOLD","75"))
-
-          def risky_name(dom):
-              s=(dom or "").lower()
-              return any(k in s for k in risky_words)
-
-          candidates=[]
-          for r in active:
-            dom=r.get("domain")
-            if not dom: continue
-            sim = r.get("http_similarity") or -1
-            if dom not in prev_set or risky_name(dom) or sim>=lsh_threshold:
-              candidates.append(r)
-
-          cap = int(os.environ.get("SHORTLIST_CAP","120"))
-          shortlist = candidates[:cap]
-
-          pathlib.Path("phaseA_results.json").write_text(json.dumps(results))
-          pathlib.Path("shortlist.json").write_text(json.dumps(shortlist))
-          cache.write_text(json.dumps(active))
-
-          print(f"shortlist_count={len(shortlist)}")
-          with open(os.environ["GITHUB_OUTPUT"],"a") as gh:
-              gh.write(f"shortlist_count={len(shortlist)}\n")
-
-      # ---------------- Phase B: pHash screenshots only on the shortlist ----------------
-      - name: pHash shortlist (slow pass, bounded)
+      - name: Phase B - pHash shortlist
         if: steps.shortlist.outputs.shortlist_count != '0'
-        shell: python
         env:
           CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: |
-          import json, os, subprocess, pathlib
-          items=json.loads(pathlib.Path("shortlist.json").read_text())
-          out=[]
-          for row in items:
-            dom=row["domain"]
-            cmd=["dnstwist","--registered","--mx","--lsh","--phash","--format","json",dom]
-            r=subprocess.run(cmd, capture_output=True, text=True)
-            if r.returncode==0 and r.stdout.strip():
-              try: out.extend(json.loads(r.stdout))
-              except Exception: pass
-          pathlib.Path("phaseB_results.json").write_text(json.dumps(out))
+        run: node .github/scripts/phash_shortlist.js
 
-      # ---------------- Filter + Alert ----------------
-      - name: Build findings & decide alert
+      - name: Build findings
         id: filter
-        shell: python
-        run: |
-          import json, os, pathlib
-          lsh_thr=int(os.environ.get("LSH_THRESHOLD","75"))
-          phash_thr=int(os.environ.get("PHASH_THRESHOLD","85"))
-          risky=[w.strip().lower() for w in (os.environ.get("RISKY_KEYWORDS") or "").split(",") if w.strip()]
+        run: node .github/scripts/build_findings.js
 
-          def risky_name(d):
-              s=(d or "").lower()
-              return any(k in s for k in risky)
-
-          A=json.loads(pathlib.Path("phaseA_results.json").read_text()) if pathlib.Path("phaseA_results.json").exists() else []
-          B=json.loads(pathlib.Path("phaseB_results.json").read_text()) if pathlib.Path("phaseB_results.json").exists() else []
-
-          def index(rows):
-              by={}
-              for r in rows:
-                dom=r.get("domain")
-                if not dom: continue
-                by.setdefault(dom,{}).update(r)
-              return by
-
-          m=index(A)
-          for k,v in index(B).items():
-            m.setdefault(k,{}).update(v)
-
-          findings=[]
-          for dom,row in m.items():
-            active = bool(row.get("dns_a") or row.get("mx"))
-            html = row.get("http_similarity")
-            img  = row.get("screenshot_similarity") or row.get("phash_similarity") or row.get("page_similarity")
-            if active and (risky_name(dom) or (html is not None and html>=lsh_thr) or (img is not None and img>=phash_thr)):
-              findings.append({"domain":dom,"html_similarity":html,"image_similarity":img,
-                               "dns_a":row.get("dns_a") or [],"mx":row.get("mx") or []})
-
-          pathlib.Path("findings.json").write_text(json.dumps(findings, indent=2))
-          has = "true" if findings else "false"
-          print(f"has_findings={has}")
-          with open(os.environ["GITHUB_OUTPUT"],"a") as gh: gh.write(f"has_findings={has}\n")
-
-      # Keep artifacts off in public repos if you prefer; otherwise keep a short retention
-      - name: Upload artifacts (kept 2 days)
+      - name: Upload artifacts (optional, kept 2 days)
         if: steps.filter.outputs.has_findings == 'true'
         uses: actions/upload-artifact@v4
         with:
@@ -192,43 +87,6 @@ jobs:
             shortlist.json
             findings.json
 
-      - name: Alert Slack (summary)
+      - name: Slack notify (if findings)
         if: steps.filter.outputs.has_findings == 'true'
-        uses: slackapi/slack-github-action@v2
-        with:
-          webhook-url: ${{ env.SLACK_WEBHOOK_URL }}
-          payload: |
-            {
-              "text": ":rotating_light: DNSTwist alert: potential lookalikes found",
-              "blocks": [
-                { "type": "header", "text": { "type": "plain_text", "text": "DNSTwist: Lookalikes Detected" } },
-                { "type": "section", "fields": [
-                  { "type": "mrkdwn", "text": "*Repo:* <https://github.com/${{ github.repository }}|${{ github.repository }}>" },
-                  { "type": "mrkdwn", "text": "*Run:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}>" }
-                ]}
-              ]
-            }
-
-      - name: Append findings
-        if: steps.filter.outputs.has_findings == 'true'
-        run: |
-          python - << 'PY'
-import json, os, pathlib
-items=json.loads(pathlib.Path("findings.json").read_text())
-lines=[]
-for it in items[:30]:
-  h=it.get("html_similarity"); i=it.get("image_similarity")
-  a=", ".join(it.get("dns_a") or []); mx=", ".join([m.get("exchange","") if isinstance(m,dict) else str(m) for m in (it.get("mx") or [])])
-  parts=[]
-  if h is not None: parts.append(f"HTML {h}%")
-  if i is not None: parts.append(f"pHash {i}%")
-  sim=(" • "+ " / ".join(parts)) if parts else ""
-  lines.append(f"• `{it['domain']}`{sim}\n    A: {a or '—'}  |  MX: {mx or '—'}")
-text="*Top matches (HTML≥{} / pHash≥{}):*\n".format(os.getenv("LSH_THRESHOLD"), os.getenv("PHASH_THRESHOLD"))+"\n".join(lines)
-payload={"text":"DNSTwist details","blocks":[{"type":"section","text":{"type":"mrkdwn","text":text}}]}
-pathlib.Path("slack_details.json").write_text(json.dumps(payload))
-PY
-          curl -X POST -H 'Content-type: application/json' \
-            --data @slack_details.json "${SLACK_WEBHOOK_URL}"
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+        run: node .github/scripts/slack_notify.js
