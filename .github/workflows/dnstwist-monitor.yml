@@ -30,6 +30,7 @@ jobs:
       ALLOWLIST: ${{ secrets.ALLOWLIST }}  # optional: e.g. "relay.dev, relay.io"
       THREADS: "6"                  # we already added; keeps scans polite
       TIMEOUT_SECS: "15"
+      NAME_EDIT_DISTANCE_MAX: "1"
 
     steps:
       - name: Checkout
