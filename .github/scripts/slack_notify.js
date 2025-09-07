@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-/* Post a compact summary to Slack via Incoming Webhook */
-const fsp = require("node:fs/promises");
-const fs = require("node:fs");
+// Post a compact summary to Slack via Incoming Webhook (ESM)
+
+import fs from "node:fs";
+import { promises as fsp } from "node:fs";
 
 (async () => {
   const webhook = (process.env.SLACK_WEBHOOK_URL || "").trim();
@@ -39,4 +40,7 @@ const fs = require("node:fs");
     process.exit(1);
   }
   console.log("Slack notified.");
-})().catch((e) => { console.error(e); process.exit(1); });
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
