@@ -26,6 +26,10 @@ jobs:
       PHASH_THRESHOLD: "85"
       SHORTLIST_CAP: "120"
       TLD_FILE: "tlds.txt"
+      MIN_SCORE: "2"                # require at least this score to alert
+      ALLOWLIST: ${{ secrets.ALLOWLIST }}  # optional: e.g. "relay.dev, relay.io"
+      THREADS: "6"                  # we already added; keeps scans polite
+      TIMEOUT_SECS: "15"
 
     steps:
       - name: Checkout
@@ -75,17 +79,24 @@ jobs:
         id: filter
         run: node .github/scripts/build_findings.js
 
-      - name: Upload artifacts (optional, kept 2 days)
+      - name: HTTP diagnostics
+        if: steps.filter.outputs.has_findings == 'true'
+        run: node .github/scripts/postcheck_http.js
+
+      - name: RDAP enrich (registrar/abuse)
+        if: steps.filter.outputs.has_findings == 'true'
+        run: node .github/scripts/enrich_rdap.js
+
+      - name: Upload diagnostics (2 days)
         if: steps.filter.outputs.has_findings == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: dnstwist-results
+          name: dnstwist-diagnostics
           retention-days: 2
           path: |
-            phaseA_results.json
-            phaseB_results.json
-            shortlist.json
+            http_diagnostics.json
             findings.json
+            findings_enriched.json
 
       - name: Slack notify (if findings)
         if: steps.filter.outputs.has_findings == 'true'

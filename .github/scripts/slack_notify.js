@@ -1,33 +1,31 @@
 #!/usr/bin/env node
-// Post a compact summary to Slack via Incoming Webhook (ESM)
+// Post summary to Slack with registrar/abuse if available (ESM)
 
 import fs from "node:fs";
 import { promises as fsp } from "node:fs";
 
 (async () => {
   const webhook = (process.env.SLACK_WEBHOOK_URL || "").trim();
-  if (!webhook) {
-    console.error("SLACK_WEBHOOK_URL is empty");
-    process.exit(1);
-  }
+  if (!webhook) { console.error("SLACK_WEBHOOK_URL is empty"); process.exit(1); }
 
-  if (!fs.existsSync("findings.json")) {
-    console.log("No findings.json; nothing to send.");
-    return;
-  }
+  const file = fs.existsSync("findings_enriched.json") ? "findings_enriched.json"
+             : fs.existsSync("findings.json")          ? "findings.json"
+             : null;
+  if (!file) { console.log("No findings file; nothing to send."); return; }
 
-  const items = JSON.parse(await fsp.readFile("findings.json", "utf8"));
+  const items = JSON.parse(await fsp.readFile(file, "utf8"));
+
   const lines = items.slice(0, 20).map((it) => {
     const parts = [];
     if (it.html_similarity != null) parts.push(`HTML ${it.html_similarity}%`);
     if (it.image_similarity != null) parts.push(`pHash ${it.image_similarity}%`);
-    const sim = parts.length ? ` (${parts.join(" / ")})` : "";
-    return `- ${it.domain}${sim}`;
+    if (it.registrar) parts.push(`Registrar: ${it.registrar}`);
+    if (it.abuse_emails?.length) parts.push(`Abuse: ${it.abuse_emails.join(", ")}`);
+    const tail = parts.length ? ` (${parts.join(" • ")})` : "";
+    return `- ${it.domain}${tail}`;
   });
 
-  const body = {
-    text: `DNSTwist: ${items.length} potential lookalikes found.\n${lines.join("\n")}`,
-  };
+  const body = { text: `DNSTwist: ${items.length} potential lookalikes found.\n${lines.join("\n")}` };
 
   const res = await fetch(webhook, {
     method: "POST",
@@ -40,7 +38,4 @@ import { promises as fsp } from "node:fs";
     process.exit(1);
   }
   console.log("Slack notified.");
-})().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+})().catch((e)=>{ console.error(e); process.exit(1); });
