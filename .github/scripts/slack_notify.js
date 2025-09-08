@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Send a labeled Slack summary; link to the run page where screenshots artifact lives.
+// Send a labeled Slack summary with explicit "reasons" for each domain.
 
 import fs from "node:fs";
 import { promises as fsp } from "node:fs";
@@ -7,11 +7,12 @@ import { promises as fsp } from "node:fs";
 function tagsFromReasons(reasons = []) {
   const t = new Set();
   for (const r of reasons) {
-    if (/^img>?=/.test(r)) t.add("IMG");
-    if (/^html>?=/.test(r)) t.add("HTML");
+    if (/^img[>=]/i.test(r)) t.add("IMG");
+    if (/^html[>=]/i.test(r)) t.add("HTML");
     if (r.includes("name-edit")) t.add("NAME");
     if (r.includes("has-MX")) t.add("MX");
     if (r.includes("age≤")) t.add("NEW");
+    if (r.includes("LIVE")) t.add("LIVE");
     if (r.includes("path-200")) t.add("PATH");
     if (r.includes("risky-name")) t.add("KEYWORD");
     if (r.includes("known-bad")) t.add("OVERRIDE");
@@ -19,60 +20,102 @@ function tagsFromReasons(reasons = []) {
   return [...t];
 }
 
+function humanizeReasons(reasons = []) {
+  // Keep thresholds as-is; expand a few for readability.
+  return reasons.map(r => {
+    if (r.startsWith("img>=")) return r.replace("img>=", "Image similarity ≥");
+    if (r.startsWith("html>=")) return r.replace("html>=", "HTML similarity ≥");
+    if (r.startsWith("age≤")) return r.replace("age≤", "Domain age ≤ ");
+    if (r === "risky-name") return "Risky keyword in domain";
+    if (r === "has-MX") return "Has MX (can receive mail)";
+    if (r === "LIVE") return "Loaded successfully (HTTP 200)";
+    if (r === "name-edit≤1") return "Name very close (edit distance ≤ 1)";
+    return r;
+  });
+}
+
+async function readJson(p) {
+  try { return JSON.parse(await fsp.readFile(p, "utf8")); }
+  catch { return null; }
+}
+
 (async () => {
   const webhook = (process.env.SLACK_WEBHOOK_URL || "").trim();
-  if (!webhook) { console.error("SLACK_WEBHOOK_URL is empty"); process.exit(1); }
+  if (!webhook) {
+    console.error("SLACK_WEBHOOK_URL is empty");
+    process.exit(1);
+  }
 
-  const findingsFile = fs.existsSync("findings_enriched.json") ? "findings_enriched.json"
-                      : fs.existsSync("findings.json")          ? "findings.json"
-                      : null;
-  if (!findingsFile) { console.log("No findings file; nothing to send."); return; }
+  // Prefer enriched findings if available
+  const findings =
+    (await readJson("findings_enriched.json")) ??
+    (await readJson("findings.json")) ?? [];
 
-  const items = JSON.parse(await fsp.readFile(findingsFile, "utf8"));
-  const manifest = fs.existsSync("snapshots_manifest.json")
-    ? JSON.parse(await fsp.readFile("snapshots_manifest.json","utf8"))
-    : [];
-  const shots = new Map(manifest.map(m => [m.domain, m]));
+  if (!Array.isArray(findings) || findings.length === 0) {
+    console.log("No findings to send to Slack.");
+    return;
+  }
 
-  // Link to this run (users can click into Artifacts -> dnstwist-snaps)
-  const runUrl = process.env.RUN_URL
-    || `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+  // Optional extras for nicer details
+  const manifest = (await readJson("snapshots_manifest.json")) ?? [];
+  const diag = (await readJson("http_diagnostics.json")) ?? [];
+  const shotByDomain = new Map(manifest.map(m => [m.domain, m]));
+  const diagByDomain = new Map(diag.map(d => [d.domain, d]));
 
-  const lines = items.slice(0, 20).map((it) => {
+  const runUrl =
+    process.env.RUN_URL ||
+    `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+
+  // build message lines
+  const maxItems = Number(process.env.SLACK_MAX_ITEMS || 20);
+  const lines = findings.slice(0, maxItems).map(it => {
+    const tags = tagsFromReasons(it.reasons || []);
+    const why = humanizeReasons(it.reasons || []);
     const parts = [];
+
     if (it.html_similarity != null) parts.push(`HTML ${it.html_similarity}%`);
     if (it.image_similarity != null) parts.push(`pHash ${it.image_similarity}%`);
-
-    const tags = tagsFromReasons(it.reasons || []);
-    const tagStr = tags.length ? ` [${tags.join(",")}]` : "";
-
     if (it.registrar) parts.push(`Registrar: ${it.registrar}`);
     if (it.abuse_emails?.length) parts.push(`Abuse: ${it.abuse_emails.join(", ")}`);
 
-    const snap = shots.get(it.domain);
-    const snapNote = snap?.screenshot ? " • PNG saved" : "";
+    const shot = shotByDomain.get(it.domain);
+    const shotNote = shot?.screenshot ? " • PNG saved" : "";
 
-    return `- ${it.domain}${tagStr} (${parts.join(" • ")}${snapNote})`;
+    // try to show the URL we actually loaded (from diagnostics or snapshot manifest)
+    let liveUrl = shot?.url;
+    if (!liveUrl) {
+      const d = diagByDomain.get(it.domain);
+      const candidate =
+        d?.results?.flatMap(r => (r.probes || []).concat([r.https, r.http]).filter(Boolean)) ||
+        (d ? [d.https, d.http, ...(d.probes || [])].filter(Boolean) : []);
+      const good = candidate.find(x => x?.status === 200 && (x.length || 0) > 1500 && x.finalUrl);
+      liveUrl = good?.finalUrl;
+    }
+    const liveStr = liveUrl ? `\n    ↳ live: ${liveUrl}` : "";
+
+    const tagStr = tags.length ? ` [${tags.join(",")}]` : "";
+    const whyStr = why.length ? `\n    why: ${why.join(" • ")}` : "";
+
+    return `• ${it.domain}${tagStr} (${parts.join(" • ")}${shotNote})${whyStr}${liveStr}`;
   });
 
-  const body = {
-    text:
-`DNSTwist: ${items.length} potential lookalikes.
-${lines.join("\n")}
+  const header = `DNSTwist: ${findings.length} potential lookalike${findings.length === 1 ? "" : "s"}.`;
+  const footer = `\nScreenshots & diagnostics: ${runUrl}\n(Artifacts: dnstwist-snaps, dnstwist-diagnostics)`;
 
-Screenshots & diagnostics: ${runUrl}
-(Artifacts: dnstwist-snaps, dnstwist-diagnostics)`,
+  const payload = {
+    text: `${header}\n${lines.join("\n")}${footer}`
   };
 
   const res = await fetch(webhook, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload)
   });
+
   if (!res.ok) {
     const t = await res.text();
     console.error(`Slack webhook failed: ${res.status} ${t}`);
     process.exit(1);
   }
-  console.log("Slack notified.");
-})().catch((e)=>{ console.error(e); process.exit(1); });
+  console.log("Slack notified with reasons.");
+})().catch(e => { console.error(e); process.exit(1); });
