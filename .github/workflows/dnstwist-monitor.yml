@@ -20,6 +20,8 @@ jobs:
       WATCH_DOMAINS: ${{ secrets.WATCH_DOMAINS }}
       RISKY_KEYWORDS: ${{ secrets.RISKY_KEYWORDS }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      ALLOWLIST: ${{ secrets.ALLOWLIST }}  # optional: e.g. "relay.dev, relay.io"
 
       # Public knobs
       LSH_THRESHOLD: "75"
@@ -27,10 +29,10 @@ jobs:
       SHORTLIST_CAP: "120"
       TLD_FILE: "tlds.txt"
       MIN_SCORE: "2"                # require at least this score to alert
-      ALLOWLIST: ${{ secrets.ALLOWLIST }}  # optional: e.g. "relay.dev, relay.io"
       THREADS: "6"                  # we already added; keeps scans polite
       TIMEOUT_SECS: "15"
       NAME_EDIT_DISTANCE_MAX: "1"
+      SNAPSHOT_TOP_N: "8"
 
     steps:
       - name: Checkout
@@ -87,6 +89,23 @@ jobs:
       - name: RDAP enrich (registrar/abuse)
         if: steps.filter.outputs.has_findings == 'true'
         run: node .github/scripts/enrich_rdap.js
+
+      - name: Snapshot top suspects (PNG)
+        if: steps.filter.outputs.has_findings == 'true'
+        env:
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
+          SNAPSHOT_TOP_N: ${{ env.SNAPSHOT_TOP_N }}
+        run: node .github/scripts/snapshot_findings.js
+
+      - name: Upload screenshots (2 days)
+        if: steps.filter.outputs.has_findings == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dnstwist-snaps
+          retention-days: 2
+          path: |
+            snaps/*.png
+            snapshots_manifest.json
 
       - name: Upload diagnostics (2 days)
         if: steps.filter.outputs.has_findings == 'true'
