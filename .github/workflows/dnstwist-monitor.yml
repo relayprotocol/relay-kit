@@ -1,3 +1,17 @@
+name: DNSTwist Monitor
+
+on:
+  schedule:
+    - cron: "0 6,18 * * *"   # twice daily (UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dnstwist-monitor
+  cancel-in-progress: true
+
 jobs:
   scan:
     runs-on: ubuntu-latest
