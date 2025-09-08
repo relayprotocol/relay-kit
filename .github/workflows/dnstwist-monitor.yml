@@ -78,10 +78,6 @@ jobs:
           CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: node .github/scripts/phash_shortlist.js
 
-      - name: Build findings
-        id: filter
-        run: node .github/scripts/build_findings.js
-
       - name: HTTP diagnostics
         if: steps.filter.outputs.has_findings == 'true'
         run: node .github/scripts/postcheck_http.js
@@ -89,6 +85,10 @@ jobs:
       - name: RDAP enrich (registrar/abuse)
         if: steps.filter.outputs.has_findings == 'true'
         run: node .github/scripts/enrich_rdap.js
+
+      - name: Build findings
+        id: filter
+        run: node .github/scripts/build_findings.js
 
       - name: Install headless deps (Jammy/Noble)
         run: |
@@ -142,4 +142,8 @@ jobs:
 
       - name: Slack notify (if findings)
         if: steps.filter.outputs.has_findings == 'true'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ env.RUN_URL }}
+          SLACK_MAX_ITEMS: "20"
         run: node .github/scripts/slack_notify.js
