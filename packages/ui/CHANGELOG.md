@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.4
+
+### Patch Changes
+
+- d502596: Fix fee subsidization normalization
+
 ## 4.0.3
 
 ### Patch Changes
