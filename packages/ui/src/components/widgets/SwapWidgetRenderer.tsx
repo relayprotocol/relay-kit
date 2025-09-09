@@ -571,17 +571,39 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
+  const normalizedSponsoredTokens = useMemo(() => {
+    const chainVms = relayClient?.chains.reduce(
+      (chains, chain) => {
+        chains[chain.id] = chain.vmType as ChainVM
+        return chains
+      },
+      {} as Record<number, ChainVM>
+    )
+    return sponsoredTokens?.map((token) => {
+      const [chainId, address] = token.match(/^([^:]*):?(.*)$/)?.slice(1) ?? []
+      const chainVm = chainVms?.[Number(chainId)]
+      const normalizedAddress =
+        chainVm && chainVm === 'evm' ? address.toLowerCase() : address
+      return `${chainId}:${normalizedAddress}`
+    })
+  }, [sponsoredTokens, relayClient?.chains])
+
+  const normalizedToToken =
+    toChain?.vmType === 'evm'
+      ? `${toToken?.chainId}:${toToken?.address.toLowerCase()}`
+      : `${toToken?.chainId}:${toToken?.address}`
+  const normalizedFromToken =
+    fromChain?.vmType === 'evm'
+      ? `${fromToken?.chainId}:${fromToken?.address.toLowerCase()}`
+      : `${fromToken?.chainId}:${fromToken?.address}`
+
   const isGasSponsorshipEnabled =
-    sponsoredTokens &&
-    sponsoredTokens.length > 0 &&
+    normalizedSponsoredTokens &&
+    normalizedSponsoredTokens.length > 0 &&
     toToken &&
     fromToken &&
-    sponsoredTokens.includes(
-      `${toToken.chainId}:${toToken.address.toLowerCase()}`
-    ) &&
-    sponsoredTokens.includes(
-      `${fromToken.chainId}:${fromToken.address.toLowerCase()}`
-    )
+    normalizedSponsoredTokens.includes(normalizedToToken) &&
+    normalizedSponsoredTokens.includes(normalizedFromToken)
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     fromToken && toToken
