@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-hooks
 
+## 2.0.2
+
+### Patch Changes
+
+- 622c094: Fix base url for query quote function
+
 ## 2.0.1
 
 ### Patch Changes
