@@ -27,14 +27,13 @@ const useEOADetection = (
   const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${protocolVersion}:${chainId}:${walletId.current}`
 
   const shouldDetect = useMemo(() => {
-    return !!(
-      wallet?.isEOA &&
+    return (
       protocolVersion === 'preferV2' &&
-      chainId &&
+      chainId !== undefined &&
       wallet?.vmType === 'evm' &&
       chainVmType === 'evm'
     )
-  }, [wallet?.isEOA, wallet?.vmType, protocolVersion, chainId, chainVmType])
+  }, [wallet?.vmType, protocolVersion, chainId, chainVmType])
 
   // Synchronously return undefined when conditions change
   const explicitDeposit = useMemo(() => {
@@ -52,7 +51,16 @@ const useEOADetection = (
 
     const detectEOA = async () => {
       try {
-        const eoaResult = await wallet!.isEOA!(chainId!)
+        if (!wallet || !wallet.isEOA) {
+          setDetectionState((current) =>
+            current.conditionKey === conditionKey
+              ? { value: false, conditionKey }
+              : current
+          )
+          return
+        }
+
+        const eoaResult = await wallet.isEOA(chainId!)
         const { isEOA, isEIP7702Delegated } = eoaResult
         const explicitDepositValue = !isEOA || isEIP7702Delegated
 
