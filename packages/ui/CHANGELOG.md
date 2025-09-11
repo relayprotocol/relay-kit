@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.6
+
+### Patch Changes
+
+- 7e99ce4: Add character minimum for conversion rate tooltip
+- Updated dependencies [7b8f325]
+  - @relayprotocol/relay-sdk@2.4.4
+  - @relayprotocol/relay-kit-hooks@2.0.3
+
 ## 4.0.5
 
 ### Patch Changes
