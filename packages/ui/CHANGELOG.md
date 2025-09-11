@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.7
+
+### Patch Changes
+
+- 1bd5324: Fix bug where logged out scenario not fetching quotes
+
 ## 4.0.6
 
 ### Patch Changes

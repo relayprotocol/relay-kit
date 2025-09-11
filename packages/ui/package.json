@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-kit-ui",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
