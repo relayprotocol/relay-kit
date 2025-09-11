@@ -30,7 +30,7 @@ const useEOADetection = (
     return (
       protocolVersion === 'preferV2' &&
       chainId !== undefined &&
-      wallet?.vmType === 'evm' &&
+      (!wallet || wallet?.vmType === 'evm') &&
       chainVmType === 'evm'
     )
   }, [wallet?.vmType, protocolVersion, chainId, chainVmType])
