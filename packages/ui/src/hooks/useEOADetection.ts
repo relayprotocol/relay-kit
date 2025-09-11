@@ -28,7 +28,6 @@ const useEOADetection = (
 
   const shouldDetect = useMemo(() => {
     return (
-      wallet !== undefined &&
       protocolVersion === 'preferV2' &&
       chainId !== undefined &&
       wallet?.vmType === 'evm' &&
@@ -52,7 +51,7 @@ const useEOADetection = (
 
     const detectEOA = async () => {
       try {
-        if (!wallet?.isEOA) {
+        if (!wallet || !wallet?.isEOA) {
           setDetectionState((current) =>
             current.conditionKey === conditionKey
               ? { value: false, conditionKey }
