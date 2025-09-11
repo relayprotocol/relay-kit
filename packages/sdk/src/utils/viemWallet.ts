@@ -242,6 +242,64 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
       })
 
       return id
+    },
+    isEOA: async (
+      chainId: number
+    ): Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }> => {
+      if (!wallet.account) {
+        return { isEOA: false, isEIP7702Delegated: false }
+      }
+
+      try {
+        let hasSmartWalletCapabilities = false
+        try {
+          const capabilities = await wallet.getCapabilities({
+            account: wallet.account,
+            chainId
+          })
+
+          hasSmartWalletCapabilities = Boolean(
+            capabilities?.atomicBatch?.supported ||
+              capabilities?.paymasterService?.supported ||
+              capabilities?.auxiliaryFunds?.supported ||
+              capabilities?.sessionKeys?.supported
+          )
+        } catch (capabilitiesError) {}
+
+        const client = getClient()
+        const chain = client.chains.find((chain) => chain.id === chainId)
+        const rpcUrl = chain?.httpRpcUrl
+
+        if (!chain) {
+          throw new Error(`Chain ${chainId} not found in relay client`)
+        }
+
+        const viemClient = createPublicClient({
+          chain: chain?.viemChain,
+          transport: rpcUrl ? http(rpcUrl) : http()
+        })
+
+        let code
+        try {
+          code = await viemClient.getCode({
+            address: wallet.account.address
+          })
+        } catch (getCodeError) {
+          throw getCodeError
+        }
+
+        const hasCode = Boolean(code && code !== '0x')
+        const isEIP7702Delegated = Boolean(
+          code && code.toLowerCase().startsWith('0xef01')
+        )
+        const isSmartWallet =
+          hasSmartWalletCapabilities || hasCode || isEIP7702Delegated
+        const isEOA = !isSmartWallet
+
+        return { isEOA, isEIP7702Delegated }
+      } catch (error) {
+        return { isEOA: false, isEIP7702Delegated: false }
+      }
     }
   }
 }

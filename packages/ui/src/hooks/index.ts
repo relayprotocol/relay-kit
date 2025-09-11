@@ -21,6 +21,7 @@ import useMoonPayTransaction from './useMoonPayTransaction.js'
 import { useInternalRelayChains } from './useInternalRelayChains.js'
 import useGasTopUpRequired from './useGasTopUpRequired.js'
 import useHyperliquidUsdcBalance from './useHyperliquidUsdcBalance.js'
+import useEOADetection from './useEOADetection.js'
 
 export {
   useMounted,
@@ -45,5 +46,6 @@ export {
   useMoonPayTransaction,
   useInternalRelayChains,
   useGasTopUpRequired,
-  useHyperliquidUsdcBalance
+  useHyperliquidUsdcBalance,
+  useEOADetection
 }

@@ -137,6 +137,7 @@ export async function getQuote(
     throw new Error('Recipient is required')
   }
 
+
   const query: QuoteBody = {
     user: includeDefaultParameters
       ? (defaultParameters?.user as string)
