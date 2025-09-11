@@ -458,20 +458,27 @@ const ConversionRate: FC<ConversionRateProps> = ({
   const fromSymbol = isInputMode ? fromToken?.symbol : toToken?.symbol
   const toSymbol = isInputMode ? toToken?.symbol : fromToken?.symbol
 
-  return (
-    <Tooltip
-      content={
-        <Text style="subtitle2">
-          1 {fromSymbol} = {formatSwapRate(displayRate)} {toSymbol}
-        </Text>
-      }
-      asChild={true}
-    >
-      <div style={{ width: '100%', minWidth: 0 }}>
-        <Text style="subtitle2" ellipsify>
-          1 {fromSymbol} = {formatSwapRate(displayRate)} {toSymbol}
-        </Text>
-      </div>
-    </Tooltip>
+  const rateText = `1 ${fromSymbol} = ${formatSwapRate(displayRate)} ${toSymbol}`
+  const shouldShowTooltip = rateText.length > 22
+
+  const content = (
+    <div style={{ width: '100%', minWidth: 0 }}>
+      <Text style="subtitle2" ellipsify>
+        {rateText}
+      </Text>
+    </div>
   )
+
+  if (shouldShowTooltip) {
+    return (
+      <Tooltip
+        content={<Text style="subtitle2">{rateText}</Text>}
+        asChild={true}
+      >
+        {content}
+      </Tooltip>
+    )
+  }
+
+  return content
 }
