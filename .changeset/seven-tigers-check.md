@@ -1,5 +1,5 @@
 ---
-'@reservoir0x/relay-sdk': patch
+'@relayprotocol/relay-sdk': patch
 ---
 
 Add EOA detection
