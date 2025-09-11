@@ -1,5 +1,18 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.5
+
+### Patch Changes
+
+- Updated dependencies [622c094]
+  - @relayprotocol/relay-kit-hooks@2.0.2
+
+## 4.0.4
+
+### Patch Changes
+
+- d502596: Fix fee subsidization normalization
+
 ## 4.0.3
 
 ### Patch Changes

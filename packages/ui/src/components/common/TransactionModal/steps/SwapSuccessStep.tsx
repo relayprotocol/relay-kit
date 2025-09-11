@@ -444,7 +444,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         >
           <Text style="subtitle2">You've completed a free USDC bridge!</Text>
           <Anchor
-            href="https://x.com/intent/post?text=Just%20instantly%20bridged%20USDC%20with%20ZERO%20price%20impact%2C%20thanks%20to%20%40RelayProtcol%20%27s%20Fee-Free%20September.%0A%0ATry%20it%20yourself%3A%20go.relay.link%2Ffreeusdc"
+            href="https://x.com/intent/post?text=Just%20instantly%20bridged%20USDC%20with%20ZERO%20price%20impact%2C%20thanks%20to%20%40RelayProtocol%20%27s%20Fee-Free%20September.%0A%0ATry%20it%20yourself%3A%20go.relay.link%2Ffreeusdc"
             target="_blank"
             css={{
               display: 'flex',
