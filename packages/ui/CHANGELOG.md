@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.8
+
+### Patch Changes
+
+- 2467b30: Fix issue detecting EOA when disconnected
+
 ## 4.0.7
 
 ### Patch Changes
