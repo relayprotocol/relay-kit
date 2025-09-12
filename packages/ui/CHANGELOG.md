@@ -1,5 +1,12 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.9
+
+### Patch Changes
+
+- 4749b3e: Remove explicitDeposit parameter
+- 0ec9be8: Remove gas top up re-enabling on swap success
+
 ## 4.0.8
 
 ### Patch Changes
