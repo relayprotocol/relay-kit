@@ -642,11 +642,12 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
-          protocolVersion: quoteProtocol,
-          ...(quoteProtocol === 'preferV2' &&
-            explicitDeposit !== undefined && {
-              explicitDeposit: explicitDeposit
-            })
+          protocolVersion: quoteProtocol
+          //Disabled temporarily for investigation
+          // ...(quoteProtocol === 'preferV2' &&
+          //   explicitDeposit !== undefined && {
+          //     explicitDeposit: explicitDeposit
+          //   })
         }
       : undefined
 
