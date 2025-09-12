@@ -720,7 +720,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
               setSwapError={setSwapError}
               onSwapSuccess={(data) => {
                 setPendingSuccessFlush(true)
-                setGasTopUpEnabled(true)
                 setAmountInputValue('')
                 setAmountOutputValue('')
                 onSwapSuccess?.(data)
