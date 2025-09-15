@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.11
+
+### Patch Changes
+
+- 99a32eb: Increase protocolv2 threshold
+
 ## 4.0.10
 
 ### Patch Changes
