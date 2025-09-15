@@ -567,12 +567,15 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
-  const explicitDeposit = useEOADetection(
+  const eoaExplicitDeposit = useEOADetection(
     wallet,
     quoteProtocol,
     fromToken?.chainId,
     fromChain?.vmType
   )
+
+  const hasZeroNativeBalance = fromBalance === 0n
+  const explicitDeposit = hasZeroNativeBalance ? true : eoaExplicitDeposit
   const normalizedSponsoredTokens = useMemo(() => {
     const chainVms = relayClient?.chains.reduce(
       (chains, chain) => {
