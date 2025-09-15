@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.12
+
+### Patch Changes
+
+- b3a83ee: Fix explicit deposit for zero native balance wallets
+
 ## 4.0.11
 
 ### Patch Changes
