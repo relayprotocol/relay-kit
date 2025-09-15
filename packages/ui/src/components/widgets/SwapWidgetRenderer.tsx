@@ -567,12 +567,29 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
-  const explicitDeposit = useEOADetection(
+  // Get native balance only when not swapping from native token  
+  const isFromNative = fromToken?.address === fromChain?.currency?.address
+  const { value: nativeBalance } = useCurrencyBalance({
+    chain: fromChain,
+    address: address,
+    currency: fromChain?.currency?.address
+      ? (fromChain.currency.address as string)
+      : undefined,
+    enabled: fromToken !== undefined && !isFromNative,
+    wallet
+  })
+
+  const effectiveNativeBalance = isFromNative ? fromBalance : nativeBalance
+  const hasZeroNativeBalance = effectiveNativeBalance === 0n
+
+  const eoaExplicitDeposit = useEOADetection(
     wallet,
     quoteProtocol,
     fromToken?.chainId,
     fromChain?.vmType
   )
+
+  const explicitDeposit = hasZeroNativeBalance ? true : eoaExplicitDeposit
   const normalizedSponsoredTokens = useMemo(() => {
     const chainVms = relayClient?.chains.reduce(
       (chains, chain) => {
@@ -859,8 +876,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     linkedWallets,
     onAnalyticEvent
   )
-
-  const isFromNative = fromToken?.address === fromChain?.currency?.address
 
   const isSameCurrencySameRecipientSwap =
     fromToken?.address === toToken?.address &&
