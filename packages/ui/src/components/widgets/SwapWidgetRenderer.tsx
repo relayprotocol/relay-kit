@@ -549,7 +549,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         ? calculateUsdValue(relevantPrice, amount)
         : undefined
 
-      return usdAmount !== undefined && usdAmount <= 100
+      return usdAmount !== undefined && usdAmount <= 1000
         ? 'preferV2'
         : undefined
     } else {
