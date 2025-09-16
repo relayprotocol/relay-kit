@@ -32,29 +32,37 @@ const useEOADetection = (
   }
 
   // get native balance
-  const { value: nativeBalance } = useCurrencyBalance({
-    chain: fromChain,
-    address: userAddress,
-    currency: fromChain?.currency?.address
-      ? (fromChain.currency.address as string)
-      : undefined,
-    enabled: Boolean(
-      userAddress &&
-        fromChain &&
-        !isFromNative &&
-        protocolVersion === 'preferV2'
-    ),
-    wallet
-  })
+  const { value: nativeBalance, isLoading: isLoadingNativeBalance } =
+    useCurrencyBalance({
+      chain: fromChain,
+      address: userAddress,
+      currency: fromChain?.currency?.address
+        ? (fromChain.currency.address as string)
+        : undefined,
+      enabled: Boolean(
+        userAddress &&
+          fromChain &&
+          !isFromNative &&
+          protocolVersion === 'preferV2'
+      ),
+      wallet
+    })
 
   // get transaction count
-  const { data: transactionCount } = useTransactionCount({
-    address: userAddress,
-    chainId: chainId,
-    enabled: Boolean(
-      userAddress && !isFromNative && protocolVersion === 'preferV2'
-    )
-  })
+  const { data: transactionCount, isLoading: isLoadingTransactionCount } =
+    useTransactionCount({
+      address: userAddress,
+      chainId: chainId,
+      enabled: Boolean(
+        userAddress && !isFromNative && protocolVersion === 'preferV2'
+      )
+    })
+
+  const isLoadingSafetyChecks = Boolean(
+    protocolVersion === 'preferV2' &&
+      !isFromNative &&
+      (isLoadingNativeBalance || isLoadingTransactionCount)
+  )
 
   // Calculate safety check conditions
   const effectiveNativeBalance = isFromNative ? fromBalance : nativeBalance
@@ -84,6 +92,10 @@ const useEOADetection = (
 
   // Synchronously return undefined when conditions change
   const explicitDeposit = useMemo(() => {
+    if (isLoadingSafetyChecks) {
+      return undefined
+    }
+
     // force explicit deposit for zero native balance or low transaction count
     if (hasZeroNativeBalance || hasLowTransactionCount) {
       return true
@@ -97,7 +109,8 @@ const useEOADetection = (
     shouldDetect,
     detectionState,
     hasZeroNativeBalance,
-    hasLowTransactionCount
+    hasLowTransactionCount,
+    isLoadingSafetyChecks
   ])
 
   useEffect(() => {
