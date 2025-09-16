@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState, useRef } from 'react'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
+import { formatUnits } from 'viem'
 import useCurrencyBalance from './useCurrencyBalance.js'
 import useTransactionCount from './useTransactionCount.js'
 
@@ -73,6 +74,26 @@ const useEOADetection = (
     transactionCount !== undefined &&
     transactionCount <= 1
 
+  // Debug logs for QA testing
+  if (protocolVersion === 'preferV2' && chainVmType === 'evm') {
+    if (shouldRunSafetyChecks) {
+      const formattedBalance = effectiveNativeBalance !== undefined 
+        ? `${formatUnits(effectiveNativeBalance, 18)} ${fromChain?.currency?.symbol || 'ETH'}`
+        : 'undefined'
+        
+      console.log('🔍 EOA Detection Debug:', {
+        nativeBalance: formattedBalance,
+        transactionCount,
+        hasZeroNativeBalance,
+        hasLowTransactionCount,
+        isFromNative,
+        shouldRunSafetyChecks
+      })
+    } else if (isFromNative) {
+      console.log('⏭️ Skipping safety checks (swapping native token)')
+    }
+  }
+
   const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${protocolVersion}:${chainId}:${walletId.current}:${hasZeroNativeBalance}:${hasLowTransactionCount}`
 
   const shouldDetect = useMemo(() => {
@@ -101,12 +122,19 @@ const useEOADetection = (
 
     // force explicit deposit for zero native balance or low transaction count
     if (hasZeroNativeBalance || hasLowTransactionCount) {
+      console.log('✅ Forcing explicitDeposit=true due to safety checks')
       return true
     }
 
-    return detectionState.conditionKey !== conditionKey || !shouldDetect
+    const eoaResult = detectionState.conditionKey !== conditionKey || !shouldDetect
       ? undefined
       : detectionState.value
+
+    if (shouldRunSafetyChecks && eoaResult !== undefined) {
+      console.log('🎯 Using EOA detection result:', eoaResult)
+    }
+
+    return eoaResult
   }, [
     conditionKey,
     shouldDetect,
