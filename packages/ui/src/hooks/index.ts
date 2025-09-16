@@ -22,6 +22,7 @@ import { useInternalRelayChains } from './useInternalRelayChains.js'
 import useGasTopUpRequired from './useGasTopUpRequired.js'
 import useHyperliquidUsdcBalance from './useHyperliquidUsdcBalance.js'
 import useEOADetection from './useEOADetection.js'
+import useTransactionCount from './useTransactionCount.js'
 
 export {
   useMounted,
@@ -47,5 +48,6 @@ export {
   useInternalRelayChains,
   useGasTopUpRequired,
   useHyperliquidUsdcBalance,
-  useEOADetection
+  useEOADetection,
+  useTransactionCount
 }
