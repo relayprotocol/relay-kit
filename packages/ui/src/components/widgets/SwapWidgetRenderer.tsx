@@ -11,8 +11,7 @@ import {
   useIsWalletCompatible,
   useFallbackState,
   useGasTopUpRequired,
-  useEOADetection,
-  useTransactionCount
+  useEOADetection
 } from '../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
@@ -568,39 +567,18 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
-  // Get native balance only when not swapping from native token
   const isFromNative = fromToken?.address === fromChain?.currency?.address
-  const { value: nativeBalance } = useCurrencyBalance({
-    chain: fromChain,
-    address: address,
-    currency: fromChain?.currency?.address
-      ? (fromChain.currency.address as string)
-      : undefined,
-    enabled: fromToken !== undefined && !isFromNative,
-    wallet
-  })
 
-  const effectiveNativeBalance = isFromNative ? fromBalance : nativeBalance
-  const hasZeroNativeBalance = effectiveNativeBalance === 0n
-
-  const { data: transactionCount } = useTransactionCount({
-    address: address,
-    chainId: fromChain?.id,
-    enabled: fromToken !== undefined && !isFromNative
-  })
-
-  const hasLowTransactionCount =
-    transactionCount !== undefined && transactionCount <= 1
-
-  const eoaExplicitDeposit = useEOADetection(
+  const explicitDeposit = useEOADetection(
     wallet,
     quoteProtocol,
     fromToken?.chainId,
-    fromChain?.vmType
+    fromChain?.vmType,
+    fromChain,
+    address,
+    fromBalance,
+    isFromNative
   )
-
-  const explicitDeposit =
-    hasZeroNativeBalance || hasLowTransactionCount ? true : eoaExplicitDeposit
   const normalizedSponsoredTokens = useMemo(() => {
     const chainVms = relayClient?.chains.reduce(
       (chains, chain) => {
