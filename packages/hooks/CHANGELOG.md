@@ -1,5 +1,31 @@
 # @reservoir0x/relay-kit-hooks
 
+## 2.0.3
+
+### Patch Changes
+
+- Updated dependencies [7b8f325]
+  - @relayprotocol/relay-sdk@2.4.4
+
+## 2.0.2
+
+### Patch Changes
+
+- 622c094: Fix base url for query quote function
+
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [dd8a006]
+  - @relayprotocol/relay-sdk@2.4.3
+
+## 2.0.0
+
+### Major Changes
+
+- 581937b: Upgrade to React 19
+
 ## 1.13.0
 
 ### Minor Changes

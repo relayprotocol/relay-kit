@@ -1,10 +1,4 @@
-import type {
-  ComponentPropsWithoutRef,
-  Dispatch,
-  FC,
-  ReactNode,
-  SetStateAction
-} from 'react'
+import type { Dispatch, FC, ReactNode, SetStateAction } from 'react'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   useCurrencyBalance,
@@ -16,7 +10,8 @@ import {
   usePreviousValueChange,
   useIsWalletCompatible,
   useFallbackState,
-  useGasTopUpRequired
+  useGasTopUpRequired,
+  useEOADetection
 } from '../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
@@ -554,7 +549,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         ? calculateUsdValue(relevantPrice, amount)
         : undefined
 
-      return usdAmount !== undefined && usdAmount <= 100
+      return usdAmount !== undefined && usdAmount <= 1000
         ? 'preferV2'
         : undefined
     } else {
@@ -565,26 +560,79 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     isLoadingFromTokenPrice,
     debouncedInputAmountValue,
     tradeType,
-    originChainSupportsProtocolv2
+    originChainSupportsProtocolv2,
+    fromChain?.id
   ])
 
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
+  // Get native balance only when not swapping from native token  
+  const isFromNative = fromToken?.address === fromChain?.currency?.address
+  const { value: nativeBalance } = useCurrencyBalance({
+    chain: fromChain,
+    address: address,
+    currency: fromChain?.currency?.address
+      ? (fromChain.currency.address as string)
+      : undefined,
+    enabled: fromToken !== undefined && !isFromNative,
+    wallet
+  })
+
+  const effectiveNativeBalance = isFromNative ? fromBalance : nativeBalance
+  const hasZeroNativeBalance = effectiveNativeBalance === 0n
+
+  const eoaExplicitDeposit = useEOADetection(
+    wallet,
+    quoteProtocol,
+    fromToken?.chainId,
+    fromChain?.vmType
+  )
+
+  const explicitDeposit = hasZeroNativeBalance ? true : eoaExplicitDeposit
+  const normalizedSponsoredTokens = useMemo(() => {
+    const chainVms = relayClient?.chains.reduce(
+      (chains, chain) => {
+        chains[chain.id] = chain.vmType as ChainVM
+        return chains
+      },
+      {} as Record<number, ChainVM>
+    )
+    return sponsoredTokens?.map((token) => {
+      const [chainId, address] = token.match(/^([^:]*):?(.*)$/)?.slice(1) ?? []
+      const chainVm = chainVms?.[Number(chainId)]
+      const normalizedAddress =
+        chainVm && chainVm === 'evm' ? address.toLowerCase() : address
+      return `${chainId}:${normalizedAddress}`
+    })
+  }, [sponsoredTokens, relayClient?.chains])
+
+  const normalizedToToken =
+    toChain?.vmType === 'evm'
+      ? `${toToken?.chainId}:${toToken?.address.toLowerCase()}`
+      : `${toToken?.chainId}:${toToken?.address}`
+  const normalizedFromToken =
+    fromChain?.vmType === 'evm'
+      ? `${fromToken?.chainId}:${fromToken?.address.toLowerCase()}`
+      : `${fromToken?.chainId}:${fromToken?.address}`
+
   const isGasSponsorshipEnabled =
-    sponsoredTokens &&
-    sponsoredTokens.length > 0 &&
+    normalizedSponsoredTokens &&
+    normalizedSponsoredTokens.length > 0 &&
     toToken &&
     fromToken &&
-    sponsoredTokens.includes(
-      `${toToken.chainId}:${toToken.address.toLowerCase()}`
-    ) &&
-    sponsoredTokens.includes(
-      `${fromToken.chainId}:${fromToken.address.toLowerCase()}`
-    )
+    normalizedSponsoredTokens.includes(normalizedToToken) &&
+    normalizedSponsoredTokens.includes(normalizedFromToken)
+
+  const shouldSetQuoteParameters =
+    fromToken &&
+    toToken &&
+    (quoteProtocol !== 'preferV2' ||
+      fromChain?.vmType !== 'evm' ||
+      explicitDeposit !== undefined)
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
-    fromToken && toToken
+    shouldSetQuoteParameters
       ? {
           user: fromAddressWithFallback,
           originChainId: fromToken.chainId,
@@ -611,7 +659,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
-          protocolVersion: quoteProtocol
+          protocolVersion: quoteProtocol,
+          ...(quoteProtocol === 'preferV2' &&
+            explicitDeposit !== undefined && {
+              explicitDeposit: explicitDeposit
+            })
         }
       : undefined
 
@@ -689,7 +741,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     onQuoteReceived,
     {
       refetchOnWindowFocus: false,
-      enabled: quoteFetchingEnabled,
+      enabled: quoteFetchingEnabled && quoteParameters !== undefined,
       refetchInterval:
         !transactionModalOpen &&
         !depositAddressModalOpen &&
@@ -824,8 +876,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     linkedWallets,
     onAnalyticEvent
   )
-
-  const isFromNative = fromToken?.address === fromChain?.currency?.address
 
   const isSameCurrencySameRecipientSwap =
     fromToken?.address === toToken?.address &&

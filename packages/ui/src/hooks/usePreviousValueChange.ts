@@ -5,7 +5,7 @@ export default <T>(
   enabled: boolean,
   onChange: (value: T) => void
 ) => {
-  const ref = useRef<T>()
+  const ref = useRef<T | undefined>(undefined)
 
   useEffect(() => {
     if (enabled && ref.current !== value) {

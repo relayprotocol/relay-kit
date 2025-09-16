@@ -1,5 +1,17 @@
 # @reservoir0x/relay-sdk
 
+## 2.4.4
+
+### Patch Changes
+
+- 7b8f325: Add EOA detection
+
+## 2.4.3
+
+### Patch Changes
+
+- dd8a006: Update capabilities check for batching to support MM
+
 ## 2.4.2
 
 ### Patch Changes

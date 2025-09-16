@@ -46,8 +46,9 @@ const ChainWidgetPage: NextPage = () => {
   const { setWalletFilter } = useWalletFilter()
   const _switchWallet = useSwitchWallet()
   const userWallets = useUserWallets()
-  const wallets = useRef<Wallet<any>[]>()
-  const switchWallet = useRef<(walletId: string) => Promise<void>>()
+  const wallets = useRef<Wallet<any>[]>([])
+  const switchWallet =
+    useRef<(walletId: string) => Promise<void> | undefined>(undefined)
   const [wallet, setWallet] = useState<AdaptedWallet | undefined>()
   const [linkWalletPromise, setLinkWalletPromise] = useState<
     | {

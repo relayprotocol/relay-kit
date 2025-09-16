@@ -139,7 +139,11 @@ export const TransactionModal: FC<TransactionModalProps> = (
               return txHashes
             })
             .flat(),
-          steps
+          steps,
+          subsidized:
+            fees?.subsidized !== undefined && fees.subsidized.amount !== '0'
+              ? true
+              : false
         })
         onSuccess?.({
           steps: steps,

@@ -36,11 +36,11 @@ export const queryQuote = function (
   config?: AxiosRequestConfig
 ): Promise<QuoteResponse> {
   return new Promise((resolve, reject) => {
-    const url = new URL(`${baseApiUrl}/quote`)
-    axiosPostFetcher(url.href, options, config)
+    const href = `${baseApiUrl}/quote`
+    axiosPostFetcher(href, options, config)
       .then((response) => {
         const request: AxiosRequestConfig = {
-          url: url.href,
+          url: href,
           method: 'post',
           data: options
         }

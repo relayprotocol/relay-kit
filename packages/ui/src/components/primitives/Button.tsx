@@ -131,7 +131,7 @@ const ButtonCss = cva({
           fontFamily: 'heading',
           fontWeight: 700,
           textTransform: 'uppercase',
-          fontStyle: 'italic'
+          fontStyle: 'var(--relay-fonts-button-cta-font-style, normal)'
         }
       }
     }

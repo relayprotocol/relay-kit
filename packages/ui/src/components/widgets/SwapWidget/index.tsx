@@ -124,7 +124,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   onSwapSuccess,
   onSwapValidating,
   onSwapError
-}): JSX.Element => {
+}) => {
   const onAnalyticEvent = useCallback(
     (eventName: string, data?: any) => {
       try {
@@ -902,7 +902,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
               setSwapError={setSwapError}
               onSwapSuccess={(data) => {
                 setPendingSuccessFlush(true)
-                setGasTopUpEnabled(true)
                 setAmountInputValue('')
                 setAmountOutputValue('')
                 onSwapSuccess?.(data)

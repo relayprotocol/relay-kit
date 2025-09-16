@@ -1,5 +1,104 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.12
+
+### Patch Changes
+
+- b3a83ee: Fix explicit deposit for zero native balance wallets
+
+## 4.0.11
+
+### Patch Changes
+
+- 99a32eb: Increase protocolv2 threshold
+
+## 4.0.10
+
+### Patch Changes
+
+- bbee152: Reimplement explicitDeposit logic
+
+## 4.0.9
+
+### Patch Changes
+
+- 4749b3e: Remove explicitDeposit parameter
+- 0ec9be8: Remove gas top up re-enabling on swap success
+
+## 4.0.8
+
+### Patch Changes
+
+- 2467b30: Fix issue detecting EOA when disconnected
+
+## 4.0.7
+
+### Patch Changes
+
+- 1bd5324: Fix bug where logged out scenario not fetching quotes
+
+## 4.0.6
+
+### Patch Changes
+
+- 7e99ce4: Add character minimum for conversion rate tooltip
+- Updated dependencies [7b8f325]
+  - @relayprotocol/relay-sdk@2.4.4
+  - @relayprotocol/relay-kit-hooks@2.0.3
+
+## 4.0.5
+
+### Patch Changes
+
+- Updated dependencies [622c094]
+  - @relayprotocol/relay-kit-hooks@2.0.2
+
+## 4.0.4
+
+### Patch Changes
+
+- d502596: Fix fee subsidization normalization
+
+## 4.0.3
+
+### Patch Changes
+
+- 4142310: Add button cta font styling to theme
+
+## 4.0.2
+
+### Patch Changes
+
+- e7d50bb: Porto wallet compatibility
+
+## 4.0.1
+
+### Patch Changes
+
+- 41d48e1: Remove custom fonts from ui kit base theme
+- Updated dependencies [dd8a006]
+  - @relayprotocol/relay-sdk@2.4.3
+  - @relayprotocol/relay-kit-hooks@2.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- 581937b: Upgrade to React 19
+
+### Patch Changes
+
+- Updated dependencies [581937b]
+  - @relayprotocol/relay-design-system@1.0.0
+  - @relayprotocol/relay-kit-hooks@2.0.0
+
+## 3.0.3
+
+### Patch Changes
+
+- 8dc4d4b: Switch to using queryQuote instead of useQuote hook
+- dc26d7b: Add test ids for automation
+
 ## 3.0.2
 
 ### Patch Changes

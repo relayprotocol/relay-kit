@@ -1,6 +1,6 @@
 {
     "name": "@relayprotocol/relay-sui-wallet-adapter",
-    "version": "6.0.2",
+    "version": "6.0.4",
     "description": "A Sui wallet adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",

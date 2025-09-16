@@ -112,6 +112,9 @@ export const themeOverrides: ThemeOverridesMap = {
     disabled: {
       color: '--relay-colors-button-disabled-color',
       background: '--relay-colors-button-disabled-background'
+    },
+    cta: {
+      fontStyle: '--relay-fonts-button-cta-font-style'
     }
   },
   input: {
@@ -168,7 +171,7 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
   children,
   options,
   theme
-}: RelayKitProviderProps): JSX.Element {
+}: RelayKitProviderProps) {
   const providerOptions = useMemo(
     () => ({
       appName: options.appName,

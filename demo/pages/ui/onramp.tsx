@@ -37,7 +37,7 @@ const OnrampPage: NextPage = () => {
   const { setShowAuthFlow } = useDynamicContext()
   const { setShowLinkNewWalletModal } = useDynamicModals()
   const userWallets = useUserWallets()
-  const wallets = useRef<Wallet<any>[]>()
+  const wallets = useRef<Wallet<any>[]>([])
   const linkedWallets = useMemo(() => {
     const _wallets = userWallets.reduce((linkedWallets, wallet) => {
       linkedWallets.push(convertToLinkedWallet(wallet))

@@ -58,6 +58,15 @@ export const RelayKitProviderWrapper: FC<{
         secureBaseUrl: process.env.NEXT_PUBLIC_RELAY_SECURE_API_URL,
         appFees: appFeesEnabled ? DEFAULT_APP_FEES : undefined
       }}
+      theme={{
+        font: 'Barlow, -apple-system, Helvetica, sans-serif',
+        fontHeading: 'Chivo, -apple-system, Helvetica, sans-serif',
+        buttons: {
+          cta: {
+            fontStyle: 'italic'
+          }
+        }
+      }}
     >
       {children}
     </RelayKitProvider>
