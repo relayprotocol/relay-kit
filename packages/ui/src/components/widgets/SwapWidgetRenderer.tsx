@@ -549,7 +549,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         ? calculateUsdValue(relevantPrice, amount)
         : undefined
 
-      return usdAmount !== undefined && usdAmount <= 1000
+      return usdAmount !== undefined && usdAmount <= 10000
         ? 'preferV2'
         : undefined
     } else {
@@ -567,7 +567,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
-  // Get native balance only when not swapping from native token  
+  // Get native balance only when not swapping from native token
   const isFromNative = fromToken?.address === fromChain?.currency?.address
   const { value: nativeBalance } = useCurrencyBalance({
     chain: fromChain,
