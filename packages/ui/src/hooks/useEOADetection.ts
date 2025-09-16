@@ -31,6 +31,14 @@ const useEOADetection = (
     walletId.current += 1
   }
 
+  const shouldRunSafetyChecks = Boolean(
+    protocolVersion === 'preferV2' &&
+      chainVmType === 'evm' &&
+      !isFromNative &&
+      userAddress &&
+      fromChain
+  )
+
   // get native balance
   const { value: nativeBalance, isLoading: isLoadingNativeBalance } =
     useCurrencyBalance({
@@ -39,12 +47,7 @@ const useEOADetection = (
       currency: fromChain?.currency?.address
         ? (fromChain.currency.address as string)
         : undefined,
-      enabled: Boolean(
-        userAddress &&
-          fromChain &&
-          !isFromNative &&
-          protocolVersion === 'preferV2'
-      ),
+      enabled: shouldRunSafetyChecks,
       wallet
     })
 
@@ -53,22 +56,22 @@ const useEOADetection = (
     useTransactionCount({
       address: userAddress,
       chainId: chainId,
-      enabled: Boolean(
-        userAddress && !isFromNative && protocolVersion === 'preferV2'
-      )
+      enabled: shouldRunSafetyChecks
     })
 
   const isLoadingSafetyChecks = Boolean(
-    protocolVersion === 'preferV2' &&
-      !isFromNative &&
+    shouldRunSafetyChecks &&
       (isLoadingNativeBalance || isLoadingTransactionCount)
   )
 
   // Calculate safety check conditions
   const effectiveNativeBalance = isFromNative ? fromBalance : nativeBalance
-  const hasZeroNativeBalance = effectiveNativeBalance === 0n
+  const hasZeroNativeBalance =
+    shouldRunSafetyChecks && effectiveNativeBalance === 0n
   const hasLowTransactionCount =
-    transactionCount !== undefined && transactionCount <= 1
+    shouldRunSafetyChecks &&
+    transactionCount !== undefined &&
+    transactionCount <= 1
 
   const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${protocolVersion}:${chainId}:${walletId.current}:${hasZeroNativeBalance}:${hasLowTransactionCount}`
 
