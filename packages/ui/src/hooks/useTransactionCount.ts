@@ -6,7 +6,6 @@ type UseTransactionCountProps = {
   address?: Address | string
   chainId?: number
   enabled?: boolean
-  refreshInterval?: number
 }
 
 type UseTransactionCountData = {
@@ -19,36 +18,28 @@ type UseTransactionCountData = {
 const useTransactionCount = ({
   address,
   chainId,
-  enabled = true,
-  refreshInterval = 60000
+  enabled = true
 }: UseTransactionCountProps): UseTransactionCountData => {
   const publicClient = usePublicClient({ chainId })
   const isValidAddress = address && isAddress(address)
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error
-  } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['transactionCount', chainId, address],
     queryFn: async () => {
       if (!publicClient || !address) {
         throw new Error('Missing publicClient or address')
       }
-      
+
       return await publicClient.getTransactionCount({
         address: address as Address
       })
     },
     enabled: Boolean(
-      enabled &&
-      publicClient &&
-      isValidAddress &&
-      chainId !== undefined
+      enabled && publicClient && isValidAddress && chainId !== undefined
     ),
-    refetchInterval: refreshInterval,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    staleTime: 60 * 60 * 1000,
+    gcTime: 60 * 60 * 1000
   })
 
   return {
