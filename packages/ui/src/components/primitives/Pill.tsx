@@ -37,7 +37,7 @@ export const PillStyle = cva({
         color: 'gray12'
       },
       primary: {
-        background: 'primary2',
+        background: 'primary3',
         color: 'primary12'
       }
     },
