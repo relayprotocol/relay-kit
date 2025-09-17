@@ -9,9 +9,14 @@ export default (
   fromChain?: RelayChain,
   token?: Token,
   address?: string,
-  balanceThresholdUsd: string = '2',
+  balanceThresholdUsd: string = '10',
   topUpAmountUsd: string = '2'
-): { required: boolean; amount?: bigint; amountUsd?: string } => {
+): {
+  required: boolean
+  amount?: bigint
+  amountUsd?: string
+  balance?: bigint
+} => {
   const client = useRelayClient()
   const isErc20Currency = token && token.address !== chain?.currency?.address
   const enabled =
@@ -63,13 +68,15 @@ export default (
     return {
       required: requiresTopUp,
       amount: requiresTopUp ? topUpAmount : undefined,
-      amountUsd: requiresTopUp ? topUpAmountUsd : undefined
+      amountUsd: requiresTopUp ? topUpAmountUsd : undefined,
+      balance: gasBalance
     }
   } else {
     return {
       required: false,
       amount: undefined,
-      amountUsd: undefined
+      amountUsd: undefined,
+      balance: undefined
     }
   }
 }
