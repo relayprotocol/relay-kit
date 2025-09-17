@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.13
+
+### Patch Changes
+
+- 42ef53d: Increase protocol v2 threshold to $10k
+
 ## 4.0.12
 
 ### Patch Changes
