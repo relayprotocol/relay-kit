@@ -1,7 +1,7 @@
 import { type RelayChain } from '@relayprotocol/relay-sdk'
 import type { FC } from 'react'
 import { Text, Pill, ChainTokenIcon } from '../../primitives/index.js'
-import { formatBN } from '../../../utils/numbers.js'
+import { formatBN, formatDollar } from '../../../utils/numbers.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
@@ -22,6 +22,7 @@ const GasTopUpSection: FC<Props> = ({
   onGasTopUpEnabled,
   gasTopUpRequired,
   gasTopUpAmount,
+  gasTopUpAmountUsd,
   gasTopUpBalance
 }) => {
   const currency = toChain?.currency
@@ -56,12 +57,13 @@ const GasTopUpSection: FC<Props> = ({
             {gasTopUpAmount
               ? formatBN(gasTopUpAmount, 5, currency.decimals ?? 18)
               : '-'}{' '}
-            {currency.symbol}
+            {gasTopUpAmountUsd ? `(${formatDollar(+gasTopUpAmountUsd)})` : '-'}
           </Text>
           <ChainTokenIcon
             chainId={toChain?.id}
             tokenlogoURI={currencyIcon}
             size="sm"
+            chainRadius={2}
           />
           <Text style="subtitle2" ellipsify>
             {toChain?.currency?.symbol}
