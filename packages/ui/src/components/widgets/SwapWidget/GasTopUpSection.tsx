@@ -82,7 +82,7 @@ const GasTopUpSection: FC<Props> = ({
             Low on gas (Balance:{' '}
             {gasTopUpBalance
               ? formatBN(gasTopUpBalance, 5, currency.decimals ?? 18)
-              : '-'}{' '}
+              : '0'}{' '}
             {currency.symbol})
           </Text>
           <FontAwesomeIcon icon={faPlus} />
