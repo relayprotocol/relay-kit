@@ -35,6 +35,10 @@ export const PillStyle = cva({
       transparent: {
         background: 'none',
         color: 'gray12'
+      },
+      primary: {
+        background: 'primary2',
+        color: 'primary12'
       }
     },
     radius: {

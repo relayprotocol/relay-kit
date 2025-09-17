@@ -138,6 +138,7 @@ export type ChildrenProps = {
   recipientWalletSupportsChain?: boolean
   gasTopUpEnabled: boolean
   setGasTopUpEnabled: Dispatch<React.SetStateAction<boolean>>
+  gasTopUpBalance?: bigint
   gasTopUpRequired: boolean
   gasTopUpAmount?: bigint
   gasTopUpAmountUsd?: string
@@ -489,7 +490,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const {
     required: gasTopUpRequired,
     amount: _gasTopUpAmount,
-    amountUsd: _gasTopUpAmountUsd
+    amountUsd: _gasTopUpAmountUsd,
+    balance: gasTopUpBalance
   } = useGasTopUpRequired(toChain, fromChain, toToken, recipient)
 
   //  Retrieve the price of the `from` token
@@ -567,6 +569,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
+  // Get native balance only when not swapping from native token
   const isFromNative = fromToken?.address === fromChain?.currency?.address
 
   const explicitDeposit = useEOADetection(
@@ -1255,6 +1258,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         recipientWalletSupportsChain,
         gasTopUpEnabled,
         setGasTopUpEnabled,
+        gasTopUpBalance,
         gasTopUpRequired,
         gasTopUpAmount,
         gasTopUpAmountUsd,
