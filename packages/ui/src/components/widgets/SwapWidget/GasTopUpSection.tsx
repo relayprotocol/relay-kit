@@ -1,17 +1,10 @@
 import { type RelayChain } from '@relayprotocol/relay-sdk'
 import type { FC } from 'react'
-import {
-  Flex,
-  Text,
-  StyledSwitch,
-  StyledThumb,
-  ChainIcon
-} from '../../primitives/index.js'
-import {
-  CollapsibleContent,
-  CollapsibleRoot
-} from '../../primitives/Collapsible.js'
-import { formatDollar, formatBN } from '../../../utils/numbers.js'
+import { Text, Pill, ChainTokenIcon } from '../../primitives/index.js'
+import { formatBN, formatDollar } from '../../../utils/numbers.js'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
 
 type Props = {
   toChain?: RelayChain
@@ -20,6 +13,7 @@ type Props = {
   gasTopUpRequired: boolean
   gasTopUpAmount?: bigint
   gasTopUpAmountUsd?: string
+  gasTopUpBalance?: bigint
 }
 
 const GasTopUpSection: FC<Props> = ({
@@ -28,7 +22,8 @@ const GasTopUpSection: FC<Props> = ({
   onGasTopUpEnabled,
   gasTopUpRequired,
   gasTopUpAmount,
-  gasTopUpAmountUsd
+  gasTopUpAmountUsd,
+  gasTopUpBalance
 }) => {
   const currency = toChain?.currency
   const gasTokenIsSupported = toChain?.currency?.supportsBridging
@@ -37,56 +32,63 @@ const GasTopUpSection: FC<Props> = ({
     return null
   }
 
+  const currencyIcon = `${ASSETS_RELAY_API}/icons/currencies/${
+    currency?.id ?? currency?.symbol?.toLowerCase() ?? toChain?.id
+  }.png`
+
   return (
-    <Flex
-      direction="column"
-      css={{
-        p: '3',
-        backgroundColor: 'widget-background',
-        border: 'widget-card-border',
-        borderRadius: '12px',
-        mb: 'widget-card-section-gutter'
+    <Pill
+      color="primary"
+      css={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+      onClick={() => {
+        onGasTopUpEnabled(!gasTopUpEnabled)
       }}
     >
-      <Flex justify="between" align="center">
-        <Flex css={{ gap: '2', minWidth: 0 }} align="center">
-          <ChainIcon height={24} width={24} square chainId={toChain?.id} />
-          <Text ellipsify style="subtitle2" css={{ mr: '1' }}>
-            {toChain?.displayName} gas top up
-          </Text>
-        </Flex>
-        <Flex align="center" css={{ gap: '1', flexShrink: 0 }}>
-          {gasTopUpEnabled ? (
-            <>
-              <Text style="subtitle2">
-                {gasTopUpAmountUsd ? formatDollar(+gasTopUpAmountUsd) : '-'}
-              </Text>
-              <Text style="subtitle2" color="subtle">
-                (
-                {gasTopUpAmount
-                  ? formatBN(gasTopUpAmount, 5, currency.decimals ?? 18)
-                  : '-'}{' '}
-                {currency.symbol})
-              </Text>
-            </>
-          ) : null}
-          <StyledSwitch
-            checked={gasTopUpEnabled}
-            onCheckedChange={onGasTopUpEnabled}
+      {gasTopUpEnabled ? (
+        <>
+          <Text
+            style="subtitle2"
+            css={{
+              color: 'primary12',
+              mr: '2'
+            }}
           >
-            <StyledThumb />
-          </StyledSwitch>
-        </Flex>
-      </Flex>
-      <CollapsibleRoot open={gasTopUpEnabled}>
-        <CollapsibleContent>
-          <Text style="subtitle2" color="subtle" css={{ pt: '2' }}>
-            Add {gasTopUpAmountUsd ? formatDollar(+gasTopUpAmountUsd) : 'funds'}{' '}
-            to this swap to cover future transactions on {toChain?.displayName}.
+            +
+            {gasTopUpAmount
+              ? formatBN(gasTopUpAmount, 5, currency.decimals ?? 18)
+              : '-'}{' '}
+            {gasTopUpAmountUsd ? `(${formatDollar(+gasTopUpAmountUsd)})` : '-'}
           </Text>
-        </CollapsibleContent>
-      </CollapsibleRoot>
-    </Flex>
+          <ChainTokenIcon
+            chainId={toChain?.id}
+            tokenlogoURI={currencyIcon}
+            size="sm"
+            chainRadius={2}
+          />
+          <Text style="subtitle2" ellipsify>
+            {toChain?.currency?.symbol}
+          </Text>
+          <FontAwesomeIcon icon={faClose} />
+        </>
+      ) : (
+        <>
+          <Text
+            style="subtitle2"
+            css={{
+              color: 'primary12',
+              mr: '6px'
+            }}
+          >
+            Low on gas (Balance:{' '}
+            {gasTopUpBalance
+              ? formatBN(gasTopUpBalance, 5, currency.decimals ?? 18)
+              : '-'}{' '}
+            {currency.symbol})
+          </Text>
+          <FontAwesomeIcon icon={faPlus} />
+        </>
+      )}
+    </Pill>
   )
 }
 

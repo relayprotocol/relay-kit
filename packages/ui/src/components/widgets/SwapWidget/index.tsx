@@ -251,6 +251,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         gasTopUpEnabled,
         setGasTopUpEnabled,
         gasTopUpRequired,
+        gasTopUpBalance,
         gasTopUpAmount,
         gasTopUpAmountUsd,
         linkedWallet,
@@ -1447,6 +1448,23 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           popularChainIds={popularChainIds}
                         />
                       </Flex>
+                      <GasTopUpSection
+                        toChain={toChain}
+                        gasTopUpEnabled={gasTopUpEnabled}
+                        onGasTopUpEnabled={(enabled) => {
+                          setGasTopUpEnabled(enabled)
+                          onAnalyticEvent?.(EventNames.GAS_TOP_UP_TOGGLE, {
+                            enabled,
+                            amount: gasTopUpAmount,
+                            amount_usd: gasTopUpAmountUsd,
+                            quote
+                          })
+                        }}
+                        gasTopUpRequired={gasTopUpRequired}
+                        gasTopUpAmount={gasTopUpAmount}
+                        gasTopUpAmountUsd={gasTopUpAmountUsd}
+                        gasTopUpBalance={gasTopUpBalance}
+                      />
                       <Flex
                         align="center"
                         justify="between"
@@ -1567,22 +1585,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                         />
                       </Box>
                     ) : null}
-                    <GasTopUpSection
-                      toChain={toChain}
-                      gasTopUpEnabled={gasTopUpEnabled}
-                      onGasTopUpEnabled={(enabled) => {
-                        setGasTopUpEnabled(enabled)
-                        onAnalyticEvent?.(EventNames.GAS_TOP_UP_TOGGLE, {
-                          enabled,
-                          amount: gasTopUpAmount,
-                          amount_usd: gasTopUpAmountUsd,
-                          quote
-                        })
-                      }}
-                      gasTopUpRequired={gasTopUpRequired}
-                      gasTopUpAmount={gasTopUpAmount}
-                      gasTopUpAmountUsd={gasTopUpAmountUsd}
-                    />
                     <FeeBreakdown
                       feeBreakdown={feeBreakdown}
                       isFetchingQuote={isFetchingQuote}

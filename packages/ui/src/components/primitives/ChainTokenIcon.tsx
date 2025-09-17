@@ -5,7 +5,7 @@ import Box from './Box.js'
 import Text from './Text.js'
 import type { Styles } from '@relayprotocol/relay-design-system/css'
 
-type Size = 'md' | 'lg'
+type Size = 'sm' | 'md' | 'lg'
 
 type ChainTokenProps = {
   chainId?: number
@@ -13,9 +13,14 @@ type ChainTokenProps = {
   tokenSymbol?: string
   css?: Styles
   size?: Size
+  chainRadius?: number
 }
 
 const SIZES = {
+  sm: {
+    token: 20,
+    chain: 12
+  },
   md: {
     token: 32,
     chain: 16
@@ -31,7 +36,8 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   tokenlogoURI,
   tokenSymbol,
   css = {},
-  size = 'md'
+  size = 'md',
+  chainRadius = 4
 }) => {
   const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
   const dimensions = SIZES[size]
@@ -44,6 +50,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
         width: dimensions.token,
         height: dimensions.token,
         overflow: 'hidden',
+        borderRadius: chainRadius,
         ...css
       }}
     >
@@ -82,12 +89,13 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           position: 'absolute',
           right: 0,
           bottom: 0,
-          borderRadius: 4,
+          borderRadius: chainRadius,
           overflow: 'hidden',
           '--borderColor': 'colors.modal-background',
           border: '1px solid var(--borderColor)',
           backgroundColor: 'modal-background'
         }}
+        borderRadius={chainRadius}
       />
     </Flex>
   ) : null
