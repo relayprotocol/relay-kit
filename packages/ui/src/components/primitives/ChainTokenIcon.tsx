@@ -5,7 +5,7 @@ import Box from './Box.js'
 import Text from './Text.js'
 import type { Styles } from '@relayprotocol/relay-design-system/css'
 
-type Size = 'md' | 'lg'
+type Size = 'sm' | 'md' | 'lg'
 
 type ChainTokenProps = {
   chainId?: number
@@ -16,6 +16,10 @@ type ChainTokenProps = {
 }
 
 const SIZES = {
+  sm: {
+    token: 20,
+    chain: 8
+  },
   md: {
     token: 32,
     chain: 16

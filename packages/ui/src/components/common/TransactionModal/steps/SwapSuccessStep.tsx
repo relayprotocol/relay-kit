@@ -12,8 +12,6 @@ import {
 } from '../../../primitives/index.js'
 import { motion } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBolt } from '@fortawesome/free-solid-svg-icons/faBolt'
-import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { type TxHashes } from '../TransactionModalRenderer.js'
 import { type Token } from '../../../../types/index.js'
 import type { useRequests } from '@relayprotocol/relay-kit-hooks'
@@ -23,8 +21,8 @@ import type { Execute } from '@relayprotocol/relay-sdk'
 import { bitcoin } from '../../../../utils/bitcoin.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { TransactionsByChain } from './TransactionsByChain.js'
-import { faArrowRight } from '@fortawesome/free-solid-svg-icons'
-import { XIcon } from '../../../../icons/index.js'
+import { faArrowRight, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { RelayIcon, XIcon } from '../../../../icons/index.js'
 import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
 
 type SwapSuccessStepProps = {
@@ -101,6 +99,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   const toChain = _toToken
     ? relayClient?.chains.find((chain) => chain.id === _toToken?.chainId)
     : null
+
+  const isSameChainSwap = fromChain?.id === toChain?.id && !isWrap && !isUnwrap
   const delayedTxUrl = requestId
     ? `${baseTransactionUrl}/transaction/${requestId}`
     : null
@@ -294,105 +294,116 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
             damping: 20
           }}
         >
-          <Flex
-            align="center"
-            justify="center"
-            css={{
-              height: 80,
-              width: 80,
-              backgroundColor: 'green2',
-              '--borderColor': 'colors.green10',
-              border: '6px solid var(--borderColor)',
-              borderRadius: '999999px',
-              position: 'relative'
-            }}
-          >
-            {fillTime !== '-' && seconds <= 10 && seconds >= 0 ? (
-              <Text style="h3">{fillTime}</Text>
-            ) : (
-              <Box css={{ color: 'green9', mr: '$2' }}>
-                <FontAwesomeIcon icon={faCheck} style={{ height: 40 }} />
-              </Box>
-            )}
+          <Flex align="center">
+            <RelayIcon />
             <Flex
               align="center"
               justify="center"
               css={{
-                position: 'absolute',
-                width: 50,
-                height: 50,
-                background: 'modal-background',
-                color: 'primary-color',
-                '--borderColor': 'colors.subtle-border-color',
-                border: '3px solid var(--borderColor)',
-                borderRadius: '999999px',
-                right: -40,
-                bottom: -12
+                width: 40,
+                height: 40,
+                backgroundColor: 'green9',
+                color: 'white',
+                borderRadius: '100px',
+                '--borderColor': 'white',
+                border: '2px solid var(--borderColor)',
+                ml: '-8px'
               }}
             >
-              <Box css={{ width: 29, height: 27 }}>
-                <FontAwesomeIcon
-                  icon={faBolt}
-                  width={29}
-                  height={27}
-                  style={{ height: 27 }}
-                />
-              </Box>
+              <FontAwesomeIcon
+                icon={faCheck}
+                style={{ height: 20, color: 'white' }}
+              />
             </Flex>
           </Flex>
         </motion.div>
 
-        <Text style="subtitle1" css={{ mt: '4', mb: '2', textAlign: 'center' }}>
-          Successfully {actionTitle}
+        <Text style="h6" css={{ my: '12px', textAlign: 'center' }}>
+          {fillTime && fillTime !== '-' ? (
+            <>
+              Completed in{' '}
+              <span style={{ color: 'var(--colors-green11)' }}>{fillTime}</span>
+            </>
+          ) : (
+            'Transaction Completed'
+          )}
         </Text>
 
-        <Flex align="center" css={{ gap: '2', mb: 20 }}>
+        <Flex
+          direction="column"
+          css={{
+            gap: '3',
+            padding: '3',
+            '--borderColor': 'colors.slate.5',
+            border: '1px solid var(--borderColor)',
+            borderRadius: 12,
+            width: '100%'
+          }}
+        >
           {_fromToken ? (
-            <Pill
-              color="gray"
-              css={{ alignItems: 'center', py: '2', px: '3', gap: '2' }}
-            >
-              <ChainTokenIcon
-                chainId={_fromToken.chainId}
-                tokenlogoURI={fromTokenLogoUri}
-                tokenSymbol={_fromToken.symbol}
-              />
-              {isLoadingTransaction ? (
-                <Skeleton
-                  css={{ height: 24, width: 60, background: 'gray5' }}
-                />
-              ) : (
-                <Text style="subtitle1" ellipsify>
-                  {_fromAmountFormatted} {_fromToken.symbol}
-                </Text>
-              )}
-            </Pill>
+            <Flex direction="column" css={{ gap: '4px' }}>
+              <Text style="subtitle2" color="subtle">
+                {isSameChainSwap ? 'Swap' : 'Sent'}
+              </Text>
+              <Flex justify="between">
+                <Flex align="center" css={{ gap: '4px' }}>
+                  <ChainTokenIcon
+                    size="sm"
+                    chainId={_fromToken.chainId}
+                    tokenlogoURI={fromTokenLogoUri}
+                    tokenSymbol={_fromToken.symbol}
+                  />
+                  {isLoadingTransaction ? (
+                    <Skeleton
+                      css={{ height: 24, width: 60, background: 'gray5' }}
+                    />
+                  ) : (
+                    <Text style="h6">
+                      {_fromAmountFormatted} {_fromToken.symbol}
+                    </Text>
+                  )}
+                </Flex>
+                {!isSameChainSwap && (
+                  <Text style="subtitle2" css={{ color: 'primary11' }}>
+                    0xb8D9...e56e
+                  </Text>
+                )}
+              </Flex>
+            </Flex>
           ) : (
             <Text style="subtitle1">?</Text>
           )}
-          <Text style="subtitle1" color="subtle">
-            to
-          </Text>
+
           {_toToken ? (
-            <Pill
-              color="gray"
-              css={{ alignItems: 'center', py: '2', px: '3', gap: '2' }}
-            >
-              <ChainTokenIcon
-                chainId={_toToken.chainId}
-                tokenlogoURI={toTokenLogoUri}
-                tokenSymbol={_toToken.symbol}
-              />
-              {isLoadingTransaction ? (
-                <Skeleton
-                  css={{ height: 24, width: 60, background: 'gray5' }}
-                />
-              ) : (
-                <Text style="subtitle1" ellipsify>
-                  {_toAmountFormatted} {_toToken.symbol}
-                </Text>
-              )}
-            </Pill>
+            <Flex direction="column" css={{ gap: '4px' }}>
+              <Text style="subtitle2" color="subtle">
+                {isSameChainSwap ? 'To' : 'Received'}
+              </Text>
+              <Flex justify="between">
+                <Flex align="center" css={{ gap: '4px' }}>
+                  <ChainTokenIcon
+                    size="sm"
+                    chainId={_toToken.chainId}
+                    tokenlogoURI={toTokenLogoUri}
+                    tokenSymbol={_toToken.symbol}
+                  />
+                  {isLoadingTransaction ? (
+                    <Skeleton
+                      css={{ height: 24, width: 60, background: 'gray5' }}
+                    />
+                  ) : (
+                    <Text style="h6">
+                      {_toAmountFormatted} {_toToken.symbol}
+                    </Text>
+                  )}
+                </Flex>
+                {!isSameChainSwap && (
+                  <Text style="subtitle2" css={{ color: 'primary11' }}>
+                    0xb8D9...e56e
+                  </Text>
+                )}
+              </Flex>
+            </Flex>
           ) : (
             <Text style="subtitle1">?</Text>
           )}
@@ -455,7 +466,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         </Flex>
       ) : null}
 
-      <Flex css={{ width: '100%', mt: 8, gap: '3' }}>
+      <Flex css={{ width: '100%', gap: '3' }}>
         {requestId ? (
           <a
             href={`${baseTransactionUrl}/transaction/${requestId}`}
