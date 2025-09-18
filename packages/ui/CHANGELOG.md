@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.15
+
+### Patch Changes
+
+- 99516bb: Update gas top up copy
+
 ## 4.0.14
 
 ### Patch Changes
