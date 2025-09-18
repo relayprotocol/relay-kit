@@ -535,8 +535,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     }
   }, [originChainSupportsProtocolv2, fromChain?.id])
 
-  const loadingProtocolVersion = false
-
   // Get native balance only when not swapping from native token
   const isFromNative = fromToken?.address === fromChain?.currency?.address
   const { value: nativeBalance } = useCurrencyBalance({
@@ -693,8 +691,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       fromToken !== undefined &&
       toToken !== undefined &&
       !transactionModalOpen &&
-      !depositAddressModalOpen &&
-      !loadingProtocolVersion
+      !depositAddressModalOpen
   )
 
   const {
