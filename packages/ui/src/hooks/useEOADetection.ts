@@ -134,19 +134,43 @@ const useEOADetection = (
           return
         }
 
-        const eoaResult = await wallet.isEOA(chainId!)
-        const { isEOA, isEIP7702Delegated } = eoaResult
-        const explicitDepositValue = !isEOA || isEIP7702Delegated
+        const abortController = new AbortController()
+        const timeoutId = setTimeout(() => {
+          abortController.abort()
+        }, 1000)
 
-        setDetectionState((current) =>
-          current.conditionKey === conditionKey
-            ? { value: explicitDepositValue, conditionKey }
-            : current
-        )
+        try {
+          const eoaResult = await Promise.race([
+            wallet.isEOA(chainId!),
+            new Promise<never>((_, reject) => {
+              abortController.signal.addEventListener('abort', () => {
+                reject(new Error('EOA_DETECTION_TIMEOUT'))
+              })
+            })
+          ])
+
+          clearTimeout(timeoutId)
+          const { isEOA, isEIP7702Delegated } = eoaResult
+          const explicitDepositValue = !isEOA || isEIP7702Delegated
+
+          setDetectionState((current) =>
+            current.conditionKey === conditionKey
+              ? { value: explicitDepositValue, conditionKey }
+              : current
+          )
+        } catch (eoaError: any) {
+          clearTimeout(timeoutId)
+
+          setDetectionState((current) =>
+            current.conditionKey === conditionKey
+              ? { value: true, conditionKey }
+              : current
+          )
+        }
       } catch (error) {
         setDetectionState((current) =>
           current.conditionKey === conditionKey
-            ? { value: undefined, conditionKey }
+            ? { value: true, conditionKey }
             : current
         )
       }
