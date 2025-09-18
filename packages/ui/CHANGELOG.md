@@ -1,5 +1,12 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.14
+
+### Patch Changes
+
+- 2108fb8: Update gas top up logic and ui
+- ffd4dd2: Tweak logic and ui for gas top up
+
 ## 4.0.13
 
 ### Patch Changes
