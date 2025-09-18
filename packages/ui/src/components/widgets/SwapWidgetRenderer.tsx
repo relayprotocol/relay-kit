@@ -526,14 +526,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromChain?.protocol?.v2?.depository !== undefined &&
     toChain?.protocol?.v2?.chainId !== undefined
 
-  const quoteProtocol = useMemo(() => {
-    //Enabled only on certain chains
-    if (fromChain?.id && originChainSupportsProtocolv2) {
-      return 'preferV2'
-    } else {
-      return undefined
-    }
-  }, [originChainSupportsProtocolv2, fromChain?.id])
+  //Enabled only on certain chains
+  const quoteProtocol =
+    fromChain?.id && originChainSupportsProtocolv2 ? 'preferV2' : undefined
 
   // Get native balance only when not swapping from native token
   const isFromNative = fromToken?.address === fromChain?.currency?.address
