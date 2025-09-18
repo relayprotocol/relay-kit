@@ -4,7 +4,6 @@ import {
   Text,
   ChainTokenIcon,
   Box,
-  Anchor,
   ChainIcon
 } from '../../../primitives/index.js'
 import { LoadingSpinner } from '../../LoadingSpinner.js'
@@ -13,11 +12,15 @@ import { type Token } from '../../../../types/index.js'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
 import type { Execute, RelayChain } from '@relayprotocol/relay-sdk'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
-import { faCheck, faExternalLink } from '@fortawesome/free-solid-svg-icons'
-import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
-import { truncateAddress } from '../../../../utils/truncate.js'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { formatTransactionSteps } from '../../../../utils/steps.js'
 import { formatBN } from '../../../../utils/numbers.js'
+import {
+  FileSignature,
+  Shuffle,
+  ArrowRightFromLine,
+  ArrowLeftToLine
+} from '../../../../icons/index.js'
 
 type SwapConfirmationStepProps = {
   fromToken?: Token
@@ -201,6 +204,52 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
   )
 }
 
+type StepIconProps = {
+  stepId: string
+  isActive: boolean
+  chainId?: number
+}
+
+const StepIcon = ({ stepId, isActive, chainId }: StepIconProps) => {
+  const getIconForStep = () => {
+    if (stepId.includes('approve')) {
+      return <FileSignature width={14} height={16} />
+    }
+    if (
+      stepId.includes('swap') ||
+      stepId.includes('deposit') ||
+      stepId.includes('send')
+    ) {
+      if (stepId.includes('same-chain')) {
+        return <Shuffle width={16} height={16} />
+      } else {
+        return <ArrowRightFromLine width={14} height={16} />
+      }
+    }
+    if (stepId.includes('relay')) {
+      return <Shuffle width={16} height={16} />
+    }
+    if (stepId.includes('receive')) {
+      return <ArrowLeftToLine width={14} height={16} />
+    }
+    return <ChainIcon chainId={chainId} square={false} width={14} height={16} />
+  }
+
+  return (
+    <Flex
+      css={{
+        borderRadius: '100px',
+        padding: '8px',
+        width: '32px',
+        height: '32px',
+        gap: '2'
+      }}
+    >
+      {getIconForStep()}
+    </Flex>
+  )
+}
+
 export type StepRowProps = {
   id: string
   action: string
@@ -211,11 +260,12 @@ export type StepRowProps = {
   chainId?: number
   isApproveStep?: boolean
   subText?: string
-  subTextColor?: 'primary11' | 'subtle'
+  subTextColor?: 'primary11' | 'subtle' | 'slate10'
   showSubTextSpinner?: boolean
 }
 
 export const StepRow: FC<StepRowProps> = ({
+  id,
   action,
   isActive,
   isCompleted,
@@ -255,21 +305,10 @@ export const StepRow: FC<StepRowProps> = ({
           {isCompleted ? (
             <FontAwesomeIcon icon={faCheck} width={12} />
           ) : (
-            <ChainIcon
-              chainId={chainId}
-              square={false}
-              width={24}
-              height={24}
-              css={{
-                borderRadius: 9999999,
-                overflow: 'hidden',
-                filter: isActive ? 'none' : 'grayscale(100%)',
-                opacity: isActive ? 1 : 0.6
-              }}
-            />
+            <StepIcon stepId={id} isActive={isActive} chainId={chainId} />
           )}
         </Flex>
-        <Flex direction="column" css={{ gap: '2.5px' }}>
+        <Flex direction="column" css={{ gap: '2px' }}>
           <Text style="subtitle2" color={isActive ? undefined : 'subtle'}>
             {action}
           </Text>
@@ -278,7 +317,14 @@ export const StepRow: FC<StepRowProps> = ({
             <Flex align="center" css={{ gap: '6px' }}>
               <Text
                 style="subtitle3"
-                css={{ color: subTextColor || 'primary11' }}
+                css={{
+                  color:
+                    subTextColor === 'slate10'
+                      ? 'colors.slate.10'
+                      : subTextColor === 'subtle'
+                        ? 'colors.text-subtle'
+                        : 'colors.primary11'
+                }}
               >
                 {subText}
               </Text>
@@ -287,45 +333,6 @@ export const StepRow: FC<StepRowProps> = ({
               )}
             </Flex>
           )}
-
-          {isApproveStep && !hasTxHash && !isCompleted && (
-            <Anchor
-              css={{ fontSize: 12 }}
-              href="https://support.relay.link/en/articles/10371133-why-do-i-have-to-approve-a-token"
-              target="_blank"
-            >
-              Why do I have to approve a token?
-            </Anchor>
-          )}
-
-          {txHashes &&
-            txHashes.length > 0 &&
-            txHashes.map(({ txHash, chainId }) => {
-              const txUrl = getTxBlockExplorerUrl(
-                chainId,
-                relayClient?.chains,
-                txHash
-              )
-              if (txHash && txUrl) {
-                return (
-                  <Anchor
-                    key={txHash}
-                    href={txUrl}
-                    target="_blank"
-                    css={{
-                      fontSize: 12,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '1'
-                    }}
-                  >
-                    {!isApproveStep ? 'Deposit: ' : ''}
-                    {truncateAddress(txHash, '...', 6, 4)}{' '}
-                    <FontAwesomeIcon icon={faExternalLink} width={14} />
-                  </Anchor>
-                )
-              }
-            })}
         </Flex>
       </Flex>
     </Flex>

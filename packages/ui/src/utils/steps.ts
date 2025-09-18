@@ -14,7 +14,7 @@ export type FormattedStep = {
   chainId?: number
   isApproveStep?: boolean
   subText?: string
-  subTextColor?: 'primary11' | 'subtle'
+  subTextColor?: 'primary11' | 'subtle' | 'slate10'
   showSubTextSpinner?: boolean
 }
 
@@ -89,6 +89,16 @@ export const formatTransactionSteps = ({
     step.items?.every((item) => item.status === 'complete')
   )
 
+  const hasDestinationTxHashes =
+    !isSameChain &&
+    executableSteps.some((step) =>
+      step.items?.some(
+        (item) =>
+          item.txHashes?.some((tx) => tx.chainId === toToken?.chainId) ||
+          item.internalTxHashes?.some((tx) => tx.chainId === toToken?.chainId)
+      )
+    )
+
   // Helper to generate sub-text based on step type and state
   const getSubText = (
     stepType: 'approve' | 'send' | 'swap' | 'relay' | 'receive',
@@ -97,12 +107,13 @@ export const formatTransactionSteps = ({
     progressState?: string
   ): string | undefined => {
     if (isCompleted) return undefined
+    if (!isActive) return undefined
 
     switch (stepType) {
       case 'approve':
         if (progressState === 'confirming') return 'Approve in Metamask'
         if (progressState === 'validating') return 'Approving'
-        return 'Approve in Metamask'
+        return undefined
 
       case 'send':
       case 'swap':
@@ -112,13 +123,19 @@ export const formatTransactionSteps = ({
             ? 'Sending to Relay'
             : 'Relay routing your payment'
         }
-        return 'Confirm in Metamask'
+        return undefined
 
       case 'receive':
         if (isActive && toToken?.address) {
           return `Receiving: ${toToken.address.slice(0, 6)}...${toToken.address.slice(-4)}`
         }
-        return 'Queued'
+        if (!isActive) {
+          return 'Queued'
+        }
+        return undefined
+
+      case 'relay':
+        return 'Relay routing your payment'
 
       default:
         return undefined
@@ -131,12 +148,15 @@ export const formatTransactionSteps = ({
     isActive: boolean,
     isCompleted: boolean,
     subText?: string
-  ): { color: 'primary11' | 'subtle' | undefined; showSpinner: boolean } => {
+  ): {
+    color: 'primary11' | 'subtle' | 'slate10' | undefined
+    showSpinner: boolean
+  } => {
     if (!subText) return { color: undefined, showSpinner: false }
 
     if (stepType === 'receive') {
       return {
-        color: isActive ? 'primary11' : 'subtle',
+        color: isActive ? 'primary11' : 'slate10',
         showSpinner: isActive
       }
     }
@@ -371,7 +391,7 @@ export const formatTransactionSteps = ({
     result.push({
       id: 'relay-processing',
       action: 'Relay routes your payment',
-      isActive: isSendCompleted && !allStepsComplete,
+      isActive: isSendCompleted && !hasDestinationTxHashes,
       isCompleted: false,
       isWalletAction: false,
       chainId: fromChain?.id,
@@ -380,15 +400,16 @@ export const formatTransactionSteps = ({
     })
 
     // Step 4/3: Receive
+    const receiveStepActive = hasDestinationTxHashes
     const receiveSubText = getSubText(
       'receive',
-      allStepsComplete,
+      receiveStepActive,
       false,
       currentProgressState
     )
     const receiveSubTextProps = getSubTextProps(
       'receive',
-      allStepsComplete,
+      receiveStepActive,
       false,
       receiveSubText
     )
@@ -396,7 +417,7 @@ export const formatTransactionSteps = ({
     result.push({
       id: 'receive-cross-chain',
       action: `Receive ${toTokenSymbol} on ${toChain?.displayName}`,
-      isActive: allStepsComplete,
+      isActive: receiveStepActive,
       isCompleted: false,
       isWalletAction: false,
       chainId: toChain?.id,

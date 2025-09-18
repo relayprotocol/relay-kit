@@ -125,8 +125,20 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
       )
     : undefined
 
-  const showDetails =
-    !allTxHashes.every((tx) => tx.isBatchTx) || formattedGasTopUpAmount
+  // Helper function to get transaction hash for a specific chain
+  const getTxHashForChain = (chainId: number) => {
+    return allTxHashes.find((tx) => tx.chainId === chainId)?.txHash
+  }
+
+  // Helper function to get transaction URL for a specific chain and hash
+  const getTxUrl = (chainId: number, txHash: string) => {
+    const chain = relayClient?.chains.find((chain) => chain.id === chainId)
+    if (chain?.explorerUrl && chain?.explorerPaths?.transaction) {
+      return `${chain.explorerUrl}${chain.explorerPaths.transaction.replace('{txHash}', txHash)}`
+    }
+    return undefined
+  }
+
   const shareIconFill =
     providerOptionsContext.themeScheme === 'dark' ? '#fff' : '#000'
 
@@ -363,11 +375,25 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     </Text>
                   )}
                 </Flex>
-                {!isSameChainSwap && (
-                  <Text style="subtitle2" css={{ color: 'primary11' }}>
-                    0xb8D9...e56e
-                  </Text>
-                )}
+                {!isSameChainSwap &&
+                  _fromToken?.chainId &&
+                  (() => {
+                    const txHash = getTxHashForChain(_fromToken.chainId)
+                    const txUrl = txHash
+                      ? getTxUrl(_fromToken.chainId, txHash)
+                      : undefined
+                    return txHash ? (
+                      <Anchor
+                        href={txUrl}
+                        target="_blank"
+                        css={{ color: 'primary11' }}
+                      >
+                        <Text style="subtitle2">
+                          {txHash.slice(0, 6)}...{txHash.slice(-4)}
+                        </Text>
+                      </Anchor>
+                    ) : null
+                  })()}
               </Flex>
             </Flex>
           ) : (
@@ -398,44 +424,30 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                   )}
                 </Flex>
 
-                <Text style="subtitle2" css={{ color: 'primary11' }}>
-                  0xb8D9...e56e
-                </Text>
+                {_toToken?.chainId &&
+                  (() => {
+                    const txHash = getTxHashForChain(_toToken.chainId)
+                    const txUrl = txHash
+                      ? getTxUrl(_toToken.chainId, txHash)
+                      : undefined
+                    return txHash ? (
+                      <Anchor
+                        href={txUrl}
+                        target="_blank"
+                        css={{ color: 'primary11' }}
+                      >
+                        <Text style="subtitle2">
+                          {txHash.slice(0, 6)}...{txHash.slice(-4)}
+                        </Text>
+                      </Anchor>
+                    ) : null
+                  })()}
               </Flex>
             </Flex>
           ) : (
             <Text style="subtitle1">?</Text>
           )}
         </Flex>
-        {showDetails && (
-          <Flex
-            direction="column"
-            css={{
-              p: '3',
-              '--borderColor': 'colors.subtle-border-color',
-              border: '1px solid var(--borderColor)',
-              gap: '3',
-              width: '100%',
-              borderRadius: 12
-            }}
-          >
-            {formattedGasTopUpAmount ? (
-              <Flex justify="between">
-                <Text style="subtitle2" color="subtle">
-                  Additional Gas
-                </Text>
-                <Text style="subtitle2">
-                  {formattedGasTopUpAmount} {gasTopUpAmountCurrency?.symbol}
-                </Text>
-              </Flex>
-            ) : null}
-            <TransactionsByChain
-              allTxHashes={allTxHashes}
-              fromChain={fromChain}
-              toChain={toChain}
-            />
-          </Flex>
-        )}
       </Flex>
 
       {isGasSponsored && _toToken?.symbol === 'USDC' ? (
