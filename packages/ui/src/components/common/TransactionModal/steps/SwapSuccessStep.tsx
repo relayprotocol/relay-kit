@@ -397,11 +397,10 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     </Text>
                   )}
                 </Flex>
-                {!isSameChainSwap && (
-                  <Text style="subtitle2" css={{ color: 'primary11' }}>
-                    0xb8D9...e56e
-                  </Text>
-                )}
+
+                <Text style="subtitle2" css={{ color: 'primary11' }}>
+                  0xb8D9...e56e
+                </Text>
               </Flex>
             </Flex>
           ) : (

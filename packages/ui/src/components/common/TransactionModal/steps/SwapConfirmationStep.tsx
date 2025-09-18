@@ -7,6 +7,7 @@ import {
   Anchor,
   ChainIcon
 } from '../../../primitives/index.js'
+import { LoadingSpinner } from '../../LoadingSpinner.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { type Token } from '../../../../types/index.js'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
@@ -46,11 +47,13 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
       formatTransactionSteps({
         steps,
         fromToken,
+        toToken,
         fromChain,
         toChain,
-        operation
+        operation,
+        quote
       }),
-    [steps, fromToken, toToken, fromChain, toChain, operation]
+    [steps, fromToken, toToken, fromChain, toChain, operation, quote]
   )
 
   const gasTopUpAmountCurrency = quote?.details?.currencyGasTopup?.currency
@@ -207,6 +210,9 @@ export type StepRowProps = {
   isWalletAction: boolean
   chainId?: number
   isApproveStep?: boolean
+  subText?: string
+  subTextColor?: 'primary11' | 'subtle'
+  showSubTextSpinner?: boolean
 }
 
 export const StepRow: FC<StepRowProps> = ({
@@ -216,7 +222,10 @@ export const StepRow: FC<StepRowProps> = ({
   txHashes,
   isWalletAction,
   chainId,
-  isApproveStep
+  isApproveStep,
+  subText,
+  subTextColor,
+  showSubTextSpinner
 }) => {
   const relayClient = useRelayClient()
   const hasTxHash = txHashes && txHashes.length > 0
@@ -260,33 +269,24 @@ export const StepRow: FC<StepRowProps> = ({
             />
           )}
         </Flex>
-        <Flex direction="column" css={{ gap: '2px' }}>
-          <Flex align="center" css={{ gap: '2' }}>
-            <Text style="subtitle2" color={isActive ? undefined : 'subtle'}>
-              {action}
-            </Text>
-            {isWalletAction && (
-              <Box
-                css={{
-                  backgroundColor: 'primary3',
-                  borderRadius: 100,
-                  px: '2',
-                  py: '1'
-                }}
+        <Flex direction="column" css={{ gap: '2.5px' }}>
+          <Text style="subtitle2" color={isActive ? undefined : 'subtle'}>
+            {action}
+          </Text>
+
+          {subText && (
+            <Flex align="center" css={{ gap: '6px' }}>
+              <Text
+                style="subtitle3"
+                css={{ color: subTextColor || 'primary11' }}
               >
-                <Text
-                  style="subtitle3"
-                  css={{
-                    color: 'primary11',
-                    fontSize: '10px',
-                    lineHeight: '12px'
-                  }}
-                >
-                  In Wallet
-                </Text>
-              </Box>
-            )}
-          </Flex>
+                {subText}
+              </Text>
+              {showSubTextSpinner && (
+                <LoadingSpinner css={{ height: 12, width: 12 }} />
+              )}
+            </Flex>
+          )}
 
           {isApproveStep && !hasTxHash && !isCompleted && (
             <Anchor
