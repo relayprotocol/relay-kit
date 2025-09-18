@@ -79,7 +79,7 @@ const GasTopUpSection: FC<Props> = ({
               mr: '6px'
             }}
           >
-            Add Gas (Low Balance:{' '}
+            Add Gas (Balance:{' '}
             {gasTopUpBalance
               ? formatBN(gasTopUpBalance, 5, currency.decimals ?? 18)
               : '0'}{' '}
