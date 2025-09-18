@@ -1,6 +1,5 @@
 import { useMemo, useEffect, useState, useRef } from 'react'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
-import { formatUnits } from 'viem'
 import useCurrencyBalance from './useCurrencyBalance.js'
 import useTransactionCount from './useTransactionCount.js'
 
@@ -74,26 +73,6 @@ const useEOADetection = (
     transactionCount !== undefined &&
     transactionCount <= 1
 
-  // Debug logs for QA testing
-  if (protocolVersion === 'preferV2' && chainVmType === 'evm') {
-    if (shouldRunSafetyChecks) {
-      const formattedBalance = effectiveNativeBalance !== undefined 
-        ? `${formatUnits(effectiveNativeBalance, 18)} ${fromChain?.currency?.symbol || 'ETH'}`
-        : 'undefined'
-        
-      console.log('🔍 EOA Detection Debug:', {
-        nativeBalance: formattedBalance,
-        transactionCount,
-        hasZeroNativeBalance,
-        hasLowTransactionCount,
-        isFromNative,
-        shouldRunSafetyChecks
-      })
-    } else if (isFromNative) {
-      console.log('⏭️ Skipping safety checks (swapping native token)')
-    }
-  }
-
   const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${protocolVersion}:${chainId}:${walletId.current}:${hasZeroNativeBalance}:${hasLowTransactionCount}`
 
   const shouldDetect = useMemo(() => {
@@ -122,19 +101,12 @@ const useEOADetection = (
 
     // force explicit deposit for zero native balance or low transaction count
     if (hasZeroNativeBalance || hasLowTransactionCount) {
-      console.log('✅ Forcing explicitDeposit=true due to safety checks')
       return true
     }
 
-    const eoaResult = detectionState.conditionKey !== conditionKey || !shouldDetect
+    return detectionState.conditionKey !== conditionKey || !shouldDetect
       ? undefined
       : detectionState.value
-
-    if (shouldRunSafetyChecks && eoaResult !== undefined) {
-      console.log('🎯 Using EOA detection result:', eoaResult)
-    }
-
-    return eoaResult
   }, [
     conditionKey,
     shouldDetect,
@@ -162,19 +134,43 @@ const useEOADetection = (
           return
         }
 
-        const eoaResult = await wallet.isEOA(chainId!)
-        const { isEOA, isEIP7702Delegated } = eoaResult
-        const explicitDepositValue = !isEOA || isEIP7702Delegated
+        const abortController = new AbortController()
+        const timeoutId = setTimeout(() => {
+          abortController.abort()
+        }, 1000)
 
-        setDetectionState((current) =>
-          current.conditionKey === conditionKey
-            ? { value: explicitDepositValue, conditionKey }
-            : current
-        )
+        try {
+          const eoaResult = await Promise.race([
+            wallet.isEOA(chainId!),
+            new Promise<never>((_, reject) => {
+              abortController.signal.addEventListener('abort', () => {
+                reject(new Error('EOA_DETECTION_TIMEOUT'))
+              })
+            })
+          ])
+
+          clearTimeout(timeoutId)
+          const { isEOA, isEIP7702Delegated } = eoaResult
+          const explicitDepositValue = !isEOA || isEIP7702Delegated
+
+          setDetectionState((current) =>
+            current.conditionKey === conditionKey
+              ? { value: explicitDepositValue, conditionKey }
+              : current
+          )
+        } catch (eoaError: any) {
+          clearTimeout(timeoutId)
+
+          setDetectionState((current) =>
+            current.conditionKey === conditionKey
+              ? { value: true, conditionKey }
+              : current
+          )
+        }
       } catch (error) {
         setDetectionState((current) =>
           current.conditionKey === conditionKey
-            ? { value: undefined, conditionKey }
+            ? { value: true, conditionKey }
             : current
         )
       }
