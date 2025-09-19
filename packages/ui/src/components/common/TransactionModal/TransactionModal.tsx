@@ -104,9 +104,13 @@ export const TransactionModal: FC<TransactionModalProps> = (
           relayer_fee?: number
           amount_in: number
           amount_out: number
+          amount_in_raw: string
+          amount_out_raw: string
         } = {
           amount_in: parseFloat(`${details?.currencyIn?.amountFormatted}`),
-          amount_out: parseFloat(`${details?.currencyOut?.amountFormatted}`)
+          amount_in_raw: details?.currencyIn?.amount,
+          amount_out: parseFloat(`${details?.currencyOut?.amountFormatted}`),
+          amount_out_raw: details?.currencyOut?.amount
         }
         if (fees?.gas?.amountFormatted) {
           extraData.gas_fee = parseFloat(fees.gas.amountFormatted)
@@ -119,9 +123,13 @@ export const TransactionModal: FC<TransactionModalProps> = (
           ...extraData,
           chain_id_in: fromToken?.chainId,
           currency_in: fromToken?.symbol,
+          currency_in_address: details?.currencyIn?.currency?.address,
+          currency_in_decimals: fromToken?.decimals,
+          currency_in_usd: details?.currencyIn?.amountUsd,
           chain_id_out: toToken?.chainId,
           currency_out: toToken?.symbol,
-          currency_in_usd: details?.currencyIn?.amountUsd,
+          currency_out_address: details?.currencyOut?.currency?.address,
+          currency_out_decimals: toToken?.decimals,
           currency_out_usd: details?.currencyOut?.amountUsd,
           is_canonical: useExternalLiquidity,
           quote_id: quoteId,
