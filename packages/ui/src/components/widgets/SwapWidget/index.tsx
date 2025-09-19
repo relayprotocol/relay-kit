@@ -66,6 +66,7 @@ type BaseSwapWidgetProps = {
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean
   sponsoredTokens?: string[]
+  onOpenSlippageConfig?: () => void
   onFromTokenChange?: (token?: Token) => void
   onToTokenChange?: (token?: Token) => void
   onConnectWallet?: () => void
@@ -103,6 +104,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   defaultAmount,
   defaultTradeType,
   slippageTolerance,
+  onOpenSlippageConfig,
   lockToToken = false,
   lockFromToken = false,
   lockChainId,
@@ -1607,6 +1609,9 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       isSingleChainLocked={isSingleChainLocked}
                       fromChainWalletVMSupported={fromChainWalletVMSupported}
                       error={error}
+                      onOpenSlippageConfig={() => {
+                        onOpenSlippageConfig?.()
+                      }}
                     />
                     <WidgetErrorWell
                       hasInsufficientBalance={hasInsufficientBalance}
