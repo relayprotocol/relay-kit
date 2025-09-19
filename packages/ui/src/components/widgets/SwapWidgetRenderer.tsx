@@ -23,7 +23,6 @@ import type { ChainVM, Execute } from '@relayprotocol/relay-sdk'
 import {
   calculatePriceTimeEstimate,
   calculateRelayerFeeProportionUsd,
-  calculateUsdValue,
   extractQuoteId,
   getCurrentStep,
   getSwapEventData,
@@ -527,47 +526,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromChain?.protocol?.v2?.depository !== undefined &&
     toChain?.protocol?.v2?.chainId !== undefined
 
-  const quoteProtocol = useMemo(() => {
-    //Enabled only on certain chains
-    if (fromChain?.id && originChainSupportsProtocolv2) {
-      if (!fromToken && !fromTokenPriceData) {
-        return undefined
-      }
-
-      const relevantPrice =
-        fromTokenPriceData?.price && !isLoadingFromTokenPrice
-          ? fromTokenPriceData.price
-          : undefined
-      const amount =
-        tradeType === 'EXACT_INPUT'
-          ? debouncedInputAmountValue
-          : debouncedOutputAmountValue
-
-      if (!amount) {
-        return undefined
-      }
-
-      const usdAmount = relevantPrice
-        ? calculateUsdValue(relevantPrice, amount)
-        : undefined
-
-      return usdAmount !== undefined && usdAmount <= 10000
-        ? 'preferV2'
-        : undefined
-    } else {
-      return undefined
-    }
-  }, [
-    fromTokenPriceData,
-    isLoadingFromTokenPrice,
-    debouncedInputAmountValue,
-    tradeType,
-    originChainSupportsProtocolv2,
-    fromChain?.id
-  ])
-
-  const loadingProtocolVersion =
-    fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
+  //Enabled only on certain chains
+  const quoteProtocol =
+    fromChain?.id && originChainSupportsProtocolv2 ? 'preferV2' : undefined
 
   const isFromNative = fromToken?.address === fromChain?.currency?.address
 
@@ -714,8 +675,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       fromToken !== undefined &&
       toToken !== undefined &&
       !transactionModalOpen &&
-      !depositAddressModalOpen &&
-      !loadingProtocolVersion
+      !depositAddressModalOpen
   )
 
   const {
