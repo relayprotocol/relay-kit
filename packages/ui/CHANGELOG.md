@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.16
+
+### Patch Changes
+
+- 686070b: Remove protocol v2 threshold
+
 ## 4.0.15
 
 ### Patch Changes
