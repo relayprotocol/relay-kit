@@ -1,5 +1,5 @@
 import { useState, type FC } from 'react'
-import { Box, Button, Flex, Text } from '../primitives/index.js'
+import { Box, Button, Flex, Pill, Text } from '../primitives/index.js'
 import type { ChildrenProps } from './SwapWidgetRenderer.js'
 import { formatBN, formatDollar } from '../../utils/numbers.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -42,6 +42,7 @@ type Props = Pick<
   isAutoSlippage: boolean
   slippageInputBps?: string
   error?: any
+  onOpenSlippageConfig?: () => void
 }
 
 const formatSwapRate = (rate: number) => {
@@ -64,10 +65,12 @@ const FeeBreakdown: FC<Props> = ({
   fromChainWalletVMSupported,
   isAutoSlippage,
   slippageInputBps,
-  error
+  error,
+  onOpenSlippageConfig
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const swapRate = quote?.details?.rate
+  const isFixedRate = quote?.details?.isFixedRate
   const originGasFee = feeBreakdown?.breakdown?.find(
     (fee) => fee.id === 'origin-gas'
   )
@@ -83,12 +86,13 @@ const FeeBreakdown: FC<Props> = ({
     quote?.details?.slippageTolerance?.origin?.percent
   const destinationSlippageTolerance =
     quote?.details?.slippageTolerance?.destination?.percent
-  const quoteSlippage =
-    (isSameChain
-      ? destinationSlippageTolerance === '0'
-        ? originSlippageTolerance
-        : destinationSlippageTolerance
-      : destinationSlippageTolerance) ?? '0'
+  const quoteSlippage = isFixedRate
+    ? '0'
+    : ((isSameChain
+        ? destinationSlippageTolerance === '0'
+          ? originSlippageTolerance
+          : destinationSlippageTolerance
+        : destinationSlippageTolerance) ?? '0')
   const slippageInputNumber = Number(
     (Number(slippageInputBps ?? '0') / 100).toFixed(2)
   )
@@ -169,42 +173,6 @@ const FeeBreakdown: FC<Props> = ({
           }
         </PriceImpactTooltip>
       )
-    },
-    {
-      title: 'Max Slippage',
-      value: (
-        <Flex align="center" css={{ gap: '1' }}>
-          {isAutoSlippage ? (
-            <Text
-              style="subtitle3"
-              css={{ py: '1px', px: '4px', bg: 'gray3', borderRadius: 100 }}
-            >
-              Auto
-            </Text>
-          ) : null}
-
-          <Tooltip
-            side="top"
-            align="end"
-            content={
-              minimumAmountFormatted ? (
-                <Flex direction="row" css={{ gap: '2' }}>
-                  <Text style="subtitle2" color="subtle">
-                    Min. received
-                  </Text>
-                  <Text style="subtitle2">
-                    {minimumAmountFormatted} {toToken?.symbol}
-                  </Text>
-                </Flex>
-              ) : null
-            }
-          >
-            <Text style="subtitle2" css={{ color: slippageRatingColor }}>
-              {slippage}%
-            </Text>
-          </Tooltip>
-        </Flex>
-      )
     }
   ]
 
@@ -272,170 +240,219 @@ const FeeBreakdown: FC<Props> = ({
   }
 
   return (
-    <CollapsibleRoot
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      css={{ mb: 'widget-card-section-gutter' }}
+    <Flex
+      css={{
+        borderRadius: 'widget-card-border-radius',
+        borderBottomRadius: isOpen ? '0' : 'widget-card-border-radius',
+        backgroundColor: 'widget-background',
+        border: 'widget-card-border',
+        borderBottom: isOpen ? 'none' : 'widget-card-border',
+        overflow: 'hidden',
+        transition: 'border-radius 300ms, border-bottom 0s',
+        transitionDelay: isOpen ? '0s, 0s' : '0s, 300ms',
+        mb: 'widget-card-section-gutter'
+      }}
+      direction="column"
     >
-      <CollapsibleTrigger
-        css={{
-          borderRadius: 'widget-card-border-radius',
-          borderBottomRadius: isOpen ? '0' : 'widget-card-border-radius',
-          backgroundColor: 'widget-background',
-          border: 'widget-card-border',
-          borderBottom: isOpen ? 'none' : 'widget-card-border',
-          overflow: 'hidden',
-          transition: 'border-radius 300ms, border-bottom 0s',
-          transitionDelay: isOpen ? '0s, 0s' : '0s, 300ms'
-        }}
-        id={'fee-breakdown-section'}
-      >
-        <Flex
-          justify="between"
-          align="center"
-          css={{
-            flexDirection: 'row',
-            gap: '2',
-            width: '100%',
-            p: '3'
-          }}
-        >
-          <span
-            style={{
-              cursor: 'pointer',
-              flexShrink: 1,
-              overflow: 'hidden',
-              height: 21
-            }}
-            onClick={(e) => {
-              setRateMode(rateMode === 'input' ? 'output' : 'input')
-              e.preventDefault()
-            }}
-          >
-            <ConversionRate
-              fromToken={fromToken}
-              toToken={toToken}
-              rate={Number(swapRate)}
-              isInputMode={rateMode === 'input'}
-            />
-          </span>
-
-          <Flex
-            css={{
-              gap: '2',
-              color:
-                timeEstimate && timeEstimate.time <= 30
-                  ? '{colors.grass.9}'
-                  : '{colors.amber.9}',
-              flexShrink: 0
-            }}
-            align="center"
-          >
-            {!isOpen && timeEstimate && timeEstimate?.time !== 0 ? (
-              <>
-                <FontAwesomeIcon icon={faClock} width={16} />
-                <Text style="subtitle2" css={{ flexShrink: 0 }}>
-                  ~ {timeEstimate?.formattedTime}
-                </Text>
-                <Flex
-                  justify="center"
-                  align="center"
-                  css={{ color: 'gray6', height: 4 }}
-                >
-                  &#8226;
-                </Flex>
-              </>
-            ) : null}
-            {!isOpen && (
-              <>
-                <FontAwesomeIcon
-                  icon={faGasPump}
-                  width={16}
-                  style={{ color: '#C1C8CD' }}
-                />
-                <Text style="subtitle2" css={{ flexShrink: 0 }}>
-                  {originGasFeeFormatted}
-                </Text>
-              </>
-            )}
-            <Box
+      <Flex justify="between" align="center" css={{ p: '3', pb: '0' }}>
+        <Text style="subtitle2">Max Slippage</Text>
+        <Flex align="center" css={{ gap: '2' }}>
+          {isAutoSlippage ? (
+            <Button
+              aria-label="Auto"
               css={{
-                marginLeft: '2',
-                transition: 'transform 300ms',
-                transform: isOpen ? 'rotate(-180deg)' : 'rotate(0)',
-                color: 'gray9'
+                fontSize: 12,
+                fontWeight: '500',
+                px: '1',
+                py: '1',
+                minHeight: '23px',
+                lineHeight: '100%',
+                backgroundColor: 'widget-selector-background',
+                border: 'none',
+                _hover: {
+                  backgroundColor: 'widget-selector-hover-background'
+                }
+              }}
+              color="white"
+              onClick={(e) => {
+                e.preventDefault()
+                onOpenSlippageConfig?.()
               }}
             >
-              <FontAwesomeIcon icon={faChevronDown} width={12} />
-            </Box>
-          </Flex>
+              Auto
+            </Button>
+          ) : null}
+          <Tooltip
+            side="top"
+            align="end"
+            content={
+              minimumAmountFormatted ? (
+                <Flex direction="row" css={{ gap: '2' }}>
+                  <Text style="subtitle2" color="subtle">
+                    Min. received
+                  </Text>
+                  <Text style="subtitle2">
+                    {minimumAmountFormatted} {toToken?.symbol}
+                  </Text>
+                </Flex>
+              ) : null
+            }
+          >
+            <Text style="subtitle2" css={{ color: slippageRatingColor }}>
+              {slippage}%
+            </Text>
+          </Tooltip>
         </Flex>
-      </CollapsibleTrigger>
-      <CollapsibleContent
-        css={{
-          borderRadius: '0 0 12px 12px',
-          border: 'widget-card-border',
-          borderTop: 'none'
-        }}
-      >
-        <Flex
-          direction="column"
+      </Flex>
+      <CollapsibleRoot open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger id={'fee-breakdown-section'}>
+          <Flex
+            justify="between"
+            align="center"
+            css={{
+              flexDirection: 'row',
+              gap: '2',
+              width: '100%',
+              p: '3'
+            }}
+          >
+            <span
+              style={{
+                cursor: 'pointer',
+                flexShrink: 1,
+                overflow: 'hidden',
+                height: 21
+              }}
+              onClick={(e) => {
+                setRateMode(rateMode === 'input' ? 'output' : 'input')
+                e.preventDefault()
+              }}
+            >
+              <ConversionRate
+                fromToken={fromToken}
+                toToken={toToken}
+                rate={Number(swapRate)}
+                isInputMode={rateMode === 'input'}
+              />
+            </span>
+
+            <Flex
+              css={{
+                gap: '2',
+                color:
+                  timeEstimate && timeEstimate.time <= 30
+                    ? '{colors.grass.9}'
+                    : '{colors.amber.9}',
+                flexShrink: 0
+              }}
+              align="center"
+            >
+              {!isOpen && timeEstimate && timeEstimate?.time !== 0 ? (
+                <>
+                  <FontAwesomeIcon icon={faClock} width={16} />
+                  <Text style="subtitle2" css={{ flexShrink: 0 }}>
+                    ~ {timeEstimate?.formattedTime}
+                  </Text>
+                  <Flex
+                    justify="center"
+                    align="center"
+                    css={{ color: 'gray6', height: 4 }}
+                  >
+                    &#8226;
+                  </Flex>
+                </>
+              ) : null}
+              {!isOpen && (
+                <>
+                  <FontAwesomeIcon
+                    icon={faGasPump}
+                    width={16}
+                    style={{ color: '#C1C8CD' }}
+                  />
+                  <Text style="subtitle2" css={{ flexShrink: 0 }}>
+                    {originGasFeeFormatted}
+                  </Text>
+                </>
+              )}
+              <Box
+                css={{
+                  marginLeft: '2',
+                  transition: 'transform 300ms',
+                  transform: isOpen ? 'rotate(-180deg)' : 'rotate(0)',
+                  color: 'gray9'
+                }}
+              >
+                <FontAwesomeIcon icon={faChevronDown} width={12} />
+              </Box>
+            </Flex>
+          </Flex>
+        </CollapsibleTrigger>
+        <CollapsibleContent
           css={{
-            px: '3',
-            pb: '3',
-            pt: '0',
-            gap: '2',
-            backgroundColor: 'widget-background'
+            borderRadius: '0 0 12px 12px',
+            border: 'widget-card-border',
+            borderTop: 'none'
           }}
         >
-          {breakdown.map((item) => {
-            const showNativeBridgeWarning =
-              item.title === 'Estimated time' &&
-              useExternalLiquidity &&
-              timeEstimate?.time &&
-              timeEstimate?.time > 86400
-            return (
-              <React.Fragment key={item.title}>
-                <Flex
-                  justify="between"
-                  align="center"
-                  css={{ width: '100%', gap: '4' }}
-                >
-                  <Text
-                    style="subtitle2"
-                    color={
-                      showNativeBridgeWarning ? 'warningSecondary' : 'subtle'
-                    }
-                    css={{ alignSelf: 'flex-start' }}
-                  >
-                    {item.title}
-                  </Text>
-                  {item.value}
-                </Flex>
-                {showNativeBridgeWarning ? (
+          <Flex
+            direction="column"
+            css={{
+              px: '3',
+              pb: '3',
+              pt: '0',
+              gap: '2',
+              backgroundColor: 'widget-background'
+            }}
+          >
+            {breakdown.map((item) => {
+              const showNativeBridgeWarning =
+                item.title === 'Estimated time' &&
+                useExternalLiquidity &&
+                timeEstimate?.time &&
+                timeEstimate?.time > 86400
+              return (
+                <React.Fragment key={item.title}>
                   <Flex
+                    justify="between"
                     align="center"
-                    css={{
-                      gap: '2',
-                      py: '2',
-                      px: '3',
-                      backgroundColor: 'amber2',
-                      borderRadius: 12
-                    }}
+                    css={{ width: '100%', gap: '4' }}
                   >
-                    <Text style="subtitle3" css={{ color: 'amber12' }}>
-                      Native bridge routes are expected to take{' '}
-                      {timeEstimate.formattedTime} but could be longer due to
-                      unexpected delays
+                    <Text
+                      style="subtitle2"
+                      color={
+                        showNativeBridgeWarning ? 'warningSecondary' : 'subtle'
+                      }
+                      css={{ alignSelf: 'flex-start' }}
+                    >
+                      {item.title}
                     </Text>
+                    {item.value}
                   </Flex>
-                ) : null}
-              </React.Fragment>
-            )
-          })}
-        </Flex>
-      </CollapsibleContent>
-    </CollapsibleRoot>
+                  {showNativeBridgeWarning ? (
+                    <Flex
+                      align="center"
+                      css={{
+                        gap: '2',
+                        py: '2',
+                        px: '3',
+                        backgroundColor: 'amber2',
+                        borderRadius: 12
+                      }}
+                    >
+                      <Text style="subtitle3" css={{ color: 'amber12' }}>
+                        Native bridge routes are expected to take{' '}
+                        {timeEstimate.formattedTime} but could be longer due to
+                        unexpected delays
+                      </Text>
+                    </Flex>
+                  ) : null}
+                </React.Fragment>
+              )
+            })}
+          </Flex>
+        </CollapsibleContent>
+      </CollapsibleRoot>
+    </Flex>
   )
 }
 

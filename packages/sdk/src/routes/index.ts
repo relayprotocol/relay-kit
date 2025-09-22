@@ -15,6 +15,7 @@ export const routes = [
   "/quote",
   "/price",
   "/execute",
+  "/fast-fill",
   "/lives",
   "/intents/status",
   "/intents/status/v2",

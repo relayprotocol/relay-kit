@@ -1,4 +1,4 @@
-import type { FC, ChangeEvent } from 'react'
+import type { FC, ChangeEvent, Dispatch, SetStateAction } from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { Dropdown } from '../primitives/Dropdown.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -18,13 +18,18 @@ import {
 } from '../../utils/slippage.js'
 import { EventNames } from '../../constants/events.js'
 import { useDebounceValue } from 'usehooks-ts'
+import useFallbackState from '../../hooks/useFallbackState.js'
 
 type SlippageToleranceConfigProps = {
+  open?: boolean
+  setOpen?: (open: boolean) => void
   setSlippageTolerance: (value: string | undefined) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
 }
 
 export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
+  open: _open,
+  setOpen: _setOpen,
   setSlippageTolerance: externalSetValue,
   onAnalyticEvent
 }) => {
@@ -42,7 +47,13 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   }, [bpsValue, externalSetValue])
 
   const [mode, setMode] = useState<SlippageToleranceMode>('Auto')
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useFallbackState(
+    _open !== undefined ? _open : false,
+    _setOpen
+      ? [_open ?? false, _setOpen as Dispatch<SetStateAction<boolean>>]
+      : undefined
+  )
+
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {

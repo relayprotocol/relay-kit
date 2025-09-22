@@ -178,6 +178,9 @@ const SwapWidgetPage: NextPage = () => {
     adaptWallet()
   }, [primaryWallet, primaryWallet?.address])
 
+  const [slippageToleranceConfigOpen, setSlippageToleranceConfigOpen] =
+    useState(false)
+
   return (
     <Layout
       styles={{
@@ -214,6 +217,8 @@ const SwapWidgetPage: NextPage = () => {
               onAnalyticEvent={(eventName, data) => {
                 console.log('Analytic Event', eventName, data)
               }}
+              open={slippageToleranceConfigOpen}
+              setOpen={setSlippageToleranceConfigOpen}
             />
           </div>
           <SwapWidget
@@ -319,6 +324,9 @@ const SwapWidgetPage: NextPage = () => {
               console.log('onSwapSuccess Triggered', data)
             }}
             slippageTolerance={slippageTolerance}
+            onOpenSlippageConfig={() => {
+              setSlippageToleranceConfigOpen(true)
+            }}
           />
         </div>
       </div>
