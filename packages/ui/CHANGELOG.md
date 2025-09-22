@@ -1,5 +1,12 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.17
+
+### Patch Changes
+
+- eb3a8fb: Add transaction count check for explicit deposits
+- 1ad6ac3: Update swap event data
+
 ## 4.0.16
 
 ### Patch Changes
