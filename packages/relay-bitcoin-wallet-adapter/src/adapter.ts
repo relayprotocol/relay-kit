@@ -21,7 +21,8 @@ export const adaptBitcoinWallet = (
     address: string,
     psbt: bitcoin.Psbt,
     dynamicParams: DynamicSignPsbtParams
-  ) => Promise<string>
+  ) => Promise<string>,
+  publicKey?: string
 ): AdaptedWallet => {
   return {
     vmType: 'bvm',
@@ -76,6 +77,9 @@ export const adaptBitcoinWallet = (
     //@ts-ignore
     switchChain: (chainId: number) => {
       throw 'Not yet implemented'
+    },
+    metadata: {
+      publicKey
     }
   }
 }
