@@ -109,6 +109,10 @@ const SwapWidgetPage: NextPage = () => {
             adaptedWallet = adaptViemWallet(walletClient)
           } else if (isBitcoinWallet(primaryWallet)) {
             const wallet = convertToLinkedWallet(primaryWallet)
+            const publicKey = primaryWallet.additionalAddresses.find(
+              ({ address, type }) =>
+                address === wallet.address && type === 'payment'
+            )?.publicKey
             adaptedWallet = adaptBitcoinWallet(
               wallet.address,
               async (_address, _psbt, dynamicParams) => {
@@ -123,7 +127,8 @@ const SwapWidgetPage: NextPage = () => {
                 } catch (e) {
                   throw e
                 }
-              }
+              },
+              publicKey
             )
           } else if (
             isSolanaWallet(primaryWallet) ||
