@@ -298,10 +298,18 @@ export const getSwapEventData = (
     quote_request_id: quoteRequestId,
     quote_id: steps ? extractQuoteId(steps) : undefined,
     amount_in: details?.currencyIn?.amount,
+    amount_in_formatted: parseFloat(
+      `${details?.currencyIn?.amountFormatted ?? '0'}`
+    ),
     currency_in: details?.currencyIn?.currency?.symbol,
     currency_in_address: details?.currencyIn?.currency?.address,
     chain_id_in: details?.currencyIn?.currency?.chainId,
+    currency_in_decimals: details?.currencyIn?.currency?.decimals,
     amount_out: details?.currencyOut?.amount,
+    amount_out_formatted: parseFloat(
+      `${details?.currencyOut?.amountFormatted ?? '0'}`
+    ),
+    currency_out_decimals: details?.currencyOut?.currency?.decimals,
     currency_out: details?.currencyOut?.currency?.symbol,
     currency_out_address: details?.currencyOut?.currency?.address,
     chain_id_out: details?.currencyOut?.currency?.chainId,
