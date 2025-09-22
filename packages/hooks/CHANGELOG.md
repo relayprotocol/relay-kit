@@ -1,5 +1,13 @@
 # @reservoir0x/relay-kit-hooks
 
+## 2.0.4
+
+### Patch Changes
+
+- Updated dependencies [e3a9e1d]
+- Updated dependencies [967e95b]
+  - @relayprotocol/relay-sdk@2.4.5
+
 ## 2.0.3
 
 ### Patch Changes
