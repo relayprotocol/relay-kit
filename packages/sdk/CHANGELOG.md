@@ -1,5 +1,12 @@
 # @reservoir0x/relay-sdk
 
+## 2.4.5
+
+### Patch Changes
+
+- e3a9e1d: Add bitcoin public key to quote params
+- 967e95b: Refactor max slippage ui to be more pronounced
+
 ## 2.4.4
 
 ### Patch Changes

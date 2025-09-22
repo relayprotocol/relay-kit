@@ -1,5 +1,16 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.18
+
+### Patch Changes
+
+- e3a9e1d: Add bitcoin public key to quote params
+- 967e95b: Refactor max slippage ui to be more pronounced
+- Updated dependencies [e3a9e1d]
+- Updated dependencies [967e95b]
+  - @relayprotocol/relay-sdk@2.4.5
+  - @relayprotocol/relay-kit-hooks@2.0.4
+
 ## 4.0.17
 
 ### Patch Changes

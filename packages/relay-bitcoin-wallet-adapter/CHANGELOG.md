@@ -1,5 +1,14 @@
 # @reservoir0x/relay-bitcoin-wallet-adapter
 
+## 10.0.6
+
+### Patch Changes
+
+- e3a9e1d: Add bitcoin public key to quote params
+- Updated dependencies [e3a9e1d]
+- Updated dependencies [967e95b]
+  - @relayprotocol/relay-sdk@2.4.5
+
 ## 10.0.5
 
 ### Patch Changes
