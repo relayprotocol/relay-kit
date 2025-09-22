@@ -104,8 +104,8 @@ export const TransactionModal: FC<TransactionModalProps> = (
           relayer_fee?: number
           amount_in: number
           amount_out: number
-          amount_in_raw: string
-          amount_out_raw: string
+          amount_in_raw?: string
+          amount_out_raw?: string
         } = {
           amount_in: parseFloat(`${details?.currencyIn?.amountFormatted}`),
           amount_in_raw: details?.currencyIn?.amount,
