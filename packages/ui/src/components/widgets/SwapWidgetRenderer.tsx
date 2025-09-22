@@ -611,6 +611,13 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
+          ...(linkedWallet?.vmType === 'bvm' && wallet?.metadata?.publicKey
+            ? {
+                additionalData: {
+                  userPublicKey: wallet?.metadata?.publicKey
+                }
+              }
+            : {}),
           protocolVersion: quoteProtocol,
           ...(quoteProtocol === 'preferV2' &&
             explicitDeposit !== undefined && {
