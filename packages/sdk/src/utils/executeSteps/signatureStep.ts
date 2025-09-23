@@ -196,19 +196,38 @@ export async function handleSignatureStepItem({
       let attemptCount = 0
       while (attemptCount < maximumAttempts) {
         try {
+          let endpoint = stepItem?.check?.endpoint || ''
+
+          // Override v2 status endpoint to v3 to get 'submitted' status
+          if (
+            endpoint.includes('/intents/status') &&
+            !endpoint.includes('/v3')
+          ) {
+            endpoint = endpoint.replace('/intents/status', '/intents/status/v3')
+          }
+
           const res = await axios.request({
-            url: `${request.baseURL}${stepItem?.check?.endpoint}`,
+            url: `${request.baseURL}${endpoint}`,
             method: stepItem?.check?.method,
             headers
           })
 
-          client.log(
-            [`Execute Steps: Polling execute status to check if indexed`, res],
-            LogLevel.Verbose
-          )
-
           // Check status
-          if (res?.data?.status === 'success' && res?.data?.txHashes) {
+          if (res?.data?.status === 'submitted') {
+            // Handle submitted status - signature submitted but not yet processed
+            // Continue polling but update progress state
+            stepItem.progressState = 'posting'
+            setState({
+              steps: [...json?.steps],
+              fees: { ...json?.fees },
+              breakdown: json?.breakdown,
+              details: json?.details
+            })
+            client.log(
+              ['Signature submitted, continuing validation'],
+              LogLevel.Verbose
+            )
+          } else if (res?.data?.status === 'success' && res?.data?.txHashes) {
             const chainTxHashes: NonNullable<
               Execute['steps'][0]['items']
             >[0]['txHashes'] = res.data?.txHashes?.map((hash: string) => {
