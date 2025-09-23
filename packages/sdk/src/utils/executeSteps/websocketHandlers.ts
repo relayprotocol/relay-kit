@@ -58,6 +58,11 @@ export function handleWebSocketUpdate({
         break
     }
   }
+  // Handle submitted status
+  else if (data.status === 'submitted') {
+    client.log(['WebSocket received submitted status'], LogLevel.Verbose)
+    handleSubmittedStatus(data, stepItems, setState, json, client)
+  }
   // Handle failure status with delay (refund flow: pending -> failure -> pending -> refund)
   else if (data.status === 'failure') {
     handleFailureStatusWithDelay(
@@ -76,7 +81,56 @@ export function handleWebSocketUpdate({
 function isTerminalStatus(status: string): boolean {
   // Note: 'failure' is not immediately terminal due to the refund flow:
   // pending -> failure -> pending -> refund
+  // 'submitted' is not terminal, as it's an intermediate state before 'success'
   return ['success', 'refund'].includes(status)
+}
+
+function handleSubmittedStatus(
+  data: RequestStatusUpdatedPayload,
+  stepItems: Execute['steps'][0]['items'],
+  setState: (data: SetStateData) => void,
+  json: Execute,
+  client: RelayClient
+): void {
+  // Update txHashes if provided (partial updates during submitted state)
+  if (data.txHashes && data.txHashes.length > 0) {
+    const txHashes = data.txHashes.map((hash: string) => ({
+      txHash: hash,
+      chainId: data.destinationChainId ?? data.originChainId
+    }))
+    updateIncompleteItems(stepItems, (item) => {
+      item.txHashes = txHashes
+    })
+  }
+
+  // Update internalTxHashes if provided
+  if (data.inTxHashes && data.inTxHashes.length > 0) {
+    const internalTxHashes = data.inTxHashes.map((hash: string) => ({
+      txHash: hash,
+      chainId: data.originChainId ?? data.destinationChainId
+    }))
+    updateIncompleteItems(stepItems, (item) => {
+      item.internalTxHashes = internalTxHashes
+    })
+  }
+
+  // Mark step items as submitted (intermediate state, not complete)
+  updateIncompleteItems(stepItems, (item) => {
+    item.checkStatus = 'submitted'
+  })
+
+  // Update state with submitted status
+  setState({
+    steps: [...json.steps],
+    fees: { ...json?.fees },
+    breakdown: json?.breakdown,
+    details: json?.details
+  })
+
+  client.log(
+    ['WebSocket: Step submitted to relay, waiting for completion', data],
+    LogLevel.Verbose
+  )
 }
 
 function handleSuccessStatus(
