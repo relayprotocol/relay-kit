@@ -11,10 +11,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { type Token } from '../../../../types/index.js'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
 import type { Execute, RelayChain } from '@relayprotocol/relay-sdk'
-import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { formatTransactionSteps } from '../../../../utils/steps.js'
 import { formatBN } from '../../../../utils/numbers.js'
+import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
+import useRelayClient from '../../../../hooks/useRelayClient.js'
 import {
   FileSignature,
   Shuffle,
@@ -31,6 +32,8 @@ type SwapConfirmationStepProps = {
   toAmountFormatted: string
   quote?: Execute | null
   steps: Execute['steps'] | null
+  currentAddress?: string
+  linkedWallets?: any[]
 }
 
 export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
@@ -41,7 +44,9 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
   fromAmountFormatted,
   toAmountFormatted,
   quote,
-  steps
+  steps,
+  currentAddress,
+  linkedWallets
 }) => {
   const operation = quote?.details?.operation || 'swap'
 
@@ -54,9 +59,21 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
         fromChain,
         toChain,
         operation,
-        quote
+        quote,
+        currentAddress,
+        linkedWallets
       }),
-    [steps, fromToken, toToken, fromChain, toChain, operation, quote]
+    [
+      steps,
+      fromToken,
+      toToken,
+      fromChain,
+      toChain,
+      operation,
+      quote,
+      currentAddress,
+      linkedWallets
+    ]
   )
 
   const gasTopUpAmountCurrency = quote?.details?.currencyGasTopup?.currency
@@ -260,7 +277,7 @@ export type StepRowProps = {
   chainId?: number
   isApproveStep?: boolean
   subText?: string
-  subTextColor?: 'primary11' | 'subtle' | 'slate10'
+  subTextColor?: 'primary11' | 'green11' | 'subtle' | 'slate10'
   showSubTextSpinner?: boolean
 }
 
@@ -278,15 +295,15 @@ export const StepRow: FC<StepRowProps> = ({
   showSubTextSpinner
 }) => {
   const relayClient = useRelayClient()
-  const hasTxHash = txHashes && txHashes.length > 0
-
+  const chains = relayClient?.chains
   return (
     <Flex align="center" justify="between" css={{ width: '100%', gap: '3' }}>
       <Flex align="center" css={{ gap: '3', height: 40 }}>
         <Flex
+          data-active={isActive && !isCompleted}
           css={{
-            height: 24,
-            width: 24,
+            height: 30,
+            width: 30,
             borderRadius: 9999999,
             flexShrink: 0,
             alignItems: 'center',
@@ -296,10 +313,21 @@ export const StepRow: FC<StepRowProps> = ({
               : isActive
                 ? 'primary6'
                 : 'gray5',
-            color: isCompleted ? 'green11' : isActive ? 'primary6' : 'gray9',
+            color:
+              isActive && !isCompleted
+                ? 'primary5'
+                : isCompleted
+                  ? 'green11'
+                  : isActive
+                    ? 'primary11'
+                    : 'gray9',
             animation:
-              isActive && !isCompleted ? 'pulse-shadow 1s infinite' : 'none',
-            animationDirection: 'alternate-reverse'
+              isActive && !isCompleted
+                ? 'pulse-shadow 1s infinite alternate-reverse'
+                : 'none',
+            '& > *': {
+              color: isCompleted ? 'green11' : isActive ? 'primary11' : 'gray9'
+            }
           }}
         >
           {isCompleted ? (
@@ -315,19 +343,113 @@ export const StepRow: FC<StepRowProps> = ({
 
           {subText && (
             <Flex align="center" css={{ gap: '6px' }}>
-              <Text
-                style="subtitle3"
-                css={{
-                  color:
-                    subTextColor === 'slate10'
-                      ? 'colors.slate.10'
-                      : subTextColor === 'subtle'
-                        ? 'colors.text-subtle'
-                        : 'colors.primary11'
-                }}
-              >
-                {subText}
-              </Text>
+              {(() => {
+                // Handle "Success: txhash" case with split colors and link
+                if (subText.startsWith('Success:')) {
+                  const [successText, hashPart] = subText.split(': ')
+                  const fullHash = txHashes?.[0]?.txHash
+                  const chainId = txHashes?.[0]?.chainId
+                  const txUrl =
+                    fullHash && chainId
+                      ? getTxBlockExplorerUrl(chainId, chains, fullHash)
+                      : undefined
+
+                  return (
+                    <Flex align="center" css={{ gap: '4px' }}>
+                      <Text style="subtitle3" css={{ color: 'green11' }}>
+                        {successText}:
+                      </Text>
+                      {hashPart &&
+                        (fullHash && txUrl ? (
+                          <a
+                            href={txUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: 'var(--colors-primary11)',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            <Text
+                              style="subtitle3"
+                              css={{ color: 'primary11' }}
+                            >
+                              {hashPart}
+                            </Text>
+                          </a>
+                        ) : (
+                          <Text style="subtitle3" css={{ color: 'primary11' }}>
+                            {hashPart}
+                          </Text>
+                        ))}
+                    </Flex>
+                  )
+                }
+
+                // Handle "Sending to Relay: txhash" and "Receiving: txhash" cases with links
+                if (
+                  subText.includes(': ') &&
+                  (subText.startsWith('Sending to Relay:') ||
+                    subText.startsWith('Receiving:'))
+                ) {
+                  const [labelText, hashPart] = subText.split(': ')
+                  const fullHash = txHashes?.[0]?.txHash
+                  const chainId = txHashes?.[0]?.chainId
+                  const txUrl =
+                    fullHash && chainId
+                      ? getTxBlockExplorerUrl(chainId, chains, fullHash)
+                      : undefined
+
+                  return (
+                    <Flex align="center" css={{ gap: '4px' }}>
+                      <Text style="subtitle3" css={{ color: 'primary11' }}>
+                        {labelText}:
+                      </Text>
+                      {hashPart &&
+                        (fullHash && txUrl ? (
+                          <a
+                            href={txUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: 'var(--colors-primary11)',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            <Text
+                              style="subtitle3"
+                              css={{ color: 'primary11' }}
+                            >
+                              {hashPart}
+                            </Text>
+                          </a>
+                        ) : (
+                          <Text style="subtitle3" css={{ color: 'primary11' }}>
+                            {hashPart}
+                          </Text>
+                        ))}
+                    </Flex>
+                  )
+                }
+
+                return (
+                  <Text
+                    style="subtitle3"
+                    css={{
+                      color:
+                        subTextColor === 'slate10'
+                          ? 'slate10'
+                          : subTextColor === 'subtle'
+                            ? 'text-subtle'
+                            : subTextColor === 'green11'
+                              ? 'green11'
+                              : 'primary11'
+                    }}
+                  >
+                    {subText}
+                  </Text>
+                )
+              })()}
               {showSubTextSpinner && (
                 <LoadingSpinner css={{ height: 12, width: 12 }} />
               )}
