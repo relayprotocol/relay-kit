@@ -6,7 +6,6 @@ import {
   Pill,
   Text,
   ChainTokenIcon,
-  ChainIcon,
   Skeleton,
   Anchor
 } from '../../../primitives/index.js'
@@ -24,6 +23,8 @@ import { TransactionsByChain } from './TransactionsByChain.js'
 import { faArrowRight, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { RelayIcon, XIcon } from '../../../../icons/index.js'
 import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
+import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
+import { truncateAddress } from '../../../../utils/truncate.js'
 
 type SwapSuccessStepProps = {
   fromToken?: Token
@@ -64,6 +65,9 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   const isWrap = details?.operation === 'wrap'
   const isUnwrap = details?.operation === 'unwrap'
   const providerOptionsContext = useContext(ProviderOptionsContext)
+
+  // Get chains data for explorer URL generation
+  const chains = relayClient?.chains
 
   const _fromAmountFormatted = transaction?.data?.metadata?.currencyIn?.amount
     ? formatBN(
@@ -132,11 +136,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
 
   // Helper function to get transaction URL for a specific chain and hash
   const getTxUrl = (chainId: number, txHash: string) => {
-    const chain = relayClient?.chains.find((chain) => chain.id === chainId)
-    if (chain?.explorerUrl && chain?.explorerPaths?.transaction) {
-      return `${chain.explorerUrl}${chain.explorerPaths.transaction.replace('{txHash}', txHash)}`
-    }
-    return undefined
+    return getTxBlockExplorerUrl(chainId, chains, txHash)
   }
 
   const shareIconFill =
@@ -191,17 +191,22 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           </Flex>
         </motion.div>
 
-        <Text style="subtitle1" css={{ mt: '4', mb: '2', textAlign: 'center' }}>
-          Processing the order to swap {_fromAmountFormatted}{' '}
-          {_fromToken?.symbol} into {_toAmountFormatted} {_toToken?.symbol},
-          this will take ~{timeEstimate}.
+        <Text style="subtitle1" css={{ my: '4', textAlign: 'center' }}>
+          Processing bridge, this will take ~10 mins.
         </Text>
 
         <Flex align="center" css={{ gap: '2', mb: 24 }}>
           {fromChain ? (
             <Pill color="gray" css={{ alignItems: 'center', py: '2', px: '3' }}>
-              <ChainIcon chainId={fromChain.id} height={20} width={20} />
-              <Text style="subtitle1">{fromChain.displayName}</Text>
+              <ChainTokenIcon
+                chainId={fromChain.id}
+                tokenlogoURI={fromTokenLogoUri}
+                tokenSymbol={_fromToken?.symbol}
+                size="base"
+              />
+              <Text style="subtitle1" css={{ ml: '2' }}>
+                {_fromAmountFormatted} {_fromToken?.symbol}
+              </Text>
             </Pill>
           ) : (
             <Text style="subtitle1">?</Text>
@@ -212,9 +217,16 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
             <FontAwesomeIcon style={{ width: 14 }} icon={faArrowRight} />
           </Flex>
           {toChain ? (
-            <Pill color="gray" css={{ alignItems: 'center', py: '2' }}>
-              <ChainIcon chainId={toChain.id} height={20} width={20} />
-              <Text style="subtitle1">{toChain.displayName}</Text>
+            <Pill color="gray" css={{ alignItems: 'center', py: '2', px: '3' }}>
+              <ChainTokenIcon
+                chainId={toChain.id}
+                tokenlogoURI={toTokenLogoUri}
+                tokenSymbol={_toToken?.symbol}
+                size="base"
+              />
+              <Text style="subtitle1" css={{ ml: '2' }}>
+                {_toAmountFormatted} {_toToken?.symbol}
+              </Text>
             </Pill>
           ) : (
             <Text style="subtitle1">?</Text>
@@ -232,6 +244,26 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           You can close this modal while it finalizes on the blockchain. The
           transaction will continue in the background.
         </Text>
+
+        {allTxHashes &&
+          allTxHashes.length > 0 &&
+          (() => {
+            const txHash = allTxHashes[0]?.txHash
+            const chainId = allTxHashes[0]?.chainId
+            const txUrl =
+              txHash && chainId ? getTxUrl(chainId, txHash) : undefined
+            const truncatedHash = truncateAddress(txHash, '...', 6, 4)
+
+            return txUrl && truncatedHash ? (
+              <Anchor
+                href={txUrl}
+                target="_blank"
+                css={{ mt: '12px', textAlign: 'center', fontSize: '14px' }}
+              >
+                View Tx: {truncatedHash}
+              </Anchor>
+            ) : null
+          })()}
       </Flex>
 
       {!delayedTxUrl ? (
@@ -330,11 +362,20 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           </Flex>
         </motion.div>
 
-        <Text style="h6" css={{ my: '12px', textAlign: 'center' }}>
+        <Text
+          style="h6"
+          css={{
+            my: '12px',
+            textAlign: 'center',
+            '& .green-time': {
+              color: 'green11'
+            }
+          }}
+        >
           {fillTime && fillTime !== '-' ? (
             <>
               Completed in{' '}
-              <span style={{ color: 'var(--colors-green11)' }}>{fillTime}</span>
+              <span className="green-time">{fillTime.replace(/s$/, 'S')}</span>
             </>
           ) : (
             'Transaction Completed'
@@ -386,11 +427,9 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                       <Anchor
                         href={txUrl}
                         target="_blank"
-                        css={{ color: 'primary11' }}
+                        css={{ color: 'primary11', fontSize: '14px' }}
                       >
-                        <Text style="subtitle2">
-                          {txHash.slice(0, 6)}...{txHash.slice(-4)}
-                        </Text>
+                        {truncateAddress(txHash, '...', 6, 4)}
                       </Anchor>
                     ) : null
                   })()}
@@ -434,11 +473,9 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                       <Anchor
                         href={txUrl}
                         target="_blank"
-                        css={{ color: 'primary11' }}
+                        css={{ color: 'primary11', fontSize: '14px' }}
                       >
-                        <Text style="subtitle2">
-                          {txHash.slice(0, 6)}...{txHash.slice(-4)}
-                        </Text>
+                        {truncateAddress(txHash, '...', 6, 4)}
                       </Anchor>
                     ) : null
                   })()}
