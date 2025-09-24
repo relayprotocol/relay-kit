@@ -10,6 +10,7 @@ type Props = {
   width?: number
   css?: Styles
   square?: boolean
+  borderRadius?: number
 }
 
 const ChainIcon: FC<Props> = ({
@@ -17,7 +18,8 @@ const ChainIcon: FC<Props> = ({
   css = {},
   height = 14,
   width = 14,
-  square = true
+  square = true,
+  borderRadius
 }) => {
   const providerOptions = useContext(ProviderOptionsContext)
   const client = useRelayClient()
@@ -51,7 +53,7 @@ const ChainIcon: FC<Props> = ({
           src={iconUrl}
           alt={`Chain #${chainId}`}
           style={{
-            borderRadius: square ? 4 : 0,
+            borderRadius: borderRadius ?? (square ? 4 : 0),
             width: css && css.width ? Number(css.width) : '100%',
             height: css && css.height ? Number(css.height) : '100%'
           }}

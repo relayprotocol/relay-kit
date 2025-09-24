@@ -230,7 +230,7 @@ type StepIconProps = {
 const StepIcon = ({ stepId, isActive, chainId }: StepIconProps) => {
   const getIconForStep = () => {
     if (stepId.includes('approve')) {
-      return <FileSignature width={14} height={16} />
+      return <FileSignature width={14} height={16} fill="currentColor" />
     }
     if (
       stepId.includes('swap') ||
@@ -238,16 +238,16 @@ const StepIcon = ({ stepId, isActive, chainId }: StepIconProps) => {
       stepId.includes('send')
     ) {
       if (stepId.includes('same-chain')) {
-        return <Shuffle width={16} height={16} />
+        return <Shuffle width={16} height={16} fill="currentColor" />
       } else {
-        return <ArrowRightFromLine width={14} height={16} />
+        return <ArrowRightFromLine width={14} height={16} fill="currentColor" />
       }
     }
     if (stepId.includes('relay')) {
-      return <Shuffle width={16} height={16} />
+      return <Shuffle width={16} height={16} fill="currentColor" />
     }
     if (stepId.includes('receive')) {
-      return <ArrowLeftToLine width={14} height={16} />
+      return <ArrowLeftToLine width={14} height={16} fill="currentColor" />
     }
     return <ChainIcon chainId={chainId} square={false} width={14} height={16} />
   }
@@ -315,7 +315,7 @@ export const StepRow: FC<StepRowProps> = ({
                 : 'gray5',
             color:
               isActive && !isCompleted
-                ? 'primary5'
+                ? 'primary11'
                 : isCompleted
                   ? 'green11'
                   : isActive

@@ -13,12 +13,13 @@ type ChainTokenProps = {
   tokenSymbol?: string
   css?: Styles
   size?: Size
+  successStep?: boolean
 }
 
 const SIZES = {
   sm: {
     token: 20,
-    chain: 8
+    chain: 8.333
   },
   base: {
     token: 24,
@@ -39,7 +40,8 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   tokenlogoURI,
   tokenSymbol,
   css = {},
-  size = 'md'
+  size = 'md',
+  successStep = false
 }) => {
   const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
   const dimensions = SIZES[size]
@@ -62,7 +64,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           width={dimensions.token}
           height={dimensions.token}
           style={{
-            borderRadius: 9999,
+            borderRadius: successStep ? 6 : 9999,
             overflow: 'hidden'
           }}
         />
@@ -71,7 +73,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           css={{
             width: dimensions.token,
             height: dimensions.token,
-            borderRadius: '50%',
+            borderRadius: successStep ? 6 : '50%',
             backgroundColor: 'primary4',
             color: 'primary8',
             display: 'flex',
@@ -84,17 +86,20 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
       ) : null}
       <ChainIcon
         chainId={chainId}
-        width={dimensions.chain}
-        height={dimensions.chain}
+        width={successStep ? 8.33 : dimensions.chain}
+        height={successStep ? 8.33 : dimensions.chain}
+        borderRadius={successStep ? 1.667 : undefined}
         css={{
           position: 'absolute',
           right: 0,
           bottom: 0,
-          borderRadius: 4,
+          borderRadius: successStep ? 1.667 : 4,
           overflow: 'hidden',
-          '--borderColor': 'colors.modal-background',
-          border: '1px solid var(--borderColor)',
-          backgroundColor: 'modal-background'
+          '--borderColor': successStep ? 'white' : 'colors.modal-background',
+          border: successStep
+            ? '0.833px solid var(--borderColor)'
+            : '1px solid var(--borderColor)',
+          backgroundColor: successStep ? 'white' : 'modal-background'
         }}
       />
     </Flex>
