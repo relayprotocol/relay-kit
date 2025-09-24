@@ -34,7 +34,6 @@ export const getTenderlyDetails = (
   txHash: string
 ): Promise<TenderlyErrorInfo | null> => {
   return new Promise((resolve) => {
-    console.log('getTenderlyDetails', txHash)
     axios
       .get(
         `https://api.tenderly.co/api/v1/public-contract/${chainId}/trace/${txHash}`,
