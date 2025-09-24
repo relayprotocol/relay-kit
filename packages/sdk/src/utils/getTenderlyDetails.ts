@@ -5,30 +5,6 @@ export type TenderlyErrorInfo = {
   error?: string
 }
 
-const extractErrorFromCallTrace = (
-  callTrace: any
-): { error_message?: string; error?: string } | null => {
-  // Check if this call has an error message
-  if (callTrace.error_message) {
-    return {
-      error_message: callTrace.error_message,
-      error: callTrace.error
-    }
-  }
-
-  // Recursively check nested calls
-  if (callTrace.calls && Array.isArray(callTrace.calls)) {
-    for (const nestedCall of callTrace.calls) {
-      const errorInfo = extractErrorFromCallTrace(nestedCall)
-      if (errorInfo) {
-        return errorInfo
-      }
-    }
-  }
-
-  return null
-}
-
 export const getTenderlyDetails = (
   chainId: number,
   txHash: string
@@ -62,12 +38,30 @@ export const getTenderlyDetails = (
 
           // Fallback to call_trace if no error message in stack_trace
           if (response.data.call_trace) {
-            const errorInfo = extractErrorFromCallTrace(
-              response.data.call_trace
-            )
-            if (errorInfo) {
-              resolve(errorInfo)
+            // Check root call_trace first
+            if (response.data.call_trace.error_message) {
+              resolve({
+                error_message: response.data.call_trace.error_message,
+                error: response.data.call_trace.error
+              })
               return
+            }
+
+            // Check nested calls
+            if (
+              response.data.call_trace.calls &&
+              Array.isArray(response.data.call_trace.calls)
+            ) {
+              const callWithError = response.data.call_trace.calls.find(
+                (call: any) => call && call.error_message
+              )
+              if (callWithError) {
+                resolve({
+                  error_message: callWithError.error_message,
+                  error: callWithError.error
+                })
+                return
+              }
             }
 
             // If no error_message found in call_trace, at least return the error
