@@ -14,12 +14,13 @@ type ChainTokenProps = {
   css?: Styles
   size?: Size
   variant?: 'default' | 'completed'
+  chainRadius?: number
 }
 
 const SIZES = {
   sm: {
     token: 20,
-    chain: 8.333
+    chain: 12
   },
   base: {
     token: 24,
@@ -41,7 +42,8 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   tokenSymbol,
   css = {},
   size = 'md',
-  variant = 'default'
+  variant = 'default',
+  chainRadius = 4
 }) => {
   const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
   const dimensions = SIZES[size]
@@ -54,6 +56,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
         width: dimensions.token,
         height: dimensions.token,
         overflow: 'hidden',
+        borderRadius: chainRadius,
         ...css
       }}
     >
@@ -88,12 +91,11 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
         chainId={chainId}
         width={variant === 'completed' ? 8.33 : dimensions.chain}
         height={variant === 'completed' ? 8.33 : dimensions.chain}
-        borderRadius={variant === 'completed' ? 1.667 : undefined}
+        borderRadius={variant === 'completed' ? 1.667 : chainRadius}
         css={{
           position: 'absolute',
           right: 0,
           bottom: 0,
-          borderRadius: variant === 'completed' ? 1.667 : 4,
           overflow: 'hidden',
           '--borderColor':
             variant === 'completed' ? 'white' : 'colors.modal-background',

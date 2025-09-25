@@ -109,6 +109,10 @@ const SwapWidgetPage: NextPage = () => {
             adaptedWallet = adaptViemWallet(walletClient)
           } else if (isBitcoinWallet(primaryWallet)) {
             const wallet = convertToLinkedWallet(primaryWallet)
+            const publicKey = primaryWallet.additionalAddresses.find(
+              ({ address, type }) =>
+                address === wallet.address && type === 'payment'
+            )?.publicKey
             adaptedWallet = adaptBitcoinWallet(
               wallet.address,
               async (_address, _psbt, dynamicParams) => {
@@ -123,7 +127,8 @@ const SwapWidgetPage: NextPage = () => {
                 } catch (e) {
                   throw e
                 }
-              }
+              },
+              publicKey
             )
           } else if (
             isSolanaWallet(primaryWallet) ||
@@ -178,6 +183,9 @@ const SwapWidgetPage: NextPage = () => {
     adaptWallet()
   }, [primaryWallet, primaryWallet?.address])
 
+  const [slippageToleranceConfigOpen, setSlippageToleranceConfigOpen] =
+    useState(false)
+
   return (
     <Layout
       styles={{
@@ -214,6 +222,8 @@ const SwapWidgetPage: NextPage = () => {
               onAnalyticEvent={(eventName, data) => {
                 console.log('Analytic Event', eventName, data)
               }}
+              open={slippageToleranceConfigOpen}
+              setOpen={setSlippageToleranceConfigOpen}
             />
           </div>
           <SwapWidget
@@ -319,6 +329,9 @@ const SwapWidgetPage: NextPage = () => {
               console.log('onSwapSuccess Triggered', data)
             }}
             slippageTolerance={slippageTolerance}
+            onOpenSlippageConfig={() => {
+              setSlippageToleranceConfigOpen(true)
+            }}
           />
         </div>
       </div>

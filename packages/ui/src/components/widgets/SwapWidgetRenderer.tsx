@@ -138,6 +138,7 @@ export type ChildrenProps = {
   recipientWalletSupportsChain?: boolean
   gasTopUpEnabled: boolean
   setGasTopUpEnabled: Dispatch<React.SetStateAction<boolean>>
+  gasTopUpBalance?: bigint
   gasTopUpRequired: boolean
   gasTopUpAmount?: bigint
   gasTopUpAmountUsd?: string
@@ -489,7 +490,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const {
     required: gasTopUpRequired,
     amount: _gasTopUpAmount,
-    amountUsd: _gasTopUpAmountUsd
+    amountUsd: _gasTopUpAmountUsd,
+    balance: gasTopUpBalance
   } = useGasTopUpRequired(toChain, fromChain, toToken, recipient)
 
   //  Retrieve the price of the `from` token
@@ -525,13 +527,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromChain?.protocol?.v2?.depository !== undefined &&
     toChain?.protocol?.v2?.chainId !== undefined
 
+  //Enabled only on certain chains with dynamic protocol selection based on transaction size
   const quoteProtocol = useMemo(() => {
-    //Enabled only on certain chains
     if (fromChain?.id && originChainSupportsProtocolv2) {
-      if (!fromToken && !fromTokenPriceData) {
-        return undefined
-      }
-
       const relevantPrice =
         fromTokenPriceData?.price && !isLoadingFromTokenPrice
           ? fromTokenPriceData.price
@@ -559,6 +557,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromTokenPriceData,
     isLoadingFromTokenPrice,
     debouncedInputAmountValue,
+    debouncedOutputAmountValue,
     tradeType,
     originChainSupportsProtocolv2,
     fromChain?.id
@@ -567,30 +566,19 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const loadingProtocolVersion =
     fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
 
-  // Get native balance only when not swapping from native token
   const isFromNative = fromToken?.address === fromChain?.currency?.address
-  const { value: nativeBalance } = useCurrencyBalance({
-    chain: fromChain,
-    address: address,
-    currency: fromChain?.currency?.address
-      ? (fromChain.currency.address as string)
-      : undefined,
-    enabled: fromToken !== undefined && !isFromNative,
-    wallet
-  })
 
-  const effectiveNativeBalance = isFromNative ? fromBalance : nativeBalance
-  const hasZeroNativeBalance = effectiveNativeBalance === 0n
-
-  const eoaExplicitDeposit = useEOADetection(
+  const explicitDeposit = useEOADetection(
     wallet,
     quoteProtocol,
     fromToken?.chainId,
-    fromChain?.vmType
+    fromChain?.vmType,
+    fromChain,
+    address,
+    fromBalance,
+    isFromNative
   )
 
-  // const explicitDeposit = hasZeroNativeBalance ? true : eoaExplicitDeposit
-  const explicitDeposit = true
   const normalizedSponsoredTokens = useMemo(() => {
     const chainVms = relayClient?.chains.reduce(
       (chains, chain) => {
@@ -630,7 +618,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     toToken &&
     (quoteProtocol !== 'preferV2' ||
       fromChain?.vmType !== 'evm' ||
-      explicitDeposit !== undefined)
+      explicitDeposit !== undefined) &&
+    !loadingProtocolVersion
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     shouldSetQuoteParameters
@@ -660,6 +649,13 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
+          ...(linkedWallet?.vmType === 'bvm' && wallet?.metadata?.publicKey
+            ? {
+                additionalData: {
+                  userPublicKey: wallet?.metadata?.publicKey
+                }
+              }
+            : {}),
           protocolVersion: quoteProtocol,
           ...(quoteProtocol === 'preferV2' &&
             explicitDeposit !== undefined && {
@@ -724,8 +720,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       fromToken !== undefined &&
       toToken !== undefined &&
       !transactionModalOpen &&
-      !depositAddressModalOpen &&
-      !loadingProtocolVersion
+      !depositAddressModalOpen
   )
 
   const {
@@ -1267,6 +1262,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         recipientWalletSupportsChain,
         gasTopUpEnabled,
         setGasTopUpEnabled,
+        gasTopUpBalance,
         gasTopUpRequired,
         gasTopUpAmount,
         gasTopUpAmountUsd,

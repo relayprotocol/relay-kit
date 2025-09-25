@@ -381,9 +381,12 @@ export async function sendTransactionSafely(
           if (signal.aborted) {
             return
           }
+
           let tenderlyError: TenderlyErrorInfo | null = null
+
           if (receipt && (receipt as TransactionReceipt).transactionHash) {
             tenderlyError = await getTenderlyDetails(
+              chainId,
               (receipt as TransactionReceipt).transactionHash
             )
           }

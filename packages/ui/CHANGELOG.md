@@ -1,5 +1,48 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.18
+
+### Patch Changes
+
+- e3a9e1d: Add bitcoin public key to quote params
+- 967e95b: Refactor max slippage ui to be more pronounced
+- Updated dependencies [e3a9e1d]
+- Updated dependencies [967e95b]
+  - @relayprotocol/relay-sdk@2.4.5
+  - @relayprotocol/relay-kit-hooks@2.0.4
+
+## 4.0.17
+
+### Patch Changes
+
+- eb3a8fb: Add transaction count check for explicit deposits
+- 1ad6ac3: Update swap event data
+
+## 4.0.16
+
+### Patch Changes
+
+- 686070b: Remove protocol v2 threshold
+
+## 4.0.15
+
+### Patch Changes
+
+- 99516bb: Update gas top up copy
+
+## 4.0.14
+
+### Patch Changes
+
+- 2108fb8: Update gas top up logic and ui
+- ffd4dd2: Tweak logic and ui for gas top up
+
+## 4.0.13
+
+### Patch Changes
+
+- 42ef53d: Increase protocol v2 threshold to $10k
+
 ## 4.0.12
 
 ### Patch Changes

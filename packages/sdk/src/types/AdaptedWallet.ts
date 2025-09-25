@@ -14,8 +14,13 @@ export type SuiReceipt = {
   digest: string
 }
 
+export type BitcoinWalletMetadata = {
+  publicKey?: string
+}
+
 export type AdaptedWallet = {
   vmType: ChainVM
+  metadata?: BitcoinWalletMetadata
   getChainId: () => Promise<number>
   handleSignMessageStep: (
     item: SignatureStepItem,
@@ -52,5 +57,7 @@ export type AdaptedWallet = {
     items: TransactionStepItem[]
   ) => Promise<string | undefined>
   // detect if wallet is an EOA (externally owned account)
-  isEOA?: (chainId: number) => Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }>
+  isEOA?: (
+    chainId: number
+  ) => Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }>
 }

@@ -315,7 +315,7 @@ export interface paths {
           /** @description User address, when supplied returns user balance and max bridge amount */
           user?: string;
           /** @description Restricts the user balance and capacity to a particular currency when supplied with a currency id. Defaults to the native currency of the destination chain. */
-          currency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun";
+          currency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
         };
       };
       responses: {
@@ -368,7 +368,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun";
+            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -472,7 +472,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "avax" | "bnb" | "dai" | "matic" | "sol" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade";
+                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "avax" | "bnb" | "dai" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -483,10 +483,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun";
+                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
               };
               breakdown?: {
                   /** @description Amount that will be bridged in the estimated time */
@@ -548,7 +548,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun";
+            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -1029,7 +1029,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "avax" | "bnb" | "dai" | "matic" | "sol" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade";
+                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "avax" | "bnb" | "dai" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -1040,10 +1040,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun";
+                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
               };
               /**
                * @example {
@@ -3073,6 +3073,44 @@ export interface paths {
                  *   "minimumAmount": "30454920"
                  * }
                  */
+                refundCurrency?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
                 currencyGasTopup?: {
                   currency?: {
                     chainId?: number;
@@ -3141,6 +3179,172 @@ export interface paths {
                 userBalance?: string;
                 /** @description The type of fallback route the request uses, if any */
                 fallbackType?: string;
+                /** @description Whether the rate for the quote is fixed or dynamic (swap on origin/destination) */
+                isFixedRate?: boolean;
+                route?: {
+                  /** @description The route taken for the origin chain swap */
+                  origin?: {
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    inputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    outputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    router?: string;
+                    includedSwapSources?: string[];
+                  };
+                  /** @description The route taken for the origin chain swap */
+                  destination?: {
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    inputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    outputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    router?: string;
+                    includedSwapSources?: string[];
+                  };
+                };
               };
               /** @description Protocol information for the quote */
               protocol?: {
@@ -3170,6 +3374,7 @@ export interface paths {
               message?: string;
               errorCode?: string;
               errorData?: string;
+              requestId?: string;
             };
           };
         };
@@ -3183,11 +3388,20 @@ export interface paths {
           };
         };
         /** @description Default Response */
+        429: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
         500: {
           content: {
             "application/json": {
               message?: string;
               errorCode?: string;
+              requestId?: string;
             };
           };
         };
@@ -3643,6 +3857,12 @@ export interface paths {
   };
   "/execute": {
     post: {
+      parameters: {
+        header: {
+          /** @description Required API key for authentication. Contact the team for getting an API Key */
+          "x-api-key": string;
+        };
+      };
       requestBody: {
         content: {
           "application/json": {
@@ -3678,6 +3898,8 @@ export interface paths {
               /** @description If the app should pay for the fees associated with the request */
               subsidizeFees: boolean;
             };
+            /** @description The request ID of the gasless transaction to execute */
+            requestId?: string;
           };
         };
       };
@@ -3733,6 +3955,98 @@ export interface paths {
           content: {
             "application/json": {
               /** @example Internal server error */
+              error?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/fast-fill": {
+    post: {
+      parameters: {
+        header: {
+          /** @description Required API key for authentication. Contact the team for getting an API Key */
+          "x-api-key": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": {
+            /** @description The request ID of the request that needs to be fast filled */
+            requestId: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Request was successful. It was either queued or found to be already executed. */
+        200: {
+          content: {
+            "application/json": {
+              /** @example Request successfully queued for fast fill. */
+              message?: string;
+            };
+          };
+        };
+        /** @description Bad Request - The request body contains invalid data. */
+        400: {
+          content: {
+            "application/json": {
+              /** @example Currency is required and could not be determined. */
+              error?: string;
+            };
+          };
+        };
+        /** @description Unauthorized - Missing or invalid API key. */
+        401: {
+          content: {
+            "application/json": {
+              /** @example Unauthorized: Check API Key */
+              error?: string;
+            };
+          };
+        };
+        /** @description Forbidden - Fast fill is not enabled for this API key. */
+        403: {
+          content: {
+            "application/json": {
+              /** @example Forbidden: Fast fill is not enabled for this API key. */
+              error?: string;
+            };
+          };
+        };
+        /** @description The requested requestId could not be found. */
+        404: {
+          content: {
+            "application/json": {
+              /** @example Request not found */
+              error?: string;
+            };
+          };
+        };
+        /** @description Conflict - This request is already being processed. */
+        409: {
+          content: {
+            "application/json": {
+              /** @example Conflict: This request is already being processed. */
+              error?: string;
+            };
+          };
+        };
+        /** @description Too Many Requests - Fast Fill Threshold Reached. */
+        429: {
+          content: {
+            "application/json": {
+              /** @example Too Many Requests: Fast Fill Threshold Reached. Make a deposit to proceed. */
+              error?: string;
+            };
+          };
+        };
+        /** @description Internal Server Error. */
+        500: {
+          content: {
+            "application/json": {
+              /** @example An internal server error occurred. */
               error?: string;
             };
           };
@@ -4311,6 +4625,7 @@ export interface paths {
           destinationChainId?: number;
           privateChainsToInclude?: string;
           id?: string;
+          orderId?: string;
           startTimestamp?: number;
           endTimestamp?: number;
           startBlock?: number;
@@ -4333,6 +4648,7 @@ export interface paths {
                *   "status": "success",
                *   "user": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
                *   "recipient": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
+               *   "subsidizedRequest": false,
                *   "data": {
                *     "fees": {
                *       "gas": "2622672522398",
@@ -4392,6 +4708,7 @@ export interface paths {
                   status?: "refund" | "waiting" | "failure" | "pending" | "success";
                   user?: string;
                   recipient?: string;
+                  subsidizedRequest?: boolean;
                   data?: {
                     /** @description Slippage tolerance for the swap. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
                     slippageTolerance?: string;
@@ -4399,6 +4716,13 @@ export interface paths {
                     failReason?: "UNKNOWN" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "SLIPPAGE" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "N/A";
                     /** @enum {string} */
                     refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND";
+                    failedTxHash?: string;
+                    failedCallData?: {
+                      from?: string;
+                      to?: string;
+                      data?: string;
+                      value?: string;
+                    };
                     fees?: {
                       /** @description Estimated gas cost required for execution, in wei */
                       gas?: string;
@@ -4406,11 +4730,14 @@ export interface paths {
                       fixed?: string;
                       /** @description The dynamic fee which is a result of the chain and the amount, in wei */
                       price?: string;
+                      /** @description The fee taken by the API gateway, in wei */
+                      gateway?: string;
                     };
                     feesUsd?: {
                       gas?: string;
                       fixed?: string;
                       price?: string;
+                      gateway?: string;
                     };
                     inTxs?: {
                         /** @description Total fees in wei */
@@ -4502,8 +4829,10 @@ export interface paths {
                     };
                     appFees?: {
                         recipient?: string;
+                        bps?: string;
                         amount?: string;
                         amountUsd?: string;
+                        amountUsdCurrent?: string;
                       }[];
                     metadata?: {
                       sender?: string;
@@ -4627,11 +4956,176 @@ export interface paths {
                         minimumAmount?: string;
                       };
                       rate?: string;
+                      route?: {
+                        /** @description The route taken for the origin chain swap */
+                        origin?: {
+                          /**
+                           * @example {
+                           *   "currency": {
+                           *     "chainId": 8453,
+                           *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                           *     "symbol": "USDC",
+                           *     "name": "USD Coin",
+                           *     "decimals": 6,
+                           *     "metadata": {
+                           *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                           *       "verified": false,
+                           *       "isNative": false
+                           *     }
+                           *   },
+                           *   "amount": "30754920",
+                           *   "amountFormatted": "30.75492",
+                           *   "amountUsd": "30.901612",
+                           *   "minimumAmount": "30454920"
+                           * }
+                           */
+                          inputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          };
+                          /**
+                           * @example {
+                           *   "currency": {
+                           *     "chainId": 8453,
+                           *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                           *     "symbol": "USDC",
+                           *     "name": "USD Coin",
+                           *     "decimals": 6,
+                           *     "metadata": {
+                           *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                           *       "verified": false,
+                           *       "isNative": false
+                           *     }
+                           *   },
+                           *   "amount": "30754920",
+                           *   "amountFormatted": "30.75492",
+                           *   "amountUsd": "30.901612",
+                           *   "minimumAmount": "30454920"
+                           * }
+                           */
+                          outputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          };
+                          router?: string;
+                          includedSwapSources?: string[];
+                        };
+                        /** @description The route taken for the origin chain swap */
+                        destination?: {
+                          /**
+                           * @example {
+                           *   "currency": {
+                           *     "chainId": 8453,
+                           *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                           *     "symbol": "USDC",
+                           *     "name": "USD Coin",
+                           *     "decimals": 6,
+                           *     "metadata": {
+                           *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                           *       "verified": false,
+                           *       "isNative": false
+                           *     }
+                           *   },
+                           *   "amount": "30754920",
+                           *   "amountFormatted": "30.75492",
+                           *   "amountUsd": "30.901612",
+                           *   "minimumAmount": "30454920"
+                           * }
+                           */
+                          inputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          };
+                          /**
+                           * @example {
+                           *   "currency": {
+                           *     "chainId": 8453,
+                           *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                           *     "symbol": "USDC",
+                           *     "name": "USD Coin",
+                           *     "decimals": 6,
+                           *     "metadata": {
+                           *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                           *       "verified": false,
+                           *       "isNative": false
+                           *     }
+                           *   },
+                           *   "amount": "30754920",
+                           *   "amountFormatted": "30.75492",
+                           *   "amountUsd": "30.901612",
+                           *   "minimumAmount": "30454920"
+                           * }
+                           */
+                          outputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          };
+                          router?: string;
+                          includedSwapSources?: string[];
+                        };
+                      };
                     };
                     price?: string;
                     usesExternalLiquidity?: boolean;
                     timeEstimate?: number;
                     triggeredByCcm?: boolean;
+                    triggeredByFastFill?: boolean;
                     outTxs?: {
                         /** @description Total fees in wei */
                         fee?: string;
@@ -4876,6 +5370,7 @@ export interface paths {
               DMT?: number;
               G7?: number;
               POWER?: number;
+              SYND?: number;
             };
           };
         };
