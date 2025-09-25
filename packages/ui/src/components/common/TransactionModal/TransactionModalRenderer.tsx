@@ -188,17 +188,6 @@ export const TransactionModalRenderer: FC<Props> = ({
       step.items?.some((item) => item.checkStatus === 'submitted')
     )
 
-    const hasReceivingItems = steps.some((step) =>
-      step.items?.some(
-        (item) =>
-          item.checkStatus === 'submitted' &&
-          item.status === 'incomplete' &&
-          item.txHashes &&
-          item.txHashes.length > 0 &&
-          item.txHashes.some((tx) => tx.chainId !== chainId)
-      )
-    )
-
     // Check if any step items are still validating
     const hasValidatingItems = steps.some((step) =>
       step.items?.some(
@@ -219,14 +208,8 @@ export const TransactionModalRenderer: FC<Props> = ({
       onValidating?.(quote as Execute)
     }
 
-    // Only show success if all steps are complete and no items are in 'submitted' state, 'receiving' state, or still validating
-    if (
-      allStepsComplete &&
-      !hasSubmittedItems &&
-      !hasReceivingItems &&
-      !hasValidatingItems &&
-      progressStep !== TransactionProgressStep.Success
-    ) {
+    // Only show success if all steps are complete
+    if (allStepsComplete && progressStep !== TransactionProgressStep.Success) {
       setProgressStep(TransactionProgressStep.Success)
       onSuccess?.(quote as Execute, steps)
     }
