@@ -193,8 +193,7 @@ export const TransactionModalRenderer: FC<Props> = ({
       step.items?.some(
         (item) =>
           item.isValidatingSignature === true ||
-          item.progressState === 'validating' ||
-          item.progressState === 'validating_delayed'
+          item.progressState === 'validating'
       )
     )
 
