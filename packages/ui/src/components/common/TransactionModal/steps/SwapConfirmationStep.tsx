@@ -1,11 +1,5 @@
 import { useMemo, type FC } from 'react'
-import {
-  Flex,
-  Text,
-  ChainTokenIcon,
-  Box,
-  ChainIcon
-} from '../../../primitives/index.js'
+import { Flex, Text, ChainTokenIcon, Box } from '../../../primitives/index.js'
 import { LoadingSpinner } from '../../LoadingSpinner.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { type Token } from '../../../../types/index.js'
@@ -16,12 +10,7 @@ import { formatTransactionSteps } from '../../../../utils/steps.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
-import {
-  FileSignature,
-  Shuffle,
-  ArrowRightFromLine,
-  ArrowLeftToLine
-} from '../../../../icons/index.js'
+import { StepIcon } from '../../StepIcon.js'
 
 type SwapConfirmationStepProps = {
   fromToken?: Token
@@ -212,52 +201,6 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
   )
 }
 
-type StepIconProps = {
-  stepId: string
-  isActive: boolean
-  chainId?: number
-}
-
-const StepIcon = ({ stepId, isActive, chainId }: StepIconProps) => {
-  const getIconForStep = () => {
-    if (stepId.includes('approve')) {
-      return <FileSignature width={14} height={16} fill="currentColor" />
-    }
-    if (
-      stepId.includes('swap') ||
-      stepId.includes('deposit') ||
-      stepId.includes('send')
-    ) {
-      if (stepId.includes('same-chain')) {
-        return <Shuffle width={16} height={16} fill="currentColor" />
-      } else {
-        return <ArrowRightFromLine width={14} height={16} fill="currentColor" />
-      }
-    }
-    if (stepId.includes('relay')) {
-      return <Shuffle width={16} height={16} fill="currentColor" />
-    }
-    if (stepId.includes('receive')) {
-      return <ArrowLeftToLine width={14} height={16} fill="currentColor" />
-    }
-    return <ChainIcon chainId={chainId} square={false} width={14} height={16} />
-  }
-
-  return (
-    <Flex
-      css={{
-        borderRadius: '100px',
-        padding: '8px',
-        width: '32px',
-        height: '32px',
-        gap: '2'
-      }}
-    >
-      {getIconForStep()}
-    </Flex>
-  )
-}
-
 export type StepRowProps = {
   id: string
   action: string
@@ -324,7 +267,7 @@ export const StepRow: FC<StepRowProps> = ({
           {isCompleted ? (
             <FontAwesomeIcon icon={faCheck} width={12} />
           ) : (
-            <StepIcon stepId={id} isActive={isActive} chainId={chainId} />
+            <StepIcon stepId={id} chainId={chainId} />
           )}
         </Flex>
         <Flex direction="column" css={{ gap: '2px' }}>
