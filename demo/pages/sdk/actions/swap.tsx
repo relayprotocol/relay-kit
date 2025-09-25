@@ -1,6 +1,5 @@
 import { NextPage } from 'next'
-import { useState } from 'react'
-import { base, zora } from 'viem/chains'
+import { useEffect, useState } from 'react'
 import { Address } from 'viem'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { ConnectButton } from 'components/ConnectButton'
@@ -9,35 +8,51 @@ import { isEthereumWallet } from '@dynamic-labs/ethereum'
 import { isSolanaWallet } from '@dynamic-labs/solana'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
 import { adaptBitcoinWallet } from '@relayprotocol/relay-bitcoin-wallet-adapter'
-import { adaptViemWallet } from '@relayprotocol/relay-sdk'
+import {
+  adaptViemWallet,
+  Execute,
+  GetQuoteParameters,
+  LogLevel
+} from '@relayprotocol/relay-sdk'
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
-import { SuiWallet } from '@dynamic-labs/sui'
 import { isSuiWallet } from '@dynamic-labs/sui'
 
 const SwapActionPage: NextPage = () => {
-  const [recipient, setRecipient] = useState<string | undefined>()
-  const [amount, setAmount] = useState<string>('')
-  const [toChainId, setToChainId] = useState<number>(zora.id)
-  const [fromChainId, setFromChainId] = useState<number>(base.id)
-  const [toCurrency, setToCurrency] = useState<string>('')
-  const [fromCurrency, setFromCurrency] = useState<string>('')
-  const [depositGasLimit, setDepositGasLimit] = useState('')
-  const [tradeType, setTradeType] = useState<'EXACT_INPUT' | 'EXACT_OUTPUT'>(
-    'EXACT_INPUT'
-  )
-  const [txs, setTxs] = useState<string[]>([])
-  const [tx, setTx] = useState<string>('')
   const client = useRelayClient()
 
   const { primaryWallet: primaryWallet } = useDynamicContext()
+  const [jsonPayload, setJsonPayload] = useState<any>()
+  const [error, setError] = useState<string | undefined>()
+  const [logs, setLogs] = useState<{ message: string[]; level: LogLevel }[]>([])
+  const [quote, setQuote] = useState<Execute | undefined>()
+  const [tab, setTab] = useState<'logs' | 'quote'>('logs')
+
+  useEffect(() => {
+    const handler = (
+      e: CustomEvent<{ message: string[]; level: LogLevel }>
+    ) => {
+      setLogs((prevLogs) => [
+        ...prevLogs,
+        {
+          message: e.detail.message.map((message) => JSON.stringify(message)),
+          level: e.detail.level
+        }
+      ])
+    }
+
+    window.addEventListener('relay-kit-logger', handler as any)
+
+    return () => {
+      window.removeEventListener('relay-kit-logger', handler as any)
+    }
+  }, [])
 
   return (
     <div
       style={{
         display: 'flex',
         height: 50,
-        width: '100%',
         gap: 12,
         padding: 24,
         flexDirection: 'column',
@@ -46,252 +61,256 @@ const SwapActionPage: NextPage = () => {
       }}
     >
       <ConnectButton />
-      <div>
-        <label>To Chain Id: </label>
-        <input
-          type="number"
-          placeholder="Which chain to bridge to?"
-          value={toChainId}
-          onChange={(e) => setToChainId(Number(e.target.value))}
-        />
-      </div>
-      <div>
-        <label>To currency: </label>
-        <input
-          placeholder="Currency address being swapped into?"
-          value={toCurrency}
-          onChange={(e) => setToCurrency(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>From Chain Id: </label>
-        <input
-          type="number"
-          placeholder="Which chain to deposit on?"
-          value={fromChainId}
-          onChange={(e) => setFromChainId(Number(e.target.value))}
-        />
-      </div>
-      <div>
-        <label>From currency: </label>
-        <input
-          placeholder="Currency address being swapped from?"
-          value={fromCurrency}
-          onChange={(e) => setFromCurrency(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Amount: </label>
-        <input
-          type="number"
-          placeholder="How much to bridge?"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Recipient: </label>
-        <input
-          placeholder="Who is the receiver?"
-          value={recipient}
-          onChange={(e) => setRecipient(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Deposit Gas Limit: </label>
-        <input
-          type="number"
-          value={depositGasLimit}
-          onChange={(e) => setDepositGasLimit(e.target.value)}
-        />
-      </div>
-      <div>
-        <label>Trade Type: </label>
-        <div>
-          <input
-            type="radio"
-            value="EXACT_INPUT"
-            name="tradeType"
-            checked={tradeType === 'EXACT_INPUT'}
-            onChange={(e) => setTradeType(e.target.value as 'EXACT_INPUT')}
-          />
-          <label>EXACT_INPUT</label>
-        </div>
-        <div>
-          <input
-            type="radio"
-            value="EXACT_OUTPUT"
-            name="tradeType"
-            checked={tradeType === 'EXACT_OUTPUT'}
-            onChange={(e) => setTradeType(e.target.value as 'EXACT_OUTPUT')}
-          />
-          <label>EXACT_OUTPUT</label>
-        </div>
-      </div>
-
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-          maxWidth: 600
+          flexDirection: 'row',
+          gap: 12,
+          width: 'calc(100% - 48px)'
         }}
       >
-        <label>Txs (optional):</label>
-        <textarea
-          style={{ minHeight: 100, minWidth: 300 }}
-          placeholder='Add a transaction object, must be valid json: {to: "", data: "", value: ""}'
-          value={tx}
-          onChange={(e) => setTx(e.target.value)}
-        />
-        <button
-          style={{
-            background: 'blue',
-            color: 'white',
-            border: '1px solid #ffffff',
-            borderRadius: 8,
-            cursor: 'pointer',
-            padding: '4px 8px'
-          }}
-          disabled={!tx}
-          onClick={() => {
-            setTxs([...txs, JSON.parse(`${tx}`)])
-          }}
-        >
-          Add Transaction
-        </button>
         <div
           style={{
-            marginTop: 10,
-            border: '1px solid gray',
-            borderRadius: 4,
-            padding: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 4,
-            overflow: 'scroll'
+            height: '100%',
+            width: '50%',
+            borderRight: '1px solid #000000'
           }}
         >
-          <b>Txs Added:</b>
-          {txs.map((tx, i) => (
-            <div key={i}>{JSON.stringify(tx)}</div>
-          ))}
+          <div style={{ display: 'flex', gap: 12 }}>
+            <div
+              style={{
+                marginBottom: 14,
+                fontWeight: tab === 'logs' ? 600 : 400,
+                cursor: 'pointer'
+              }}
+              onClick={() => setTab('logs')}
+            >
+              Logs
+            </div>
+            <div
+              style={{
+                marginBottom: 14,
+                fontWeight: tab === 'quote' ? 600 : 400,
+                cursor: 'pointer'
+              }}
+              onClick={() => setTab('quote')}
+            >
+              Quote
+            </div>
+          </div>
+          {error && <div style={{ color: 'red' }}>{error}</div>}
+          {tab === 'logs' && (
+            <div
+              style={{
+                overflowY: 'scroll',
+                maxHeight: 'calc(100vh - 224px)',
+                wordWrap: 'break-word',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12
+              }}
+            >
+              {logs.map((log, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: '#D7DBFF',
+                    borderRadius: '4px',
+                    padding: '4px 8px'
+                  }}
+                >
+                  {log.message}
+                </div>
+              ))}
+            </div>
+          )}
+          {tab === 'quote' && (
+            <div
+              style={{
+                overflowY: 'scroll',
+                maxHeight: 'calc(100vh - 224px)',
+                wordWrap: 'break-word',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12
+              }}
+            >
+              <pre>{JSON.stringify(quote, null, 2)}</pre>
+            </div>
+          )}
+        </div>
+        <div
+          style={{
+            width: '50%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '0 8px 0 8px'
+          }}
+        >
+          <div>Paste in the quote JSON parameters below:</div>
+          <div
+            style={{
+              fontSize: 12,
+              fontWeight: 200,
+              fontStyle: 'italic',
+              marginTop: 4,
+              marginBottom: 14
+            }}
+          >
+            Note that user is not required as that is taken from the connected
+            wallet
+          </div>
+          <textarea
+            style={{ minHeight: 400, minWidth: 500 }}
+            value={jsonPayload}
+            onChange={(e) => setJsonPayload(e.target.value)}
+          />
+          <button
+            style={{
+              marginTop: 50,
+              padding: 24,
+              background: 'blue',
+              color: 'white',
+              fontSize: 18,
+              border: '1px solid #ffffff',
+              borderRadius: 8,
+              fontWeight: 800,
+              cursor: 'pointer'
+            }}
+            onClick={async () => {
+              setError(undefined)
+              setLogs([])
+              setQuote(undefined)
+              if (!primaryWallet) {
+                setError('Please connect to execute transactions')
+                throw 'Please connect to execute transactions'
+              }
+              let quoteParams: any | undefined
+
+              try {
+                quoteParams = JSON.parse(jsonPayload)
+              } catch (e) {
+                setError(`Invalid JSON payload: ${e}`)
+                throw 'Invalid JSON payload'
+              }
+
+              if (!quoteParams) {
+                setError('Missing JSON payload')
+                throw 'Missing JSON payload'
+              }
+
+              quoteParams.chainId = quoteParams.originChainId
+              quoteParams.toChainId = quoteParams.destinationChainId
+              quoteParams.currency = quoteParams.originCurrency
+              quoteParams.toCurrency = quoteParams.destinationCurrency
+
+              if (!quoteParams.chainId) {
+                setError('Missing chainId')
+                throw 'Missing chainId'
+              }
+
+              let executionWallet
+
+              if (
+                quoteParams.chainId === 792703809 &&
+                isSolanaWallet(primaryWallet)
+              ) {
+                const connection = await primaryWallet.getConnection()
+                const signer = await primaryWallet.getSigner()
+
+                if (!connection || !signer?.signTransaction) {
+                  throw 'Unable to setup Solana wallet'
+                }
+
+                executionWallet = adaptSolanaWallet(
+                  primaryWallet.address,
+                  792703809,
+                  connection,
+                  signer.signAndSendTransaction
+                )
+              } else if (isEthereumWallet(primaryWallet)) {
+                const walletClient = await primaryWallet.getWalletClient()
+                executionWallet = adaptViemWallet(walletClient)
+              } else if (isBitcoinWallet(primaryWallet)) {
+                executionWallet = adaptBitcoinWallet(
+                  primaryWallet.address,
+                  async (_address, _psbt, dynamicParams) => {
+                    try {
+                      // Request the wallet to sign the PSBT
+                      const response =
+                        await primaryWallet.signPsbt(dynamicParams)
+                      if (!response) {
+                        throw 'Missing psbt response'
+                      }
+                      return response.signedPsbt
+                    } catch (e) {
+                      throw e
+                    }
+                  }
+                )
+              } else if (isSuiWallet(primaryWallet)) {
+                const walletClient = await primaryWallet.getWalletClient()
+
+                if (!walletClient) {
+                  throw 'Unable to setup Sui wallet'
+                }
+
+                executionWallet = adaptSuiWallet(
+                  primaryWallet?.address,
+                  quoteParams.chainId,
+                  walletClient,
+                  async (tx) => {
+                    const signedTransaction =
+                      await primaryWallet.signTransaction(tx)
+
+                    const executionResult =
+                      await walletClient?.executeTransactionBlock({
+                        options: {},
+                        signature: signedTransaction.signature,
+                        transactionBlock: signedTransaction.bytes
+                      })
+
+                    return executionResult
+                  }
+                )
+              } else {
+                throw 'Unable to configure wallet'
+              }
+
+              const quote = await client?.actions.getQuote(
+                {
+                  wallet: executionWallet,
+                  user: primaryWallet.address,
+                  recipient: primaryWallet.address,
+                  ...quoteParams
+                },
+                true
+              )
+
+              setQuote(quote)
+              if (!quote) {
+                throw 'Missing the quote'
+              }
+              client?.actions
+                .execute({
+                  quote,
+                  wallet: executionWallet,
+                  onProgress: (data) => {
+                    console.log(data)
+                  }
+                })
+                .catch((e) => {
+                  setError(`Error executing swap: ${e}`)
+                  throw e
+                })
+            }}
+          >
+            Execute Swap
+          </button>
         </div>
       </div>
-      <button
-        style={{
-          marginTop: 50,
-          padding: 24,
-          background: 'blue',
-          color: 'white',
-          fontSize: 18,
-          border: '1px solid #ffffff',
-          borderRadius: 8,
-          fontWeight: 800,
-          cursor: 'pointer'
-        }}
-        onClick={async () => {
-          if (!primaryWallet) {
-            throw 'Please connect to execute transactions'
-          }
-
-          if (!amount) {
-            throw 'Must include an amount for swapping'
-          }
-
-          let executionWallet
-
-          if (fromChainId === 792703809 && isSolanaWallet(primaryWallet)) {
-            const connection = await primaryWallet.getConnection()
-            const signer = await primaryWallet.getSigner()
-
-            if (!connection || !signer?.signTransaction) {
-              throw 'Unable to setup Solana wallet'
-            }
-
-            executionWallet = adaptSolanaWallet(
-              primaryWallet.address,
-              792703809,
-              connection,
-              signer.signAndSendTransaction
-            )
-          } else if (isEthereumWallet(primaryWallet)) {
-            const walletClient = await primaryWallet.getWalletClient()
-            executionWallet = adaptViemWallet(walletClient)
-          } else if (isBitcoinWallet(primaryWallet)) {
-            executionWallet = adaptBitcoinWallet(
-              primaryWallet.address,
-              async (_address, _psbt, dynamicParams) => {
-                try {
-                  // Request the wallet to sign the PSBT
-                  const response = await primaryWallet.signPsbt(dynamicParams)
-                  if (!response) {
-                    throw 'Missing psbt response'
-                  }
-                  return response.signedPsbt
-                } catch (e) {
-                  throw e
-                }
-              }
-            )
-          } else if (isSuiWallet(primaryWallet)) {
-            const walletClient = await primaryWallet.getWalletClient()
-
-            if (!walletClient) {
-              throw 'Unable to setup Sui wallet'
-            }
-
-            executionWallet = adaptSuiWallet(
-              primaryWallet?.address,
-              fromChainId,
-              walletClient,
-              async (tx) => {
-                const signedTransaction =
-                  await primaryWallet.signTransaction(tx)
-
-                const executionResult =
-                  await walletClient?.executeTransactionBlock({
-                    options: {},
-                    signature: signedTransaction.signature,
-                    transactionBlock: signedTransaction.bytes
-                  })
-
-                return executionResult
-              }
-            )
-          } else {
-            throw 'Unable to configure wallet'
-          }
-
-          const quote = await client?.actions.getQuote(
-            {
-              chainId: fromChainId,
-              wallet: executionWallet,
-              toChainId,
-              toCurrency,
-              amount,
-              currency: fromCurrency,
-              recipient: recipient ? (recipient as Address) : undefined,
-              txs: [...(txs as any)],
-              tradeType
-            },
-            true
-          )
-          if (!quote) {
-            throw 'Missing the quote'
-          }
-          client?.actions.execute({
-            quote,
-            wallet: executionWallet,
-            depositGasLimit,
-            onProgress: (data) => {
-              console.log(data)
-            }
-          })
-        }}
-      >
-        Execute Swap
-      </button>
     </div>
   )
 }

@@ -56,7 +56,17 @@ export const RelayKitProviderWrapper: FC<{
           url: MAINNET_RELAY_WS
         },
         secureBaseUrl: process.env.NEXT_PUBLIC_RELAY_SECURE_API_URL,
-        appFees: appFeesEnabled ? DEFAULT_APP_FEES : undefined
+        appFees: appFeesEnabled ? DEFAULT_APP_FEES : undefined,
+        logger: (message, level) => {
+          window.dispatchEvent(
+            new CustomEvent('relay-kit-logger', {
+              detail: {
+                message,
+                level
+              }
+            })
+          )
+        }
       }}
       theme={{
         font: 'Barlow, -apple-system, Helvetica, sans-serif',
