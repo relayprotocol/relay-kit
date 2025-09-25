@@ -53,7 +53,6 @@ export type Execute = {
       receipt?: TransactionReceipt | SvmReceipt | SuiReceipt
       checkStatus?:
         | 'refund'
-        | 'delayed'
         | 'waiting'
         | 'failure'
         | 'pending'

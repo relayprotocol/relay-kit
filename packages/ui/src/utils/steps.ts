@@ -40,7 +40,6 @@ const customizeWalletActionText = (
   action: string,
   walletDisplayName: string
 ): string => {
-  console.log(walletDisplayName)
   // Replace "Confirm transaction in your wallet" with "Confirm in [WalletName]"
   if (action === 'Confirm transaction in your wallet') {
     return `Confirm in ${walletDisplayName}`
@@ -134,11 +133,7 @@ export const formatTransactionSteps = ({
     quote?.details?.currencyOut?.currency?.symbol ||
     'Unknown'
 
-  // Check if the last executable step has validating_delayed status
-  const lastStep = executableSteps[executableSteps.length - 1]
-  const lastStepItem = lastStep?.items?.[0]
-  const status =
-    lastStepItem?.progressState === 'validating_delayed' ? 'delayed' : undefined
+  const status = undefined
 
   // Detect approval steps
   const hasApproval = executableSteps.some(

@@ -3801,7 +3801,7 @@ export interface paths {
           content: {
             "application/json": {
               /** @enum {string} */
-              status?: "refund" | "delayed" | "waiting" | "failure" | "pending" | "success";
+              status?: "refund" | "waiting" | "failure" | "pending" | "success";
               details?: string;
               /** @description Incoming transaction hashes */
               inTxHashes?: string[];
@@ -3831,7 +3831,7 @@ export interface paths {
           content: {
             "application/json": {
               /** @enum {string} */
-              status?: "refund" | "delayed" | "waiting" | "failure" | "pending" | "submitted" | "success";
+              status?: "refund" | "waiting" | "failure" | "pending" | "submitted" | "success";
               details?: string;
               /** @description Incoming transaction hashes */
               inTxHashes?: string[];
@@ -4389,7 +4389,7 @@ export interface paths {
                    * @description Note that fallback is returned in the case of a refund
                    * @enum {string}
                    */
-                  status?: "refund" | "delayed" | "waiting" | "failure" | "pending" | "success";
+                  status?: "refund" | "waiting" | "failure" | "pending" | "success";
                   user?: string;
                   recipient?: string;
                   data?: {

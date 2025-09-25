@@ -252,14 +252,6 @@ export async function handleSignatureStepItem({
             return // Success - exit polling
           } else if (res?.data?.status === 'failure') {
             throw Error(res?.data?.details || 'Transaction failed')
-          } else if (res?.data?.status === 'delayed') {
-            stepItem.progressState = 'validating_delayed'
-            setState({
-              steps: [...json?.steps],
-              fees: { ...json?.fees },
-              breakdown: json?.breakdown,
-              details: json?.details
-            })
           }
 
           attemptCount++

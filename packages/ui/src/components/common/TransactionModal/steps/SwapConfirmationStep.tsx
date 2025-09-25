@@ -207,15 +207,6 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
             )}
           </Box>
         ))}
-
-        {status === 'delayed' ? (
-          <Flex css={{ p: '3', background: 'amber2', borderRadius: 12 }}>
-            <Text style="subtitle3" color="warning">
-              Your transaction is delayed. We apologize for the inconvenience.
-              Contact support if you need help.
-            </Text>
-          </Flex>
-        ) : null}
       </Flex>
     </>
   )
