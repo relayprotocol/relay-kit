@@ -206,7 +206,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 tokenlogoURI={fromTokenLogoUri}
                 tokenSymbol={_fromToken?.symbol}
                 size="base"
-                successStep={true}
+                variant="completed"
               />
               <Text style="subtitle1" css={{ ml: '2' }}>
                 {_fromAmountFormatted} {_fromToken?.symbol}
@@ -227,7 +227,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 tokenlogoURI={toTokenLogoUri}
                 tokenSymbol={_toToken?.symbol}
                 size="base"
-                successStep={true}
+                variant="completed"
               />
               <Text style="subtitle1" css={{ ml: '2' }}>
                 {_toAmountFormatted} {_toToken?.symbol}
@@ -410,7 +410,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainId={_fromToken.chainId}
                     tokenlogoURI={fromTokenLogoUri}
                     tokenSymbol={_fromToken.symbol}
-                    successStep={true}
+                    variant="completed"
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
@@ -457,7 +457,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainId={_toToken.chainId}
                     tokenlogoURI={toTokenLogoUri}
                     tokenSymbol={_toToken.symbol}
-                    successStep={true}
+                    variant="completed"
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
