@@ -50,7 +50,7 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
 }) => {
   const operation = quote?.details?.operation || 'swap'
 
-  const { formattedSteps, status } = useMemo(
+  const { formattedSteps } = useMemo(
     () =>
       formatTransactionSteps({
         steps,

@@ -118,6 +118,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
       (relayClient?.maxPollingAttemptsBeforeTimeout ?? 30) *
         (relayClient?.pollingInterval ?? 5000)
 
+  const estimatedMinutes = Math.round(timeEstimateMs / 1000 / 60)
+
   const gasTopUpAmountCurrency =
     transaction?.data?.metadata?.currencyGasTopup?.currency
   const formattedGasTopUpAmount = transaction?.data?.metadata?.currencyGasTopup
@@ -192,7 +194,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         </motion.div>
 
         <Text style="subtitle1" css={{ my: '4', textAlign: 'center' }}>
-          Processing bridge, this will take ~10 mins.
+          Processing bridge, this will take ~{estimatedMinutes}{' '}
+          {estimatedMinutes === 1 ? 'min' : 'mins'}.
         </Text>
 
         <Flex align="center" css={{ gap: '2', mb: 24 }}>

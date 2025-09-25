@@ -112,8 +112,7 @@ export const formatTransactionSteps = ({
   currentAddress,
   linkedWallets
 }: FormatTransactionStepsProps) => {
-  if (!steps || steps.length === 0)
-    return { formattedSteps: [], status: undefined }
+  if (!steps || steps.length === 0) return { formattedSteps: [] }
 
   // Get wallet display name for customizing action text
   const walletDisplayName = getWalletDisplayName(currentAddress, linkedWallets)
@@ -132,8 +131,6 @@ export const formatTransactionSteps = ({
     toToken?.symbol ||
     quote?.details?.currencyOut?.currency?.symbol ||
     'Unknown'
-
-  const status = undefined
 
   // Detect approval steps
   const hasApproval = executableSteps.some(
@@ -611,7 +608,7 @@ export const formatTransactionSteps = ({
     })
   }
 
-  return { formattedSteps: result, status }
+  return { formattedSteps: result }
 }
 
 /**

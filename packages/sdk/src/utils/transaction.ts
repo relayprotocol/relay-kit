@@ -148,7 +148,7 @@ export async function sendTransactionSafely(
   ])
 
   //Set up internal functions
-  const validate = async (res: AxiosResponse<any, any>) => {
+  const validate = (res: AxiosResponse<any, any>) => {
     getClient()?.log(
       [
         'Execute Steps: Polling for confirmation',
@@ -276,7 +276,7 @@ export async function sendTransactionSafely(
         receiptController?.abort()
       }
 
-      if (!res || (await validate(res))) {
+      if (!res || validate(res)) {
         waitingForConfirmation = false // transaction confirmed
       } else if (res) {
         if (res.data.status !== 'pending') {
