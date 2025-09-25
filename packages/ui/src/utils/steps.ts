@@ -4,13 +4,14 @@ import { NormalizedWalletName } from '../constants/walletCompatibility.js'
 
 /**
  * Get display name for wallet from linkedWallets array using current address
+ * Returns undefined if no wallet name can be determined
  */
 const getWalletDisplayName = (
   currentAddress?: string,
   linkedWallets?: LinkedWallet[]
-): string => {
+): string | undefined => {
   if (!currentAddress || !linkedWallets) {
-    return 'your wallet'
+    return undefined
   }
 
   const linkedWallet = linkedWallets.find(
@@ -22,10 +23,9 @@ const getWalletDisplayName = (
   )
 
   if (!linkedWallet?.connector) {
-    return 'your wallet'
+    return undefined
   }
 
-  // Use normalized wallet name if available, otherwise use connector directly
   const normalizedName =
     NormalizedWalletName[linkedWallet.connector] ?? linkedWallet.connector
 
@@ -34,36 +34,65 @@ const getWalletDisplayName = (
 }
 
 /**
- * Replace generic wallet action text with wallet-specific text
+ * Generate wallet-specific action text based on step ID
+ * More reliable than string matching - uses stable step identifiers
  */
-const customizeWalletActionText = (
-  action: string,
+const getWalletActionText = (
+  stepId: string,
   walletDisplayName: string
 ): string => {
-  // Replace "Confirm transaction in your wallet" with "Confirm in [WalletName]"
-  if (action === 'Confirm transaction in your wallet') {
-    return `Confirm in ${walletDisplayName}`
+  if (stepId.includes('approve')) {
+    return `Approve in ${walletDisplayName}`
   }
 
-  // Handle "Approve [token] for swap" -> "Approve in [WalletName]"
-  if (action.includes('Approve') && action.includes('for swap')) {
-    const tokenMatch = action.match(/Approve (.+) for swap/)
-    if (tokenMatch) {
-      return `Approve in ${walletDisplayName}`
-    }
+  if (stepId.includes('authorize')) {
+    return `Sign in ${walletDisplayName}`
   }
 
-  // Handle "Swap [token] to [token]" -> "Confirm in [WalletName]"
-  if (action.includes('Swap') && action.includes(' to ')) {
-    return `Confirm in ${walletDisplayName}`
+  // All other wallet actions (swap, send, deposit) require confirmation
+  return `Confirm in ${walletDisplayName}`
+}
+
+/**
+ * Generate display action text for non-wallet steps
+ */
+const getDisplayActionText = (
+  stepId: string,
+  context?: {
+    fromTokenSymbol?: string
+    toTokenSymbol?: string
+    fromChainName?: string
+    toChainName?: string
+  }
+): string => {
+  if (stepId.includes('approve')) {
+    const tokenSymbol = context?.fromTokenSymbol || 'token'
+    return `Approve ${tokenSymbol} for swap`
   }
 
-  // Handle other variations
-  if (action.includes('Confirm') && action.includes('wallet')) {
-    return action.replace(/in your wallet/gi, `in ${walletDisplayName}`)
+  if (stepId.includes('swap')) {
+    const fromSymbol = context?.fromTokenSymbol || 'token'
+    const toSymbol = context?.toTokenSymbol || 'token'
+    return `Swap ${fromSymbol} to ${toSymbol}`
   }
 
-  return action
+  if (stepId.includes('send')) {
+    const tokenSymbol = context?.fromTokenSymbol || 'token'
+    const chainName = context?.fromChainName || 'chain'
+    return `Send ${tokenSymbol} on ${chainName}`
+  }
+
+  if (stepId.includes('relay')) {
+    return 'Relay routes your payment'
+  }
+
+  if (stepId.includes('receive')) {
+    const tokenSymbol = context?.toTokenSymbol || 'token'
+    const chainName = context?.toChainName || 'chain'
+    return `Receive ${tokenSymbol} on ${chainName}`
+  }
+
+  return 'Processing transaction'
 }
 
 export type FormattedStep = {
@@ -115,7 +144,8 @@ export const formatTransactionSteps = ({
   if (!steps || steps.length === 0) return { formattedSteps: [] }
 
   // Get wallet display name for customizing action text
-  const walletDisplayName = getWalletDisplayName(currentAddress, linkedWallets)
+  const walletDisplayName =
+    getWalletDisplayName(currentAddress, linkedWallets) ?? 'your wallet'
 
   const result: FormattedStep[] = []
   const executableSteps = steps?.filter(
@@ -270,25 +300,23 @@ export const formatTransactionSteps = ({
   } => {
     if (!subText) return { color: undefined, showSpinner: false }
 
-    // Success message styling (completed steps)
     if (isCompleted && subText.startsWith('Success:')) {
       return {
-        color: 'green11', // Green for "Success: txhash"
+        color: 'green11',
         showSpinner: false
       }
     }
 
-    // Handle submitted status - receiving state
     if (checkStatus === 'submitted') {
       if (stepType === 'receive' && subText.startsWith('Receiving:')) {
         return {
-          color: 'primary11', // Primary color for "Receiving: txhash"
-          showSpinner: true // Show spinner for receiving
+          color: 'primary11',
+          showSpinner: true
         }
       }
       return {
         color: 'primary11',
-        showSpinner: false // No spinner for other submitted states
+        showSpinner: false
       }
     }
 
@@ -299,7 +327,6 @@ export const formatTransactionSteps = ({
       }
     }
 
-    // For other step types, use primary11 color and show spinner
     return { color: 'primary11', showSpinner: true }
   }
 
@@ -337,10 +364,7 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'approve-same-chain',
-        action: customizeWalletActionText(
-          `Approve ${fromTokenSymbol} for swap`,
-          walletDisplayName
-        ),
+        action: getWalletActionText('approve-same-chain', walletDisplayName),
         isActive: isApprovalActive,
         isCompleted: isApprovalCompleted,
         progressState: isApprovalActive ? currentProgressState : undefined,
@@ -388,7 +412,7 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'swap-same-chain',
-        action: `Swap ${fromTokenSymbol} to ${toTokenSymbol}`,
+        action: getWalletActionText('swap-same-chain', walletDisplayName),
         isActive: isSwapActive,
         isCompleted: isSwapCompleted,
         progressState: isSwapActive ? currentProgressState : undefined,
@@ -434,7 +458,7 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'swap-same-chain',
-        action: `Swap ${fromTokenSymbol} to ${toTokenSymbol}`,
+        action: getWalletActionText('swap-same-chain', walletDisplayName),
         isActive: isSwapActive,
         isCompleted: isSwapCompleted,
         progressState: isSwapActive ? currentProgressState : undefined,
@@ -486,7 +510,7 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'approve-cross-chain',
-        action: `Approve ${fromTokenSymbol} for swap`,
+        action: getWalletActionText('approve-cross-chain', walletDisplayName),
         isActive: isApprovalActive,
         isCompleted: isApprovalCompleted,
         progressState: isApprovalActive ? currentProgressState : undefined,
@@ -542,7 +566,7 @@ export const formatTransactionSteps = ({
 
     result.push({
       id: 'send-cross-chain',
-      action: `Send ${fromTokenSymbol} on ${fromChain?.displayName}`,
+      action: getWalletActionText('send-cross-chain', walletDisplayName),
       isActive: isSendActive,
       isCompleted: isSendCompleted,
       progressState: isSendActive ? currentProgressState : undefined,
@@ -577,7 +601,7 @@ export const formatTransactionSteps = ({
 
     result.push({
       id: 'relay-processing',
-      action: 'Relay routes your payment',
+      action: getDisplayActionText('relay-processing'),
       isActive: Boolean(relayStepActive),
       isCompleted: Boolean(relayStepCompleted),
       isWalletAction: false,
@@ -599,7 +623,10 @@ export const formatTransactionSteps = ({
 
     result.push({
       id: 'receive-cross-chain',
-      action: `Receive ${toTokenSymbol} on ${toChain?.displayName}`,
+      action: getDisplayActionText('receive-cross-chain', {
+        toTokenSymbol,
+        toChainName: toChain?.displayName
+      }),
       isActive: receiveStepActive,
       isCompleted: receiveStepCompleted,
       isWalletAction: false,
@@ -609,29 +636,4 @@ export const formatTransactionSteps = ({
   }
 
   return { formattedSteps: result }
-}
-
-/**
- * Returns the appropriate action text for a transaction step based on its ID
- * @param stepId The ID of the step
- * @param operation The operation being performed (swap, bridge, etc.)
- * @returns The formatted action text to display
- */
-export function getStepActionText(stepId: string, operation: string): string {
-  if (stepId === 'approve' || stepId === 'approval') {
-    return 'Approve token'
-  }
-  if (
-    stepId === 'authorize' ||
-    stepId === 'authorize1' ||
-    stepId === 'authorize2'
-  ) {
-    return 'Sign authorization'
-  }
-
-  if (stepId === 'swap' || stepId === 'deposit' || stepId === 'send') {
-    return `Confirm ${operation}`
-  }
-
-  return 'Confirm transaction'
 }
