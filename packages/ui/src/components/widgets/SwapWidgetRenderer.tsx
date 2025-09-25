@@ -589,7 +589,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromChain?.vmType
   )
 
-  const explicitDeposit = hasZeroNativeBalance ? true : eoaExplicitDeposit
+  // const explicitDeposit = hasZeroNativeBalance ? true : eoaExplicitDeposit
+  const explicitDeposit = true
   const normalizedSponsoredTokens = useMemo(() => {
     const chainVms = relayClient?.chains.reduce(
       (chains, chain) => {
