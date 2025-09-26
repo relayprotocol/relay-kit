@@ -19,6 +19,7 @@ export const WalletChainIncompatible: Record<string, number[]> = {
 
 export const NormalizedWalletName: Record<string, string> = {
   phantomevm: 'phantom',
+  phantomsui: 'phantom',
   magicedensol: 'magiceden',
   roninwallet: 'ronin',
   portoevm: 'porto'
