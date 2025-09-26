@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 2.4.6
+
+### Patch Changes
+
+- 5135cd1: Fix tenderly error api
+
 ## 2.4.5
 
 ### Patch Changes
