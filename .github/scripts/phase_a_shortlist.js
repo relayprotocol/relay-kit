@@ -44,7 +44,7 @@ const isRateLimit = (s) => (s||"").toLowerCase().includes("429") || (s||"").toLo
 const isRedirect  = (s) => (s||"").toLowerCase().includes("308") || (s||"").toLowerCase().includes("permanent redirect");
 
 (async () => {
-  const watch = (process.env.WATCH_DOMAINS || "").trim();
+  const watch = (process.env.WATCH_DOMAINS || "relay.link").trim();
   if (!watch) { console.error("WATCH_DOMAINS secret is empty"); process.exit(1); }
 
   const seeds = watch.split(",").map(normalizeSeed).filter(Boolean);
