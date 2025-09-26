@@ -1,5 +1,99 @@
 import type { Execute, RelayChain } from '@relayprotocol/relay-sdk'
-import type { Token } from '../types/index.js'
+import type { Token, LinkedWallet } from '../types/index.js'
+import { NormalizedWalletName } from '../constants/walletCompatibility.js'
+
+/**
+ * Get display name for wallet from linkedWallets array using current address
+ * Returns undefined if no wallet name can be determined
+ */
+const getWalletDisplayName = (
+  currentAddress?: string,
+  linkedWallets?: LinkedWallet[]
+): string | undefined => {
+  if (!currentAddress || !linkedWallets) {
+    return undefined
+  }
+
+  const linkedWallet = linkedWallets.find(
+    (linkedWallet) =>
+      currentAddress ===
+        (linkedWallet.vmType === 'evm'
+          ? linkedWallet.address.toLowerCase()
+          : linkedWallet.address) || linkedWallet.address === currentAddress
+  )
+
+  if (!linkedWallet?.connector) {
+    return undefined
+  }
+
+  const normalizedName =
+    NormalizedWalletName[linkedWallet.connector] ?? linkedWallet.connector
+
+  // Capitalize first letter for display
+  return normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1)
+}
+
+/**
+ * Generate wallet-specific action text based on step ID
+ * More reliable than string matching - uses stable step identifiers
+ */
+const getWalletActionText = (
+  stepId: string,
+  walletDisplayName: string
+): string => {
+  if (stepId.includes('approve')) {
+    return `Approve in ${walletDisplayName}`
+  }
+
+  if (stepId.includes('authorize')) {
+    return `Sign in ${walletDisplayName}`
+  }
+
+  // All other wallet actions (swap, send, deposit) require confirmation
+  return `Confirm in ${walletDisplayName}`
+}
+
+/**
+ * Generate display action text for non-wallet steps
+ */
+const getDisplayActionText = (
+  stepId: string,
+  context?: {
+    fromTokenSymbol?: string
+    toTokenSymbol?: string
+    fromChainName?: string
+    toChainName?: string
+  }
+): string => {
+  if (stepId.includes('approve')) {
+    const tokenSymbol = context?.fromTokenSymbol || 'token'
+    return `Approve ${tokenSymbol} for swap`
+  }
+
+  if (stepId.includes('swap')) {
+    const fromSymbol = context?.fromTokenSymbol || 'token'
+    const toSymbol = context?.toTokenSymbol || 'token'
+    return `Swap ${fromSymbol} to ${toSymbol}`
+  }
+
+  if (stepId.includes('send')) {
+    const tokenSymbol = context?.fromTokenSymbol || 'token'
+    const chainName = context?.fromChainName || 'chain'
+    return `Send ${tokenSymbol} on ${chainName}`
+  }
+
+  if (stepId.includes('relay')) {
+    return 'Relay routes your payment'
+  }
+
+  if (stepId.includes('receive')) {
+    const tokenSymbol = context?.toTokenSymbol || 'token'
+    const chainName = context?.toChainName || 'chain'
+    return `Receive ${tokenSymbol} on ${chainName}`
+  }
+
+  return 'Processing transaction'
+}
 
 export type FormattedStep = {
   id: string
@@ -13,145 +107,533 @@ export type FormattedStep = {
   isWalletAction: boolean
   chainId?: number
   isApproveStep?: boolean
+  subText?: string
+  subTextColor?: 'primary11' | 'green11' | 'subtle' | 'slate10'
+  showSubTextSpinner?: boolean
 }
 
 type FormatTransactionStepsProps = {
   steps: Execute['steps'] | null
   fromToken?: Token
+  toToken?: Token
   fromChain?: RelayChain
   toChain?: RelayChain
   operation: string
+  quote?: Execute | null
+  currentAddress?: string
+  linkedWallets?: LinkedWallet[]
 }
 
 /**
- * formattedSteps transforms backend transaction steps into user-friendly UI steps by:
- * - Tracking active/delayed/completed states
- * - Adding readable action descriptions
- * - Extracting transaction hashes for explorer links
- * - Adding a final Relay processing step
+ * formattedSteps creates a simplified, user-friendly step progression by:
+ * - Creating fixed step sequences (1-4 steps) based on transaction type
+ * - Showing clear action text with dynamic sub-text status updates
+ * - Preserving transaction hash display and state management
  */
 export const formatTransactionSteps = ({
   steps,
   fromToken,
+  toToken,
   fromChain,
   toChain,
-  operation
+  operation,
+  quote,
+  currentAddress,
+  linkedWallets
 }: FormatTransactionStepsProps) => {
-  if (!steps || steps.length === 0)
-    return { formattedSteps: [], status: undefined }
+  if (!steps || steps.length === 0) return { formattedSteps: [] }
+
+  // Get wallet display name for customizing action text
+  const walletDisplayName =
+    getWalletDisplayName(currentAddress, linkedWallets) ?? 'your wallet'
 
   const result: FormattedStep[] = []
   const executableSteps = steps?.filter(
     (step) => step.items && step.items.length > 0
   )
 
-  // Check if the last executable step has validating_delayed status
-  const lastStep = executableSteps[executableSteps.length - 1]
-  const lastStepItem = lastStep?.items?.[0]
-  const status =
-    lastStepItem?.progressState === 'validating_delayed' ? 'delayed' : undefined
+  // Extract token symbols from quote if not provided in props
+  const fromTokenSymbol =
+    fromToken?.symbol ||
+    quote?.details?.currencyIn?.currency?.symbol ||
+    'Unknown'
+  const toTokenSymbol =
+    toToken?.symbol ||
+    quote?.details?.currencyOut?.currency?.symbol ||
+    'Unknown'
 
-  // Find the current active step
-  let activeStepIndex = executableSteps.findIndex((step) =>
-    step.items?.some((item) => item.status === 'incomplete')
+  // Detect approval steps
+  const hasApproval = executableSteps.some(
+    (step) => step.id === 'approve' || (step.id as any) === 'approval'
   )
 
-  // If no active step found (all complete or all incomplete), set to first step
-  if (activeStepIndex === -1) {
-    activeStepIndex = executableSteps.length > 0 ? 0 : -1
-  }
+  // Determine transaction type
+  const isSameChain = fromChain?.id === toChain?.id
 
-  // Process each step
-  executableSteps.forEach((step, index) => {
-    const isLastExecutableStep = index === executableSteps.length - 1
-    const firstItem = step.items?.[0]
-    const progressState = firstItem?.progressState
+  // Find current active step and its state
+  const currentActiveStep = executableSteps.find((step) =>
+    step.items?.some((item) => item.status === 'incomplete')
+  )
+  const currentStepItem = currentActiveStep?.items?.find(
+    (item) => item.status === 'incomplete'
+  )
+  const currentProgressState = currentStepItem?.progressState
 
-    // Determine if this step is completed
-    let isCompleted =
-      step.items?.every((item) => item.status === 'complete') || false
+  // Check if all steps are complete
+  const allStepsComplete = executableSteps.every((step) =>
+    step.items?.every((item) => item.status === 'complete')
+  )
 
-    // For the last executable step, check progressState
-    if (isLastExecutableStep && !isCompleted && progressState) {
-      if (step.kind === 'transaction' && progressState !== 'confirming') {
-        isCompleted = true
-      } else if (step.kind === 'signature' && progressState !== 'signing') {
-        isCompleted = true
+  // Check if we have transaction hashes for the destination chain
+  // We need to be careful about chainId matching - use both toToken and quote details as fallback
+  const destinationChainId =
+    toToken?.chainId ||
+    toChain?.id ||
+    quote?.details?.currencyOut?.currency?.chainId
+
+  const hasDestinationTxHashes =
+    !isSameChain &&
+    !!destinationChainId &&
+    executableSteps.some((step) =>
+      step.items?.some(
+        (item) =>
+          item.txHashes?.some((tx) => tx.chainId === destinationChainId) ||
+          item.internalTxHashes?.some((tx) => tx.chainId === destinationChainId)
+      )
+    )
+
+  // Helper to generate sub-text based on step type and state
+  const getSubText = (
+    stepType: 'approve' | 'send' | 'swap' | 'relay' | 'receive',
+    isActive: boolean,
+    isCompleted: boolean,
+    progressState?: string,
+    checkStatus?: string,
+    txHashes?: { txHash: string; chainId: number }[],
+    internalTxHashes?: { txHash: string; chainId: number }[],
+    walletName?: string
+  ): string | undefined => {
+    // Show success message with txHash for completed steps
+    if (isCompleted && (stepType === 'send' || stepType === 'swap')) {
+      const hash = internalTxHashes?.[0]?.txHash || txHashes?.[0]?.txHash
+      if (hash) {
+        return `Success: ${hash.slice(0, 6)}...${hash.slice(-4)}`
       }
     }
 
-    const isActive = index === activeStepIndex && !isCompleted
+    if (!isActive) return undefined
 
-    const txHashes =
-      step.items?.flatMap((item) => [
-        ...(item.txHashes || []),
-        ...(item.internalTxHashes || [])
-      ]) || []
+    // Handle submitted status - show appropriate messaging
+    if (checkStatus === 'submitted') {
+      switch (stepType) {
+        case 'send':
+          return 'Sent to Relay'
+        case 'swap':
+          return 'Transaction submitted'
+        case 'approve':
+          return 'Approval submitted'
+        case 'relay':
+          return 'Relay processing'
+        case 'receive': {
+          const destHash = txHashes?.[0]?.txHash
+          if (destHash) {
+            return `Receiving: ${destHash.slice(0, 6)}...${destHash.slice(-4)}`
+          }
+          return 'Receiving'
+        }
+        default:
+          return 'Submitted'
+      }
+    }
 
-    const isApproveStep =
-      step.id === 'approve' || (step.id as any) === 'approval'
+    switch (stepType) {
+      case 'approve':
+        if (progressState === 'confirming')
+          return `Approve in ${walletName || 'wallet'}`
+        if (progressState === 'validating') return 'Approving'
+        return undefined
+
+      case 'send':
+      case 'swap':
+        if (progressState === 'confirming')
+          return `Confirm in ${walletName || 'wallet'}`
+        if (progressState === 'validating') {
+          // Show txHash when validating (sending to relay)
+          // Check both txHashes (available immediately) and internalTxHashes (available after confirmation)
+          const hash = txHashes?.[0]?.txHash || internalTxHashes?.[0]?.txHash
+          if (stepType === 'send') {
+            return hash
+              ? `Sending to Relay: ${hash.slice(0, 6)}...${hash.slice(-4)}`
+              : 'Sending to Relay'
+          } else {
+            return 'Relay routing your payment'
+          }
+        }
+        return undefined
+
+      case 'receive': {
+        const destHash = txHashes?.[0]?.txHash
+        if (destHash) {
+          return `Receiving: ${destHash.slice(0, 6)}...${destHash.slice(-4)}`
+        }
+        return 'Receiving'
+      }
+
+      case 'relay':
+        return 'Relay routing your payment'
+
+      default:
+        return undefined
+    }
+  }
+
+  // Helper to get sub-text color and spinner visibility
+  const getSubTextProps = (
+    stepType: 'approve' | 'send' | 'swap' | 'relay' | 'receive',
+    isActive: boolean,
+    isCompleted: boolean,
+    subText?: string,
+    checkStatus?: string
+  ): {
+    color: 'primary11' | 'green11' | 'subtle' | 'slate10' | undefined
+    showSpinner: boolean
+  } => {
+    if (!subText) return { color: undefined, showSpinner: false }
+
+    if (isCompleted && subText.startsWith('Success:')) {
+      return {
+        color: 'green11',
+        showSpinner: false
+      }
+    }
+
+    if (checkStatus === 'submitted') {
+      if (stepType === 'receive' && subText.startsWith('Receiving:')) {
+        return {
+          color: 'primary11',
+          showSpinner: true
+        }
+      }
+      return {
+        color: 'primary11',
+        showSpinner: false
+      }
+    }
+
+    if (stepType === 'receive') {
+      return {
+        color: isActive ? 'primary11' : 'slate10',
+        showSpinner: isActive
+      }
+    }
+
+    return { color: 'primary11', showSpinner: true }
+  }
+
+  // Create fixed step sequence based on transaction type
+  if (isSameChain) {
+    // Same-chain: 1-2 steps (approval + swap, or just swap)
+    if (hasApproval) {
+      // Step 1: Approval
+      const approvalStep = executableSteps.find(
+        (step) => step.id === 'approve' || (step.id as any) === 'approval'
+      )
+      const isApprovalActive =
+        currentActiveStep?.id === approvalStep?.id && !allStepsComplete
+      const isApprovalCompleted =
+        approvalStep?.items?.every((item) => item.status === 'complete') ||
+        false
+
+      const approvalSubText = getSubText(
+        'approve',
+        isApprovalActive,
+        isApprovalCompleted,
+        currentProgressState,
+        currentStepItem?.checkStatus,
+        approvalStep?.items?.flatMap((item) => item.txHashes || []),
+        approvalStep?.items?.flatMap((item) => item.internalTxHashes || []),
+        walletDisplayName
+      )
+      const approvalSubTextProps = getSubTextProps(
+        'approve',
+        isApprovalActive,
+        isApprovalCompleted,
+        approvalSubText,
+        currentStepItem?.checkStatus
+      )
+
+      result.push({
+        id: 'approve-same-chain',
+        action: getWalletActionText('approve-same-chain', walletDisplayName),
+        isActive: isApprovalActive,
+        isCompleted: isApprovalCompleted,
+        progressState: isApprovalActive ? currentProgressState : undefined,
+        txHashes:
+          approvalStep?.items?.flatMap((item) => [
+            ...(item.txHashes || []),
+            ...(item.internalTxHashes || [])
+          ]) || [],
+        isWalletAction: true,
+        chainId: fromToken?.chainId,
+        isApproveStep: true,
+        subText: approvalSubText,
+        subTextColor: approvalSubTextProps.color,
+        showSubTextSpinner: approvalSubTextProps.showSpinner
+      })
+
+      // Step 2: Swap
+      const swapStep = executableSteps.find(
+        (step) =>
+          step.id === 'swap' || step.id === 'deposit' || step.id === 'send'
+      )
+      const isSwapActive =
+        currentActiveStep?.id === swapStep?.id ||
+        (isApprovalCompleted && !allStepsComplete)
+      const isSwapCompleted =
+        swapStep?.items?.every((item) => item.status === 'complete') || false
+
+      const swapSubText = getSubText(
+        'swap',
+        isSwapActive,
+        isSwapCompleted,
+        currentProgressState,
+        currentStepItem?.checkStatus,
+        swapStep?.items?.flatMap((item) => item.txHashes || []),
+        swapStep?.items?.flatMap((item) => item.internalTxHashes || []),
+        walletDisplayName
+      )
+      const swapSubTextProps = getSubTextProps(
+        'swap',
+        isSwapActive,
+        isSwapCompleted,
+        swapSubText,
+        currentStepItem?.checkStatus
+      )
+
+      result.push({
+        id: 'swap-same-chain',
+        action: getWalletActionText('swap-same-chain', walletDisplayName),
+        isActive: isSwapActive,
+        isCompleted: isSwapCompleted,
+        progressState: isSwapActive ? currentProgressState : undefined,
+        txHashes:
+          swapStep?.items?.flatMap((item) => [
+            ...(item.txHashes || []),
+            ...(item.internalTxHashes || [])
+          ]) || [],
+        isWalletAction: true,
+        chainId: fromToken?.chainId,
+        isApproveStep: false,
+        subText: swapSubText,
+        subTextColor: swapSubTextProps.color,
+        showSubTextSpinner: swapSubTextProps.showSpinner
+      })
+    } else {
+      // Just swap step
+      const swapStep = executableSteps.find(
+        (step) =>
+          step.id === 'swap' || step.id === 'deposit' || step.id === 'send'
+      )
+      const isSwapActive = !allStepsComplete
+      const isSwapCompleted =
+        swapStep?.items?.every((item) => item.status === 'complete') || false
+
+      const swapSubText = getSubText(
+        'swap',
+        isSwapActive,
+        isSwapCompleted,
+        currentProgressState,
+        currentStepItem?.checkStatus,
+        swapStep?.items?.flatMap((item) => item.txHashes || []),
+        swapStep?.items?.flatMap((item) => item.internalTxHashes || []),
+        walletDisplayName
+      )
+      const swapSubTextProps = getSubTextProps(
+        'swap',
+        isSwapActive,
+        isSwapCompleted,
+        swapSubText,
+        currentStepItem?.checkStatus
+      )
+
+      result.push({
+        id: 'swap-same-chain',
+        action: getWalletActionText('swap-same-chain', walletDisplayName),
+        isActive: isSwapActive,
+        isCompleted: isSwapCompleted,
+        progressState: isSwapActive ? currentProgressState : undefined,
+        txHashes:
+          swapStep?.items?.flatMap((item) => [
+            ...(item.txHashes || []),
+            ...(item.internalTxHashes || [])
+          ]) || [],
+        isWalletAction: true,
+        chainId: fromToken?.chainId,
+        isApproveStep: false,
+        subText: swapSubText,
+        subTextColor: swapSubTextProps.color,
+        showSubTextSpinner: swapSubTextProps.showSpinner
+      })
+    }
+  } else {
+    // Cross-chain: 3-4 steps (approval + send + relay + receive, or just send + relay + receive)
+    let stepIndex = 0
+
+    if (hasApproval) {
+      // Step 1: Approval
+      const approvalStep = executableSteps.find(
+        (step) => step.id === 'approve' || (step.id as any) === 'approval'
+      )
+      const isApprovalActive =
+        currentActiveStep?.id === approvalStep?.id && !allStepsComplete
+      const isApprovalCompleted =
+        approvalStep?.items?.every((item) => item.status === 'complete') ||
+        false
+
+      const crossChainApprovalSubText = getSubText(
+        'approve',
+        isApprovalActive,
+        isApprovalCompleted,
+        currentProgressState,
+        currentStepItem?.checkStatus,
+        approvalStep?.items?.flatMap((item) => item.txHashes || []),
+        approvalStep?.items?.flatMap((item) => item.internalTxHashes || []),
+        walletDisplayName
+      )
+      const crossChainApprovalSubTextProps = getSubTextProps(
+        'approve',
+        isApprovalActive,
+        isApprovalCompleted,
+        crossChainApprovalSubText,
+        currentStepItem?.checkStatus
+      )
+
+      result.push({
+        id: 'approve-cross-chain',
+        action: getWalletActionText('approve-cross-chain', walletDisplayName),
+        isActive: isApprovalActive,
+        isCompleted: isApprovalCompleted,
+        progressState: isApprovalActive ? currentProgressState : undefined,
+        txHashes:
+          approvalStep?.items?.flatMap((item) => [
+            ...(item.txHashes || []),
+            ...(item.internalTxHashes || [])
+          ]) || [],
+        isWalletAction: true,
+        chainId: fromToken?.chainId,
+        isApproveStep: true,
+        subText: crossChainApprovalSubText,
+        subTextColor: crossChainApprovalSubTextProps.color,
+        showSubTextSpinner: crossChainApprovalSubTextProps.showSpinner
+      })
+      stepIndex++
+    }
+
+    // Step 2/1: Send
+    const sendStep = executableSteps.find(
+      (step) => step.id === 'deposit' || step.id === 'send'
+    )
+    const isSendActive =
+      currentActiveStep?.id === sendStep?.id ||
+      (!hasApproval && !allStepsComplete) ||
+      (hasApproval && result[0]?.isCompleted && !allStepsComplete)
+    // Consider send step complete if all items are complete OR submitted to relay
+    const isSendCompleted =
+      sendStep?.items?.every(
+        (item) =>
+          item.status === 'complete' ||
+          item.checkStatus === 'submitted' ||
+          item.checkStatus === 'success'
+      ) || false
+
+    const sendSubText = getSubText(
+      'send',
+      isSendActive,
+      isSendCompleted,
+      currentProgressState,
+      currentStepItem?.checkStatus,
+      sendStep?.items?.flatMap((item) => item.txHashes || []),
+      sendStep?.items?.flatMap((item) => item.internalTxHashes || []),
+      walletDisplayName
+    )
+    const sendSubTextProps = getSubTextProps(
+      'send',
+      isSendActive,
+      isSendCompleted,
+      sendSubText,
+      currentStepItem?.checkStatus
+    )
 
     result.push({
-      id: step.id,
-      action: getStepActionText(step.id, operation),
-      isActive,
-      isCompleted,
-      progressState,
-      txHashes,
+      id: 'send-cross-chain',
+      action: getWalletActionText('send-cross-chain', walletDisplayName),
+      isActive: isSendActive,
+      isCompleted: isSendCompleted,
+      progressState: isSendActive ? currentProgressState : undefined,
+      txHashes:
+        sendStep?.items?.flatMap((item) => [
+          ...(item.txHashes || []),
+          ...(item.internalTxHashes || [])
+        ]) || [],
       isWalletAction: true,
       chainId: fromToken?.chainId,
-      isApproveStep
+      isApproveStep: false,
+      subText: sendSubText,
+      subTextColor: sendSubTextProps.color,
+      showSubTextSpinner: sendSubTextProps.showSpinner
     })
-  })
 
-  const allStepsComplete = result.every((step) => step.isCompleted)
-  const isSameChain = fromChain?.id === toChain?.id
+    // Check if we're in receiving state (have destination hashes from submitted status)
+    const isInReceivingState =
+      currentStepItem?.checkStatus === 'submitted' &&
+      currentStepItem?.status === 'incomplete' &&
+      currentStepItem?.txHashes &&
+      currentStepItem?.txHashes.length > 0 &&
+      // Check that we have destination chain hashes, not origin hashes
+      currentStepItem.txHashes.some((tx) => tx.chainId === destinationChainId)
 
-  // Add the appropriate final step
-  if (isSameChain) {
+    // Step 3/2: Relay processing
+    // Active when send is complete but no destination hashes yet
+    // This ensures it doesn't activate simultaneously with receive step
+    const relayStepActive =
+      isSendCompleted && !hasDestinationTxHashes && !isInReceivingState
+    const relayStepCompleted = hasDestinationTxHashes || isInReceivingState
+
     result.push({
-      id: 'chain-confirm',
-      action: `Relay processes your transaction on ${fromChain?.displayName}`,
-      isActive: allStepsComplete,
-      isCompleted: false,
+      id: 'relay-processing',
+      action: getDisplayActionText('relay-processing'),
+      isActive: Boolean(relayStepActive),
+      isCompleted: Boolean(relayStepCompleted),
       isWalletAction: false,
-      chainId: fromChain?.id
+      chainId: fromChain?.id,
+      isApproveStep: false,
+      subText: undefined
     })
-  } else {
+
+    // Step 4/3: Receive
+    // The receive step becomes active when:
+    // 1. We have destination txHashes OR
+    // 2. Current step has 'submitted' status with DESTINATION txHashes (receiving state)
+    // It completes when all backend steps are done (allStepsComplete)
+
+    const receiveStepActive = Boolean(
+      (hasDestinationTxHashes || isInReceivingState) && !allStepsComplete
+    )
+    const receiveStepCompleted = Boolean(allStepsComplete)
+
     result.push({
-      id: 'relay-fill',
-      action: `Relay fills your order on ${toChain?.displayName}`,
-      isActive: allStepsComplete,
-      isCompleted: false,
+      id: 'receive-cross-chain',
+      action: getDisplayActionText('receive-cross-chain', {
+        toTokenSymbol,
+        toChainName: toChain?.displayName
+      }),
+      isActive: receiveStepActive,
+      isCompleted: receiveStepCompleted,
       isWalletAction: false,
-      chainId: toChain?.id
+      chainId: toChain?.id,
+      isApproveStep: false
     })
   }
 
-  return { formattedSteps: result, status }
-}
-
-/**
- * Returns the appropriate action text for a transaction step based on its ID
- * @param stepId The ID of the step
- * @param operation The operation being performed (swap, bridge, etc.)
- * @returns The formatted action text to display
- */
-export function getStepActionText(stepId: string, operation: string): string {
-  if (stepId === 'approve' || stepId === 'approval') {
-    return 'Approve token'
-  }
-  if (
-    stepId === 'authorize' ||
-    stepId === 'authorize1' ||
-    stepId === 'authorize2'
-  ) {
-    return 'Sign authorization'
-  }
-
-  if (stepId === 'swap' || stepId === 'deposit' || stepId === 'send') {
-    return `Confirm ${operation}`
-  }
-
-  return 'Confirm transaction'
+  return { formattedSteps: result }
 }

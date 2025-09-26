@@ -21,11 +21,7 @@ export const extractToChain = (
 export const calculateFillTime = (transaction?: RelayTransaction | null) => {
   let fillTime = '-'
   let seconds = 0
-  if (
-    transaction?.status !== 'pending' &&
-    transaction?.status !== 'waiting' &&
-    transaction?.status !== 'delayed'
-  ) {
+  if (transaction?.status !== 'pending' && transaction?.status !== 'waiting') {
     const inTxTimestamps =
       transaction?.data?.inTxs?.map((tx) => tx.timestamp as number) ?? null
     const txStartTimestamp = inTxTimestamps ? Math.min(...inTxTimestamps) : null
@@ -61,11 +57,7 @@ export const calculateExecutionTime = (
 ) => {
   let fillTime = '-'
   let seconds = 0
-  if (
-    transaction?.status !== 'pending' &&
-    transaction?.status !== 'waiting' &&
-    transaction?.status !== 'delayed'
-  ) {
+  if (transaction?.status !== 'pending' && transaction?.status !== 'waiting') {
     const inTxTimestamps =
       transaction?.data?.inTxs?.map((tx) => tx.timestamp as number) ?? null
     const outTxTimestamps =

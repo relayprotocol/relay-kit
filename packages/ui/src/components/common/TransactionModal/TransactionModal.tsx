@@ -207,7 +207,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
   isLoadingTransaction,
   setQuote,
   requestId,
-  isGasSponsored
+  isGasSponsored,
+  linkedWallets
 }) => {
   useEffect(() => {
     if (!open) {
@@ -285,6 +286,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             toAmountFormatted={toAmountFormatted}
             quote={quote}
             steps={steps}
+            currentAddress={address}
+            linkedWallets={linkedWallets}
           />
         ) : null}
         {progressStep === TransactionProgressStep.Success ? (

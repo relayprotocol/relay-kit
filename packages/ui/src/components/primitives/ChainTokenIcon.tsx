@@ -5,7 +5,7 @@ import Box from './Box.js'
 import Text from './Text.js'
 import type { Styles } from '@relayprotocol/relay-design-system/css'
 
-type Size = 'sm' | 'md' | 'lg'
+type Size = 'sm' | 'base' | 'md' | 'lg'
 
 type ChainTokenProps = {
   chainId?: number
@@ -13,6 +13,7 @@ type ChainTokenProps = {
   tokenSymbol?: string
   css?: Styles
   size?: Size
+  variant?: 'default' | 'completed'
   chainRadius?: number
 }
 
@@ -20,6 +21,10 @@ const SIZES = {
   sm: {
     token: 20,
     chain: 12
+  },
+  base: {
+    token: 24,
+    chain: 10
   },
   md: {
     token: 32,
@@ -37,6 +42,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   tokenSymbol,
   css = {},
   size = 'md',
+  variant = 'default',
   chainRadius = 4
 }) => {
   const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
@@ -61,7 +67,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           width={dimensions.token}
           height={dimensions.token}
           style={{
-            borderRadius: 9999,
+            borderRadius: variant === 'completed' ? 6 : 9999,
             overflow: 'hidden'
           }}
         />
@@ -70,7 +76,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           css={{
             width: dimensions.token,
             height: dimensions.token,
-            borderRadius: '50%',
+            borderRadius: variant === 'completed' ? 6 : '50%',
             backgroundColor: 'primary4',
             color: 'primary8',
             display: 'flex',
@@ -83,19 +89,23 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
       ) : null}
       <ChainIcon
         chainId={chainId}
-        width={dimensions.chain}
-        height={dimensions.chain}
+        width={variant === 'completed' ? 8.33 : dimensions.chain}
+        height={variant === 'completed' ? 8.33 : dimensions.chain}
+        borderRadius={variant === 'completed' ? 1.667 : chainRadius}
         css={{
           position: 'absolute',
           right: 0,
           bottom: 0,
-          borderRadius: chainRadius,
           overflow: 'hidden',
-          '--borderColor': 'colors.modal-background',
-          border: '1px solid var(--borderColor)',
-          backgroundColor: 'modal-background'
+          '--borderColor':
+            variant === 'completed' ? 'white' : 'colors.modal-background',
+          border:
+            variant === 'completed'
+              ? '0.833px solid var(--borderColor)'
+              : '1px solid var(--borderColor)',
+          backgroundColor:
+            variant === 'completed' ? 'white' : 'modal-background'
         }}
-        borderRadius={chainRadius}
       />
     </Flex>
   ) : null

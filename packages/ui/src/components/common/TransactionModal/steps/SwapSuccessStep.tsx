@@ -6,14 +6,11 @@ import {
   Pill,
   Text,
   ChainTokenIcon,
-  ChainIcon,
   Skeleton,
   Anchor
 } from '../../../primitives/index.js'
 import { motion } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBolt } from '@fortawesome/free-solid-svg-icons/faBolt'
-import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { type TxHashes } from '../TransactionModalRenderer.js'
 import { type Token } from '../../../../types/index.js'
 import type { useRequests } from '@relayprotocol/relay-kit-hooks'
@@ -23,9 +20,11 @@ import type { Execute } from '@relayprotocol/relay-sdk'
 import { bitcoin } from '../../../../utils/bitcoin.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { TransactionsByChain } from './TransactionsByChain.js'
-import { faArrowRight } from '@fortawesome/free-solid-svg-icons'
-import { XIcon } from '../../../../icons/index.js'
+import { faArrowRight, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { RelayIcon, XIcon } from '../../../../icons/index.js'
 import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
+import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
+import { truncateAddress } from '../../../../utils/truncate.js'
 
 type SwapSuccessStepProps = {
   fromToken?: Token
@@ -67,6 +66,9 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   const isUnwrap = details?.operation === 'unwrap'
   const providerOptionsContext = useContext(ProviderOptionsContext)
 
+  // Get chains data for explorer URL generation
+  const chains = relayClient?.chains
+
   const _fromAmountFormatted = transaction?.data?.metadata?.currencyIn?.amount
     ? formatBN(
         transaction?.data?.metadata?.currencyIn?.amount,
@@ -101,6 +103,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   const toChain = _toToken
     ? relayClient?.chains.find((chain) => chain.id === _toToken?.chainId)
     : null
+
+  const isSameChainSwap = fromChain?.id === toChain?.id && !isWrap && !isUnwrap
   const delayedTxUrl = requestId
     ? `${baseTransactionUrl}/transaction/${requestId}`
     : null
@@ -117,6 +121,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
       (relayClient?.maxPollingAttemptsBeforeTimeout ?? 30) *
         (relayClient?.pollingInterval ?? 5000)
 
+  const estimatedMinutes = Math.round(timeEstimateMs / 1000 / 60)
+
   const gasTopUpAmountCurrency =
     transaction?.data?.metadata?.currencyGasTopup?.currency
   const formattedGasTopUpAmount = transaction?.data?.metadata?.currencyGasTopup
@@ -128,8 +134,16 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
       )
     : undefined
 
-  const showDetails =
-    !allTxHashes.every((tx) => tx.isBatchTx) || formattedGasTopUpAmount
+  // Helper function to get transaction hash for a specific chain
+  const getTxHashForChain = (chainId: number) => {
+    return allTxHashes.find((tx) => tx.chainId === chainId)?.txHash
+  }
+
+  // Helper function to get transaction URL for a specific chain and hash
+  const getTxUrl = (chainId: number, txHash: string) => {
+    return getTxBlockExplorerUrl(chainId, chains, txHash)
+  }
+
   const shareIconFill =
     providerOptionsContext.themeScheme === 'dark' ? '#fff' : '#000'
 
@@ -182,17 +196,24 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           </Flex>
         </motion.div>
 
-        <Text style="subtitle1" css={{ mt: '4', mb: '2', textAlign: 'center' }}>
-          Processing the order to swap {_fromAmountFormatted}{' '}
-          {_fromToken?.symbol} into {_toAmountFormatted} {_toToken?.symbol},
-          this will take ~{timeEstimate}.
+        <Text style="subtitle1" css={{ my: '4', textAlign: 'center' }}>
+          Processing bridge, this will take ~{estimatedMinutes}{' '}
+          {estimatedMinutes === 1 ? 'min' : 'mins'}.
         </Text>
 
         <Flex align="center" css={{ gap: '2', mb: 24 }}>
           {fromChain ? (
             <Pill color="gray" css={{ alignItems: 'center', py: '2', px: '3' }}>
-              <ChainIcon chainId={fromChain.id} height={20} width={20} />
-              <Text style="subtitle1">{fromChain.displayName}</Text>
+              <ChainTokenIcon
+                chainId={fromChain.id}
+                tokenlogoURI={fromTokenLogoUri}
+                tokenSymbol={_fromToken?.symbol}
+                size="base"
+                variant="completed"
+              />
+              <Text style="subtitle1" css={{ ml: '2' }}>
+                {_fromAmountFormatted} {_fromToken?.symbol}
+              </Text>
             </Pill>
           ) : (
             <Text style="subtitle1">?</Text>
@@ -203,9 +224,17 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
             <FontAwesomeIcon style={{ width: 14 }} icon={faArrowRight} />
           </Flex>
           {toChain ? (
-            <Pill color="gray" css={{ alignItems: 'center', py: '2' }}>
-              <ChainIcon chainId={toChain.id} height={20} width={20} />
-              <Text style="subtitle1">{toChain.displayName}</Text>
+            <Pill color="gray" css={{ alignItems: 'center', py: '2', px: '3' }}>
+              <ChainTokenIcon
+                chainId={toChain.id}
+                tokenlogoURI={toTokenLogoUri}
+                tokenSymbol={_toToken?.symbol}
+                size="base"
+                variant="completed"
+              />
+              <Text style="subtitle1" css={{ ml: '2' }}>
+                {_toAmountFormatted} {_toToken?.symbol}
+              </Text>
             </Pill>
           ) : (
             <Text style="subtitle1">?</Text>
@@ -223,6 +252,26 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           You can close this modal while it finalizes on the blockchain. The
           transaction will continue in the background.
         </Text>
+
+        {allTxHashes &&
+          allTxHashes.length > 0 &&
+          (() => {
+            const txHash = allTxHashes[0]?.txHash
+            const chainId = allTxHashes[0]?.chainId
+            const txUrl =
+              txHash && chainId ? getTxUrl(chainId, txHash) : undefined
+            const truncatedHash = truncateAddress(txHash, '...', 6, 4)
+
+            return txUrl && truncatedHash ? (
+              <Anchor
+                href={txUrl}
+                target="_blank"
+                css={{ mt: '12px', textAlign: 'center', fontSize: '14px' }}
+              >
+                View Tx: {truncatedHash}
+              </Anchor>
+            ) : null
+          })()}
       </Flex>
 
       {!delayedTxUrl ? (
@@ -297,138 +346,155 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
             damping: 20
           }}
         >
-          <Flex
-            align="center"
-            justify="center"
-            css={{
-              height: 80,
-              width: 80,
-              backgroundColor: 'green2',
-              '--borderColor': 'colors.green10',
-              border: '6px solid var(--borderColor)',
-              borderRadius: '999999px',
-              position: 'relative'
-            }}
-          >
-            {fillTime !== '-' && seconds <= 10 && seconds >= 0 ? (
-              <Text style="h3">{fillTime}</Text>
-            ) : (
-              <Box css={{ color: 'green9', mr: '$2' }}>
-                <FontAwesomeIcon icon={faCheck} style={{ height: 40 }} />
-              </Box>
-            )}
+          <Flex align="center">
+            <RelayIcon />
             <Flex
               align="center"
               justify="center"
               css={{
-                position: 'absolute',
-                width: 50,
-                height: 50,
-                background: 'modal-background',
-                color: 'primary-color',
-                '--borderColor': 'colors.subtle-border-color',
-                border: '3px solid var(--borderColor)',
-                borderRadius: '999999px',
-                right: -40,
-                bottom: -12
+                width: 40,
+                height: 40,
+                backgroundColor: 'green9',
+                color: 'white',
+                borderRadius: '100px',
+                '--borderColor': 'white',
+                border: '2px solid var(--borderColor)',
+                ml: '-8px'
               }}
             >
-              <Box css={{ width: 29, height: 27 }}>
-                <FontAwesomeIcon
-                  icon={faBolt}
-                  width={29}
-                  height={27}
-                  style={{ height: 27 }}
-                />
-              </Box>
+              <FontAwesomeIcon
+                icon={faCheck}
+                style={{ height: 20, color: 'white' }}
+              />
             </Flex>
           </Flex>
         </motion.div>
 
-        <Text style="subtitle1" css={{ mt: '4', mb: '2', textAlign: 'center' }}>
-          Successfully {actionTitle}
+        <Text
+          style="h6"
+          css={{
+            my: '12px',
+            textAlign: 'center',
+            '& .green-time': {
+              color: 'green11'
+            }
+          }}
+        >
+          {fillTime && fillTime !== '-' ? (
+            <>
+              Completed in{' '}
+              <span className="green-time">{fillTime.replace(/s$/, 'S')}</span>
+            </>
+          ) : (
+            'Transaction Completed'
+          )}
         </Text>
 
-        <Flex align="center" css={{ gap: '2', mb: 20 }}>
+        <Flex
+          direction="column"
+          css={{
+            gap: '3',
+            padding: '3',
+            '--borderColor': 'colors.slate.5',
+            border: '1px solid var(--borderColor)',
+            borderRadius: 12,
+            width: '100%'
+          }}
+        >
           {_fromToken ? (
-            <Pill
-              color="gray"
-              css={{ alignItems: 'center', py: '2', px: '3', gap: '2' }}
-            >
-              <ChainTokenIcon
-                chainId={_fromToken.chainId}
-                tokenlogoURI={fromTokenLogoUri}
-                tokenSymbol={_fromToken.symbol}
-              />
-              {isLoadingTransaction ? (
-                <Skeleton
-                  css={{ height: 24, width: 60, background: 'gray5' }}
-                />
-              ) : (
-                <Text style="subtitle1" ellipsify>
-                  {_fromAmountFormatted} {_fromToken.symbol}
-                </Text>
-              )}
-            </Pill>
+            <Flex direction="column" css={{ gap: '4px' }}>
+              <Text style="subtitle2" color="subtle">
+                {isSameChainSwap ? 'Swap' : 'Sent'}
+              </Text>
+              <Flex justify="between">
+                <Flex align="center" css={{ gap: '4px' }}>
+                  <ChainTokenIcon
+                    size="sm"
+                    chainId={_fromToken.chainId}
+                    tokenlogoURI={fromTokenLogoUri}
+                    tokenSymbol={_fromToken.symbol}
+                    variant="completed"
+                  />
+                  {isLoadingTransaction ? (
+                    <Skeleton
+                      css={{ height: 24, width: 60, background: 'gray5' }}
+                    />
+                  ) : (
+                    <Text style="h6">
+                      {_fromAmountFormatted} {_fromToken.symbol}
+                    </Text>
+                  )}
+                </Flex>
+                {!isSameChainSwap &&
+                  _fromToken?.chainId &&
+                  (() => {
+                    const txHash = getTxHashForChain(_fromToken.chainId)
+                    const txUrl = txHash
+                      ? getTxUrl(_fromToken.chainId, txHash)
+                      : undefined
+                    return txHash ? (
+                      <Anchor
+                        href={txUrl}
+                        target="_blank"
+                        css={{ color: 'primary11', fontSize: '14px' }}
+                      >
+                        {truncateAddress(txHash, '...', 6, 4)}
+                      </Anchor>
+                    ) : null
+                  })()}
+              </Flex>
+            </Flex>
           ) : (
             <Text style="subtitle1">?</Text>
           )}
-          <Text style="subtitle1" color="subtle">
-            to
-          </Text>
+
           {_toToken ? (
-            <Pill
-              color="gray"
-              css={{ alignItems: 'center', py: '2', px: '3', gap: '2' }}
-            >
-              <ChainTokenIcon
-                chainId={_toToken.chainId}
-                tokenlogoURI={toTokenLogoUri}
-                tokenSymbol={_toToken.symbol}
-              />
-              {isLoadingTransaction ? (
-                <Skeleton
-                  css={{ height: 24, width: 60, background: 'gray5' }}
-                />
-              ) : (
-                <Text style="subtitle1" ellipsify>
-                  {_toAmountFormatted} {_toToken.symbol}
-                </Text>
-              )}
-            </Pill>
+            <Flex direction="column" css={{ gap: '4px' }}>
+              <Text style="subtitle2" color="subtle">
+                {isSameChainSwap ? 'To' : 'Received'}
+              </Text>
+              <Flex justify="between">
+                <Flex align="center" css={{ gap: '4px' }}>
+                  <ChainTokenIcon
+                    size="sm"
+                    chainId={_toToken.chainId}
+                    tokenlogoURI={toTokenLogoUri}
+                    tokenSymbol={_toToken.symbol}
+                    variant="completed"
+                  />
+                  {isLoadingTransaction ? (
+                    <Skeleton
+                      css={{ height: 24, width: 60, background: 'gray5' }}
+                    />
+                  ) : (
+                    <Text style="h6">
+                      {_toAmountFormatted} {_toToken.symbol}
+                    </Text>
+                  )}
+                </Flex>
+
+                {_toToken?.chainId &&
+                  (() => {
+                    const txHash = getTxHashForChain(_toToken.chainId)
+                    const txUrl = txHash
+                      ? getTxUrl(_toToken.chainId, txHash)
+                      : undefined
+                    return txHash ? (
+                      <Anchor
+                        href={txUrl}
+                        target="_blank"
+                        css={{ color: 'primary11', fontSize: '14px' }}
+                      >
+                        {truncateAddress(txHash, '...', 6, 4)}
+                      </Anchor>
+                    ) : null
+                  })()}
+              </Flex>
+            </Flex>
           ) : (
             <Text style="subtitle1">?</Text>
           )}
         </Flex>
-        {showDetails && (
-          <Flex
-            direction="column"
-            css={{
-              p: '3',
-              '--borderColor': 'colors.subtle-border-color',
-              border: '1px solid var(--borderColor)',
-              gap: '3',
-              width: '100%',
-              borderRadius: 12
-            }}
-          >
-            {formattedGasTopUpAmount ? (
-              <Flex justify="between">
-                <Text style="subtitle2" color="subtle">
-                  Additional Gas
-                </Text>
-                <Text style="subtitle2">
-                  {formattedGasTopUpAmount} {gasTopUpAmountCurrency?.symbol}
-                </Text>
-              </Flex>
-            ) : null}
-            <TransactionsByChain
-              allTxHashes={allTxHashes}
-              fromChain={fromChain}
-              toChain={toChain}
-            />
-          </Flex>
-        )}
       </Flex>
 
       {isGasSponsored && _toToken?.symbol === 'USDC' ? (
@@ -458,7 +524,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         </Flex>
       ) : null}
 
-      <Flex css={{ width: '100%', mt: 8, gap: '3' }}>
+      <Flex css={{ width: '100%', gap: '3' }}>
         {requestId ? (
           <a
             href={`${baseTransactionUrl}/transaction/${requestId}`}

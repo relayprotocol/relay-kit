@@ -28,6 +28,7 @@ import {
 } from '../../../utils/quote.js'
 export enum TransactionProgressStep {
   Confirmation,
+  Submitted,
   Success,
   Error
 }
@@ -98,6 +99,7 @@ export const TransactionModalRenderer: FC<Props> = ({
   onValidating
 }) => {
   const relayClient = useRelayClient()
+  const chainId = quote?.details?.currencyIn?.currency?.chainId || 1
 
   const [progressStep, setProgressStep] = useState(
     TransactionProgressStep.Confirmation
@@ -175,15 +177,38 @@ export const TransactionModalRenderer: FC<Props> = ({
 
     setCurrentStep(currentStep)
     setCurrentStepItem(currentStepItem)
+    const allStepsComplete = steps.every(
+      (step) =>
+        !step.items ||
+        step.items.length == 0 ||
+        step.items?.every((item) => item.status === 'complete')
+    )
+
+    const hasSubmittedItems = steps.some((step) =>
+      step.items?.some((item) => item.checkStatus === 'submitted')
+    )
+
+    // Check if any step items are still validating
+    const hasValidatingItems = steps.some((step) =>
+      step.items?.some(
+        (item) =>
+          item.isValidatingSignature === true ||
+          item.progressState === 'validating'
+      )
+    )
+
+    // Transition to Submitted state when items are submitted
     if (
-      steps.every(
-        (step) =>
-          !step.items ||
-          step.items.length == 0 ||
-          step.items?.every((item) => item.status === 'complete')
-      ) &&
-      progressStep !== TransactionProgressStep.Success
+      hasSubmittedItems &&
+      progressStep === TransactionProgressStep.Confirmation &&
+      !hasValidatingItems
     ) {
+      setProgressStep(TransactionProgressStep.Submitted)
+      onValidating?.(quote as Execute)
+    }
+
+    // Only show success if all steps are complete
+    if (allStepsComplete && progressStep !== TransactionProgressStep.Success) {
       setProgressStep(TransactionProgressStep.Success)
       onSuccess?.(quote as Execute, steps)
     }
