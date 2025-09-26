@@ -209,7 +209,8 @@ export async function handleSignatureStepItem({
           const res = await axios.request({
             url: `${request.baseURL}${endpoint}`,
             method: stepItem?.check?.method,
-            headers
+            headers,
+            validateStatus: (status) => status < 500 // Don't throw on 4xx responses
           })
 
           // Check status
@@ -252,12 +253,33 @@ export async function handleSignatureStepItem({
             return // Success - exit polling
           } else if (res?.data?.status === 'failure') {
             throw Error(res?.data?.details || 'Transaction failed')
+          } else if (res.status >= 400) {
+            // Handle HTTP error responses that don't have our expected data structure
+            throw Error(
+              res?.data?.details || res?.data?.message || 'Failed to check'
+            )
           }
 
           attemptCount++
           await new Promise((resolve) => setTimeout(resolve, pollingInterval))
-        } catch (error) {
-          throw error
+        } catch (error: any) {
+          // If it's a deliberate failure response, re-throw immediately
+          if (
+            error.message &&
+            (error.message.includes('Transaction failed') ||
+              error.message.includes('Failed to check') ||
+              error.message === 'Failed to check')
+          ) {
+            throw error
+          }
+
+          // For network errors or other recoverable issues, continue polling
+          client.log(
+            ['Check request failed, retrying...', error],
+            LogLevel.Verbose
+          )
+          attemptCount++
+          await new Promise((resolve) => setTimeout(resolve, pollingInterval))
         }
       }
 

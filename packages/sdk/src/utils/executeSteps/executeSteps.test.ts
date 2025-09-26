@@ -857,7 +857,14 @@ describe('Should test a signature step.', () => {
       signatureStep?.items?.[0] as any
     const checkEndpoint = signatureStepItem.check?.endpoint ?? ''
     vi.spyOn(axios, 'request').mockImplementation((config) => {
-      if (config.url?.includes(checkEndpoint)) {
+      // Handle both the original endpoint and the v3 transformation
+      const isCheckEndpoint =
+        config.url?.includes(checkEndpoint) ||
+        config.url?.includes(
+          checkEndpoint.replace('/intents/status', '/intents/status/v3')
+        )
+
+      if (isCheckEndpoint) {
         return Promise.resolve({
           data: {
             status: 'success',
@@ -916,7 +923,14 @@ describe('Should test a signature step.', () => {
     const checkEndpoint = signatureStepItem.check?.endpoint ?? ''
     let errorMessage: string | undefined
     vi.spyOn(axios, 'request').mockImplementation((config) => {
-      if (config.url?.includes(checkEndpoint)) {
+      // Handle both the original endpoint and the v3 transformation
+      const isCheckEndpoint =
+        config.url?.includes(checkEndpoint) ||
+        config.url?.includes(
+          checkEndpoint.replace('/intents/status', '/intents/status/v3')
+        )
+
+      if (isCheckEndpoint) {
         return Promise.resolve({
           data: { status: 'failure', details: 'Failed to check' },
           status: 400
