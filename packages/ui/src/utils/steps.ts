@@ -248,10 +248,8 @@ export const formatTransactionSteps = ({
 
     switch (stepType) {
       case 'approve':
-        if (progressState === 'confirming')
-          return `Approve in ${walletName || 'wallet'}`
         if (progressState === 'validating') return 'Approving'
-        return undefined
+        return `Approve in ${walletName || 'wallet'}`
 
       case 'send':
       case 'swap':
@@ -364,7 +362,12 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'approve-same-chain',
-        action: getWalletActionText('approve-same-chain', walletDisplayName),
+        action: getDisplayActionText('approve-same-chain', {
+          fromTokenSymbol,
+          toTokenSymbol,
+          fromChainName: fromChain?.displayName,
+          toChainName: toChain?.displayName
+        }),
         isActive: isApprovalActive,
         isCompleted: isApprovalCompleted,
         progressState: isApprovalActive ? currentProgressState : undefined,
@@ -412,7 +415,12 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'swap-same-chain',
-        action: getWalletActionText('swap-same-chain', walletDisplayName),
+        action: getDisplayActionText('swap-same-chain', {
+          fromTokenSymbol,
+          toTokenSymbol,
+          fromChainName: fromChain?.displayName,
+          toChainName: toChain?.displayName
+        }),
         isActive: isSwapActive,
         isCompleted: isSwapCompleted,
         progressState: isSwapActive ? currentProgressState : undefined,
@@ -458,7 +466,12 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'swap-same-chain',
-        action: getWalletActionText('swap-same-chain', walletDisplayName),
+        action: getDisplayActionText('swap-same-chain', {
+          fromTokenSymbol,
+          toTokenSymbol,
+          fromChainName: fromChain?.displayName,
+          toChainName: toChain?.displayName
+        }),
         isActive: isSwapActive,
         isCompleted: isSwapCompleted,
         progressState: isSwapActive ? currentProgressState : undefined,
@@ -510,7 +523,12 @@ export const formatTransactionSteps = ({
 
       result.push({
         id: 'approve-cross-chain',
-        action: getWalletActionText('approve-cross-chain', walletDisplayName),
+        action: getDisplayActionText('approve-cross-chain', {
+          fromTokenSymbol,
+          toTokenSymbol,
+          fromChainName: fromChain?.displayName,
+          toChainName: toChain?.displayName
+        }),
         isActive: isApprovalActive,
         isCompleted: isApprovalCompleted,
         progressState: isApprovalActive ? currentProgressState : undefined,
@@ -566,7 +584,12 @@ export const formatTransactionSteps = ({
 
     result.push({
       id: 'send-cross-chain',
-      action: getWalletActionText('send-cross-chain', walletDisplayName),
+      action: getDisplayActionText('send-cross-chain', {
+        fromTokenSymbol,
+        toTokenSymbol,
+        fromChainName: fromChain?.displayName,
+        toChainName: toChain?.displayName
+      }),
       isActive: isSendActive,
       isCompleted: isSendCompleted,
       progressState: isSendActive ? currentProgressState : undefined,
