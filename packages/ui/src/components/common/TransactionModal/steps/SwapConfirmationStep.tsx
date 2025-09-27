@@ -1,22 +1,16 @@
 import { useMemo, type FC } from 'react'
-import {
-  Flex,
-  Text,
-  ChainTokenIcon,
-  Box,
-  Anchor,
-  ChainIcon
-} from '../../../primitives/index.js'
+import { Flex, Text, ChainTokenIcon, Box } from '../../../primitives/index.js'
+import { LoadingSpinner } from '../../LoadingSpinner.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { type Token } from '../../../../types/index.js'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
 import type { Execute, RelayChain } from '@relayprotocol/relay-sdk'
-import useRelayClient from '../../../../hooks/useRelayClient.js'
-import { faCheck, faExternalLink } from '@fortawesome/free-solid-svg-icons'
-import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
-import { truncateAddress } from '../../../../utils/truncate.js'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { formatTransactionSteps } from '../../../../utils/steps.js'
 import { formatBN } from '../../../../utils/numbers.js'
+import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
+import useRelayClient from '../../../../hooks/useRelayClient.js'
+import { StepIcon } from '../../StepIcon.js'
 
 type SwapConfirmationStepProps = {
   fromToken?: Token
@@ -27,6 +21,8 @@ type SwapConfirmationStepProps = {
   toAmountFormatted: string
   quote?: Execute | null
   steps: Execute['steps'] | null
+  currentAddress?: string
+  linkedWallets?: any[]
 }
 
 export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
@@ -37,20 +33,36 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
   fromAmountFormatted,
   toAmountFormatted,
   quote,
-  steps
+  steps,
+  currentAddress,
+  linkedWallets
 }) => {
   const operation = quote?.details?.operation || 'swap'
 
-  const { formattedSteps, status } = useMemo(
+  const { formattedSteps } = useMemo(
     () =>
       formatTransactionSteps({
         steps,
         fromToken,
+        toToken,
         fromChain,
         toChain,
-        operation
+        operation,
+        quote,
+        currentAddress,
+        linkedWallets
       }),
-    [steps, fromToken, toToken, fromChain, toChain, operation]
+    [
+      steps,
+      fromToken,
+      toToken,
+      fromChain,
+      toChain,
+      operation,
+      quote,
+      currentAddress,
+      linkedWallets
+    ]
   )
 
   const gasTopUpAmountCurrency = quote?.details?.currencyGasTopup?.currency
@@ -184,15 +196,6 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
             )}
           </Box>
         ))}
-
-        {status === 'delayed' ? (
-          <Flex css={{ p: '3', background: 'amber2', borderRadius: 12 }}>
-            <Text style="subtitle3" color="warning">
-              Your transaction is delayed. We apologize for the inconvenience.
-              Contact support if you need help.
-            </Text>
-          </Flex>
-        ) : null}
       </Flex>
     </>
   )
@@ -207,27 +210,34 @@ export type StepRowProps = {
   isWalletAction: boolean
   chainId?: number
   isApproveStep?: boolean
+  subText?: string
+  subTextColor?: 'primary11' | 'green11' | 'subtle' | 'slate10'
+  showSubTextSpinner?: boolean
 }
 
 export const StepRow: FC<StepRowProps> = ({
+  id,
   action,
   isActive,
   isCompleted,
   txHashes,
   isWalletAction,
   chainId,
-  isApproveStep
+  isApproveStep,
+  subText,
+  subTextColor,
+  showSubTextSpinner
 }) => {
   const relayClient = useRelayClient()
-  const hasTxHash = txHashes && txHashes.length > 0
-
+  const chains = relayClient?.chains
   return (
     <Flex align="center" justify="between" css={{ width: '100%', gap: '3' }}>
       <Flex align="center" css={{ gap: '3', height: 40 }}>
         <Flex
+          data-active={isActive && !isCompleted}
           css={{
-            height: 24,
-            width: 24,
+            height: 30,
+            width: 30,
             borderRadius: 9999999,
             flexShrink: 0,
             alignItems: 'center',
@@ -237,95 +247,148 @@ export const StepRow: FC<StepRowProps> = ({
               : isActive
                 ? 'primary6'
                 : 'gray5',
-            color: isCompleted ? 'green11' : isActive ? 'primary6' : 'gray9',
+            color:
+              isActive && !isCompleted
+                ? 'primary11'
+                : isCompleted
+                  ? 'green11'
+                  : isActive
+                    ? 'primary11'
+                    : 'gray9',
             animation:
-              isActive && !isCompleted ? 'pulse-shadow 1s infinite' : 'none',
-            animationDirection: 'alternate-reverse'
+              isActive && !isCompleted
+                ? 'pulse-shadow 1s infinite alternate-reverse'
+                : 'none',
+            '& > *': {
+              color: isCompleted ? 'green11' : isActive ? 'primary11' : 'gray9'
+            }
           }}
         >
           {isCompleted ? (
             <FontAwesomeIcon icon={faCheck} width={12} />
           ) : (
-            <ChainIcon
-              chainId={chainId}
-              square={false}
-              width={24}
-              height={24}
-              css={{
-                borderRadius: 9999999,
-                overflow: 'hidden',
-                filter: isActive ? 'none' : 'grayscale(100%)',
-                opacity: isActive ? 1 : 0.6
-              }}
-            />
+            <StepIcon stepId={id} chainId={chainId} />
           )}
         </Flex>
         <Flex direction="column" css={{ gap: '2px' }}>
-          <Flex align="center" css={{ gap: '2' }}>
-            <Text style="subtitle2" color={isActive ? undefined : 'subtle'}>
-              {action}
-            </Text>
-            {isWalletAction && (
-              <Box
-                css={{
-                  backgroundColor: 'primary3',
-                  borderRadius: 100,
-                  px: '2',
-                  py: '1'
-                }}
-              >
-                <Text
-                  style="subtitle3"
-                  css={{
-                    color: 'primary11',
-                    fontSize: '10px',
-                    lineHeight: '12px'
-                  }}
-                >
-                  In Wallet
-                </Text>
-              </Box>
-            )}
-          </Flex>
+          <Text style="subtitle2" color={isActive ? undefined : 'subtle'}>
+            {action}
+          </Text>
 
-          {isApproveStep && !hasTxHash && !isCompleted && (
-            <Anchor
-              css={{ fontSize: 12 }}
-              href="https://support.relay.link/en/articles/10371133-why-do-i-have-to-approve-a-token"
-              target="_blank"
-            >
-              Why do I have to approve a token?
-            </Anchor>
-          )}
+          {subText && (
+            <Flex align="center" css={{ gap: '6px' }}>
+              {(() => {
+                // Handle "Success: txhash" case with split colors and link
+                if (subText.startsWith('Success:')) {
+                  const [successText, hashPart] = subText.split(': ')
+                  const fullHash = txHashes?.[0]?.txHash
+                  const chainId = txHashes?.[0]?.chainId
+                  const txUrl =
+                    fullHash && chainId
+                      ? getTxBlockExplorerUrl(chainId, chains, fullHash)
+                      : undefined
 
-          {txHashes &&
-            txHashes.length > 0 &&
-            txHashes.map(({ txHash, chainId }) => {
-              const txUrl = getTxBlockExplorerUrl(
-                chainId,
-                relayClient?.chains,
-                txHash
-              )
-              if (txHash && txUrl) {
+                  return (
+                    <Flex align="center" css={{ gap: '4px' }}>
+                      <Text style="subtitle3" css={{ color: 'green11' }}>
+                        {successText}:
+                      </Text>
+                      {hashPart &&
+                        (fullHash && txUrl ? (
+                          <a
+                            href={txUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: 'var(--colors-primary11)',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            <Text
+                              style="subtitle3"
+                              css={{ color: 'primary11' }}
+                            >
+                              {hashPart}
+                            </Text>
+                          </a>
+                        ) : (
+                          <Text style="subtitle3" css={{ color: 'primary11' }}>
+                            {hashPart}
+                          </Text>
+                        ))}
+                    </Flex>
+                  )
+                }
+
+                // Handle "Sending to Relay: txhash" and "Receiving: txhash" cases with links
+                if (
+                  subText.includes(': ') &&
+                  (subText.startsWith('Sending to Relay:') ||
+                    subText.startsWith('Receiving:'))
+                ) {
+                  const [labelText, hashPart] = subText.split(': ')
+                  const fullHash = txHashes?.[0]?.txHash
+                  const chainId = txHashes?.[0]?.chainId
+                  const txUrl =
+                    fullHash && chainId
+                      ? getTxBlockExplorerUrl(chainId, chains, fullHash)
+                      : undefined
+
+                  return (
+                    <Flex align="center" css={{ gap: '4px' }}>
+                      <Text style="subtitle3" css={{ color: 'primary11' }}>
+                        {labelText}:
+                      </Text>
+                      {hashPart &&
+                        (fullHash && txUrl ? (
+                          <a
+                            href={txUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: 'var(--colors-primary11)',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            <Text
+                              style="subtitle3"
+                              css={{ color: 'primary11' }}
+                            >
+                              {hashPart}
+                            </Text>
+                          </a>
+                        ) : (
+                          <Text style="subtitle3" css={{ color: 'primary11' }}>
+                            {hashPart}
+                          </Text>
+                        ))}
+                    </Flex>
+                  )
+                }
+
                 return (
-                  <Anchor
-                    key={txHash}
-                    href={txUrl}
-                    target="_blank"
+                  <Text
+                    style="subtitle3"
                     css={{
-                      fontSize: 12,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '1'
+                      color:
+                        subTextColor === 'slate10'
+                          ? 'slate10'
+                          : subTextColor === 'subtle'
+                            ? 'text-subtle'
+                            : subTextColor === 'green11'
+                              ? 'green11'
+                              : 'primary11'
                     }}
                   >
-                    {!isApproveStep ? 'Deposit: ' : ''}
-                    {truncateAddress(txHash, '...', 6, 4)}{' '}
-                    <FontAwesomeIcon icon={faExternalLink} width={14} />
-                  </Anchor>
+                    {subText}
+                  </Text>
                 )
-              }
-            })}
+              })()}
+              {showSubTextSpinner && (
+                <LoadingSpinner css={{ height: 12, width: 12 }} />
+              )}
+            </Flex>
+          )}
         </Flex>
       </Flex>
     </Flex>

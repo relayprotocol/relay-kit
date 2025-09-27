@@ -196,19 +196,39 @@ export async function handleSignatureStepItem({
       let attemptCount = 0
       while (attemptCount < maximumAttempts) {
         try {
+          let endpoint = stepItem?.check?.endpoint || ''
+
+          // Override v2 status endpoint to v3 to get 'submitted' status
+          if (
+            endpoint.includes('/intents/status') &&
+            !endpoint.includes('/v3')
+          ) {
+            endpoint = endpoint.replace('/intents/status', '/intents/status/v3')
+          }
+
           const res = await axios.request({
-            url: `${request.baseURL}${stepItem?.check?.endpoint}`,
+            url: `${request.baseURL}${endpoint}`,
             method: stepItem?.check?.method,
-            headers
+            headers,
+            validateStatus: (status) => status < 500 // Don't throw on 4xx responses
           })
 
-          client.log(
-            [`Execute Steps: Polling execute status to check if indexed`, res],
-            LogLevel.Verbose
-          )
-
           // Check status
-          if (res?.data?.status === 'success' && res?.data?.txHashes) {
+          if (res?.data?.status === 'submitted') {
+            // Handle submitted status - signature submitted but not yet processed
+            // Continue polling but update progress state
+            stepItem.progressState = 'posting'
+            setState({
+              steps: [...json?.steps],
+              fees: { ...json?.fees },
+              breakdown: json?.breakdown,
+              details: json?.details
+            })
+            client.log(
+              ['Signature submitted, continuing validation'],
+              LogLevel.Verbose
+            )
+          } else if (res?.data?.status === 'success' && res?.data?.txHashes) {
             const chainTxHashes: NonNullable<
               Execute['steps'][0]['items']
             >[0]['txHashes'] = res.data?.txHashes?.map((hash: string) => {
@@ -233,20 +253,33 @@ export async function handleSignatureStepItem({
             return // Success - exit polling
           } else if (res?.data?.status === 'failure') {
             throw Error(res?.data?.details || 'Transaction failed')
-          } else if (res?.data?.status === 'delayed') {
-            stepItem.progressState = 'validating_delayed'
-            setState({
-              steps: [...json?.steps],
-              fees: { ...json?.fees },
-              breakdown: json?.breakdown,
-              details: json?.details
-            })
+          } else if (res.status >= 400) {
+            // Handle HTTP error responses that don't have our expected data structure
+            throw Error(
+              res?.data?.details || res?.data?.message || 'Failed to check'
+            )
           }
 
           attemptCount++
           await new Promise((resolve) => setTimeout(resolve, pollingInterval))
-        } catch (error) {
-          throw error
+        } catch (error: any) {
+          // If it's a deliberate failure response, re-throw immediately
+          if (
+            error.message &&
+            (error.message.includes('Transaction failed') ||
+              error.message.includes('Failed to check') ||
+              error.message === 'Failed to check')
+          ) {
+            throw error
+          }
+
+          // For network errors or other recoverable issues, continue polling
+          client.log(
+            ['Check request failed, retrying...', error],
+            LogLevel.Verbose
+          )
+          attemptCount++
+          await new Promise((resolve) => setTimeout(resolve, pollingInterval))
         }
       }
 

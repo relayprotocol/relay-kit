@@ -237,7 +237,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
     {
       enabled: requestId !== null && open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending', 'delayed']
+        const observableStates = ['waiting', 'pending']
 
         if (
           !query.state.data?.status ||

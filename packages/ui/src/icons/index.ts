@@ -1,2 +1,7 @@
 export { SwitchIcon } from './SwitchIcon.js'
 export { XIcon } from './XIcon.js'
+export { RelayIcon } from './RelayIcon.js'
+export { FileSignature } from './FileSignature.js'
+export { Shuffle } from './Shuffle.js'
+export { ArrowRightFromLine } from './ArrowRightFromLine.js'
+export { ArrowLeftToLine } from './ArrowLeftToLine.js'

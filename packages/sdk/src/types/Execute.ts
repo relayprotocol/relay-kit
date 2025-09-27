@@ -19,16 +19,11 @@ export type QuoteStepId = NonNullable<
   paths['/quote']['post']['responses']['200']['content']['application/json']['steps']
 >['0']['id']
 
-export type TransactionStepState =
-  | 'confirming'
-  | 'validating'
-  | 'validating_delayed'
-  | 'complete'
+export type TransactionStepState = 'confirming' | 'validating' | 'complete'
 export type SignatureStepState =
   | 'signing'
   | 'posting'
   | 'validating'
-  | 'validating_delayed'
   | 'complete'
 
 export type Execute = {
@@ -53,7 +48,6 @@ export type Execute = {
       receipt?: TransactionReceipt | SvmReceipt | SuiReceipt
       checkStatus?:
         | 'refund'
-        | 'delayed'
         | 'waiting'
         | 'failure'
         | 'pending'

@@ -2,7 +2,6 @@ import {
   getDeadAddress,
   LogLevel,
   type Execute,
-  type paths,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
 import { type FC, useCallback, useEffect, useMemo, useState } from 'react'
@@ -235,7 +234,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     {
       enabled: requestId !== null && step === OnrampStep.Processing && open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending', 'delayed']
+        const observableStates = ['waiting', 'pending']
 
         if (
           !query.state.data?.status ||

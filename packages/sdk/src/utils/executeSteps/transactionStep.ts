@@ -100,12 +100,8 @@ export async function handleTransactionStepItem({
     request,
     undefined,
     crossChainIntentChainId,
-    (res) => {
-      if (res && res.data.status === 'delayed') {
-        stepItem.progressState = 'validating_delayed'
-      } else {
-        stepItem.progressState = 'validating'
-      }
+    () => {
+      stepItem.progressState = 'validating'
       setState({
         steps: [...json.steps],
         fees: { ...json?.fees },

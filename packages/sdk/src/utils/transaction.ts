@@ -150,7 +150,10 @@ export async function sendTransactionSafely(
   //Set up internal functions
   const validate = (res: AxiosResponse<any, any>) => {
     getClient()?.log(
-      ['Execute Steps: Polling for confirmation', res],
+      [
+        'Execute Steps: Polling for confirmation',
+        JSON.stringify(res.data, null, 2)
+      ],
       LogLevel.Verbose
     )
 
@@ -161,6 +164,9 @@ export async function sendTransactionSafely(
     }
     if (res.status === 200 && res.data && res.data.status === 'fallback') {
       throw Error('Transaction failed: Refunded')
+    }
+    if (res.status === 200 && res.data && res.data.status === 'submitted') {
+      return false // Continue polling
     }
     if (res.status === 200 && res.data && res.data.status === 'success') {
       if (txHash) {
@@ -189,6 +195,9 @@ export async function sendTransactionSafely(
         }
       })
       setTxHashes(fillTxHashes)
+
+      setCheckStatus?.('success')
+
       return true
     }
     return false
@@ -224,6 +233,12 @@ export async function sendTransactionSafely(
       let res: AxiosResponse<any, any> | undefined
       if (check?.endpoint && !request?.data?.useExternalLiquidity) {
         let endpoint = check?.endpoint
+
+        // Override v2 status endpoint to v3 to get 'submitted' status
+        if (endpoint.includes('/intents/status') && !endpoint.includes('/v3')) {
+          endpoint = endpoint.replace('/intents/status', '/intents/status/v3')
+        }
+
         if (
           client.source &&
           !endpoint.includes('referrer') &&
