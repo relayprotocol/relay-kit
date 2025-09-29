@@ -236,6 +236,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 tokenlogoURI={fromTokenLogoUri}
                 tokenSymbol={_fromToken?.symbol}
                 size="sm"
+                chainRadius={2.5}
               />
               <Text style="subtitle1" css={{ ml: '2' }}>
                 {_fromAmountFormatted} {_fromToken?.symbol}
@@ -256,6 +257,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 tokenlogoURI={toTokenLogoUri}
                 tokenSymbol={_toToken?.symbol}
                 size="sm"
+                chainRadius={2.5}
               />
               <Text style="subtitle1" css={{ ml: '2' }}>
                 {_toAmountFormatted} {_toToken?.symbol}
@@ -429,6 +431,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainId={_fromToken.chainId}
                     tokenlogoURI={fromTokenLogoUri}
                     tokenSymbol={_fromToken.symbol}
+                    chainRadius={2.5}
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
@@ -475,6 +478,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainId={_toToken.chainId}
                     tokenlogoURI={toTokenLogoUri}
                     tokenSymbol={_toToken.symbol}
+                    chainRadius={2.5}
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
@@ -516,6 +520,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                       gasTopUpAmountCurrency?.chainId
                     }.png`}
                     tokenSymbol={gasTopUpAmountCurrency.symbol}
+                    chainRadius={2.5}
                   />
                   <Text style="subtitle2" color="subtle">
                     +{formattedGasTopUpAmount} {gasTopUpAmountCurrency.symbol}{' '}
