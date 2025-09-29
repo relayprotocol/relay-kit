@@ -37,7 +37,11 @@ export const calculateFillTime = (transaction?: RelayTransaction | null) => {
 
     if (txStartTimestamp && txEndTimestamp) {
       seconds = txEndTimestamp - txStartTimestamp
-      if (seconds > 60) {
+      // Guard against negative time (invalid timestamps or timing issues)
+      if (seconds < 0) {
+        fillTime = '-'
+        seconds = 0
+      } else if (seconds > 60) {
         fillTime = `${relativeTime(
           txEndTimestamp * 1000,
           txStartTimestamp * 1000,
@@ -72,7 +76,11 @@ export const calculateExecutionTime = (
 
     if (startTime && txEndTimestamp) {
       seconds = txEndTimestamp - startTime
-      if (seconds > 60) {
+      // Guard against negative time (invalid timestamps or timing issues)
+      if (seconds < 0) {
+        fillTime = '-'
+        seconds = 0
+      } else if (seconds > 60) {
         fillTime = `${relativeTime(
           txEndTimestamp * 1000,
           startTime * 1000,
