@@ -42,8 +42,8 @@ const ButtonCss = cva({
         }
       },
       secondary: {
-        backgroundColor: 'secondary-button-background',
-        color: 'secondary-button-color',
+        backgroundColor: 'primary4',
+        color: 'primary12',
         '&:hover': {
           backgroundColor: 'secondary-button-hover-background',
           color: 'secondary-button-hover-color'
@@ -90,7 +90,7 @@ const ButtonCss = cva({
         borderRadius: 0
       },
       rounded: {
-        borderRadius: 8
+        borderRadius: 12
       },
       pill: {
         borderRadius: 99999
