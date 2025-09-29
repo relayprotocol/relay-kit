@@ -13,7 +13,6 @@ type ChainTokenProps = {
   tokenSymbol?: string
   css?: Styles
   size?: Size
-  variant?: 'default' | 'completed'
   chainRadius?: number
 }
 
@@ -42,7 +41,6 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   tokenSymbol,
   css = {},
   size = 'md',
-  variant = 'default',
   chainRadius = 4
 }) => {
   const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
@@ -67,7 +65,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           width={dimensions.token}
           height={dimensions.token}
           style={{
-            borderRadius: variant === 'completed' ? 6 : 9999,
+            borderRadius: 9999,
             overflow: 'hidden'
           }}
         />
@@ -76,7 +74,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           css={{
             width: dimensions.token,
             height: dimensions.token,
-            borderRadius: variant === 'completed' ? 6 : '50%',
+            borderRadius: '50%',
             backgroundColor: 'primary4',
             color: 'primary8',
             display: 'flex',
@@ -89,22 +87,17 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
       ) : null}
       <ChainIcon
         chainId={chainId}
-        width={variant === 'completed' ? 8.33 : dimensions.chain}
-        height={variant === 'completed' ? 8.33 : dimensions.chain}
-        borderRadius={variant === 'completed' ? 1.667 : chainRadius}
+        width={dimensions.chain}
+        height={dimensions.chain}
+        borderRadius={chainRadius}
         css={{
           position: 'absolute',
           right: 0,
           bottom: 0,
           overflow: 'hidden',
-          '--borderColor':
-            variant === 'completed' ? 'white' : 'colors.modal-background',
-          border:
-            variant === 'completed'
-              ? '0.833px solid var(--borderColor)'
-              : '1px solid var(--borderColor)',
-          backgroundColor:
-            variant === 'completed' ? 'white' : 'modal-background'
+          '--borderColor': 'colors.modal-background',
+          border: '1px solid var(--borderColor)',
+          backgroundColor: 'modal-background'
         }}
       />
     </Flex>
