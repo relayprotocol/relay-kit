@@ -10,7 +10,8 @@ import { EventNames } from '../../constants/events.js'
 import type { Token } from '../../types/index.js'
 import {
   faCircleCheck,
-  faTriangleExclamation
+  faTriangleExclamation,
+  faClipboard
 } from '@fortawesome/free-solid-svg-icons'
 import { AnchorButton } from '../primitives/Anchor.js'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
@@ -18,6 +19,10 @@ import type { LinkedWallet } from '../../types/index.js'
 import { truncateAddress } from '../../utils/truncate.js'
 import { isValidAddress } from '../../utils/address.js'
 import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
+import {
+  addCustomAddress,
+  getCustomAddresses
+} from '../../utils/localStorage.js'
 
 type Props = {
   open: boolean
@@ -50,6 +55,9 @@ export const CustomAddressModal: FC<Props> = ({
   const connectedAddress = useWalletAddress(wallet, linkedWallets)
   const [address, setAddress] = useState('')
   const [input, setInput] = useState('')
+  const [recentCustomAddresses, setRecentCustomAddresses] = useState<string[]>(
+    []
+  )
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
 
@@ -67,6 +75,14 @@ export const CustomAddressModal: FC<Props> = ({
     [toChain, linkedWallets]
   )
 
+  const filteredRecentCustomAddresses = useMemo(
+    () =>
+      recentCustomAddresses.filter((address) =>
+        isValidAddress(toChain?.vmType, address, toChain?.id)
+      ),
+    [recentCustomAddresses, toChain]
+  )
+
   const connectedAddressSet =
     (!address && !toAddress) ||
     (toAddress === connectedAddress && address === connectedAddress) ||
@@ -81,6 +97,8 @@ export const CustomAddressModal: FC<Props> = ({
         setAddress(toAddress ? toAddress : '')
         setInput(toAddress ? toAddress : '')
       }
+      // Load custom addresses when modal opens
+      setRecentCustomAddresses(getCustomAddresses())
       onAnalyticEvent?.(EventNames.ADDRESS_MODAL_OPEN)
     }
   }, [open])
@@ -210,13 +228,13 @@ export const CustomAddressModal: FC<Props> = ({
             )
           ) : null}
 
-          {multiWalletSupportEnabled && availableWallets.length > 0 ? (
+          {filteredRecentCustomAddresses.length > 0 ? (
             <>
-              <Text style="subtitle2">Use connected wallet address</Text>
+              <Text style="subtitle2">Recent addresses</Text>
               <Flex css={{ gap: '2', flexWrap: 'wrap' }} align="center">
-                {availableWallets.map((wallet) => (
+                {filteredRecentCustomAddresses.map((address) => (
                   <Pill
-                    key={wallet.address}
+                    key={address}
                     color="transparent"
                     bordered
                     radius="squared"
@@ -224,24 +242,25 @@ export const CustomAddressModal: FC<Props> = ({
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      px: '8px'
                     }}
                     onClick={() => {
-                      onConfirmed(wallet.address)
+                      onConfirmed(address)
                       onOpenChange(false)
                       onAnalyticEvent?.(EventNames.ADDRESS_MODAL_CONFIRMED, {
-                        address: wallet.address,
-                        context: 'linked_wallet'
+                        address: address,
+                        context: 'custom_address'
                       })
                     }}
                   >
-                    <img
-                      src={wallet.walletLogoUrl}
-                      style={{ width: 16, height: 16, borderRadius: 4 }}
+                    <FontAwesomeIcon
+                      icon={faClipboard}
+                      width={16}
+                      height={16}
+                      color="#9CA3AF"
                     />
-                    <Text style="subtitle2">
-                      {truncateAddress(wallet.address)}
-                    </Text>
+                    <Text style="subtitle2">{truncateAddress(address)}</Text>
                   </Pill>
                 ))}
               </Flex>
@@ -254,6 +273,15 @@ export const CustomAddressModal: FC<Props> = ({
           css={{ justifyContent: 'center' }}
           onClick={() => {
             if (isValidAddress(toChain?.vmType, address, toChain?.id)) {
+              // Save the address to custom addresses if it's not a connected wallet address
+              const isConnectedWallet = availableWallets.some(
+                (wallet) => wallet.address === address
+              )
+              if (!isConnectedWallet && address !== connectedAddress) {
+                addCustomAddress(address)
+                setRecentCustomAddresses(getCustomAddresses())
+              }
+
               onConfirmed(address)
               onAnalyticEvent?.(EventNames.ADDRESS_MODAL_CONFIRMED, {
                 address: address,
