@@ -318,6 +318,10 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             transaction={transaction}
             fromChain={fromChain}
             toChain={toChain}
+            fromToken={fromToken}
+            toToken={toToken}
+            fromAmountFormatted={fromAmountFormatted}
+            toAmountFormatted={toAmountFormatted}
           />
         ) : null}
       </Flex>
