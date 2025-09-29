@@ -232,8 +232,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 chainId={fromChain.id}
                 tokenlogoURI={fromTokenLogoUri}
                 tokenSymbol={_fromToken?.symbol}
-                size="base"
-                variant="completed"
+                size="sm"
               />
               <Text style="subtitle1" css={{ ml: '2' }}>
                 {_fromAmountFormatted} {_fromToken?.symbol}
@@ -253,8 +252,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 chainId={toChain.id}
                 tokenlogoURI={toTokenLogoUri}
                 tokenSymbol={_toToken?.symbol}
-                size="base"
-                variant="completed"
+                size="sm"
               />
               <Text style="subtitle1" css={{ ml: '2' }}>
                 {_toAmountFormatted} {_toToken?.symbol}
@@ -428,7 +426,6 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainId={_fromToken.chainId}
                     tokenlogoURI={fromTokenLogoUri}
                     tokenSymbol={_fromToken.symbol}
-                    variant="completed"
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
@@ -475,7 +472,6 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainId={_toToken.chainId}
                     tokenlogoURI={toTokenLogoUri}
                     tokenSymbol={_toToken.symbol}
-                    variant="completed"
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
@@ -517,7 +513,6 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                       gasTopUpAmountCurrency?.chainId
                     }.png`}
                     tokenSymbol={gasTopUpAmountCurrency.symbol}
-                    variant="completed"
                   />
                   <Text style="subtitle2" color="subtle">
                     +{formattedGasTopUpAmount} {gasTopUpAmountCurrency.symbol}{' '}
