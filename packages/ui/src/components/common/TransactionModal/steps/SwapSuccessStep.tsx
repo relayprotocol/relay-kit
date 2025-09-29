@@ -16,7 +16,7 @@ import { type Token } from '../../../../types/index.js'
 import type { useRequests } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '../../../../hooks/index.js'
 import { faClockFour } from '@fortawesome/free-solid-svg-icons/faClockFour'
-import type { Execute } from '@relayprotocol/relay-sdk'
+import { ASSETS_RELAY_API, type Execute } from '@relayprotocol/relay-sdk'
 import { bitcoin } from '../../../../utils/bitcoin.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { TransactionsByChain } from './TransactionsByChain.js'
@@ -93,7 +93,34 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
     transaction?.data?.metadata?.currencyOut?.currency?.metadata?.logoURI ??
     toToken?.logoURI
 
-  const actionTitle = isWrap ? 'wrapped' : isUnwrap ? 'unwrapped' : 'swapped'
+  // Get action text based on operation type
+  const getActionText = (token?: Token) => {
+    if (!details?.operation || !token?.symbol) return 'Swap'
+
+    switch (details.operation) {
+      case 'send':
+      case 'wrap':
+      case 'unwrap':
+        return 'Sent'
+      default:
+        return 'Swap'
+    }
+  }
+
+  // Get received text for the "to" section
+  const getReceivedText = (token?: Token) => {
+    if (!details?.operation || !token?.symbol)
+      return isSameChainSwap ? 'To' : 'Received'
+
+    switch (details.operation) {
+      case 'send':
+      case 'wrap':
+      case 'unwrap':
+        return 'Received'
+      default:
+        return isSameChainSwap ? 'To' : 'Received'
+    }
+  }
   const baseTransactionUrl = relayClient?.baseApiUrl.includes('testnets')
     ? 'https://testnets.relay.link'
     : 'https://relay.link'
@@ -283,20 +310,11 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
             borderRadius: 12
           }}
         >
-          {formattedGasTopUpAmount ? (
-            <Flex justify="between">
-              <Text style="subtitle2" color="subtle">
-                Additional Gas
-              </Text>
-              <Text style="subtitle2">
-                {formattedGasTopUpAmount} {gasTopUpAmountCurrency?.symbol}
-              </Text>
-            </Flex>
-          ) : null}
           <TransactionsByChain
             allTxHashes={allTxHashes}
             fromChain={fromChain}
             toChain={toChain}
+            fillTx={null}
           />
         </Flex>
       ) : null}
@@ -401,7 +419,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           {_fromToken ? (
             <Flex direction="column" css={{ gap: '4px' }}>
               <Text style="subtitle2" color="subtle">
-                {isSameChainSwap ? 'Swap' : 'Sent'}
+                {getActionText(_fromToken as Token)}
               </Text>
               <Flex justify="between">
                 <Flex align="center" css={{ gap: '4px' }}>
@@ -448,7 +466,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           {_toToken ? (
             <Flex direction="column" css={{ gap: '4px' }}>
               <Text style="subtitle2" color="subtle">
-                {isSameChainSwap ? 'To' : 'Received'}
+                {getReceivedText(_toToken as Token)}
               </Text>
               <Flex justify="between">
                 <Flex align="center" css={{ gap: '4px' }}>
@@ -487,6 +505,26 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     ) : null
                   })()}
               </Flex>
+
+              {/* Additional Gas - positioned below transaction hash with 8px spacing */}
+              {formattedGasTopUpAmount && gasTopUpAmountCurrency ? (
+                <Flex align="center" css={{ gap: '4px', mt: '2' }}>
+                  <ChainTokenIcon
+                    size="sm"
+                    chainId={gasTopUpAmountCurrency.chainId}
+                    tokenlogoURI={`${ASSETS_RELAY_API}/icons/currencies/${
+                      gasTopUpAmountCurrency?.symbol?.toLowerCase() ??
+                      gasTopUpAmountCurrency?.chainId
+                    }.png`}
+                    tokenSymbol={gasTopUpAmountCurrency.symbol}
+                    variant="completed"
+                  />
+                  <Text style="subtitle2" color="subtle">
+                    +{formattedGasTopUpAmount} {gasTopUpAmountCurrency.symbol}{' '}
+                    gas
+                  </Text>
+                </Flex>
+              ) : null}
             </Flex>
           ) : (
             <Text style="subtitle1">?</Text>
