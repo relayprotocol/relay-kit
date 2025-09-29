@@ -1,16 +1,31 @@
 #!/usr/bin/env node
-// RDAP enrich BEFORE build_findings:
-// - sources domains from: findings.json (if present) -> phaseB -> phaseA -> shortlist
-// - writes rdap_enrich.json (array of {domain, registrar, abuse_emails, abuse_phones, nameservers, creation_date, updated_date, age_days, parked_ns})
+// RDAP enrich BEFORE build_findings, but ONLY for domains that were LIVE in http_diagnostics.
+// Sources domains from: findings.json -> phaseB_results.json -> phaseA_results.json -> shortlist.json
+// Intersects with LIVE set from http_diagnostics.json.
+// Writes rdap_enrich.json: [{domain, registrar, abuse_emails, abuse_phones, nameservers, creation_date, updated_date, age_days, parked_ns}]
 
 import fs from "node:fs";
 import { promises as fsp } from "node:fs";
 
 const RDAP_BASE = process.env.RDAP_BASE || "https://rdap.org/domain/";
 const NOW = new Date();
+const BODY_MIN = parseInt(process.env.BODY_MIN || "1500", 10);
 
 function exists(p){ return fs.existsSync(p); }
-async function readJson(p){ return JSON.parse(await fsp.readFile(p,"utf8")); }
+async function readJson(p){ return JSON.parse(await fsp.readFile(p, "utf8")); }
+
+function normalizeSeed(s) {
+  if (!s) return "";
+  const t = s.trim();
+  if (/^https?:\/\//i.test(t)) { try { return new URL(t).hostname || ""; } catch { return t; } }
+  return t.replace(/\/+$/, "").toLowerCase();
+}
+const seeds = (process.env.WATCH_DOMAINS || "")
+  .split(",").map(normalizeSeed).filter(Boolean);
+const isSeedOrSub = (d) => {
+  const s = (d || "").toLowerCase();
+  return seeds.some(base => s === base || s.endsWith("." + base));
+};
 
 function extractDomains(list) {
   const out = new Set();
@@ -38,6 +53,28 @@ async function loadCandidates() {
   return { source: null, domains: [] };
 }
 
+// --- Use HTTP diagnostics to define "LIVE" ---
+function diagChecks(diag) {
+  const checks = [];
+  if (!diag) return checks;
+  if (Array.isArray(diag.results) && diag.results.length) {
+    for (const r of diag.results) {
+      if (r.http)  checks.push(r.http);
+      if (r.https) checks.push(r.https);
+      for (const p of (r.probes || [])) checks.push(p);
+    }
+  } else {
+    if (diag.http)  checks.push(diag.http);
+    if (diag.https) checks.push(diag.https);
+    for (const p of (diag.probes || [])) checks.push(p);
+  }
+  return checks;
+}
+function isLive(diag) {
+  return diagChecks(diag).some(x => x && x.status === 200 && (x.length || 0) >= BODY_MIN);
+}
+
+// --- RDAP helpers ---
 function pickVCard(entity, key) {
   const va = entity?.vcardArray;
   if (!Array.isArray(va) || !Array.isArray(va[1])) return [];
@@ -46,7 +83,10 @@ function pickVCard(entity, key) {
     .map(e => e[3])
     .filter(Boolean);
 }
-const firstVCard = (entity, key) => { const v = pickVCard(entity, key); return v.length ? v[0] : undefined; };
+const firstVCard = (entity, key) => {
+  const v = pickVCard(entity, key);
+  return v.length ? v[0] : undefined;
+};
 
 async function rdap(domain) {
   try {
@@ -57,13 +97,11 @@ async function rdap(domain) {
 }
 
 function parseDate(s) { try { return s ? new Date(s) : null; } catch { return null; } }
-
 function computeAgeDays(created) {
   if (!created) return null;
   const ms = NOW - created;
   return ms > 0 ? Math.floor(ms / (1000*60*60*24)) : null;
 }
-
 function parkedByNS(nameservers = []) {
   const list = (process.env.PARKING_NS || [
     "sedoparking","parkingcrew","bodis","afternic","dan.com","namebrightdns",
@@ -74,16 +112,45 @@ function parkedByNS(nameservers = []) {
 }
 
 (async () => {
+  // Load HTTP diagnostics to know which domains are LIVE
+  let diag = [];
+  if (exists("http_diagnostics.json")) {
+    try { diag = await readJson("http_diagnostics.json"); } catch { diag = []; }
+  }
+  const liveSet = new Set(
+    (diag || [])
+      .filter(d => d?.domain && isLive(d))
+      .map(d => d.domain.toLowerCase())
+  );
+
+  if (!liveSet.size) {
+    console.log("RDAP: no LIVE domains in http_diagnostics.json; nothing to enrich.");
+    await fsp.writeFile("rdap_enrich.json", "[]");
+    return;
+  }
+
   const { source, domains } = await loadCandidates();
   if (!domains.length) {
-    console.log("RDAP: no input domains (no findings/phaseA/phaseB/shortlist).");
+    console.log("RDAP: no input domain candidates (no findings/phaseA/phaseB/shortlist).");
     await fsp.writeFile("rdap_enrich.json","[]");
     return;
   }
-  console.log(`RDAP: enriching ${domains.length} domain(s) from ${source}`);
+
+  // Intersect: only LIVE + not seed/subdomain
+  const targets = domains
+    .filter(d => liveSet.has(d.toLowerCase()))
+    .filter(d => !isSeedOrSub(d));
+
+  if (!targets.length) {
+    console.log(`RDAP: 0 targets after intersecting with LIVE set (source=${source}).`);
+    await fsp.writeFile("rdap_enrich.json","[]");
+    return;
+  }
+
+  console.log(`RDAP: enriching ${targets.length} LIVE domain(s) from ${source}`);
 
   const out = [];
-  for (const dom of domains) {
+  for (const dom of targets) {
     const data = await rdap(dom);
     let registrar, abuseEmails = [], abusePhones = [], nameservers = [], created, updated;
 
@@ -112,9 +179,9 @@ function parkedByNS(nameservers = []) {
       // dates
       const ev = Array.isArray(data.events) ? data.events : [];
       created = parseDate(ev.find(e => e.eventAction === "registration")?.eventDate)
-             || parseDate(data.events?.find(e => e.eventAction === "registered")?.eventDate)
-             || parseDate(data.events?.find(e => /create/i.test(e.eventAction || ""))?.eventDate)
-             || parseDate(data?.events?.[0]?.eventDate); // fallback
+             || parseDate(ev.find(e => e.eventAction === "registered")?.eventDate)
+             || parseDate(ev.find(e => /create/i.test(e.eventAction || ""))?.eventDate)
+             || parseDate(ev[0]?.eventDate);
       updated = parseDate(ev.find(e => e.eventAction === "last changed")?.eventDate)
              || parseDate(ev.find(e => /update/i.test(e.eventAction || ""))?.eventDate);
     }
@@ -136,5 +203,5 @@ function parkedByNS(nameservers = []) {
   }
 
   await fsp.writeFile("rdap_enrich.json", JSON.stringify(out, null, 2));
-  console.log(`RDAP enriched ${out.length} domain(s) -> rdap_enrich.json`);
+  console.log(`RDAP enriched ${out.length} LIVE domain(s) -> rdap_enrich.json`);
 })().catch(e => { console.error(e); process.exit(1); });
