@@ -136,6 +136,16 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
         run: node .github/scripts/snapshot_findings.js
 
+      - name: Compare snapshots to reference
+        if: steps.filter.outputs.has_findings == 'true'
+        run: |
+          npm i -D pngjs
+          node .github/scripts/compare_snapshots.js
+
+      - name: Rebuild findings with snapshot similarity
+        if: steps.filter.outputs.has_findings == 'true'
+        run: node .github/scripts/build_findings.js
+
       - name: Upload screenshots (2 days)
         if: steps.filter.outputs.has_findings == 'true'
         uses: actions/upload-artifact@v4
