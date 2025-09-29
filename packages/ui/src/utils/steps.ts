@@ -63,23 +63,43 @@ const getDisplayActionText = (
     toTokenSymbol?: string
     fromChainName?: string
     toChainName?: string
+    operation?: string
   }
 ): string => {
   if (stepId.includes('approve')) {
     const tokenSymbol = context?.fromTokenSymbol || 'token'
-    return `Approve ${tokenSymbol} for swap`
+    const operationText =
+      context?.operation === 'wrap'
+        ? 'wrap'
+        : context?.operation === 'unwrap'
+          ? 'unwrap'
+          : context?.operation === 'send'
+            ? 'send'
+            : 'swap'
+    return `Approve ${tokenSymbol} for ${operationText}`
   }
 
-  if (stepId.includes('swap')) {
+  // Use operation type to determine the correct action text
+  if (
+    stepId.includes('swap') ||
+    stepId.includes('send') ||
+    stepId.includes('deposit')
+  ) {
     const fromSymbol = context?.fromTokenSymbol || 'token'
     const toSymbol = context?.toTokenSymbol || 'token'
-    return `Swap ${fromSymbol} to ${toSymbol}`
-  }
-
-  if (stepId.includes('send')) {
-    const tokenSymbol = context?.fromTokenSymbol || 'token'
     const chainName = context?.fromChainName || 'chain'
-    return `Send ${tokenSymbol} on ${chainName}`
+
+    if (context?.operation === 'send') {
+      return `Send ${fromSymbol}`
+    } else if (context?.operation === 'wrap') {
+      return `Wrap ${fromSymbol}`
+    } else if (context?.operation === 'unwrap') {
+      return `Unwrap ${fromSymbol}`
+    } else {
+      return stepId.includes('send')
+        ? `Send ${fromSymbol} on ${chainName}`
+        : `Swap ${fromSymbol} to ${toSymbol}`
+    }
   }
 
   if (stepId.includes('relay')) {
@@ -366,7 +386,8 @@ export const formatTransactionSteps = ({
           fromTokenSymbol,
           toTokenSymbol,
           fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName
+          toChainName: toChain?.displayName,
+          operation
         }),
         isActive: isApprovalActive,
         isCompleted: isApprovalCompleted,
@@ -419,7 +440,8 @@ export const formatTransactionSteps = ({
           fromTokenSymbol,
           toTokenSymbol,
           fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName
+          toChainName: toChain?.displayName,
+          operation
         }),
         isActive: isSwapActive,
         isCompleted: isSwapCompleted,
@@ -470,7 +492,8 @@ export const formatTransactionSteps = ({
           fromTokenSymbol,
           toTokenSymbol,
           fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName
+          toChainName: toChain?.displayName,
+          operation
         }),
         isActive: isSwapActive,
         isCompleted: isSwapCompleted,
@@ -527,7 +550,8 @@ export const formatTransactionSteps = ({
           fromTokenSymbol,
           toTokenSymbol,
           fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName
+          toChainName: toChain?.displayName,
+          operation
         }),
         isActive: isApprovalActive,
         isCompleted: isApprovalCompleted,
@@ -588,7 +612,8 @@ export const formatTransactionSteps = ({
         fromTokenSymbol,
         toTokenSymbol,
         fromChainName: fromChain?.displayName,
-        toChainName: toChain?.displayName
+        toChainName: toChain?.displayName,
+        operation
       }),
       isActive: isSendActive,
       isCompleted: isSendCompleted,
