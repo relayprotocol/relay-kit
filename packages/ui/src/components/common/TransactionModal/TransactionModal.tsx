@@ -196,9 +196,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
   allTxHashes,
   setAllTxHashes,
   transaction,
-  executionTime,
-  executionTimeSeconds,
-  setStartTimestamp,
+  fillTime,
+  seconds,
   onAnalyticEvent,
   timeEstimate,
   isCanonical,
@@ -217,7 +216,6 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
       setCurrentStep(null)
       setCurrentStepItem(null)
       setAllTxHashes([])
-      setStartTimestamp(0)
       setSwapError(null)
       setSteps(null)
       setQuote(null)
@@ -295,8 +293,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             toAmountFormatted={toAmountFormatted}
             allTxHashes={allTxHashes}
             transaction={transaction}
-            fillTime={executionTime ?? ''}
-            seconds={executionTimeSeconds ?? 0}
+            fillTime={fillTime ?? ''}
+            seconds={seconds ?? 0}
             onOpenChange={onOpenChange}
             timeEstimate={timeEstimate?.formattedTime}
             isCanonical={isCanonical}
