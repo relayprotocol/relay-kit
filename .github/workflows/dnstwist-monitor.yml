@@ -52,6 +52,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install "dnstwist[full]"
 
+      - name: Install workspace deps
+        run: pnpm -w install --frozen-lockfile
+
       - name: Restore cache
         uses: actions/cache@v4
         with:
@@ -138,9 +141,7 @@ jobs:
 
       - name: Compare snapshots to reference
         if: steps.filter.outputs.has_findings == 'true'
-        run: |
-          npm i -D pngjs
-          node .github/scripts/compare_snapshots.js
+        run: node .github/scripts/compare_snapshots.js
 
       - name: Rebuild findings with snapshot similarity
         if: steps.filter.outputs.has_findings == 'true'
