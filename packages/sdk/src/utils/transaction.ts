@@ -165,6 +165,9 @@ export async function sendTransactionSafely(
     if (res.status === 200 && res.data && res.data.status === 'fallback') {
       throw Error('Transaction failed: Refunded')
     }
+    if (res.status === 200 && res.data && res.data.status === 'pending') {
+      return false
+    }
     if (res.status === 200 && res.data && res.data.status === 'submitted') {
       return false // Continue polling
     }

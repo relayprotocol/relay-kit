@@ -227,6 +227,28 @@ export async function handleSignatureStepItem({
               LogLevel.Verbose
             )
           } else if (res?.data?.status === 'submitted') {
+            // Extract destination txHashes if provided
+            if (res?.data?.txHashes && res.data.txHashes.length > 0) {
+              const chainTxHashes: NonNullable<
+                Execute['steps'][0]['items']
+              >[0]['txHashes'] = res.data.txHashes.map((hash: string) => ({
+                txHash: hash,
+                chainId: res.data.destinationChainId ?? chain?.id
+              }))
+              stepItem.txHashes = chainTxHashes
+            }
+
+            // Extract origin txHashes if provided
+            if (res?.data?.inTxHashes && res.data.inTxHashes.length > 0) {
+              const chainInTxHashes: NonNullable<
+                Execute['steps'][0]['items']
+              >[0]['txHashes'] = res.data.inTxHashes.map((hash: string) => ({
+                txHash: hash,
+                chainId: res.data.originChainId ?? chain?.id
+              }))
+              stepItem.internalTxHashes = chainInTxHashes
+            }
+
             stepItem.checkStatus = 'submitted'
             setState({
               steps: [...json?.steps],
