@@ -23,7 +23,6 @@ import type { ChainVM, Execute } from '@relayprotocol/relay-sdk'
 import {
   calculatePriceTimeEstimate,
   calculateRelayerFeeProportionUsd,
-  calculateUsdValue,
   extractQuoteId,
   getCurrentStep,
   getSwapEventData,
@@ -527,44 +526,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromChain?.protocol?.v2?.depository !== undefined &&
     toChain?.protocol?.v2?.chainId !== undefined
 
-  //Enabled only on certain chains with dynamic protocol selection based on transaction size
-  const quoteProtocol = useMemo(() => {
-    if (fromChain?.id && originChainSupportsProtocolv2) {
-      const relevantPrice =
-        fromTokenPriceData?.price && !isLoadingFromTokenPrice
-          ? fromTokenPriceData.price
-          : undefined
-      const amount =
-        tradeType === 'EXACT_INPUT'
-          ? debouncedInputAmountValue
-          : debouncedOutputAmountValue
-
-      if (!amount) {
-        return undefined
-      }
-
-      const usdAmount = relevantPrice
-        ? calculateUsdValue(relevantPrice, amount)
-        : undefined
-
-      return usdAmount !== undefined && usdAmount <= 1000
-        ? 'preferV2'
-        : undefined
-    } else {
-      return undefined
-    }
-  }, [
-    fromTokenPriceData,
-    isLoadingFromTokenPrice,
-    debouncedInputAmountValue,
-    debouncedOutputAmountValue,
-    tradeType,
-    originChainSupportsProtocolv2,
-    fromChain?.id
-  ])
-
-  const loadingProtocolVersion =
-    fromChain?.id && originChainSupportsProtocolv2 && isLoadingFromTokenPrice
+  //Enabled only on certain chains
+  const quoteProtocol =
+    fromChain?.id && originChainSupportsProtocolv2 ? 'preferV2' : undefined
 
   const isFromNative = fromToken?.address === fromChain?.currency?.address
 
@@ -618,8 +582,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     toToken &&
     (quoteProtocol !== 'preferV2' ||
       fromChain?.vmType !== 'evm' ||
-      explicitDeposit !== undefined) &&
-    !loadingProtocolVersion
+      explicitDeposit !== undefined)
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     shouldSetQuoteParameters

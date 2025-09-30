@@ -93,34 +93,6 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
     transaction?.data?.metadata?.currencyOut?.currency?.metadata?.logoURI ??
     toToken?.logoURI
 
-  // Get action text based on operation type
-  const getActionText = (token?: Token) => {
-    if (!details?.operation || !token?.symbol) return 'Swap'
-
-    switch (details.operation) {
-      case 'send':
-      case 'wrap':
-      case 'unwrap':
-        return 'Sent'
-      default:
-        return 'Swap'
-    }
-  }
-
-  // Get received text for the "to" section
-  const getReceivedText = (token?: Token) => {
-    if (!details?.operation || !token?.symbol)
-      return isSameChainSwap ? 'To' : 'Received'
-
-    switch (details.operation) {
-      case 'send':
-      case 'wrap':
-      case 'unwrap':
-        return 'Received'
-      default:
-        return isSameChainSwap ? 'To' : 'Received'
-    }
-  }
   const baseTransactionUrl = relayClient?.baseApiUrl.includes('testnets')
     ? 'https://testnets.relay.link'
     : 'https://relay.link'
@@ -422,7 +394,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           {_fromToken ? (
             <Flex direction="column" css={{ gap: '4px' }}>
               <Text style="subtitle2" color="subtle">
-                {getActionText(_fromToken as Token)}
+                Sent
               </Text>
               <Flex justify="between">
                 <Flex align="center" css={{ gap: '4px' }}>
@@ -469,7 +441,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           {_toToken ? (
             <Flex direction="column" css={{ gap: '4px' }}>
               <Text style="subtitle2" color="subtle">
-                {getReceivedText(_toToken as Token)}
+                Received
               </Text>
               <Flex justify="between">
                 <Flex align="center" css={{ gap: '4px' }}>
