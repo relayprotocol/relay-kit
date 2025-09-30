@@ -214,10 +214,8 @@ export async function handleSignatureStepItem({
           })
 
           // Check status
-          if (res?.data?.status === 'submitted') {
-            // Handle submitted status - signature submitted but not yet processed
-            // Continue polling but update progress state
-            stepItem.progressState = 'posting'
+          if (res?.data?.status === 'pending') {
+            stepItem.checkStatus = 'pending'
             setState({
               steps: [...json?.steps],
               fees: { ...json?.fees },
@@ -225,7 +223,19 @@ export async function handleSignatureStepItem({
               details: json?.details
             })
             client.log(
-              ['Signature submitted, continuing validation'],
+              ['Origin confirmed, backend processing'],
+              LogLevel.Verbose
+            )
+          } else if (res?.data?.status === 'submitted') {
+            stepItem.checkStatus = 'submitted'
+            setState({
+              steps: [...json?.steps],
+              fees: { ...json?.fees },
+              breakdown: json?.breakdown,
+              details: json?.details
+            })
+            client.log(
+              ['Destination tx submitted, continuing validation'],
               LogLevel.Verbose
             )
           } else if (res?.data?.status === 'success' && res?.data?.txHashes) {
