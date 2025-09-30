@@ -215,6 +215,17 @@ export async function handleSignatureStepItem({
 
           // Check status
           if (res?.data?.status === 'pending') {
+            // Extract origin txHashes if provided
+            if (res?.data?.inTxHashes && res.data.inTxHashes.length > 0) {
+              const chainInTxHashes: NonNullable<
+                Execute['steps'][0]['items']
+              >[0]['txHashes'] = res.data.inTxHashes.map((hash: string) => ({
+                txHash: hash,
+                chainId: res.data.originChainId ?? chain?.id
+              }))
+              stepItem.internalTxHashes = chainInTxHashes
+            }
+
             stepItem.checkStatus = 'pending'
             setState({
               steps: [...json?.steps],
@@ -223,7 +234,7 @@ export async function handleSignatureStepItem({
               details: json?.details
             })
             client.log(
-              ['Origin confirmed, backend processing'],
+              ['Origin tx confirmed, backend processing'],
               LogLevel.Verbose
             )
           } else if (res?.data?.status === 'submitted') {

@@ -258,7 +258,6 @@ export const formatTransactionSteps = ({
     if (checkStatus === 'submitted') {
       switch (stepType) {
         case 'receive': {
-          // Filter to only destination chain hashes, excluding any origin chain hashes
           const destinationHash = txHashes?.find(
             (tx) =>
               tx.chainId === destinationChainId &&
@@ -326,6 +325,83 @@ export const formatTransactionSteps = ({
     }
   }
 
+  // Helper to extract all txHashes from step items
+  const extractStepTxHashes = (step: Execute['steps'][0] | undefined) => {
+    return (
+      step?.items?.flatMap((item) => [
+        ...(item.txHashes || []),
+        ...(item.internalTxHashes || [])
+      ]) || []
+    )
+  }
+
+  // Helper to check if step is complete
+  const isStepCompleted = (step: Execute['steps'][0] | undefined) => {
+    return step?.items?.every((item) => item.status === 'complete') || false
+  }
+
+  // Helper to find steps by ID
+  const findStep = (stepIds: string[]) => {
+    return executableSteps.find((step) => stepIds.includes(step.id))
+  }
+
+  // Helper to create a formatted step with sub-text
+  const createFormattedStep = (
+    stepId: string,
+    stepType: 'approve' | 'send' | 'swap' | 'relay' | 'receive',
+    isActive: boolean,
+    isCompleted: boolean,
+    step: Execute['steps'][0] | undefined,
+    context: {
+      fromTokenSymbol: string
+      toTokenSymbol: string
+      fromChainName?: string
+      toChainName?: string
+      operation: string
+    },
+    chainId?: number,
+    isApproveStep: boolean = false
+  ): FormattedStep => {
+    const txHashes = extractStepTxHashes(step)
+    const subText = getSubText(
+      stepType,
+      isActive,
+      isCompleted,
+      isActive ? currentProgressState : undefined,
+      currentStepItem?.checkStatus,
+      stepType === 'receive'
+        ? currentStepItem?.txHashes
+        : step?.items?.flatMap((item) => item.txHashes || []),
+      stepType === 'receive'
+        ? currentStepItem?.internalTxHashes
+        : step?.items?.flatMap((item) => item.internalTxHashes || []),
+      walletDisplayName,
+      destinationChainId
+    )
+    const subTextProps = getSubTextProps(
+      stepType,
+      isActive,
+      isCompleted,
+      subText,
+      currentStepItem?.checkStatus
+    )
+
+    return {
+      id: stepId,
+      action: getDisplayActionText(stepId, context),
+      isActive,
+      isCompleted,
+      progressState: isActive ? currentProgressState : undefined,
+      txHashes,
+      isWalletAction: stepType !== 'relay' && stepType !== 'receive',
+      chainId,
+      isApproveStep,
+      subText,
+      subTextColor: subTextProps.color,
+      showSubTextSpinner: subTextProps.showSpinner
+    }
+  }
+
   // Helper to get sub-text color and spinner visibility
   const getSubTextProps = (
     stepType: 'approve' | 'send' | 'swap' | 'relay' | 'receive',
@@ -384,171 +460,75 @@ export const formatTransactionSteps = ({
     return { color: 'primary11', showSpinner: true }
   }
 
+  // context for action text
+  const stepContext = {
+    fromTokenSymbol,
+    toTokenSymbol,
+    fromChainName: fromChain?.displayName,
+    toChainName: toChain?.displayName,
+    operation
+  }
+
   // Create fixed step sequence based on transaction type
   if (isSameChain) {
     // Same-chain: 1-2 steps (approval + swap, or just swap)
     if (hasApproval) {
       // Step 1: Approval
-      const approvalStep = executableSteps.find(
-        (step) => step.id === 'approve' || (step.id as any) === 'approval'
-      )
+      const approvalStep = findStep(['approve', 'approval'])
       const isApprovalActive =
         currentActiveStep?.id === approvalStep?.id && !allStepsComplete
-      const isApprovalCompleted =
-        approvalStep?.items?.every((item) => item.status === 'complete') ||
-        false
+      const isApprovalCompleted = isStepCompleted(approvalStep)
 
-      const approvalSubText = getSubText(
-        'approve',
-        isApprovalActive,
-        isApprovalCompleted,
-        currentProgressState,
-        currentStepItem?.checkStatus,
-        approvalStep?.items?.flatMap((item) => item.txHashes || []),
-        approvalStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName,
-        destinationChainId
+      result.push(
+        createFormattedStep(
+          'approve-same-chain',
+          'approve',
+          isApprovalActive,
+          isApprovalCompleted,
+          approvalStep,
+          stepContext,
+          fromToken?.chainId,
+          true
+        )
       )
-      const approvalSubTextProps = getSubTextProps(
-        'approve',
-        isApprovalActive,
-        isApprovalCompleted,
-        approvalSubText,
-        currentStepItem?.checkStatus
-      )
-
-      result.push({
-        id: 'approve-same-chain',
-        action: getDisplayActionText('approve-same-chain', {
-          fromTokenSymbol,
-          toTokenSymbol,
-          fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName,
-          operation
-        }),
-        isActive: isApprovalActive,
-        isCompleted: isApprovalCompleted,
-        progressState: isApprovalActive ? currentProgressState : undefined,
-        txHashes:
-          approvalStep?.items?.flatMap((item) => [
-            ...(item.txHashes || []),
-            ...(item.internalTxHashes || [])
-          ]) || [],
-        isWalletAction: true,
-        chainId: fromToken?.chainId,
-        isApproveStep: true,
-        subText: approvalSubText,
-        subTextColor: approvalSubTextProps.color,
-        showSubTextSpinner: approvalSubTextProps.showSpinner
-      })
 
       // Step 2: Swap
-      const swapStep = executableSteps.find(
-        (step) =>
-          step.id === 'swap' || step.id === 'deposit' || step.id === 'send'
-      )
+      const swapStep = findStep(['swap', 'deposit', 'send'])
       const isSwapActive =
         currentActiveStep?.id === swapStep?.id ||
         (isApprovalCompleted && !allStepsComplete)
-      const isSwapCompleted =
-        swapStep?.items?.every((item) => item.status === 'complete') || false
+      const isSwapCompleted = isStepCompleted(swapStep)
 
-      const swapSubText = getSubText(
-        'swap',
-        isSwapActive,
-        isSwapCompleted,
-        currentProgressState,
-        currentStepItem?.checkStatus,
-        swapStep?.items?.flatMap((item) => item.txHashes || []),
-        swapStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName,
-        destinationChainId
+      result.push(
+        createFormattedStep(
+          'swap-same-chain',
+          'swap',
+          isSwapActive,
+          isSwapCompleted,
+          swapStep,
+          stepContext,
+          fromToken?.chainId,
+          false
+        )
       )
-      const swapSubTextProps = getSubTextProps(
-        'swap',
-        isSwapActive,
-        isSwapCompleted,
-        swapSubText,
-        currentStepItem?.checkStatus
-      )
-
-      result.push({
-        id: 'swap-same-chain',
-        action: getDisplayActionText('swap-same-chain', {
-          fromTokenSymbol,
-          toTokenSymbol,
-          fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName,
-          operation
-        }),
-        isActive: isSwapActive,
-        isCompleted: isSwapCompleted,
-        progressState: isSwapActive ? currentProgressState : undefined,
-        txHashes:
-          swapStep?.items?.flatMap((item) => [
-            ...(item.txHashes || []),
-            ...(item.internalTxHashes || [])
-          ]) || [],
-        isWalletAction: true,
-        chainId: fromToken?.chainId,
-        isApproveStep: false,
-        subText: swapSubText,
-        subTextColor: swapSubTextProps.color,
-        showSubTextSpinner: swapSubTextProps.showSpinner
-      })
     } else {
       // Just swap step
-      const swapStep = executableSteps.find(
-        (step) =>
-          step.id === 'swap' || step.id === 'deposit' || step.id === 'send'
-      )
+      const swapStep = findStep(['swap', 'deposit', 'send'])
       const isSwapActive = !allStepsComplete
-      const isSwapCompleted =
-        swapStep?.items?.every((item) => item.status === 'complete') || false
+      const isSwapCompleted = isStepCompleted(swapStep)
 
-      const swapSubText = getSubText(
-        'swap',
-        isSwapActive,
-        isSwapCompleted,
-        currentProgressState,
-        currentStepItem?.checkStatus,
-        swapStep?.items?.flatMap((item) => item.txHashes || []),
-        swapStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName,
-        destinationChainId
+      result.push(
+        createFormattedStep(
+          'swap-same-chain',
+          'swap',
+          isSwapActive,
+          isSwapCompleted,
+          swapStep,
+          stepContext,
+          fromToken?.chainId,
+          false
+        )
       )
-      const swapSubTextProps = getSubTextProps(
-        'swap',
-        isSwapActive,
-        isSwapCompleted,
-        swapSubText,
-        currentStepItem?.checkStatus
-      )
-
-      result.push({
-        id: 'swap-same-chain',
-        action: getDisplayActionText('swap-same-chain', {
-          fromTokenSymbol,
-          toTokenSymbol,
-          fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName,
-          operation
-        }),
-        isActive: isSwapActive,
-        isCompleted: isSwapCompleted,
-        progressState: isSwapActive ? currentProgressState : undefined,
-        txHashes:
-          swapStep?.items?.flatMap((item) => [
-            ...(item.txHashes || []),
-            ...(item.internalTxHashes || [])
-          ]) || [],
-        isWalletAction: true,
-        chainId: fromToken?.chainId,
-        isApproveStep: false,
-        subText: swapSubText,
-        subTextColor: swapSubTextProps.color,
-        showSubTextSpinner: swapSubTextProps.showSpinner
-      })
     }
   } else {
     // Cross-chain: 3-4 steps (approval + send + relay + receive, or just send + relay + receive)
@@ -556,70 +536,33 @@ export const formatTransactionSteps = ({
 
     if (hasApproval) {
       // Step 1: Approval
-      const approvalStep = executableSteps.find(
-        (step) => step.id === 'approve' || (step.id as any) === 'approval'
-      )
+      const approvalStep = findStep(['approve', 'approval'])
       const isApprovalActive =
         currentActiveStep?.id === approvalStep?.id && !allStepsComplete
-      const isApprovalCompleted =
-        approvalStep?.items?.every((item) => item.status === 'complete') ||
-        false
+      const isApprovalCompleted = isStepCompleted(approvalStep)
 
-      const crossChainApprovalSubText = getSubText(
-        'approve',
-        isApprovalActive,
-        isApprovalCompleted,
-        currentProgressState,
-        currentStepItem?.checkStatus,
-        approvalStep?.items?.flatMap((item) => item.txHashes || []),
-        approvalStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName,
-        destinationChainId
+      result.push(
+        createFormattedStep(
+          'approve-cross-chain',
+          'approve',
+          isApprovalActive,
+          isApprovalCompleted,
+          approvalStep,
+          stepContext,
+          fromToken?.chainId,
+          true
+        )
       )
-      const crossChainApprovalSubTextProps = getSubTextProps(
-        'approve',
-        isApprovalActive,
-        isApprovalCompleted,
-        crossChainApprovalSubText,
-        currentStepItem?.checkStatus
-      )
-
-      result.push({
-        id: 'approve-cross-chain',
-        action: getDisplayActionText('approve-cross-chain', {
-          fromTokenSymbol,
-          toTokenSymbol,
-          fromChainName: fromChain?.displayName,
-          toChainName: toChain?.displayName,
-          operation
-        }),
-        isActive: isApprovalActive,
-        isCompleted: isApprovalCompleted,
-        progressState: isApprovalActive ? currentProgressState : undefined,
-        txHashes:
-          approvalStep?.items?.flatMap((item) => [
-            ...(item.txHashes || []),
-            ...(item.internalTxHashes || [])
-          ]) || [],
-        isWalletAction: true,
-        chainId: fromToken?.chainId,
-        isApproveStep: true,
-        subText: crossChainApprovalSubText,
-        subTextColor: crossChainApprovalSubTextProps.color,
-        showSubTextSpinner: crossChainApprovalSubTextProps.showSpinner
-      })
       stepIndex++
     }
 
     // Step 2/1: Send
-    const sendStep = executableSteps.find(
-      (step) => step.id === 'deposit' || step.id === 'send'
-    )
+    const sendStep = findStep(['deposit', 'send'])
     const isSendActive =
       currentActiveStep?.id === sendStep?.id ||
       (!hasApproval && !allStepsComplete) ||
       (hasApproval && result[0]?.isCompleted && !allStepsComplete)
-    // Send step completes when origin tx is confirmed (pending status = backend is now processing)
+    // Consider send step complete if all items are complete OR backend processing (pending/submitted)
     const isSendCompleted =
       sendStep?.items?.every(
         (item) =>
@@ -650,21 +593,11 @@ export const formatTransactionSteps = ({
 
     result.push({
       id: 'send-cross-chain',
-      action: getDisplayActionText('send-cross-chain', {
-        fromTokenSymbol,
-        toTokenSymbol,
-        fromChainName: fromChain?.displayName,
-        toChainName: toChain?.displayName,
-        operation
-      }),
+      action: getDisplayActionText('send-cross-chain', stepContext),
       isActive: isSendActive,
       isCompleted: isSendCompleted,
       progressState: isSendActive ? currentProgressState : undefined,
-      txHashes:
-        sendStep?.items?.flatMap((item) => [
-          ...(item.txHashes || []),
-          ...(item.internalTxHashes || [])
-        ]) || [],
+      txHashes: extractStepTxHashes(sendStep),
       isWalletAction: true,
       chainId: fromToken?.chainId,
       isApproveStep: false,
@@ -673,29 +606,24 @@ export const formatTransactionSteps = ({
       showSubTextSpinner: sendSubTextProps.showSpinner
     })
 
-    // Check if we're in receiving state (destination tx submitted)
-    // The 'submitted' status means destination tx was submitted, even if txHashes aren't ready yet
+    // Check if we're in receiving state (submitted status means destination tx submitted)
     const isInReceivingState =
       currentStepItem?.checkStatus === 'submitted' &&
       currentStepItem?.status === 'incomplete'
 
     // Step 3/2: Relay processing
-    // Active during 'pending' status (backend processing after origin tx confirmed)
+    // Active when send is complete (pending status) and not yet submitted to destination
     const relayStepActive =
-      isSendCompleted &&
-      currentStepItem?.checkStatus === 'pending' &&
-      !isInReceivingState
+      isSendCompleted && currentStepItem?.checkStatus === 'pending'
     const relayStepCompleted =
       currentStepItem?.checkStatus === 'submitted' ||
-      currentStepItem?.checkStatus === 'success' ||
-      hasDestinationTxHashes ||
-      isInReceivingState
+      currentStepItem?.checkStatus === 'success'
 
     const relaySubText = getSubText(
       'relay',
-      Boolean(relayStepActive),
-      Boolean(relayStepCompleted),
-      undefined,
+      relayStepActive,
+      relayStepCompleted,
+      relayStepActive ? currentProgressState : undefined,
       currentStepItem?.checkStatus,
       undefined,
       undefined,
@@ -704,8 +632,8 @@ export const formatTransactionSteps = ({
     )
     const relaySubTextProps = getSubTextProps(
       'relay',
-      Boolean(relayStepActive),
-      Boolean(relayStepCompleted),
+      relayStepActive,
+      relayStepCompleted,
       relaySubText,
       currentStepItem?.checkStatus
     )
@@ -734,10 +662,10 @@ export const formatTransactionSteps = ({
       'receive',
       receiveStepActive,
       receiveStepCompleted,
-      undefined,
+      receiveStepActive ? currentProgressState : undefined,
       currentStepItem?.checkStatus,
       currentStepItem?.txHashes,
-      currentStepItem?.internalTxHashes,
+      currentStepItem?.internalTxHashes, // Needed for filtering, but not used for display
       walletDisplayName,
       destinationChainId
     )
