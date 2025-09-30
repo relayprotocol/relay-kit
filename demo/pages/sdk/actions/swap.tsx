@@ -201,12 +201,9 @@ const SwapActionPage: NextPage = () => {
                 throw 'Missing JSON payload'
               }
 
-              quoteParams.chainId = quoteParams.originChainId
-              quoteParams.toChainId = quoteParams.destinationChainId
-              quoteParams.currency = quoteParams.originCurrency
-              quoteParams.toCurrency = quoteParams.destinationCurrency
+              console.log(quoteParams, 'PARAMS')
 
-              if (!quoteParams.chainId) {
+              if (!quoteParams.originChainId) {
                 setError('Missing chainId')
                 throw 'Missing chainId'
               }
@@ -214,7 +211,7 @@ const SwapActionPage: NextPage = () => {
               let executionWallet
 
               if (
-                quoteParams.chainId === 792703809 &&
+                quoteParams.originChainId === 792703809 &&
                 isSolanaWallet(primaryWallet)
               ) {
                 const connection = await primaryWallet.getConnection()
@@ -259,7 +256,7 @@ const SwapActionPage: NextPage = () => {
 
                 executionWallet = adaptSuiWallet(
                   primaryWallet?.address,
-                  quoteParams.chainId,
+                  quoteParams.originChainId,
                   walletClient,
                   async (tx) => {
                     const signedTransaction =
@@ -279,12 +276,29 @@ const SwapActionPage: NextPage = () => {
                 throw 'Unable to configure wallet'
               }
 
+              const {
+                destinationCurrency,
+                destinationChainId,
+                originCurrency,
+                originChainId,
+                amount,
+                tradeType,
+                referrer,
+                ...options
+              } = quoteParams
+
               const quote = await client?.actions.getQuote(
                 {
                   wallet: executionWallet,
                   user: primaryWallet.address,
                   recipient: primaryWallet.address,
-                  ...quoteParams
+                  toCurrency: destinationCurrency,
+                  toChainId: destinationChainId,
+                  currency: originCurrency,
+                  chainId: originChainId,
+                  amount,
+                  tradeType,
+                  options
                 },
                 true
               )
