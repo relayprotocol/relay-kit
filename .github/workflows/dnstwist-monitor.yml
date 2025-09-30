@@ -60,9 +60,6 @@ jobs:
       - name: Install workspace deps
         run: pnpm -w install --frozen-lockfile
 
-      - name: Add undici (no save)
-        run: pnpm -w add -D undici --no-save
-
       - name: Restore cache
         uses: actions/cache@v4
         with:
