@@ -138,6 +138,11 @@ function diagHasLivePath(diag) {
     if (live)                             { score+=1; reasons.push("LIVE"); }
     if (liveViaPath)                      { reasons.push("PATH"); }
 
+    if (img != null && img < phashThr) {
+      score = 0;
+      reasons = [];
+    }
+
     if (score >= minScore) {
       out.push({
         domain: dom,
