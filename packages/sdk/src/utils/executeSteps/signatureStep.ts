@@ -214,10 +214,19 @@ export async function handleSignatureStepItem({
           })
 
           // Check status
-          if (res?.data?.status === 'submitted') {
-            // Handle submitted status - signature submitted but not yet processed
-            // Continue polling but update progress state
-            stepItem.progressState = 'posting'
+          if (res?.data?.status === 'pending') {
+            // Extract origin txHashes if provided
+            if (res?.data?.inTxHashes && res.data.inTxHashes.length > 0) {
+              const chainInTxHashes: NonNullable<
+                Execute['steps'][0]['items']
+              >[0]['txHashes'] = res.data.inTxHashes.map((hash: string) => ({
+                txHash: hash,
+                chainId: res.data.originChainId ?? chain?.id
+              }))
+              stepItem.internalTxHashes = chainInTxHashes
+            }
+
+            stepItem.checkStatus = 'pending'
             setState({
               steps: [...json?.steps],
               fees: { ...json?.fees },
@@ -225,7 +234,41 @@ export async function handleSignatureStepItem({
               details: json?.details
             })
             client.log(
-              ['Signature submitted, continuing validation'],
+              ['Origin tx confirmed, backend processing'],
+              LogLevel.Verbose
+            )
+          } else if (res?.data?.status === 'submitted') {
+            // Extract destination txHashes if provided
+            if (res?.data?.txHashes && res.data.txHashes.length > 0) {
+              const chainTxHashes: NonNullable<
+                Execute['steps'][0]['items']
+              >[0]['txHashes'] = res.data.txHashes.map((hash: string) => ({
+                txHash: hash,
+                chainId: res.data.destinationChainId ?? chain?.id
+              }))
+              stepItem.txHashes = chainTxHashes
+            }
+
+            // Extract origin txHashes if provided
+            if (res?.data?.inTxHashes && res.data.inTxHashes.length > 0) {
+              const chainInTxHashes: NonNullable<
+                Execute['steps'][0]['items']
+              >[0]['txHashes'] = res.data.inTxHashes.map((hash: string) => ({
+                txHash: hash,
+                chainId: res.data.originChainId ?? chain?.id
+              }))
+              stepItem.internalTxHashes = chainInTxHashes
+            }
+
+            stepItem.checkStatus = 'submitted'
+            setState({
+              steps: [...json?.steps],
+              fees: { ...json?.fees },
+              breakdown: json?.breakdown,
+              details: json?.details
+            })
+            client.log(
+              ['Destination tx submitted, continuing validation'],
               LogLevel.Verbose
             )
           } else if (res?.data?.status === 'success' && res?.data?.txHashes) {

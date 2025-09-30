@@ -184,6 +184,10 @@ export const TransactionModalRenderer: FC<Props> = ({
         step.items?.every((item) => item.status === 'complete')
     )
 
+    const hasPendingItems = steps.some((step) =>
+      step.items?.some((item) => item.checkStatus === 'pending')
+    )
+
     const hasSubmittedItems = steps.some((step) =>
       step.items?.some((item) => item.checkStatus === 'submitted')
     )
@@ -197,9 +201,9 @@ export const TransactionModalRenderer: FC<Props> = ({
       )
     )
 
-    // Transition to Submitted state when items are submitted
+    // Transition to Submitted state when items are pending or submitted
     if (
-      hasSubmittedItems &&
+      (hasPendingItems || hasSubmittedItems) &&
       progressStep === TransactionProgressStep.Confirmation &&
       !hasValidatingItems
     ) {

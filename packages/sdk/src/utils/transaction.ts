@@ -165,7 +165,44 @@ export async function sendTransactionSafely(
     if (res.status === 200 && res.data && res.data.status === 'fallback') {
       throw Error('Transaction failed: Refunded')
     }
+    if (res.status === 200 && res.data && res.data.status === 'pending') {
+      // Extract origin txHashes if provided
+      if (res.data.inTxHashes && res.data.inTxHashes.length > 0) {
+        const depositTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.inTxHashes.map((hash: Address) => ({
+          txHash: hash,
+          chainId: res.data.originChainId ?? chainId,
+          isBatchTx: isBatchTransaction
+        }))
+        setInternalTxHashes(depositTxHashes)
+      }
+      return false
+    }
     if (res.status === 200 && res.data && res.data.status === 'submitted') {
+      // Extract destination txHashes if provided
+      if (res.data.txHashes && res.data.txHashes.length > 0) {
+        const fillTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.txHashes.map((hash: Address) => ({
+          txHash: hash,
+          chainId: res.data.destinationChainId ?? crossChainIntentChainId
+        }))
+        setTxHashes(fillTxHashes)
+      }
+
+      // Extract origin txHashes if provided
+      if (res.data.inTxHashes && res.data.inTxHashes.length > 0) {
+        const depositTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.inTxHashes.map((hash: Address) => ({
+          txHash: hash,
+          chainId: res.data.originChainId ?? chainId,
+          isBatchTx: isBatchTransaction
+        }))
+        setInternalTxHashes(depositTxHashes)
+      }
+
       return false // Continue polling
     }
     if (res.status === 200 && res.data && res.data.status === 'success') {
