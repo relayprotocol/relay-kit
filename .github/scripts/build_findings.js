@@ -140,7 +140,7 @@ function diagHasLivePath(diag) {
     if (live)                             { score+=1; reasons.push("LIVE"); }
     if (liveViaPath)                      { reasons.push("PATH"); }
 
-    if (img != null && img < phashThr) {
+    if (!img || img < phashThr) {
       score = 0;
       reasons = [];
     }
