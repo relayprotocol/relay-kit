@@ -293,6 +293,14 @@ export async function handleSignatureStepItem({
               stepItem.internalTxHashes = chainInTxHashes
             }
             stepItem.txHashes = chainTxHashes
+            stepItem.checkStatus = 'success'
+            setState({
+              steps: [...json?.steps],
+              fees: { ...json?.fees },
+              breakdown: json?.breakdown,
+              details: json?.details
+            })
+            client.log(['Transaction completed successfully'], LogLevel.Verbose)
             return // Success - exit polling
           } else if (res?.data?.status === 'failure') {
             throw Error(res?.data?.details || 'Transaction failed')
