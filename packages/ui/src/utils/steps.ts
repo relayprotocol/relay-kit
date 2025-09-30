@@ -257,20 +257,8 @@ export const formatTransactionSteps = ({
     // Handle submitted status - destination tx submitted (receive step)
     if (checkStatus === 'submitted') {
       switch (stepType) {
-        case 'receive': {
-          const destinationHash = txHashes?.find(
-            (tx) =>
-              tx.chainId === destinationChainId &&
-              !internalTxHashes?.some(
-                (internalTx) => internalTx.txHash === tx.txHash
-              )
-          )
-          const destHash = destinationHash?.txHash
-          if (destHash) {
-            return `Receiving: ${destHash.slice(0, 6)}...${destHash.slice(-4)}`
-          }
+        case 'receive':
           return 'Receiving'
-        }
         case 'relay':
           return 'Relay processing complete'
         default:
@@ -301,21 +289,8 @@ export const formatTransactionSteps = ({
         }
         return undefined
 
-      case 'receive': {
-        // Filter to only destination chain hashes, excluding any origin chain hashes
-        const destinationHash = txHashes?.find(
-          (tx) =>
-            tx.chainId === destinationChainId &&
-            !internalTxHashes?.some(
-              (internalTx) => internalTx.txHash === tx.txHash
-            )
-        )
-        const destHash = destinationHash?.txHash
-        if (destHash) {
-          return `Receiving: ${destHash.slice(0, 6)}...${destHash.slice(-4)}`
-        }
+      case 'receive':
         return 'Receiving'
-      }
 
       case 'relay':
         return 'Relay routing your payment'
