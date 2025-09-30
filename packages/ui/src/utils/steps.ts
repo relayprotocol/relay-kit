@@ -231,7 +231,8 @@ export const formatTransactionSteps = ({
     checkStatus?: string,
     txHashes?: { txHash: string; chainId: number }[],
     internalTxHashes?: { txHash: string; chainId: number }[],
-    walletName?: string
+    walletName?: string,
+    destinationChainId?: number
   ): string | undefined => {
     // Show success message with txHash for completed steps
     if (isCompleted && (stepType === 'send' || stepType === 'swap')) {
@@ -257,7 +258,15 @@ export const formatTransactionSteps = ({
     if (checkStatus === 'submitted') {
       switch (stepType) {
         case 'receive': {
-          const destHash = txHashes?.[0]?.txHash
+          // Filter to only destination chain hashes, excluding any origin chain hashes
+          const destinationHash = txHashes?.find(
+            (tx) =>
+              tx.chainId === destinationChainId &&
+              !internalTxHashes?.some(
+                (internalTx) => internalTx.txHash === tx.txHash
+              )
+          )
+          const destHash = destinationHash?.txHash
           if (destHash) {
             return `Receiving: ${destHash.slice(0, 6)}...${destHash.slice(-4)}`
           }
@@ -294,7 +303,15 @@ export const formatTransactionSteps = ({
         return undefined
 
       case 'receive': {
-        const destHash = txHashes?.[0]?.txHash
+        // Filter to only destination chain hashes, excluding any origin chain hashes
+        const destinationHash = txHashes?.find(
+          (tx) =>
+            tx.chainId === destinationChainId &&
+            !internalTxHashes?.some(
+              (internalTx) => internalTx.txHash === tx.txHash
+            )
+        )
+        const destHash = destinationHash?.txHash
         if (destHash) {
           return `Receiving: ${destHash.slice(0, 6)}...${destHash.slice(-4)}`
         }
@@ -389,7 +406,8 @@ export const formatTransactionSteps = ({
         currentStepItem?.checkStatus,
         approvalStep?.items?.flatMap((item) => item.txHashes || []),
         approvalStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName
+        walletDisplayName,
+        destinationChainId
       )
       const approvalSubTextProps = getSubTextProps(
         'approve',
@@ -443,7 +461,8 @@ export const formatTransactionSteps = ({
         currentStepItem?.checkStatus,
         swapStep?.items?.flatMap((item) => item.txHashes || []),
         swapStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName
+        walletDisplayName,
+        destinationChainId
       )
       const swapSubTextProps = getSubTextProps(
         'swap',
@@ -495,7 +514,8 @@ export const formatTransactionSteps = ({
         currentStepItem?.checkStatus,
         swapStep?.items?.flatMap((item) => item.txHashes || []),
         swapStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName
+        walletDisplayName,
+        destinationChainId
       )
       const swapSubTextProps = getSubTextProps(
         'swap',
@@ -553,7 +573,8 @@ export const formatTransactionSteps = ({
         currentStepItem?.checkStatus,
         approvalStep?.items?.flatMap((item) => item.txHashes || []),
         approvalStep?.items?.flatMap((item) => item.internalTxHashes || []),
-        walletDisplayName
+        walletDisplayName,
+        destinationChainId
       )
       const crossChainApprovalSubTextProps = getSubTextProps(
         'approve',
@@ -616,7 +637,8 @@ export const formatTransactionSteps = ({
       currentStepItem?.checkStatus,
       sendStep?.items?.flatMap((item) => item.txHashes || []),
       sendStep?.items?.flatMap((item) => item.internalTxHashes || []),
-      walletDisplayName
+      walletDisplayName,
+      destinationChainId
     )
     const sendSubTextProps = getSubTextProps(
       'send',
@@ -677,7 +699,8 @@ export const formatTransactionSteps = ({
       currentStepItem?.checkStatus,
       undefined,
       undefined,
-      walletDisplayName
+      walletDisplayName,
+      destinationChainId
     )
     const relaySubTextProps = getSubTextProps(
       'relay',
@@ -714,8 +737,9 @@ export const formatTransactionSteps = ({
       undefined,
       currentStepItem?.checkStatus,
       currentStepItem?.txHashes,
-      undefined,
-      walletDisplayName
+      currentStepItem?.internalTxHashes,
+      walletDisplayName,
+      destinationChainId
     )
     const receiveSubTextProps = getSubTextProps(
       'receive',
