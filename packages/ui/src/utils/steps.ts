@@ -665,7 +665,7 @@ export const formatTransactionSteps = ({
       receiveStepActive ? currentProgressState : undefined,
       currentStepItem?.checkStatus,
       currentStepItem?.txHashes,
-      currentStepItem?.internalTxHashes, // Needed for filtering, but not used for display
+      currentStepItem?.internalTxHashes,
       walletDisplayName,
       destinationChainId
     )

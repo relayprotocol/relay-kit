@@ -166,6 +166,17 @@ export async function sendTransactionSafely(
       throw Error('Transaction failed: Refunded')
     }
     if (res.status === 200 && res.data && res.data.status === 'pending') {
+      // Extract origin txHashes if provided
+      if (res.data.inTxHashes && res.data.inTxHashes.length > 0) {
+        const depositTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.inTxHashes.map((hash: Address) => ({
+          txHash: hash,
+          chainId: res.data.originChainId ?? chainId,
+          isBatchTx: isBatchTransaction
+        }))
+        setInternalTxHashes(depositTxHashes)
+      }
       return false
     }
     if (res.status === 200 && res.data && res.data.status === 'submitted') {
