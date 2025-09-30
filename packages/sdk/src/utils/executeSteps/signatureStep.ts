@@ -291,6 +291,8 @@ export async function handleSignatureStepItem({
             }
 
             stepItem.checkStatus = 'success'
+            stepItem.status = 'complete'
+            stepItem.progressState = 'complete'
             updateState()
             client.log(['Transaction completed successfully'], LogLevel.Verbose)
             return // Success - exit polling

@@ -483,7 +483,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
 
               {/* Additional Gas - positioned below transaction hash with 8px spacing */}
               {formattedGasTopUpAmount && gasTopUpAmountCurrency ? (
-                <Flex align="center" css={{ gap: '4px', mt: '2' }}>
+                <Flex align="center" css={{ gap: '4px', mt: '4px' }}>
                   <ChainTokenIcon
                     size="sm"
                     chainId={gasTopUpAmountCurrency.chainId}
@@ -494,9 +494,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     tokenSymbol={gasTopUpAmountCurrency.symbol}
                     chainRadius={2.5}
                   />
-                  <Text style="subtitle2" color="subtle">
-                    +{formattedGasTopUpAmount} {gasTopUpAmountCurrency.symbol}{' '}
-                    gas
+                  <Text style="h6">
+                    {formattedGasTopUpAmount} {gasTopUpAmountCurrency.symbol}
                   </Text>
                 </Flex>
               ) : null}
