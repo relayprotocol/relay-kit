@@ -15,7 +15,6 @@ import {
   type ExecuteStepItem
 } from '@relayprotocol/relay-sdk'
 import {
-  calculateExecutionTime,
   calculateFillTime,
   extractDepositRequestId
 } from '../../../utils/relayTransaction.js'
@@ -59,10 +58,6 @@ export type ChildrenProps = {
   transaction: ReturnType<typeof useRequests>['data']['0']
   seconds: number
   fillTime: string
-  executionTime?: string
-  executionTimeSeconds?: number
-  startTimestamp: number
-  setStartTimestamp: Dispatch<SetStateAction<number>>
   requestId: string | null
   isLoadingTransaction: boolean
   isAutoSlippage: boolean
@@ -111,7 +106,6 @@ export const TransactionModalRenderer: FC<Props> = ({
     null | NonNullable<NonNullable<Execute['steps']>['0']['items']>['0']
   >()
   const [allTxHashes, setAllTxHashes] = useState<TxHashes>([])
-  const [startTimestamp, setStartTimestamp] = useState(0)
   const [waitingForSteps, setWaitingForSteps] = useState(false)
   const [hasStartedValidation, setHasStartedValidation] = useState(false)
 
@@ -167,7 +161,6 @@ export const TransactionModalRenderer: FC<Props> = ({
       progressStep === TransactionProgressStep.Confirmation
     ) {
       onValidating?.(quote as Execute)
-      setStartTimestamp(new Date().getTime())
       setHasStartedValidation(true)
     }
 
@@ -249,8 +242,6 @@ export const TransactionModalRenderer: FC<Props> = ({
     )
   const transaction = transactions[0]
   const { fillTime, seconds } = calculateFillTime(transaction)
-  const { fillTime: executionTime, seconds: executionTimeSeconds } =
-    calculateExecutionTime(Math.floor(startTimestamp / 1000), transaction)
 
   const isAutoSlippage = slippageTolerance === undefined
   const timeEstimate = calculatePriceTimeEstimate(quote?.details)
@@ -276,10 +267,6 @@ export const TransactionModalRenderer: FC<Props> = ({
         transaction,
         fillTime,
         seconds,
-        executionTime,
-        executionTimeSeconds,
-        startTimestamp,
-        setStartTimestamp,
         requestId,
         isLoadingTransaction,
         isAutoSlippage,
