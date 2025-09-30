@@ -43,6 +43,11 @@ jobs:
         uses: actions/setup-node@v4
         with: { node-version: "20" }
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with: { python-version: "3.x" }
@@ -51,6 +56,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install "dnstwist[full]"
+
+      - name: Install workspace deps
+        run: pnpm -w install --frozen-lockfile
 
       - name: Restore cache
         uses: actions/cache@v4
@@ -135,6 +143,14 @@ jobs:
           XDG_RUNTIME_DIR: /tmp
           LIBGL_ALWAYS_SOFTWARE: "1"
         run: node .github/scripts/snapshot_findings.js
+
+      - name: Compare snapshots to reference
+        if: steps.filter.outputs.has_findings == 'true'
+        run: node .github/scripts/compare_snapshots.js
+
+      - name: Rebuild findings with snapshot similarity
+        if: steps.filter.outputs.has_findings == 'true'
+        run: node .github/scripts/build_findings.js
 
       - name: Upload screenshots (2 days)
         if: steps.filter.outputs.has_findings == 'true'
