@@ -18,6 +18,7 @@ const BODY_MIN = parseInt(process.env.BODY_MIN || "1500", 10); // "has content"
 const risky = (process.env.RISKY_KEYWORDS || "").split(",").map(w=>w.trim().toLowerCase()).filter(Boolean);
 const allow = (process.env.ALLOWLIST || "").split(",").map(w=>w.trim().toLowerCase()).filter(Boolean);
 const seeds = (process.env.WATCH_DOMAINS || "").split(",").map(s=>s.trim().toLowerCase()).filter(Boolean);
+const ignore = (process.env.IGNORE_DOMAINS || "").split(",").map(s=>s.trim().toLowerCase()).filter(Boolean);
 
 // ---- helpers ----
 function indexBy(rows){
@@ -44,6 +45,7 @@ const seedLabels = seeds.map(sld);
 const allowSet = new Set([...allow, ...seeds]); // seeds implicitly allowed
 const isAllowed = (dom) => {
   const s = (dom || "").toLowerCase();
+  if (ignore.some(i => s === i || s.endsWith("."+i))) return true;
   for (const base of allowSet) {
     if (s === base || s.endsWith("."+base)) return true;
   }

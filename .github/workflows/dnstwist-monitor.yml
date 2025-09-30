@@ -21,6 +21,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       ALLOWLIST: ${{ secrets.ALLOWLIST }}
+      IGNORE_DOMAINS: ${{ secrets.IGNORE_DOMAINS }}
 
       # knobs
       LSH_THRESHOLD: "80"
