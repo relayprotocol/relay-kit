@@ -58,6 +58,11 @@ export function handleWebSocketUpdate({
         break
     }
   }
+  // Handle pending status
+  else if (data.status === 'pending') {
+    client.log(['WebSocket received pending status'], LogLevel.Verbose)
+    handlePendingStatus(data, stepItems, setState, json, client)
+  }
   // Handle submitted status
   else if (data.status === 'submitted') {
     client.log(['WebSocket received submitted status'], LogLevel.Verbose)
@@ -72,17 +77,50 @@ export function handleWebSocketUpdate({
       onTerminalError
     )
   }
-  // Handle pending status - just log it
-  else if (data.status === 'pending') {
-    client.log(['WebSocket received pending status'], LogLevel.Verbose)
-  }
 }
 
 function isTerminalStatus(status: string): boolean {
   // Note: 'failure' is not immediately terminal due to the refund flow:
   // pending -> failure -> pending -> refund
-  // 'submitted' is not terminal, as it's an intermediate state before 'success'
+  // 'pending' and 'submitted' are intermediate states before 'success'
   return ['success', 'refund'].includes(status)
+}
+
+function handlePendingStatus(
+  data: RequestStatusUpdatedPayload,
+  stepItems: Execute['steps'][0]['items'],
+  setState: (data: SetStateData) => void,
+  json: Execute,
+  client: RelayClient
+): void {
+  // Update internalTxHashes if provided
+  if (data.inTxHashes && data.inTxHashes.length > 0) {
+    const internalTxHashes = data.inTxHashes.map((hash: string) => ({
+      txHash: hash,
+      chainId: data.originChainId ?? data.destinationChainId
+    }))
+    updateIncompleteItems(stepItems, (item) => {
+      item.internalTxHashes = internalTxHashes
+    })
+  }
+
+  // Mark step items as pending
+  updateIncompleteItems(stepItems, (item) => {
+    item.checkStatus = 'pending'
+  })
+
+  // Update state with pending status
+  setState({
+    steps: [...json.steps],
+    fees: { ...json?.fees },
+    breakdown: json?.breakdown,
+    details: json?.details
+  })
+
+  client.log(
+    ['WebSocket: Origin tx confirmed, backend processing', data],
+    LogLevel.Verbose
+  )
 }
 
 function handleSubmittedStatus(

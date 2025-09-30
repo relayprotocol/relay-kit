@@ -243,17 +243,19 @@ export const formatTransactionSteps = ({
 
     if (!isActive) return undefined
 
-    // Handle submitted status - show appropriate messaging
+    // Handle pending status - backend processing (relay step)
+    if (checkStatus === 'pending') {
+      if (stepType === 'relay') {
+        return 'Relay routing your payment'
+      }
+      if (stepType === 'send') {
+        return 'Sent to Relay'
+      }
+    }
+
+    // Handle submitted status - destination tx submitted (receive step)
     if (checkStatus === 'submitted') {
       switch (stepType) {
-        case 'send':
-          return 'Sent to Relay'
-        case 'swap':
-          return 'Transaction submitted'
-        case 'approve':
-          return 'Approval submitted'
-        case 'relay':
-          return 'Relay processing'
         case 'receive': {
           const destHash = txHashes?.[0]?.txHash
           if (destHash) {
@@ -261,8 +263,10 @@ export const formatTransactionSteps = ({
           }
           return 'Receiving'
         }
+        case 'relay':
+          return 'Relay processing complete'
         default:
-          return 'Submitted'
+          return 'Transaction submitted'
       }
     }
 
@@ -325,8 +329,23 @@ export const formatTransactionSteps = ({
       }
     }
 
+    // Handle pending status (relay step active)
+    if (checkStatus === 'pending') {
+      if (stepType === 'relay') {
+        return {
+          color: 'primary11',
+          showSpinner: true
+        }
+      }
+      return {
+        color: 'primary11',
+        showSpinner: false
+      }
+    }
+
+    // Handle submitted status (receive step active)
     if (checkStatus === 'submitted') {
-      if (stepType === 'receive' && subText.startsWith('Receiving:')) {
+      if (stepType === 'receive' && subText.startsWith('Receiving')) {
         return {
           color: 'primary11',
           showSpinner: true
@@ -579,11 +598,12 @@ export const formatTransactionSteps = ({
       currentActiveStep?.id === sendStep?.id ||
       (!hasApproval && !allStepsComplete) ||
       (hasApproval && result[0]?.isCompleted && !allStepsComplete)
-    // Consider send step complete if all items are complete OR submitted to relay
+    // Send step completes when origin tx is confirmed (pending status = backend is now processing)
     const isSendCompleted =
       sendStep?.items?.every(
         (item) =>
           item.status === 'complete' ||
+          item.checkStatus === 'pending' ||
           item.checkStatus === 'submitted' ||
           item.checkStatus === 'success'
       ) || false
@@ -631,21 +651,41 @@ export const formatTransactionSteps = ({
       showSubTextSpinner: sendSubTextProps.showSpinner
     })
 
-    // Check if we're in receiving state (have destination hashes from submitted status)
+    // Check if we're in receiving state (destination tx submitted)
+    // The 'submitted' status means destination tx was submitted, even if txHashes aren't ready yet
     const isInReceivingState =
       currentStepItem?.checkStatus === 'submitted' &&
-      currentStepItem?.status === 'incomplete' &&
-      currentStepItem?.txHashes &&
-      currentStepItem?.txHashes.length > 0 &&
-      // Check that we have destination chain hashes, not origin hashes
-      currentStepItem.txHashes.some((tx) => tx.chainId === destinationChainId)
+      currentStepItem?.status === 'incomplete'
 
     // Step 3/2: Relay processing
-    // Active when send is complete but no destination hashes yet
-    // This ensures it doesn't activate simultaneously with receive step
+    // Active during 'pending' status (backend processing after origin tx confirmed)
     const relayStepActive =
-      isSendCompleted && !hasDestinationTxHashes && !isInReceivingState
-    const relayStepCompleted = hasDestinationTxHashes || isInReceivingState
+      isSendCompleted &&
+      currentStepItem?.checkStatus === 'pending' &&
+      !isInReceivingState
+    const relayStepCompleted =
+      currentStepItem?.checkStatus === 'submitted' ||
+      currentStepItem?.checkStatus === 'success' ||
+      hasDestinationTxHashes ||
+      isInReceivingState
+
+    const relaySubText = getSubText(
+      'relay',
+      Boolean(relayStepActive),
+      Boolean(relayStepCompleted),
+      undefined,
+      currentStepItem?.checkStatus,
+      undefined,
+      undefined,
+      walletDisplayName
+    )
+    const relaySubTextProps = getSubTextProps(
+      'relay',
+      Boolean(relayStepActive),
+      Boolean(relayStepCompleted),
+      relaySubText,
+      currentStepItem?.checkStatus
+    )
 
     result.push({
       id: 'relay-processing',
@@ -655,19 +695,35 @@ export const formatTransactionSteps = ({
       isWalletAction: false,
       chainId: fromChain?.id,
       isApproveStep: false,
-      subText: undefined
+      subText: relaySubText,
+      subTextColor: relaySubTextProps.color,
+      showSubTextSpinner: relaySubTextProps.showSpinner
     })
 
     // Step 4/3: Receive
-    // The receive step becomes active when:
-    // 1. We have destination txHashes OR
-    // 2. Current step has 'submitted' status with DESTINATION txHashes (receiving state)
-    // It completes when all backend steps are done (allStepsComplete)
-
+    // The receive step becomes active when status reaches 'submitted'
     const receiveStepActive = Boolean(
       (hasDestinationTxHashes || isInReceivingState) && !allStepsComplete
     )
     const receiveStepCompleted = Boolean(allStepsComplete)
+
+    const receiveSubText = getSubText(
+      'receive',
+      receiveStepActive,
+      receiveStepCompleted,
+      undefined,
+      currentStepItem?.checkStatus,
+      currentStepItem?.txHashes,
+      undefined,
+      walletDisplayName
+    )
+    const receiveSubTextProps = getSubTextProps(
+      'receive',
+      receiveStepActive,
+      receiveStepCompleted,
+      receiveSubText,
+      currentStepItem?.checkStatus
+    )
 
     result.push({
       id: 'receive-cross-chain',
@@ -679,7 +735,10 @@ export const formatTransactionSteps = ({
       isCompleted: receiveStepCompleted,
       isWalletAction: false,
       chainId: toChain?.id,
-      isApproveStep: false
+      isApproveStep: false,
+      subText: receiveSubText,
+      subTextColor: receiveSubTextProps.color,
+      showSubTextSpinner: receiveSubTextProps.showSpinner
     })
   }
 
