@@ -127,7 +127,7 @@ function diagHasLivePath(diag) {
     if (REPORT_ONLY_LIVE && !live) continue;
 
     // scoring + reasons
-    let score = 0; const reasons = [];
+    let score = 0; let reasons = [];
     if (img  != null && img  >= phashThr) { score+=2; reasons.push(`img>=${phashThr} (${img}%)`); }
     if (html != null && html >= lshThr)   { score+=1; reasons.push(`html>=${lshThr} (${html}%)`); }
     if (nameClose(dom))                   { score+=2; reasons.push(`name-edit≤${NAME_EDIT_MAX}`); }
