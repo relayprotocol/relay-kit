@@ -107,6 +107,8 @@ function handlePendingStatus(
   // Mark step items as pending
   updateIncompleteItems(stepItems, (item) => {
     item.checkStatus = 'pending'
+    item.progressState = undefined
+    item.isValidatingSignature = false
   })
 
   // Update state with pending status
@@ -155,6 +157,8 @@ function handleSubmittedStatus(
   // Mark step items as submitted (intermediate state, not complete)
   updateIncompleteItems(stepItems, (item) => {
     item.checkStatus = 'submitted'
+    item.progressState = undefined
+    item.isValidatingSignature = false
   })
 
   // Update state with submitted status
