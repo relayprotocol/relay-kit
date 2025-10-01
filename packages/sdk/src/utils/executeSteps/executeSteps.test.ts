@@ -813,6 +813,7 @@ describe('Should test a signature step.', () => {
   it('Should validate a signature step item', async () => {
     let progressState = ''
     let isValidating = false
+    let checkStatus = ''
 
     vi.spyOn(axios, 'request').mockImplementation((config) => {
       if (config.url?.includes('/intents/status')) {
@@ -836,18 +837,20 @@ describe('Should test a signature step.', () => {
         const signatureStepItem = signatureStep?.items?.[0]
         progressState = signatureStepItem?.progressState ?? ''
         isValidating = signatureStepItem?.isValidatingSignature ? true : false
+        checkStatus = signatureStepItem?.checkStatus ?? ''
       },
       bridgeData,
       undefined
     ).catch((e) => {})
 
     await vi.waitFor(() => {
-      if (progressState !== 'validating' || !isValidating) {
-        throw 'Waiting for signature validation'
+      if (checkStatus !== 'pending') {
+        throw 'Waiting for pending status'
       }
     })
-    expect(progressState).toBe('validating')
-    expect(isValidating).toBeTruthy()
+    expect(checkStatus).toBe('pending')
+    expect(progressState).toBe('')
+    expect(isValidating).toBeFalsy()
   })
   it('Should set txHashes returned by check request', async () => {
     let signatureStep = bridgeData.steps.find(

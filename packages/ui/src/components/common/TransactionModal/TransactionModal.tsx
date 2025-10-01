@@ -274,7 +274,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
         <Text style="h6" css={{ mb: 8 }}>
           Transaction Details
         </Text>
-        {progressStep === TransactionProgressStep.Confirmation ? (
+        {progressStep === TransactionProgressStep.Confirmation ||
+        progressStep === TransactionProgressStep.Submitted ? (
           <SwapConfirmationStep
             fromToken={fromToken}
             toToken={toToken}
