@@ -532,12 +532,8 @@ export const formatTransactionSteps = ({
     }
 
     // Step 2/1: Send
-    const sendStep = findStep(['deposit', 'send'])
-    const isSendActive =
-      currentActiveStep?.id === sendStep?.id ||
-      (!hasApproval && !allStepsComplete) ||
-      (hasApproval && result[0]?.isCompleted && !allStepsComplete)
-    // Consider send step complete if all items are complete OR backend processing (pending/submitted)
+    const sendStep = findStep(['deposit', 'send', 'authorize1'])
+    // Consider send step complete if all items are complete OR backend processing
     const isSendCompleted =
       sendStep?.items?.every(
         (item) =>
@@ -546,6 +542,11 @@ export const formatTransactionSteps = ({
           item.checkStatus === 'submitted' ||
           item.checkStatus === 'success'
       ) || false
+    const isSendActive =
+      (currentActiveStep?.id === sendStep?.id ||
+        (!hasApproval && !allStepsComplete) ||
+        (hasApproval && result[0]?.isCompleted && !allStepsComplete)) &&
+      !isSendCompleted
 
     const sendSubText = getSubText(
       'send',
