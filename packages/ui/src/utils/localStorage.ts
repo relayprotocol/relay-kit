@@ -11,23 +11,32 @@ interface CacheEntry {
 
 interface RelayUiKitData {
   acceptedUnverifiedTokens: string[]
+  recentCustomAddresses?: string[]
   genericCache?: { [key: string]: CacheEntry }
 }
 
 export function getRelayUiKitData(): RelayUiKitData {
   if (typeof window === 'undefined')
-    return { acceptedUnverifiedTokens: [], genericCache: {} }
+    return {
+      acceptedUnverifiedTokens: [],
+      recentCustomAddresses: [],
+      genericCache: {}
+    }
 
   let data: RelayUiKitData = {
     acceptedUnverifiedTokens: [],
+    recentCustomAddresses: [],
     genericCache: {}
   }
   try {
     const localStorageData = localStorage.getItem(RELAY_UI_KIT_KEY)
     data = localStorageData ? JSON.parse(localStorageData) : data
-    // Ensure genericCache exists if loaded data doesn't have it
+    // Ensure genericCache and recentCustomAddresses exist if loaded data doesn't have them
     if (!data.genericCache) {
       data.genericCache = {}
+    }
+    if (!data.recentCustomAddresses) {
+      data.recentCustomAddresses = []
     }
   } catch (e) {
     console.warn('Failed to get RelayKitUIData', e)
@@ -110,4 +119,49 @@ export const alreadyAcceptedToken = (token: Token) => {
   const relayUiKitData = getRelayUiKitData()
   // Ensure acceptedUnverifiedTokens exists before accessing includes
   return relayUiKitData.acceptedUnverifiedTokens?.includes(tokenKey) ?? false
+}
+
+/**
+ * Add a custom address to the saved list if it doesn't already exist
+ * Keeps a maximum of 3 addresses, removing the oldest when limit is exceeded
+ * @param address - The address to save
+ */
+export function addCustomAddress(address: string): void {
+  const data = getRelayUiKitData()
+  const recentCustomAddresses = data.recentCustomAddresses || []
+
+  // Remove address if it already exists to avoid duplicates
+  const filteredAddresses = recentCustomAddresses.filter(
+    (addr) => addr !== address
+  )
+
+  // Add the new address to the end
+  const updatedAddresses = [...filteredAddresses, address]
+
+  // Keep only the last 3 addresses (most recent)
+  const limitedAddresses = updatedAddresses.slice(-3)
+
+  setRelayUiKitData({ recentCustomAddresses: limitedAddresses })
+}
+
+/**
+ * Get all saved custom addresses
+ * @returns Array of custom addresses
+ */
+export function getCustomAddresses(): string[] {
+  const data = getRelayUiKitData()
+  return data.recentCustomAddresses || []
+}
+
+/**
+ * Remove a custom address from the saved list
+ * @param address - The address to remove
+ */
+export function removeCustomAddress(address: string): void {
+  const data = getRelayUiKitData()
+  const recentCustomAddresses = data.recentCustomAddresses || []
+  const updatedAddresses = recentCustomAddresses.filter(
+    (addr) => addr !== address
+  )
+  setRelayUiKitData({ recentCustomAddresses: updatedAddresses })
 }
