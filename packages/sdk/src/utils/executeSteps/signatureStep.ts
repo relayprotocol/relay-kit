@@ -247,6 +247,8 @@ export async function handleSignatureStepItem({
             }
 
             stepItem.checkStatus = 'pending'
+            stepItem.progressState = undefined
+            stepItem.isValidatingSignature = false
             updateState()
             client.log(
               ['Origin tx confirmed, backend processing'],
@@ -267,6 +269,8 @@ export async function handleSignatureStepItem({
             }
 
             stepItem.checkStatus = 'submitted'
+            stepItem.progressState = undefined
+            stepItem.isValidatingSignature = false
             updateState()
             client.log(
               ['Destination tx submitted, continuing validation'],
