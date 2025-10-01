@@ -222,16 +222,17 @@ export async function sendTransactionSafely(
         })
         setInternalTxHashes(depositTxHashes)
       }
-
-      const fillTxHashes: NonNullable<
-        Execute['steps'][0]['items']
-      >[0]['txHashes'] = res.data?.txHashes?.map((hash: Address) => {
-        return {
-          txHash: hash,
-          chainId: res?.data?.destinationChainId ?? crossChainIntentChainId
-        }
-      })
-      setTxHashes(fillTxHashes)
+      if (res.data?.txHashes && res.data.txHashes.length > 0) {
+        const fillTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.txHashes.map((hash: Address) => {
+          return {
+            txHash: hash,
+            chainId: res?.data?.destinationChainId ?? crossChainIntentChainId
+          }
+        })
+        setTxHashes(fillTxHashes)
+      }
 
       setCheckStatus?.('success')
 
