@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 4.0.19
+
+### Patch Changes
+
+- f54d1f3: Save recent custom addresses to local storage
+- cda3f6d: Use fill time on success screen
+- Updated dependencies [5135cd1]
+  - @relayprotocol/relay-sdk@2.4.6
+  - @relayprotocol/relay-kit-hooks@2.0.5
+
 ## 4.0.18
 
 ### Patch Changes
