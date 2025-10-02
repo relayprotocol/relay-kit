@@ -1057,14 +1057,14 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
             submittedEvents.push(submittedEvent)
             onAnalyticEvent?.(submittedEvent, swapEventData)
           } else if (
-            (!submittedEvents.includes(successEvent) &&
-              stepItem.receipt &&
+            !submittedEvents.includes(successEvent) &&
+            ((stepItem.receipt &&
               !(
                 typeof stepItem.receipt === 'object' &&
                 'status' in stepItem.receipt &&
                 stepItem.receipt.status === 'reverted'
               )) ||
-            stepItem.checkStatus === 'pending'
+              stepItem.checkStatus === 'pending')
           ) {
             onAnalyticEvent?.(successEvent, swapEventData)
             submittedEvents.push(successEvent)
