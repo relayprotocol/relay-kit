@@ -53,25 +53,13 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
     )
   }, [allTxHashes, relayClient?.chains])
 
-  const refundTx =
-    allTxHashes.length > 0 ? allTxHashes[allTxHashes.length - 1] : null
   const isSameChain = fromChain?.id === toChain?.id
 
-  const refundTxUrl =
-    refundChain && refundData && refundTx
-      ? getTxBlockExplorerUrl(
-          refundChain?.id,
-          relayClient?.chains,
-          refundTx.txHash
-        )
-      : null
-
-  // Build transaction rows for single container
   const transactions = []
 
   // 1. Send transaction (always first)
   const sendTxs = fromChain?.id
-    ? txHashesByChain[fromChain.id]?.filter((tx) => !tx.isBatchTx)
+    ? txHashesByChain[fromChain.id]?.filter((tx) => !tx.isBatchTx).slice(0, 1)
     : []
   if (sendTxs && sendTxs.length > 0 && fromChain) {
     transactions.push({
@@ -83,25 +71,23 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
 
   // 2. Receive transaction (refund or regular)
   if (refundData && refundChain) {
-    // For refunds: find the correct refund tx on the destination chain
     const refundTxs =
       txHashesByChain[refundChain.id]?.filter((tx) => !tx.isBatchTx) || []
-    // Use fillTx for the correct refund transaction hash if available
-    const refundTxHash =
-      fillTx?.txHash || refundTxs[0]?.txHash || refundTx?.txHash
+    const refundTxHash = fillTx?.txHash || refundTxs[0]?.txHash
     const refundTxUrl = refundTxHash
       ? getTxBlockExplorerUrl(refundChain.id, relayClient?.chains, refundTxHash)
       : null
 
-    transactions.push({
-      label: 'Receive tx',
-      txHashes: [],
-      isRefund: true,
-      refundTxHash,
-      refundTxUrl
-    })
+    if (refundTxHash && refundTxUrl) {
+      transactions.push({
+        label: 'Receive tx',
+        txHashes: [],
+        isRefund: true,
+        refundTxHash,
+        refundTxUrl
+      })
+    }
   } else if (toChain?.id && txHashesByChain[toChain.id] && !isSameChain) {
-    // For regular swaps: show destination chain transaction
     const receiveTxs = txHashesByChain[toChain.id].filter((tx) => !tx.isBatchTx)
     if (receiveTxs.length > 0) {
       transactions.push({
