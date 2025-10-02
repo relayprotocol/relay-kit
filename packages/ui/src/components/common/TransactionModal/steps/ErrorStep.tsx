@@ -68,19 +68,25 @@ export const ErrorStep: FC<ErrorStepProps> = ({
     relayClient?.chains,
     depositTx?.txHash
   )
-  let fillTx =
-    allTxHashes && allTxHashes.length > 1
-      ? allTxHashes[allTxHashes.length - 1]
-      : undefined
-  if (
-    transaction &&
-    transaction.status === 'refund' &&
-    transaction.data?.outTxs
-  ) {
-    fillTx = {
-      txHash: transaction.data.outTxs[0].hash as Address,
-      chainId: transaction.data.outTxs[0].chainId as number
+  let fillTx: { txHash: string; chainId: number } | undefined = undefined
+
+  if (isRefund) {
+    if (
+      transaction &&
+      transaction.status === 'refund' &&
+      transaction.data?.outTxs &&
+      transaction.data.outTxs.length > 0
+    ) {
+      fillTx = {
+        txHash: transaction.data.outTxs[0].hash as Address,
+        chainId: transaction.data.outTxs[0].chainId as number
+      }
     }
+  } else {
+    fillTx =
+      allTxHashes && allTxHashes.length > 1
+        ? allTxHashes[allTxHashes.length - 1]
+        : undefined
   }
   const fillTxUrl = getTxBlockExplorerUrl(
     fillTx?.chainId,
