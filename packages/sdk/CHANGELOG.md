@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 3.0.0
+
+### Major Changes
+
+- d38abdf: Revamped transaction steps
+
 ## 2.4.6
 
 ### Patch Changes
