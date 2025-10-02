@@ -30,6 +30,7 @@ export const routes = [
   "/transactions/index",
   "/transactions/single",
   "/transactions/status",
+  "/swap-sources",
   "/loadforge.txt",
   "/conduit/install",
   "/prices/rates",

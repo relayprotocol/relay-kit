@@ -2665,6 +2665,8 @@ export interface paths {
             originGasOverhead?: number;
             /** @description The payer to be set for deposit transactions on solana. This account must have enough for fees and rent. */
             depositFeePayer?: string;
+            /** @description Whether to include compute unit limit instruction for solana origin requests. */
+            includeComputeUnitLimit?: boolean;
           };
         };
       };
@@ -3891,12 +3893,30 @@ export interface paths {
                   s: string;
                 }[];
             };
-            /** @description Options related to gas fee sponsorship and app referrer */
+            /** @description Options related to gas fee sponsorship, app referrer and destination calls */
             executionOptions: {
               /** @description The referrer of the app which is executing the gasless transaction */
               referrer: string;
               /** @description If the app should pay for the fees associated with the request */
               subsidizeFees: boolean;
+              /** @description Destination execution data for the gasless transaction */
+              destinationChainExecutionData?: {
+                /** @description Calls to be executed on the destination chain */
+                calls: {
+                    to?: string;
+                    value?: string;
+                    data?: string;
+                  }[];
+                /** @description Authorization list for EIP-7702 transactions to be executed on destination chain */
+                authorizationList?: {
+                    chainId: number;
+                    address: string;
+                    nonce: number;
+                    yParity: number;
+                    r: string;
+                    s: string;
+                  }[];
+              };
             };
             /** @description The request ID of the gasless transaction to execute */
             requestId?: string;
@@ -3975,6 +3995,8 @@ export interface paths {
           "application/json": {
             /** @description The request ID of the request that needs to be fast filled */
             requestId: string;
+            /** @description The input currency amount that the solver receives on origin */
+            solverInputCurrencyAmount?: string;
           };
         };
       };
@@ -4834,6 +4856,13 @@ export interface paths {
                         amountUsd?: string;
                         amountUsdCurrent?: string;
                       }[];
+                    paidAppFees?: {
+                        recipient?: string;
+                        bps?: string;
+                        amount?: string;
+                        amountUsd?: string;
+                        amountUsdCurrent?: string;
+                      }[];
                     metadata?: {
                       sender?: string;
                       recipient?: string;
@@ -5242,6 +5271,36 @@ export interface paths {
           content: {
             "application/json": {
               status?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/swap-sources": {
+    get: {
+      parameters: {
+        query?: {
+          /** @description Chain ID to get swap sources for */
+          chainId?: number;
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              /** @description An array of swap sources */
+              sources?: string[];
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              /** @description Descriptive error message */
+              message?: string;
             };
           };
         };
