@@ -247,7 +247,7 @@ export const formatTransactionSteps = ({
     // Handle pending status - backend processing (relay step)
     if (checkStatus === 'pending') {
       if (stepType === 'relay') {
-        return 'Relay routing your payment'
+        return undefined
       }
       if (stepType === 'send') {
         return 'Sent to Relay'
@@ -284,7 +284,7 @@ export const formatTransactionSteps = ({
               ? `Sending to Relay: ${hash.slice(0, 6)}...${hash.slice(-4)}`
               : 'Sending to Relay'
           } else {
-            return 'Relay routing your payment'
+            return 'Relay processes your transaction'
           }
         }
         return undefined
@@ -293,7 +293,7 @@ export const formatTransactionSteps = ({
         return 'Receiving'
 
       case 'relay':
-        return 'Relay routing your payment'
+        return undefined
 
       default:
         return undefined
