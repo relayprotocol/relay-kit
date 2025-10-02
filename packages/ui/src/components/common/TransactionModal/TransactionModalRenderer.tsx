@@ -63,6 +63,7 @@ export type ChildrenProps = {
   isAutoSlippage: boolean
   timeEstimate?: { time: number; formattedTime: string }
   isGasSponsored: boolean
+  currentCheckStatus?: ExecuteStepItem['checkStatus']
 }
 
 type Props = {
@@ -170,11 +171,20 @@ export const TransactionModalRenderer: FC<Props> = ({
 
     setCurrentStep(currentStep)
     setCurrentStepItem(currentStepItem)
+
+    const isBitcoinDestination =
+      quote?.details?.currencyOut?.currency?.chainId === 8253038
+
     const allStepsComplete = steps.every(
       (step) =>
         !step.items ||
         step.items.length == 0 ||
-        step.items?.every((item) => item.status === 'complete')
+        step.items?.every((item) => {
+          if (isBitcoinDestination && item.checkStatus === 'submitted') {
+            return true
+          }
+          return item.status === 'complete'
+        })
     )
 
     const hasPendingItems = steps.some((step) =>
@@ -271,7 +281,8 @@ export const TransactionModalRenderer: FC<Props> = ({
         isLoadingTransaction,
         isAutoSlippage,
         timeEstimate,
-        isGasSponsored: _isGasSponsored
+        isGasSponsored: _isGasSponsored,
+        currentCheckStatus: currentStepItem?.checkStatus
       })}
     </>
   )

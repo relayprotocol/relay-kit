@@ -16,7 +16,11 @@ import { type Token } from '../../../../types/index.js'
 import type { useRequests } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '../../../../hooks/index.js'
 import { faClockFour } from '@fortawesome/free-solid-svg-icons/faClockFour'
-import { ASSETS_RELAY_API, type Execute } from '@relayprotocol/relay-sdk'
+import {
+  ASSETS_RELAY_API,
+  type Execute,
+  type ExecuteStepItem
+} from '@relayprotocol/relay-sdk'
 import { bitcoin } from '../../../../utils/bitcoin.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { TransactionsByChain } from './TransactionsByChain.js'
@@ -42,6 +46,7 @@ type SwapSuccessStepProps = {
   onOpenChange: (open: boolean) => void
   requestId: string | null
   isGasSponsored?: boolean
+  currentCheckStatus?: ExecuteStepItem['checkStatus']
 }
 
 export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
@@ -59,7 +64,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   isLoadingTransaction,
   onOpenChange,
   requestId,
-  isGasSponsored
+  isGasSponsored,
+  currentCheckStatus
 }) => {
   const relayClient = useRelayClient()
   const isWrap = details?.operation === 'wrap'
@@ -107,17 +113,24 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   const delayedTxUrl = requestId
     ? `${baseTransactionUrl}/transaction/${requestId}`
     : null
-  const timeEstimateMs =
-    ((details?.timeEstimate ?? 0) +
-      (fromChain && fromChain.id === bitcoin.id ? 600 : 0)) *
-    1000
-  const isDelayedTx =
-    isCanonical ||
-    timeEstimateMs >
-      (relayClient?.maxPollingAttemptsBeforeTimeout ?? 30) *
-        (relayClient?.pollingInterval ?? 5000)
+  const timeEstimateMs = (details?.timeEstimate ?? 0) * 1000
 
-  const estimatedMinutes = Math.round(timeEstimateMs / 1000 / 60)
+  // For Bitcoin destinations, show delayed screen when status reaches 'submitted'
+  // For other delayed transactions (canonical), use time-based check
+  const isBitcoinDestination = toChain?.id === bitcoin.id
+  const isDelayedTx =
+    (isBitcoinDestination &&
+      (currentCheckStatus === 'submitted' ||
+        currentCheckStatus === 'success')) ||
+    (isCanonical &&
+      timeEstimateMs >
+        (relayClient?.maxPollingAttemptsBeforeTimeout ?? 30) *
+          (relayClient?.pollingInterval ?? 5000))
+
+  // Bitcoin destinations typically take 10+ minutes for confirmation
+  const estimatedMinutes = isBitcoinDestination
+    ? 10
+    : Math.round(timeEstimateMs / 1000 / 60)
 
   const gasTopUpAmountCurrency =
     transaction?.data?.metadata?.currencyGasTopup?.currency
@@ -193,8 +206,9 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         </motion.div>
 
         <Text style="subtitle1" css={{ my: '4', textAlign: 'center' }}>
-          Processing bridge, this will take ~{estimatedMinutes}{' '}
-          {estimatedMinutes === 1 ? 'min' : 'mins'}.
+          {isBitcoinDestination
+            ? `Bitcoin confirmation takes ${estimatedMinutes} minutes. Track progress on the transaction page.`
+            : `Processing bridge, this will take ~${estimatedMinutes} ${estimatedMinutes === 1 ? 'min' : 'mins'}.`}
         </Text>
 
         <Flex align="center" css={{ gap: '2', mb: 24 }}>
