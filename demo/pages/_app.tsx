@@ -240,6 +240,7 @@ const getInitialProps = async ({
         const network = chainIdToAlchemyNetworkMap[chain.id as number]
         if (network && ALCHEMY_API_KEY) {
           chain.httpRpcUrl = `https://${network}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
+          chain.wsRpcUrl = `wss://${network}.g.alchemy.com/v2/${ALCHEMY_API_KEY}`
         }
         return configureViemChain(chain as any)
       })

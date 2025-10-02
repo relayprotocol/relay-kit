@@ -56,6 +56,6 @@
         "@relayprotocol/relay-sdk": "workspace:*",
         "@ethersproject/abstract-signer": "^5.7.0",
         "ethers": "^5.6.1",
-        "viem": ">=2.26.0"
+        "viem": ">=2.33.0"
     }
 }

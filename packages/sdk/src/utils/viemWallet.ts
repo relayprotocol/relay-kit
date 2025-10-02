@@ -1,14 +1,23 @@
 import type { AdaptedWallet } from '../types/index.js'
 import { LogLevel } from './logger.js'
 import { getClient } from '../client.js'
-import type { Account, Address, Hex, WalletClient } from 'viem'
+import type {
+  Account,
+  Address,
+  Hex,
+  HttpTransport,
+  WebSocketTransport,
+  CustomTransport,
+  WalletClient
+} from 'viem'
 import {
   createPublicClient,
   createWalletClient,
   custom,
   fallback,
   hexToBigInt,
-  http
+  http,
+  webSocket
 } from 'viem'
 
 export function isViemWalletClient(
@@ -119,20 +128,28 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
       const client = getClient()
       const chain = client.chains.find((chain) => chain.id === chainId)
       const rpcUrl = chain?.httpRpcUrl
+      const preconfirmationEnabled =
+        chain?.viemChain?.experimental_preconfirmationTime != undefined
+      const transports: (
+        | HttpTransport
+        | WebSocketTransport
+        | CustomTransport
+      )[] = rpcUrl
+        ? [http(rpcUrl), custom(wallet.transport), http()]
+        : [custom(wallet.transport), http()]
+
+      if (preconfirmationEnabled && chain?.wsRpcUrl) {
+        transports.unshift(webSocket(chain?.wsRpcUrl))
+      }
       const viemClient = createPublicClient({
         chain: chain?.viemChain,
-        transport: wallet.transport
-          ? fallback(
-              rpcUrl
-                ? [http(rpcUrl), custom(wallet.transport), http()]
-                : [custom(wallet.transport), http()]
-            )
-          : fallback([http(rpcUrl), http()]),
+        transport: fallback(transports),
         pollingInterval: client.confirmationPollingInterval
       })
 
       const receipt = await viemClient.waitForTransactionReceipt({
         hash: txHash as Address,
+        confirmations: 1,
         onReplaced: (replacement) => {
           if (replacement.reason === 'cancelled') {
             onCancelled()

@@ -56,6 +56,6 @@
     },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
-        "viem": ">=2.26.0"
+        "viem": ">=2.33.0"
     }
 }

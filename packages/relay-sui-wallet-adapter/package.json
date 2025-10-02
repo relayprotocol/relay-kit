@@ -59,6 +59,6 @@
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
         "@mysten/sui": "1.24.0",
-        "viem": ">=2.26.0"
+        "viem": ">=2.33.0"
     }
 }

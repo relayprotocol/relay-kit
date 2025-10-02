@@ -60,6 +60,6 @@
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
         "@solana/web3.js": "~1.98.2",
-        "viem": ">=2.26.0"
+        "viem": ">=2.33.0"
     }
 }
