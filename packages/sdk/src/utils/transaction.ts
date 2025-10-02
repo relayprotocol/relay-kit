@@ -203,7 +203,11 @@ export async function sendTransactionSafely(
         setInternalTxHashes(depositTxHashes)
       }
 
-      return false // Continue polling
+      // For Bitcoin destinations, stop polling at 'submitted' since Bitcoin confirmations take 10+ minutes
+      // For other chains, continue polling until 'success'
+      const isBitcoinDestination =
+        details?.currencyOut?.currency?.chainId === 8253038
+      return isBitcoinDestination
     }
     if (res.status === 200 && res.data && res.data.status === 'success') {
       if (txHash) {
@@ -458,7 +462,7 @@ export async function sendTransactionSafely(
     //Sequence internal functions
     // We want synchronous execution in the following cases:
     // - Approval Signature step required first
-    // - Bitcoin is the destination
+    // - Bitcoin is the destination (need to poll status API for backend updates)
     // - Canonical route used
     step.id === 'approve' ||
     details?.currencyOut?.currency?.chainId === 8253038 ||
@@ -466,12 +470,9 @@ export async function sendTransactionSafely(
   ) {
     await waitForTransaction().promise
     //In the following cases we want to skip polling for confirmation:
-    // - Bitcoin destination chain, we want to skip polling for confirmation as the block times are lengthy
-    // - Canonical route, also lengthy fill time
-    if (
-      details?.currencyOut?.currency?.chainId !== 8253038 &&
-      !request?.data?.useExternalLiquidity
-    ) {
+    // - Canonical route, lengthy fill time (skip polling)
+    // Note: Bitcoin destination now polls status API to get 'submitted' status
+    if (!request?.data?.useExternalLiquidity) {
       await pollForConfirmation()
     }
   } else {
