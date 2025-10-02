@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.0.1
+
+### Patch Changes
+
+- e43a756: Improved copy for tx steps
+
 ## 5.0.0
 
 ### Major Changes
