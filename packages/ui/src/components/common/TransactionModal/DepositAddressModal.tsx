@@ -241,6 +241,10 @@ const InnerDepositAddressModal: FC<InnerDepositAddressModalProps> = ({
             transaction={transaction}
             fromChain={fromChain}
             toChain={toChain}
+            fromToken={fromToken}
+            toToken={toToken}
+            fromAmountFormatted={fromAmountFormatted}
+            toAmountFormatted={toAmountFormatted}
           />
         ) : null}
       </Flex>

@@ -542,6 +542,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromBalance,
     isFromNative
   )
+
   const normalizedSponsoredTokens = useMemo(() => {
     const chainVms = relayClient?.chains.reduce(
       (chains, chain) => {

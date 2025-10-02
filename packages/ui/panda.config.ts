@@ -352,8 +352,8 @@ export default defineConfig({
         }
       },
       'pulse-shadow': {
-        '0%': { boxShadow: '0 0 0 0px currentColor' },
-        '100%': { boxShadow: '0 0 0 6px currentColor' }
+        '0%': { boxShadow: '0 0 0 0px {colors.primary4}' },
+        '100%': { boxShadow: '0 0 0 6px {colors.primary4}' }
       },
       spin: {
         '100%': {

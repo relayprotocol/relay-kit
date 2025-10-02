@@ -10,10 +10,7 @@ import {
 } from '../../../primitives/index.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import { truncateAddress } from '../../../../utils/truncate.js'
-import {
-  faArrowUpRightFromSquare,
-  faRotateRight
-} from '@fortawesome/free-solid-svg-icons'
+import { faRotateRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import type { useRequests } from '@relayprotocol/relay-kit-hooks'
@@ -26,6 +23,7 @@ type TransactionsByChainProps = {
     ReturnType<typeof useRequests>['data']['0']['data']
   >['refundCurrencyData']
   isSolverStatusTimeout?: boolean
+  fillTx?: { txHash: string; chainId: number } | null
 }
 
 export const TransactionsByChain: FC<TransactionsByChainProps> = ({
@@ -33,7 +31,8 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
   fromChain,
   toChain,
   refundData,
-  isSolverStatusTimeout
+  isSolverStatusTimeout,
+  fillTx
 }) => {
   const relayClient = useRelayClient()
   const refundChain = refundData
@@ -54,39 +53,61 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
     )
   }, [allTxHashes, relayClient?.chains])
 
-  const refundTx =
-    allTxHashes.length > 0 ? allTxHashes[allTxHashes.length - 1] : null
   const isSameChain = fromChain?.id === toChain?.id
 
-  const refundTxUrl =
-    refundChain && refundData && refundTx
-      ? getTxBlockExplorerUrl(
-          refundChain?.id,
-          relayClient?.chains,
-          refundTx.txHash
-        )
+  const transactions = []
+
+  // 1. Send transaction (always first)
+  const sendTxs = fromChain?.id
+    ? txHashesByChain[fromChain.id]?.filter((tx) => !tx.isBatchTx).slice(0, 1)
+    : []
+  if (sendTxs && sendTxs.length > 0 && fromChain) {
+    transactions.push({
+      label: 'Send tx',
+      txHashes: sendTxs,
+      isRefund: false
+    })
+  }
+
+  // 2. Receive transaction (refund or regular)
+  if (refundData && refundChain) {
+    const refundTxs =
+      txHashesByChain[refundChain.id]?.filter((tx) => !tx.isBatchTx) || []
+    const refundTxHash = fillTx?.txHash || refundTxs[0]?.txHash
+    const refundTxUrl = refundTxHash
+      ? getTxBlockExplorerUrl(refundChain.id, relayClient?.chains, refundTxHash)
       : null
 
-  return (isSameChain ? [fromChain] : [fromChain, toChain])
-    .filter((chain) => {
-      if (!chain?.id) return false
-      const chainTxs = txHashesByChain[chain.id] || []
-      // Only show chain if it has non-batch transactions
-      return chainTxs.some((tx) => !tx.isBatchTx)
-    })
-    .map((chain, idx) => {
-      const isRefundChain = refundData && refundChain?.id === chain?.id
-      return (
-        <Flex justify="between" key={idx}>
+    if (refundTxHash && refundTxUrl) {
+      transactions.push({
+        label: 'Receive tx',
+        txHashes: [],
+        isRefund: true,
+        refundTxHash,
+        refundTxUrl
+      })
+    }
+  } else if (toChain?.id && txHashesByChain[toChain.id] && !isSameChain) {
+    const receiveTxs = txHashesByChain[toChain.id].filter((tx) => !tx.isBatchTx)
+    if (receiveTxs.length > 0) {
+      transactions.push({
+        label: 'Receive tx',
+        txHashes: receiveTxs,
+        isRefund: false
+      })
+    }
+  }
+
+  // Return single container with all transactions
+  return (
+    <Flex direction="column" css={{ gap: '3' }}>
+      {transactions.map((transaction, idx) => (
+        <Flex justify="between" css={{ alignItems: 'center' }} key={idx}>
           <Flex css={{ alignItems: 'center', gap: '2' }}>
-            <Text
-              style="subtitle2"
-              color="subtle"
-              css={{ alignSelf: 'flex-start' }}
-            >
-              View {chain?.displayName} Tx
+            <Text style="subtitle2" color="subtle">
+              {transaction.label}
             </Text>
-            {isRefundChain ? (
+            {transaction.isRefund ? (
               <Pill
                 color="gray"
                 css={{
@@ -101,81 +122,70 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
                   style={{ width: 16, height: 16, marginRight: 4 }}
                   color="#889096"
                 />{' '}
-                <Text style="subtitle2">Refunded</Text>
+                <Text style="subtitle3">Refunded</Text>
               </Pill>
             ) : null}
           </Flex>
-          {chain?.id && txHashesByChain[chain.id] && !isRefundChain ? (
-            <Flex direction="column">
-              {txHashesByChain[chain.id].map(
-                ({ txHash, chainId, isBatchTx }) => {
-                  const txUrl = getTxBlockExplorerUrl(
-                    chainId,
-                    relayClient?.chains,
-                    txHash
-                  )
 
-                  return txUrl && !isBatchTx ? (
-                    <Anchor
-                      key={txHash}
-                      href={txUrl}
-                      target="_blank"
-                      css={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2'
-                      }}
-                      data-testid="transaction-link"
-                    >
-                      {truncateAddress(txHash)}
-                      <FontAwesomeIcon
-                        icon={faArrowUpRightFromSquare}
-                        width={16}
-                      />
-                    </Anchor>
-                  ) : null
-                }
-              )}
+          {/* Show regular transaction hashes */}
+          {!transaction.isRefund && transaction.txHashes.length > 0 ? (
+            <Flex direction="column">
+              {transaction.txHashes.map(({ txHash, chainId, isBatchTx }) => {
+                const txUrl = getTxBlockExplorerUrl(
+                  chainId,
+                  relayClient?.chains,
+                  txHash
+                )
+                return txUrl && !isBatchTx ? (
+                  <Anchor
+                    key={txHash}
+                    href={txUrl}
+                    target="_blank"
+                    data-testid="transaction-link"
+                  >
+                    {truncateAddress(txHash)}
+                  </Anchor>
+                ) : null
+              })}
             </Flex>
           ) : null}
-          {refundData && refundTxUrl && isRefundChain ? (
+
+          {/* Show refund transaction hash */}
+          {transaction.isRefund &&
+          transaction.refundTxHash &&
+          transaction.refundTxUrl ? (
             <Flex direction="column">
               <Anchor
-                key={refundTx?.txHash}
-                href={refundTxUrl}
+                href={transaction.refundTxUrl}
                 target="_blank"
-                css={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '2'
-                }}
                 data-testid="refund-transaction-link"
               >
-                {truncateAddress(refundTx?.txHash)}
-                <FontAwesomeIcon icon={faArrowUpRightFromSquare} width={16} />
+                {truncateAddress(transaction.refundTxHash)}
               </Anchor>
             </Flex>
           ) : null}
-          {chain?.id &&
-          !txHashesByChain[chain.id] &&
-          !isSolverStatusTimeout &&
-          !isRefundChain ? (
+
+          {/* Show pending state */}
+          {!transaction.isRefund &&
+          transaction.txHashes.length === 0 &&
+          !isSolverStatusTimeout ? (
             <Flex direction="column">
               <Text color="red" style="subtitle2">
                 Order has not been filled
               </Text>
             </Flex>
           ) : null}
-          {chain?.id &&
-          !txHashesByChain[chain.id] &&
-          isSolverStatusTimeout &&
-          !refundData &&
-          !isRefundChain ? (
+
+          {/* Show loading state */}
+          {!transaction.isRefund &&
+          transaction.txHashes.length === 0 &&
+          isSolverStatusTimeout ? (
             <Flex direction="column">
               <Skeleton css={{ height: 20 }} />
             </Flex>
           ) : null}
         </Flex>
-      )
-    })
+      ))}
+    </Flex>
+  )
 }
