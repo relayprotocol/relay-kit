@@ -12,6 +12,7 @@ interface CacheEntry {
 interface RelayUiKitData {
   acceptedUnverifiedTokens: string[]
   recentCustomAddresses?: string[]
+  starredChainIds?: number[]
   genericCache?: { [key: string]: CacheEntry }
 }
 
@@ -20,23 +21,28 @@ export function getRelayUiKitData(): RelayUiKitData {
     return {
       acceptedUnverifiedTokens: [],
       recentCustomAddresses: [],
+      starredChainIds: [],
       genericCache: {}
     }
 
   let data: RelayUiKitData = {
     acceptedUnverifiedTokens: [],
     recentCustomAddresses: [],
+    starredChainIds: [],
     genericCache: {}
   }
   try {
     const localStorageData = localStorage.getItem(RELAY_UI_KIT_KEY)
     data = localStorageData ? JSON.parse(localStorageData) : data
-    // Ensure genericCache and recentCustomAddresses exist if loaded data doesn't have them
+    // Ensure all fields exist if loaded data doesn't have them
     if (!data.genericCache) {
       data.genericCache = {}
     }
     if (!data.recentCustomAddresses) {
       data.recentCustomAddresses = []
+    }
+    if (!data.starredChainIds) {
+      data.starredChainIds = []
     }
   } catch (e) {
     console.warn('Failed to get RelayKitUIData', e)
@@ -164,4 +170,60 @@ export function removeCustomAddress(address: string): void {
     (addr) => addr !== address
   )
   setRelayUiKitData({ recentCustomAddresses: updatedAddresses })
+}
+
+/**
+ * Get starred chain IDs from localStorage
+ * @returns Array of starred chain IDs
+ */
+export function getStarredChainIds(): number[] {
+  const data = getRelayUiKitData()
+  return data.starredChainIds || []
+}
+
+/**
+ * Add a chain ID to the starred chains list
+ * @param chainId - The chain ID to star
+ */
+export function addStarredChain(chainId: number): void {
+  const data = getRelayUiKitData()
+  const starredChainIds = data.starredChainIds || []
+
+  if (!starredChainIds.includes(chainId)) {
+    const updatedStarredChainIds = [...starredChainIds, chainId]
+    setRelayUiKitData({ starredChainIds: updatedStarredChainIds })
+  }
+}
+
+/**
+ * Remove a chain ID from the starred chains list
+ * @param chainId - The chain ID to unstar
+ */
+export function removeStarredChain(chainId: number): void {
+  const data = getRelayUiKitData()
+  const starredChainIds = data.starredChainIds || []
+  const updatedStarredChainIds = starredChainIds.filter((id) => id !== chainId)
+  setRelayUiKitData({ starredChainIds: updatedStarredChainIds })
+}
+
+/**
+ * Check if a chain ID is starred
+ * @param chainId - The chain ID to check
+ * @returns True if the chain is starred
+ */
+export function isChainStarred(chainId: number): boolean {
+  const starredChainIds = getStarredChainIds()
+  return starredChainIds.includes(chainId)
+}
+
+/**
+ * Toggle starred status of a chain
+ * @param chainId - The chain ID to toggle
+ */
+export function toggleStarredChain(chainId: number): void {
+  if (isChainStarred(chainId)) {
+    removeStarredChain(chainId)
+  } else {
+    addStarredChain(chainId)
+  }
 }

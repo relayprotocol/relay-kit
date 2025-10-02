@@ -1,5 +1,6 @@
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import type { Token } from '../types/index.js'
+import { getStarredChainIds, setRelayUiKitData } from './localStorage.js'
 
 export const isChainLocked = (
   chainId: number | undefined,
@@ -26,15 +27,37 @@ type ChainOption = RelayChain | { id: undefined; name: string }
 
 type GroupedChains = {
   allChainsOption?: { id: undefined; name: string }
-  popularChains: RelayChain[]
+  starredChains: RelayChain[]
   alphabeticalChains: RelayChain[]
 }
 
 export const groupChains = (
   chains: ChainOption[],
-  popularChainIds?: number[]
+  popularChainIds?: number[],
+  currentStarredChainIds?: number[]
 ): GroupedChains => {
-  const priorityIds = new Set(popularChainIds || Array.from(POPULAR_CHAIN_IDS))
+  // Get starred chains from localStorage or use provided ones, fallback to popular chains if none starred
+  let starredChainIds = currentStarredChainIds ?? getStarredChainIds()
+
+  // If no starred chains exist, populate with popular chains
+  if (starredChainIds.length === 0) {
+    const defaultStarredIds = popularChainIds || Array.from(POPULAR_CHAIN_IDS)
+    // Filter to only include chains that actually exist in the chains array
+    const availableChainIds = chains
+      .filter((chain) => chain.id !== undefined)
+      .map((chain) => (chain as RelayChain).id)
+    const validStarredIds = defaultStarredIds.filter((id) =>
+      availableChainIds.includes(id)
+    )
+
+    if (validStarredIds.length > 0) {
+      setRelayUiKitData({ starredChainIds: validStarredIds })
+      starredChainIds = validStarredIds
+    }
+  }
+
+  const priorityIds = new Set(starredChainIds)
+
   const allChainsOption = chains.find((chain) => chain.id === undefined) as
     | { id: undefined; name: string }
     | undefined
@@ -42,7 +65,7 @@ export const groupChains = (
     (chain) => chain.id !== undefined
   ) as RelayChain[]
 
-  const popularChains = otherChains
+  const starredChains = otherChains
     .filter(
       (chain) =>
         (chain.id && priorityIds.has(chain.id)) ||
@@ -59,7 +82,7 @@ export const groupChains = (
 
   return {
     allChainsOption,
-    popularChains,
+    starredChains,
     alphabeticalChains: otherChains.sort((a, b) =>
       a.displayName.localeCompare(b.displayName)
     )
