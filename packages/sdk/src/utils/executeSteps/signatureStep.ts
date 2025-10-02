@@ -90,19 +90,13 @@ export async function handleSignatureStepItem({
     }
 
     try {
-      const getData = async function () {
-        let response = await axios.request({
-          url: postOrderUrl.href,
-          data: postData.body ? JSON.stringify(postData.body) : undefined,
-          method: postData.method,
-          params: request.params,
-          headers
-        })
-
-        return response
-      }
-
-      const res = await getData()
+      const res = await axios.request({
+        url: postOrderUrl.href,
+        data: postData.body ? JSON.stringify(postData.body) : undefined,
+        method: postData.method,
+        params: request.params,
+        headers
+      })
 
       // Append new steps if returned in response
       if (res.data && res.data.steps && Array.isArray(res.data.steps)) {
@@ -150,15 +144,9 @@ export async function handleSignatureStepItem({
   // If check, poll check until validated
   if (stepItem?.check) {
     stepItem.progressState = 'validating'
-    setState({
-      steps: [...json.steps],
-      fees: { ...json?.fees },
-      breakdown: json?.breakdown,
-      details: json?.details
-    })
     stepItem.isValidatingSignature = true
     setState({
-      steps: [...json?.steps],
+      steps: [...json.steps],
       fees: { ...json?.fees },
       breakdown: json?.breakdown,
       details: json?.details
@@ -193,60 +181,154 @@ export async function handleSignatureStepItem({
 
     // Start polling for signature validation
     const pollWithCancellation = async () => {
+      // Helper to update state
+      const updateState = () => {
+        setState({
+          steps: [...json?.steps],
+          fees: { ...json?.fees },
+          breakdown: json?.breakdown,
+          details: json?.details
+        })
+      }
+
+      // Helper to extract and set origin txHashes
+      const extractOriginTxHashes = (
+        inTxHashesData: string[],
+        originChainId?: number
+      ) => {
+        const chainInTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = inTxHashesData.map((hash: string) => ({
+          txHash: hash,
+          chainId: originChainId ?? chain?.id
+        }))
+        stepItem.internalTxHashes = chainInTxHashes
+      }
+
+      // Helper to extract and set destination txHashes
+      const extractDestinationTxHashes = (
+        txHashesData: string[],
+        destinationChainId?: number
+      ) => {
+        const chainTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = txHashesData.map((hash: string) => ({
+          txHash: hash,
+          chainId: destinationChainId ?? chain?.id
+        }))
+        stepItem.txHashes = chainTxHashes
+      }
+
       let attemptCount = 0
       while (attemptCount < maximumAttempts) {
         try {
+          let endpoint = stepItem?.check?.endpoint || ''
+
+          // Override v2 status endpoint to v3 to get 'submitted' status
+          if (
+            endpoint.includes('/intents/status') &&
+            !endpoint.includes('/v3')
+          ) {
+            endpoint = endpoint.replace('/intents/status', '/intents/status/v3')
+          }
+
           const res = await axios.request({
-            url: `${request.baseURL}${stepItem?.check?.endpoint}`,
+            url: `${request.baseURL}${endpoint}`,
             method: stepItem?.check?.method,
-            headers
+            headers,
+            validateStatus: (status) => status < 500 // Don't throw on 4xx responses
           })
 
-          client.log(
-            [`Execute Steps: Polling execute status to check if indexed`, res],
-            LogLevel.Verbose
-          )
-
           // Check status
-          if (res?.data?.status === 'success' && res?.data?.txHashes) {
-            const chainTxHashes: NonNullable<
-              Execute['steps'][0]['items']
-            >[0]['txHashes'] = res.data?.txHashes?.map((hash: string) => {
-              return {
-                txHash: hash,
-                chainId: res.data.destinationChainId ?? chain?.id
-              }
-            })
+          if (res?.data?.status === 'pending') {
+            // Extract origin txHashes if provided
+            if (res?.data?.inTxHashes && res.data.inTxHashes.length > 0) {
+              extractOriginTxHashes(res.data.inTxHashes, res.data.originChainId)
+            }
 
+            stepItem.checkStatus = 'pending'
+            stepItem.progressState = undefined
+            stepItem.isValidatingSignature = false
+            updateState()
+            client.log(
+              ['Origin tx confirmed, backend processing'],
+              LogLevel.Verbose
+            )
+          } else if (res?.data?.status === 'submitted') {
+            // Extract destination txHashes if provided
+            if (res?.data?.txHashes && res.data.txHashes.length > 0) {
+              extractDestinationTxHashes(
+                res.data.txHashes,
+                res.data.destinationChainId
+              )
+            }
+
+            // Extract origin txHashes if provided
+            if (res?.data?.inTxHashes && res.data.inTxHashes.length > 0) {
+              extractOriginTxHashes(res.data.inTxHashes, res.data.originChainId)
+            }
+
+            stepItem.checkStatus = 'submitted'
+            stepItem.progressState = undefined
+            stepItem.isValidatingSignature = false
+            updateState()
+            client.log(
+              ['Destination tx submitted, continuing validation'],
+              LogLevel.Verbose
+            )
+          } else if (res?.data?.status === 'success' && res?.data?.txHashes) {
+            // Extract destination txHashes
+            extractDestinationTxHashes(
+              res.data.txHashes,
+              res.data.destinationChainId
+            )
+
+            // Extract origin txHashes if provided (keeping original chainId order)
             if (res?.data?.inTxHashes) {
               const chainInTxHashes: NonNullable<
                 Execute['steps'][0]['items']
-              >[0]['txHashes'] = res.data.inTxHashes.map((hash: string) => {
-                return {
-                  txHash: hash,
-                  chainId: chain?.id ?? res.data.originChainId
-                }
-              })
+              >[0]['txHashes'] = res.data.inTxHashes.map((hash: string) => ({
+                txHash: hash,
+                chainId: chain?.id ?? res.data.originChainId
+              }))
               stepItem.internalTxHashes = chainInTxHashes
             }
-            stepItem.txHashes = chainTxHashes
+
+            stepItem.checkStatus = 'success'
+            stepItem.status = 'complete'
+            stepItem.progressState = 'complete'
+            updateState()
+            client.log(['Transaction completed successfully'], LogLevel.Verbose)
             return // Success - exit polling
           } else if (res?.data?.status === 'failure') {
             throw Error(res?.data?.details || 'Transaction failed')
-          } else if (res?.data?.status === 'delayed') {
-            stepItem.progressState = 'validating_delayed'
-            setState({
-              steps: [...json?.steps],
-              fees: { ...json?.fees },
-              breakdown: json?.breakdown,
-              details: json?.details
-            })
+          } else if (res.status >= 400) {
+            // Handle HTTP error responses that don't have our expected data structure
+            throw Error(
+              res?.data?.details || res?.data?.message || 'Failed to check'
+            )
           }
 
           attemptCount++
           await new Promise((resolve) => setTimeout(resolve, pollingInterval))
-        } catch (error) {
-          throw error
+        } catch (error: any) {
+          // If it's a deliberate failure response, re-throw immediately
+          if (
+            error.message &&
+            (error.message.includes('Transaction failed') ||
+              error.message.includes('Failed to check') ||
+              error.message === 'Failed to check')
+          ) {
+            throw error
+          }
+
+          // For network errors or other recoverable issues, continue polling
+          client.log(
+            ['Check request failed, retrying...', error],
+            LogLevel.Verbose
+          )
+          attemptCount++
+          await new Promise((resolve) => setTimeout(resolve, pollingInterval))
         }
       }
 

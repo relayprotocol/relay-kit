@@ -237,7 +237,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
     {
       enabled: requestId !== null && open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending', 'delayed']
+        const observableStates = ['waiting', 'pending']
 
         if (
           !query.state.data?.status ||
@@ -304,11 +304,12 @@ export const DepositAddressModalRenderer: FC<Props> = ({
   const allTxHashes = useMemo(() => {
     const isRefund = executionStatus?.status === 'refund'
     const _allTxHashes: TxHashes = []
+
     executionStatus?.txHashes?.forEach((txHash) => {
       _allTxHashes.push({
         txHash,
         chainId: isRefund
-          ? (fromToken?.chainId as number)
+          ? (toToken?.chainId as number) // Fixed: refund txs are on destination chain
           : (toToken?.chainId as number)
       })
     })
@@ -319,6 +320,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
         chainId: fromToken?.chainId as number
       })
     })
+
     return _allTxHashes
   }, [executionStatus?.txHashes, executionStatus?.inTxHashes])
 

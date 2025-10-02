@@ -216,8 +216,7 @@ export async function executeSteps(
       isLastStep &&
       isStepIncomplete &&
       !statusControl.websocketActive &&
-      chainId !== 8253038 &&
-      json?.details?.currencyOut?.currency?.chainId !== 8253038
+      chainId !== 8253038
     ) {
       statusControl.websocketActive = true
 

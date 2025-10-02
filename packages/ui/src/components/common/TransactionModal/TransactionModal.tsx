@@ -206,7 +206,9 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
   isLoadingTransaction,
   setQuote,
   requestId,
-  isGasSponsored
+  isGasSponsored,
+  linkedWallets,
+  currentCheckStatus
 }) => {
   useEffect(() => {
     if (!open) {
@@ -273,7 +275,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
         <Text style="h6" css={{ mb: 8 }}>
           Transaction Details
         </Text>
-        {progressStep === TransactionProgressStep.Confirmation ? (
+        {progressStep === TransactionProgressStep.Confirmation ||
+        progressStep === TransactionProgressStep.Submitted ? (
           <SwapConfirmationStep
             fromToken={fromToken}
             toToken={toToken}
@@ -283,6 +286,8 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             toAmountFormatted={toAmountFormatted}
             quote={quote}
             steps={steps}
+            currentAddress={address}
+            linkedWallets={linkedWallets}
           />
         ) : null}
         {progressStep === TransactionProgressStep.Success ? (
@@ -302,6 +307,7 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             isLoadingTransaction={isLoadingTransaction}
             requestId={requestId}
             isGasSponsored={isGasSponsored}
+            currentCheckStatus={currentCheckStatus}
           />
         ) : null}
         {progressStep === TransactionProgressStep.Error ? (
@@ -313,6 +319,10 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             transaction={transaction}
             fromChain={fromChain}
             toChain={toChain}
+            fromToken={fromToken}
+            toToken={toToken}
+            fromAmountFormatted={fromAmountFormatted}
+            toAmountFormatted={toAmountFormatted}
           />
         ) : null}
       </Flex>
