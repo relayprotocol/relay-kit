@@ -118,6 +118,9 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   const isBitcoinOrigin = fromChain?.id === bitcoin.id
   const isBitcoinDestination = toChain?.id === bitcoin.id
 
+  const isRefund =
+    transaction?.status === 'refund' || transaction?.data?.refundCurrencyData
+
   // Show delayed screen when:
   // 1. Bitcoin as origin: Immediately (no status check needed, tx takes 10+ mins)
   // 2. Bitcoin as destination: When status reaches 'submitted'
@@ -150,7 +153,17 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
     : undefined
 
   // Helper function to get transaction hash for a specific chain
-  const getTxHashForChain = (chainId: number) => {
+  const getTxHashForChain = (chainId: number, skipRefundCheck = false) => {
+    if (isRefund && !skipRefundCheck) {
+      const refundTxHash = transaction?.data?.outTxs?.[0]?.hash
+      const refundChainId = transaction?.data?.outTxs?.[0]?.chainId
+      if (refundChainId === chainId && refundTxHash) {
+        return refundTxHash
+      }
+      if (transaction?.data?.refundCurrencyData && !refundTxHash) {
+        return undefined
+      }
+    }
     return allTxHashes.find((tx) => tx.chainId === chainId)?.txHash
   }
 
@@ -269,9 +282,41 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           transaction will continue in the background.
         </Text>
 
-        {allTxHashes &&
-          allTxHashes.length > 0 &&
-          (() => {
+        {(() => {
+          // For refunds, show the refund tx from outTxs, not the original send tx
+          if (isRefund) {
+            const refundTxHash = transaction?.data?.outTxs?.[0]?.hash
+            const refundChainId = transaction?.data?.outTxs?.[0]?.chainId
+
+            // Only show if refund tx is available (don't fall back to send tx)
+            if (refundTxHash && refundChainId) {
+              const txUrl = getTxUrl(refundChainId, refundTxHash)
+              const truncatedHash = truncateAddress(refundTxHash, '...', 6, 4)
+
+              return txUrl && truncatedHash ? (
+                <Anchor
+                  href={txUrl}
+                  target="_blank"
+                  css={{ mt: '12px', textAlign: 'center', fontSize: '14px' }}
+                >
+                  View Refund Tx: {truncatedHash}
+                </Anchor>
+              ) : null
+            }
+            // If refund but no outTxs yet, show loading or nothing
+            return isLoadingTransaction ? (
+              <Text
+                style="body3"
+                color="subtle"
+                css={{ mt: '12px', textAlign: 'center' }}
+              >
+                Fetching refund transaction...
+              </Text>
+            ) : null
+          }
+
+          // Normal flow: show the first tx hash
+          if (allTxHashes && allTxHashes.length > 0) {
             const txHash = allTxHashes[0]?.txHash
             const chainId = allTxHashes[0]?.chainId
             const txUrl =
@@ -287,7 +332,10 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 View Tx: {truncatedHash}
               </Anchor>
             ) : null
-          })()}
+          }
+
+          return null
+        })()}
       </Flex>
 
       {!delayedTxUrl ? (
@@ -435,7 +483,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 {!isSameChainSwap &&
                   _fromToken?.chainId &&
                   (() => {
-                    const txHash = getTxHashForChain(_fromToken.chainId)
+                    // For "Sent" section, always use the original send tx (skip refund check)
+                    const txHash = getTxHashForChain(_fromToken.chainId, true)
                     const txUrl = txHash
                       ? getTxUrl(_fromToken.chainId, txHash)
                       : undefined
