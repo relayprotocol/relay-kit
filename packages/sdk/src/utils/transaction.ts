@@ -165,6 +165,9 @@ export async function sendTransactionSafely(
     if (res.status === 200 && res.data && res.data.status === 'fallback') {
       throw Error('Transaction failed: Refunded')
     }
+    if (res.status === 200 && res.data && res.data.status === 'refund') {
+      throw Error('Transaction failed: Refunded')
+    }
     if (res.status === 200 && res.data && res.data.status === 'pending') {
       // Extract origin txHashes if provided
       if (res.data.inTxHashes && res.data.inTxHashes.length > 0) {

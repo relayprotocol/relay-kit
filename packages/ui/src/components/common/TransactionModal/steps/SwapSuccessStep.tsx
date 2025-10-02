@@ -115,10 +115,15 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
     : null
   const timeEstimateMs = (details?.timeEstimate ?? 0) * 1000
 
-  // For Bitcoin destinations, show delayed screen when status reaches 'submitted'
-  // For other delayed transactions (canonical), use time-based check
+  const isBitcoinOrigin = fromChain?.id === bitcoin.id
   const isBitcoinDestination = toChain?.id === bitcoin.id
+
+  // Show delayed screen when:
+  // 1. Bitcoin as origin: Immediately (no status check needed, tx takes 10+ mins)
+  // 2. Bitcoin as destination: When status reaches 'submitted'
+  // 3. Canonical routes: When time estimate exceeds polling timeout
   const isDelayedTx =
+    isBitcoinOrigin ||
     (isBitcoinDestination &&
       (currentCheckStatus === 'submitted' ||
         currentCheckStatus === 'success')) ||
@@ -127,10 +132,11 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         (relayClient?.maxPollingAttemptsBeforeTimeout ?? 30) *
           (relayClient?.pollingInterval ?? 5000))
 
-  // Bitcoin destinations typically take 10+ minutes for confirmation
-  const estimatedMinutes = isBitcoinDestination
-    ? 10
-    : Math.round(timeEstimateMs / 1000 / 60)
+  // Bitcoin transactions typically take 10+ minutes for confirmation
+  const estimatedMinutes =
+    isBitcoinOrigin || isBitcoinDestination
+      ? 10
+      : Math.round(timeEstimateMs / 1000 / 60)
 
   const gasTopUpAmountCurrency =
     transaction?.data?.metadata?.currencyGasTopup?.currency
@@ -206,7 +212,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         </motion.div>
 
         <Text style="subtitle1" css={{ my: '4', textAlign: 'center' }}>
-          {isBitcoinDestination
+          {isBitcoinOrigin || isBitcoinDestination
             ? `Bitcoin confirmation takes ${estimatedMinutes} minutes. Track progress on the transaction page.`
             : `Processing bridge, this will take ~${estimatedMinutes} ${estimatedMinutes === 1 ? 'min' : 'mins'}.`}
         </Text>
