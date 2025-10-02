@@ -103,7 +103,7 @@ const getDisplayActionText = (
   }
 
   if (stepId.includes('relay')) {
-    return 'Relay routes your payment'
+    return 'Relay processes your transaction'
   }
 
   if (stepId.includes('receive')) {
