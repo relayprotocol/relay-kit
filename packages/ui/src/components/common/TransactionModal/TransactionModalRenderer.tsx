@@ -243,7 +243,18 @@ export const TransactionModalRenderer: FC<Props> = ({
           if (query.state.dataUpdateCount > 10) {
             return 0
           }
-          if (!query.state.data?.pages[0].requests?.[0]) {
+          const transaction = query.state.data?.pages[0].requests?.[0]
+          if (!transaction) {
+            return 2500
+          }
+          // If this is a refund but outTxs is not populated yet, keep polling
+          const isRefund =
+            transaction.status === 'refund' ||
+            transaction.data?.refundCurrencyData
+          if (
+            isRefund &&
+            (!transaction.data?.outTxs || transaction.data.outTxs.length === 0)
+          ) {
             return 2500
           }
           return 0
