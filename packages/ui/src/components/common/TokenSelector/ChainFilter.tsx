@@ -11,6 +11,7 @@ import ChainIcon from '../../primitives/ChainIcon.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronDown,
+  faInfoCircle,
   faMagnifyingGlass,
   faStar
 } from '@fortawesome/free-solid-svg-icons'
@@ -23,6 +24,7 @@ import {
   isChainStarred,
   toggleStarredChain
 } from '../../../utils/localStorage.js'
+import Tooltip from '../../../components/primitives/Tooltip.js'
 
 export type ChainFilterValue =
   | RelayChain
@@ -294,13 +296,28 @@ const ChainFilter: FC<Props> = ({
 
                 {starredChains.length > 0 && (
                   <>
-                    <Text
-                      style="subtitle2"
-                      color="subtle"
-                      css={{ px: '2', py: '1' }}
-                    >
-                      Starred Chains
-                    </Text>
+                    <Flex align="center">
+                      <Text
+                        style="subtitle2"
+                        color="subtle"
+                        css={{ px: '2', py: '1' }}
+                      >
+                        Starred Chains
+                      </Text>
+                      <Tooltip
+                        content={
+                          <Text style="body3">Long-press to star a chain</Text>
+                        }
+                      >
+                        <Box css={{ color: 'gray9' }}>
+                          <FontAwesomeIcon
+                            icon={faInfoCircle}
+                            width={12}
+                            height={12}
+                          />
+                        </Box>
+                      </Tooltip>
+                    </Flex>
                     {starredChains.map((chain) => {
                       const tag = 'tags' in chain ? chain.tags?.[0] : undefined
                       return (
@@ -500,7 +517,11 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           flexShrink: 0,
           alignContent: 'center',
           width: '100%',
-          position: 'relative'
+          position: 'relative',
+          userSelect: 'none'
+        }}
+        style={{
+          WebkitUserSelect: 'none'
         }}
       >
         <ChainIcon chainId={chain.id} square width={24} height={24} />

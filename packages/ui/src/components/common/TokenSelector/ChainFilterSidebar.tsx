@@ -17,7 +17,11 @@ import {
   AccessibleListItem
 } from '../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMagnifyingGlass, faStar } from '@fortawesome/free-solid-svg-icons'
+import {
+  faInfoCircle,
+  faMagnifyingGlass,
+  faStar
+} from '@fortawesome/free-solid-svg-icons'
 import Fuse from 'fuse.js'
 import type { ChainFilterValue } from './ChainFilter.js'
 import { EventNames } from '../../../constants/events.js'
@@ -29,6 +33,7 @@ import {
   isChainStarred,
   toggleStarredChain
 } from '../../../utils/localStorage.js'
+import Tooltip from '../../../components/primitives/Tooltip.js'
 
 type ChainFilterSidebarProps = {
   options: (RelayChain | { id: undefined; name: string })[]
@@ -230,13 +235,28 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Text
-                    style="subtitle2"
-                    color="subtle"
-                    css={{ px: '2', py: '1' }}
-                  >
-                    Starred Chains
-                  </Text>
+                  <Flex align="center">
+                    <Text
+                      style="subtitle2"
+                      color="subtle"
+                      css={{ px: '2', py: '1' }}
+                    >
+                      Starred Chains
+                    </Text>
+                    <Tooltip
+                      content={
+                        <Text style="body3">Right-click to star a chain</Text>
+                      }
+                    >
+                      <Box css={{ color: 'gray9' }}>
+                        <FontAwesomeIcon
+                          icon={faInfoCircle}
+                          width={12}
+                          height={12}
+                        />
+                      </Box>
+                    </Tooltip>
+                  </Flex>
                   {starredChains.map((chain) => {
                     const tag = 'tags' in chain ? chain.tags?.[0] : undefined
                     const active = value.id === chain.id
