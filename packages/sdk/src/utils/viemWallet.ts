@@ -1,23 +1,14 @@
 import type { AdaptedWallet } from '../types/index.js'
 import { LogLevel } from './logger.js'
 import { getClient } from '../client.js'
-import type {
-  Account,
-  Address,
-  Hex,
-  HttpTransport,
-  WebSocketTransport,
-  CustomTransport,
-  WalletClient
-} from 'viem'
+import type { Account, Address, Hex, WalletClient } from 'viem'
 import {
   createPublicClient,
   createWalletClient,
   custom,
   fallback,
   hexToBigInt,
-  http,
-  webSocket
+  http
 } from 'viem'
 
 export function isViemWalletClient(
@@ -128,28 +119,21 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
       const client = getClient()
       const chain = client.chains.find((chain) => chain.id === chainId)
       const rpcUrl = chain?.httpRpcUrl
-      const preconfirmationEnabled =
-        chain?.viemChain?.experimental_preconfirmationTime != undefined
-      const transports: (
-        | HttpTransport
-        | WebSocketTransport
-        | CustomTransport
-      )[] = rpcUrl
-        ? [http(rpcUrl), custom(wallet.transport), http()]
-        : [custom(wallet.transport), http()]
-
-      if (preconfirmationEnabled && chain?.wsRpcUrl) {
-        transports.unshift(webSocket(chain?.wsRpcUrl))
-      }
       const viemClient = createPublicClient({
         chain: chain?.viemChain,
-        transport: fallback(transports),
+        transport: wallet.transport
+          ? fallback(
+              rpcUrl
+                ? [http(rpcUrl), custom(wallet.transport), http()]
+                : [custom(wallet.transport), http()]
+            )
+          : fallback([http(rpcUrl), http()]),
         pollingInterval: client.confirmationPollingInterval
       })
 
+      const start = performance.now()
       const receipt = await viemClient.waitForTransactionReceipt({
         hash: txHash as Address,
-        confirmations: 1,
         onReplaced: (replacement) => {
           if (replacement.reason === 'cancelled') {
             onCancelled()
@@ -158,6 +142,8 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
           onReplaced(replacement.transaction.hash)
         }
       })
+      const end = performance.now()
+      console.log(`waitForTransactionReceipt took ${end - start}ms`)
 
       return receipt
     },
