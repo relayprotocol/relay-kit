@@ -57,7 +57,6 @@ const ChainFilter: FC<Props> = ({
 }) => {
   const [open, setOpen] = useState(false)
   const [chainSearchInput, setChainSearchInput] = useState('')
-  // const dropdownRef = useRef<HTMLDivElement>(null)
   const chainFuse = new Fuse(options, fuseSearchOptions)
 
   const { allChainsOption, starredChains, alphabeticalChains } = useMemo(
