@@ -561,7 +561,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
               padding: '8px',
               borderRadius: 12,
               cursor: 'pointer',
-              backgroundColor: 'modal-background',
+              backgroundColor: 'gray1',
               _hover: {
                 backgroundColor: 'gray2'
               }
