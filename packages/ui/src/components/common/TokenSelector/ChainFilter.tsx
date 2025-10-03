@@ -37,7 +37,7 @@ type Props = {
   onSelect: (value: ChainFilterValue) => void
   popularChainIds?: number[]
   onChainStarToggle?: () => void
-  starredChainIds?: number[] | undefined
+  starredChainIds?: number[]
 }
 
 const fuseSearchOptions = {
@@ -231,7 +231,7 @@ const ChainFilter: FC<Props> = ({
                 </>
               )}
 
-              {starredChains && starredChains.length > 0 && (
+              {starredChains.length > 0 && (
                 <>
                   <Flex align="center">
                     <Text

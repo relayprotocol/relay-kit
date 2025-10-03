@@ -46,7 +46,7 @@ type ChainFilterSidebarProps = {
   popularChainIds?: number[]
   context: 'from' | 'to'
   onChainStarToggle?: () => void
-  starredChainIds?: number[] | undefined
+  starredChainIds?: number[]
 }
 
 const fuseSearchOptions = {
@@ -233,7 +233,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                 </>
               )}
 
-              {starredChains && starredChains.length > 0 && (
+              {starredChains.length > 0 && (
                 <>
                   <Flex align="center">
                     <Text

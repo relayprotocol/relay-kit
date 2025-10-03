@@ -27,7 +27,7 @@ type ChainOption = RelayChain | { id: undefined; name: string }
 
 type GroupedChains = {
   allChainsOption?: { id: undefined; name: string }
-  starredChains: RelayChain[] | undefined
+  starredChains: RelayChain[]
   alphabeticalChains: RelayChain[]
 }
 
@@ -46,7 +46,7 @@ export const groupChains = (
     (chain) => chain.id !== undefined
   ) as RelayChain[]
 
-  let starredChains: RelayChain[] | undefined
+  let starredChains: RelayChain[]
 
   // If starredChainIds is undefined, use popular chains and set them
   if (starredChainIds === undefined) {
@@ -78,12 +78,12 @@ export const groupChains = (
           return a.displayName.localeCompare(b.displayName)
         })
     } else {
-      // No valid popular chains found, return undefined to hide section
-      starredChains = undefined
+      // No valid popular chains found, return empty array
+      starredChains = []
     }
   } else if (starredChainIds.length === 0) {
-    // User has manually unstarred all chains, hide the section
-    starredChains = undefined
+    // User has manually unstarred all chains, show empty starred section
+    starredChains = []
   } else {
     // User has starred chains, show them
     const priorityIds = new Set(starredChainIds)
