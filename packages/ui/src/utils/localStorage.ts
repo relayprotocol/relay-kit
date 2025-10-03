@@ -21,14 +21,12 @@ export function getRelayUiKitData(): RelayUiKitData {
     return {
       acceptedUnverifiedTokens: [],
       recentCustomAddresses: [],
-      starredChainIds: [],
       genericCache: {}
     }
 
   let data: RelayUiKitData = {
     acceptedUnverifiedTokens: [],
     recentCustomAddresses: [],
-    starredChainIds: [],
     genericCache: {}
   }
   try {
@@ -40,9 +38,6 @@ export function getRelayUiKitData(): RelayUiKitData {
     }
     if (!data.recentCustomAddresses) {
       data.recentCustomAddresses = []
-    }
-    if (!data.starredChainIds) {
-      data.starredChainIds = []
     }
   } catch (e) {
     console.warn('Failed to get RelayKitUIData', e)

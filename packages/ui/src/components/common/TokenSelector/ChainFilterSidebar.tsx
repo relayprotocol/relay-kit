@@ -235,12 +235,11 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Flex align="center">
-                    <Text
-                      style="subtitle2"
-                      color="subtle"
-                      css={{ px: '2', py: '1' }}
-                    >
+                  <Flex align="center" css={{ px: '2', py: '1', gap: '1' }}>
+                    <Box css={{ color: 'primary9' }}>
+                      <FontAwesomeIcon icon={faStar} width={12} height={12} />
+                    </Box>
+                    <Text style="subtitle2" color="subtle">
                       Starred Chains
                     </Text>
                     <Tooltip

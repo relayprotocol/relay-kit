@@ -197,7 +197,7 @@ const ChainFilter: FC<Props> = ({
                       cursor: 'pointer',
                       backgroundColor: 'modal-background',
                       _hover: {
-                        backgroundColor: 'gray1'
+                        backgroundColor: 'gray3'
                       }
                     }}
                   >
@@ -233,12 +233,11 @@ const ChainFilter: FC<Props> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Flex align="center">
-                    <Text
-                      style="subtitle2"
-                      color="subtle"
-                      css={{ px: '2', py: '1' }}
-                    >
+                  <Flex align="center" css={{ px: '2', py: '1', gap: '1' }}>
+                    <Box css={{ color: 'primary9' }}>
+                      <FontAwesomeIcon icon={faStar} width={12} height={12} />
+                    </Box>
+                    <Text style="subtitle2" color="subtle">
                       Starred Chains
                     </Text>
                     <Tooltip
@@ -271,7 +270,7 @@ const ChainFilter: FC<Props> = ({
                           cursor: 'pointer',
                           backgroundColor: 'modal-background',
                           _hover: {
-                            backgroundColor: 'gray1'
+                            backgroundColor: 'gray3'
                           }
                         }}
                       >
@@ -306,7 +305,7 @@ const ChainFilter: FC<Props> = ({
                       cursor: 'pointer',
                       backgroundColor: 'modal-background',
                       _hover: {
-                        backgroundColor: 'gray1'
+                        backgroundColor: 'gray3'
                       }
                     }}
                   >
@@ -500,6 +499,8 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
               borderRadius: 12,
               cursor: 'pointer',
               backgroundColor: 'gray1',
+              '--borderColor': 'colors.subtle-border-color',
+              border: '1px solid var(--borderColor)',
               _hover: {
                 backgroundColor: 'gray2'
               }
