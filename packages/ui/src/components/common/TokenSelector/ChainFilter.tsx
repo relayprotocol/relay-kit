@@ -6,6 +6,7 @@ import {
   useRef,
   useCallback
 } from 'react'
+import { Dropdown, DropdownMenuItem } from '../../primitives/Dropdown.js'
 import { Button, Flex, Text, Input, Box } from '../../primitives/index.js'
 import ChainIcon from '../../primitives/ChainIcon.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -56,7 +57,7 @@ const ChainFilter: FC<Props> = ({
 }) => {
   const [open, setOpen] = useState(false)
   const [chainSearchInput, setChainSearchInput] = useState('')
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  // const dropdownRef = useRef<HTMLDivElement>(null)
   const chainFuse = new Fuse(options, fuseSearchOptions)
 
   const { allChainsOption, starredChains, alphabeticalChains } = useMemo(
@@ -78,319 +79,250 @@ const ChainFilter: FC<Props> = ({
     return Array.from(uniqueChains.values())
   }, [chainSearchInput, chainFuse])
 
-  // Click outside handler
-  const handleClickOutside = useCallback((event: Event) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(event.target as Node)
-    ) {
-      setOpen(false)
-    }
-  }, [])
-
-  // Escape key handler
-  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      setOpen(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (open) {
-      // Add a small delay to ensure the dropdown is fully rendered before adding listeners
-      const timeoutId = setTimeout(() => {
-        // Add multiple event types for better cross-platform support
-        // Use capture phase to ensure we catch events before they bubble
-        document.addEventListener('mousedown', handleClickOutside, true)
-        document.addEventListener('touchstart', handleClickOutside, true)
-        document.addEventListener('click', handleClickOutside, true)
-        document.addEventListener('keydown', handleEscapeKey)
-      }, 0)
-
-      return () => {
-        clearTimeout(timeoutId)
-        document.removeEventListener('mousedown', handleClickOutside, true)
-        document.removeEventListener('touchstart', handleClickOutside, true)
-        document.removeEventListener('click', handleClickOutside, true)
-        document.removeEventListener('keydown', handleEscapeKey)
-      }
-    }
-  }, [open, handleClickOutside, handleEscapeKey])
-
-  const handleSelect = (chain: ChainFilterValue) => {
-    setOpen(false)
-    onSelect(chain)
-    setChainSearchInput('')
-  }
-
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      <Button
-        aria-label={`Chain filter`}
-        color="ghost"
-        size="none"
-        onClick={() => setOpen(!open)}
-        css={{
-          gap: '2',
-          height: 40,
-          width: '100%',
-          px: '4 !important',
-          cursor: 'pointer',
-          display: 'flex',
-          alignContent: 'center',
-          lineHeight: '20px',
-          backgroundColor: 'dropdown-background',
-          borderRadius: 'dropdown-border-radius'
-        }}
-      >
-        <Flex align="center" css={{ gap: '2' }}>
-          {value.id ? (
-            <ChainIcon
-              chainId={value.id}
-              width={20}
-              height={20}
-              css={{ borderRadius: 4, overflow: 'hidden' }}
-            />
-          ) : (
-            <AllChainsLogo style={{ width: 20, height: 20 }} />
-          )}
-          <Text style="subtitle1">
-            {('displayName' in value && value.displayName) || value.name}
-          </Text>
-        </Flex>
-        <Text
-          style="body1"
+    <Dropdown
+      open={open}
+      onOpenChange={(open) => setOpen(open)}
+      trigger={
+        <Button
+          aria-label={`Chain filter`}
+          color="ghost"
+          size="none"
           css={{
-            color: 'gray9',
-            marginLeft: 'auto',
-            transform: open ? 'rotate(180deg)' : 'rotate(0)',
-            width: 12
+            gap: '2',
+            height: 40,
+            width: '100%',
+            px: '4 !important',
+            cursor: 'pointer',
+            display: 'flex',
+            alignContent: 'center',
+            lineHeight: '20px',
+            backgroundColor: 'dropdown-background',
+            borderRadius: 'dropdown-border-radius'
           }}
         >
-          <FontAwesomeIcon icon={faChevronDown} />
-        </Text>
-      </Button>
-
-      {open && (
-        <div
-          ref={dropdownRef}
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            marginTop: '4px',
-            backgroundColor: 'var(--relay-colors-modal-background)',
-            borderRadius: 8,
-            border: '1px solid var(--relay-colors-subtle-border-color)',
-            boxShadow: '0px 0px 50px 0px #0000001F',
-            padding: '8px',
-            zIndex: 99999,
-            maxHeight: '400px',
-            overflow: 'hidden'
-          }}
-          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
-          onTouchStart={(e: React.TouchEvent) => e.stopPropagation()}
-          onClick={(e: React.MouseEvent) => e.stopPropagation()}
-        >
-          <Input
-            placeholder="Search for a chain"
-            icon={
-              <Box css={{ color: 'gray9' }}>
-                <FontAwesomeIcon
-                  icon={faMagnifyingGlass}
-                  width={16}
-                  height={16}
-                />
-              </Box>
-            }
-            containerCss={{
-              width: '100%',
-              height: 40,
-              mb: '2'
-            }}
+          <Flex align="center" css={{ gap: '2' }}>
+            {value.id ? (
+              <ChainIcon
+                chainId={value.id}
+                width={20}
+                height={20}
+                css={{ borderRadius: 4, overflow: 'hidden' }}
+              />
+            ) : (
+              <AllChainsLogo style={{ width: 20, height: 20 }} />
+            )}
+            <Text style="subtitle1">
+              {('displayName' in value && value.displayName) || value.name}
+            </Text>
+          </Flex>
+          <Text
+            style="body1"
             css={{
-              width: '100%',
-              _placeholder_parent: {
-                textOverflow: 'ellipsis'
-              },
-              '--borderColor': 'colors.subtle-border-color',
-              border: '1px solid var(--borderColor)',
-              backgroundColor: 'modal-background'
-            }}
-            value={chainSearchInput}
-            onChange={(e) =>
-              setChainSearchInput((e.target as HTMLInputElement).value)
-            }
-            onKeyDown={(e) => e.stopPropagation()}
-          />
-
-          <div
-            style={{
-              overflowY: 'auto',
-              borderRadius: 8,
-              maxHeight: '290px',
-              scrollbarColor: 'var(--relay-colors-gray5) transparent'
+              color: 'gray9',
+              marginLeft: 'auto',
+              transform: open ? 'rotate(180deg)' : 'rotate(0)',
+              width: 12
             }}
           >
-            {filteredChains ? (
-              filteredChains.length > 0 ? (
-                filteredChains.map((chain) => {
-                  const tag = 'tags' in chain ? chain.tags?.[0] : undefined
-                  return (
-                    <div
-                      key={chain.id?.toString() ?? 'all-chains'}
-                      onClick={() => handleSelect(chain)}
-                      style={{
-                        padding: '8px',
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                        backgroundColor: 'transparent'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          'var(--relay-colors-gray6)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                      }}
-                    >
-                      <ChainFilterRow
-                        chain={chain}
-                        tag={tag}
-                        onToggleStar={onChainStarToggle}
-                      />
-                    </div>
-                  )
-                })
-              ) : (
-                <Text style="body1" css={{ p: '2', textAlign: 'center' }}>
-                  No results.
-                </Text>
-              )
-            ) : (
-              <>
-                {allChainsOption && (
-                  <div
-                    onClick={() => handleSelect(allChainsOption)}
-                    style={{
+            <FontAwesomeIcon icon={faChevronDown} />
+          </Text>
+        </Button>
+      }
+      contentProps={{
+        align: 'start',
+        avoidCollisions: false,
+        css: {
+          p: 0,
+          width: 'var(--radix-dropdown-menu-trigger-width)',
+          minWidth: 'var(--radix-dropdown-menu-trigger-width)',
+          mx: '0'
+        },
+        style: {
+          width: 'var(--radix-popper-anchor-width)',
+          minWidth: 'var(--radix-popper-anchor-width)'
+        }
+      }}
+    >
+      <Flex direction="column" css={{ p: '2' }}>
+        <Input
+          placeholder="Search for a chain"
+          icon={
+            <Box css={{ color: 'gray9' }}>
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                width={16}
+                height={16}
+              />
+            </Box>
+          }
+          containerCss={{
+            width: '100%',
+            height: 40,
+            mb: '2'
+          }}
+          css={{
+            width: '100%',
+            _placeholder_parent: {
+              textOverflow: 'ellipsis'
+            },
+            '--borderColor': 'colors.subtle-border-color',
+            border: '1px solid var(--borderColor)',
+            backgroundColor: 'modal-background'
+          }}
+          value={chainSearchInput}
+          onChange={(e) =>
+            setChainSearchInput((e.target as HTMLInputElement).value)
+          }
+          onKeyDown={(e) => e.stopPropagation()}
+        />
+        <Flex
+          direction="column"
+          css={{ overflowY: 'scroll', borderRadius: 8, maxHeight: 290 }}
+        >
+          {filteredChains ? (
+            filteredChains.length > 0 ? (
+              filteredChains.map((chain, idx) => {
+                const tag = 'tags' in chain ? chain.tags?.[0] : undefined
+                return (
+                  <Flex
+                    key={chain.id?.toString() ?? 'all-chains'}
+                    onClick={() => {
+                      setOpen(false)
+                      onSelect(chain)
+                      setChainSearchInput('')
+                    }}
+                    css={{
                       padding: '8px',
                       borderRadius: 4,
                       cursor: 'pointer',
-                      backgroundColor: 'transparent'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        'var(--relay-colors-gray6)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent'
+                      backgroundColor: 'modal-background',
+                      _hover: {
+                        backgroundColor: 'gray1'
+                      }
                     }}
                   >
                     <ChainFilterRow
-                      chain={allChainsOption}
+                      chain={chain}
+                      tag={tag}
                       onToggleStar={onChainStarToggle}
                     />
-                  </div>
-                )}
+                  </Flex>
+                )
+              })
+            ) : (
+              <Text style="body1" css={{ p: '2', textAlign: 'center' }}>
+                No results.
+              </Text>
+            )
+          ) : (
+            <>
+              {allChainsOption && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setOpen(false)
+                      onSelect(allChainsOption)
+                      setChainSearchInput('')
+                    }}
+                    css={{ p: '2' }}
+                  >
+                    <ChainFilterRow chain={allChainsOption} />
+                  </DropdownMenuItem>
+                </>
+              )}
 
-                {starredChains.length > 0 && (
-                  <>
-                    <Flex align="center">
-                      <Text
-                        style="subtitle2"
-                        color="subtle"
-                        css={{ px: '2', py: '1' }}
-                      >
-                        Starred Chains
-                      </Text>
-                      <Tooltip
-                        content={
-                          <Text style="body3">Long-press to star a chain</Text>
-                        }
-                      >
-                        <Box css={{ color: 'gray9' }}>
-                          <FontAwesomeIcon
-                            icon={faInfoCircle}
-                            width={12}
-                            height={12}
-                          />
-                        </Box>
-                      </Tooltip>
-                    </Flex>
-                    {starredChains.map((chain) => {
-                      const tag = 'tags' in chain ? chain.tags?.[0] : undefined
-                      return (
-                        <div
-                          key={chain.id?.toString() ?? 'all-chains'}
-                          onClick={() => handleSelect(chain)}
-                          style={{
-                            padding: '8px',
-                            borderRadius: 4,
-                            cursor: 'pointer',
-                            backgroundColor: 'transparent'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor =
-                              'var(--relay-colors-gray6)'
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor =
-                              'transparent'
-                          }}
-                        >
-                          <ChainFilterRow
-                            chain={chain}
-                            tag={tag}
-                            onToggleStar={onChainStarToggle}
-                          />
-                        </div>
-                      )
-                    })}
-                  </>
-                )}
-
-                <Text
-                  style="subtitle2"
-                  color="subtle"
-                  css={{ px: '2', py: '1' }}
-                >
-                  Chains A-Z
-                </Text>
-                {alphabeticalChains.map((chain) => {
-                  const tag = 'tags' in chain ? chain.tags?.[0] : undefined
-                  return (
-                    <div
-                      key={chain.id?.toString() ?? 'all-chains'}
-                      onClick={() => handleSelect(chain)}
-                      style={{
-                        padding: '8px',
-                        borderRadius: 4,
-                        cursor: 'pointer',
-                        backgroundColor: 'transparent'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          'var(--relay-colors-gray6)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                      }}
+              {starredChains.length > 0 && (
+                <>
+                  <Flex align="center">
+                    <Text
+                      style="subtitle2"
+                      color="subtle"
+                      css={{ px: '2', py: '1' }}
                     >
-                      <ChainFilterRow
-                        chain={chain}
-                        tag={tag}
-                        onToggleStar={onChainStarToggle}
-                      />
-                    </div>
-                  )
-                })}
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+                      Starred Chains
+                    </Text>
+                    <Tooltip
+                      content={
+                        <Text style="body3">Long-press to star a chain</Text>
+                      }
+                    >
+                      <Box css={{ color: 'gray9' }}>
+                        <FontAwesomeIcon
+                          icon={faInfoCircle}
+                          width={12}
+                          height={12}
+                        />
+                      </Box>
+                    </Tooltip>
+                  </Flex>
+                  {starredChains.map((chain) => {
+                    const tag = 'tags' in chain ? chain.tags?.[0] : undefined
+                    return (
+                      <Flex
+                        key={chain.id?.toString() ?? 'all-chains'}
+                        onClick={() => {
+                          setOpen(false)
+                          onSelect(chain)
+                          setChainSearchInput('')
+                        }}
+                        css={{
+                          padding: '8px',
+                          borderRadius: 4,
+                          cursor: 'pointer',
+                          backgroundColor: 'modal-background',
+                          _hover: {
+                            backgroundColor: 'gray1'
+                          }
+                        }}
+                      >
+                        <ChainFilterRow
+                          chain={chain}
+                          tag={tag}
+                          onToggleStar={onChainStarToggle}
+                        />
+                      </Flex>
+                    )
+                  })}
+                </>
+              )}
+
+              <Text style="subtitle2" color="subtle" css={{ px: '2', py: '1' }}>
+                Chains A-Z
+              </Text>
+              {alphabeticalChains.map((chain) => {
+                const tag = 'tags' in chain ? chain.tags?.[0] : undefined
+                return (
+                  <Flex
+                    key={chain.id?.toString() ?? 'all-chains'}
+                    onClick={() => {
+                      setOpen(false)
+                      onSelect(chain)
+                      setChainSearchInput('')
+                    }}
+                    css={{
+                      padding: '8px',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      backgroundColor: 'modal-background',
+                      _hover: {
+                        backgroundColor: 'gray1'
+                      }
+                    }}
+                  >
+                    <ChainFilterRow
+                      chain={chain}
+                      tag={tag}
+                      onToggleStar={onChainStarToggle}
+                    />
+                  </Flex>
+                )
+              })}
+            </>
+          )}
+        </Flex>
+      </Flex>
+    </Dropdown>
   )
 }
 
