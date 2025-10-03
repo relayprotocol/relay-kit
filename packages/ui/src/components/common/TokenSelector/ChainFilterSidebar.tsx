@@ -333,7 +333,6 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
 
   useEffect(() => {
     if (dropdownOpen) {
-      // Add both mouse and touch event listeners for better mobile support
       document.addEventListener('mousedown', handleClickOutside)
       document.addEventListener('touchstart', handleClickOutside)
       document.addEventListener('keydown', handleEscapeKey)

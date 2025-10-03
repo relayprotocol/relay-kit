@@ -412,17 +412,12 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
 
   useEffect(() => {
     if (dropdownOpen) {
-      // Add a small delay to ensure the dropdown is fully rendered before adding listeners
-      const timeoutId = setTimeout(() => {
-        // Add multiple event types for better cross-platform support
-        document.addEventListener('mousedown', handleClickOutside, true)
-        document.addEventListener('touchstart', handleClickOutside, true)
-        document.addEventListener('click', handleClickOutside, true)
-        document.addEventListener('keydown', handleEscapeKey)
-      }, 0)
+      document.addEventListener('mousedown', handleClickOutside, true)
+      document.addEventListener('touchstart', handleClickOutside, true)
+      document.addEventListener('click', handleClickOutside, true)
+      document.addEventListener('keydown', handleEscapeKey)
 
       return () => {
-        clearTimeout(timeoutId)
         document.removeEventListener('mousedown', handleClickOutside, true)
         document.removeEventListener('touchstart', handleClickOutside, true)
         document.removeEventListener('click', handleClickOutside, true)
