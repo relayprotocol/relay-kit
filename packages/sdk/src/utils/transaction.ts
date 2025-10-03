@@ -150,7 +150,10 @@ export async function sendTransactionSafely(
   //Set up internal functions
   const validate = (res: AxiosResponse<any, any>) => {
     getClient()?.log(
-      ['Execute Steps: Polling for confirmation', res],
+      [
+        'Execute Steps: Polling for confirmation',
+        JSON.stringify(res.data, null, 2)
+      ],
       LogLevel.Verbose
     )
 
@@ -161,6 +164,53 @@ export async function sendTransactionSafely(
     }
     if (res.status === 200 && res.data && res.data.status === 'fallback') {
       throw Error('Transaction failed: Refunded')
+    }
+    if (res.status === 200 && res.data && res.data.status === 'refund') {
+      throw Error('Transaction failed: Refunded')
+    }
+    if (res.status === 200 && res.data && res.data.status === 'pending') {
+      // Extract origin txHashes if provided
+      if (res.data.inTxHashes && res.data.inTxHashes.length > 0) {
+        const depositTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.inTxHashes.map((hash: Address) => ({
+          txHash: hash,
+          chainId: res.data.originChainId ?? chainId,
+          isBatchTx: isBatchTransaction
+        }))
+        setInternalTxHashes(depositTxHashes)
+      }
+      return false
+    }
+    if (res.status === 200 && res.data && res.data.status === 'submitted') {
+      // Extract destination txHashes if provided
+      if (res.data.txHashes && res.data.txHashes.length > 0) {
+        const fillTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.txHashes.map((hash: Address) => ({
+          txHash: hash,
+          chainId: res.data.destinationChainId ?? crossChainIntentChainId
+        }))
+        setTxHashes(fillTxHashes)
+      }
+
+      // Extract origin txHashes if provided
+      if (res.data.inTxHashes && res.data.inTxHashes.length > 0) {
+        const depositTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.inTxHashes.map((hash: Address) => ({
+          txHash: hash,
+          chainId: res.data.originChainId ?? chainId,
+          isBatchTx: isBatchTransaction
+        }))
+        setInternalTxHashes(depositTxHashes)
+      }
+
+      // For Bitcoin destinations, stop polling at 'submitted' since Bitcoin confirmations take 10+ minutes
+      // For other chains, continue polling until 'success'
+      const isBitcoinDestination =
+        details?.currencyOut?.currency?.chainId === 8253038
+      return isBitcoinDestination
     }
     if (res.status === 200 && res.data && res.data.status === 'success') {
       if (txHash) {
@@ -179,16 +229,20 @@ export async function sendTransactionSafely(
         })
         setInternalTxHashes(depositTxHashes)
       }
+      if (res.data?.txHashes && res.data.txHashes.length > 0) {
+        const fillTxHashes: NonNullable<
+          Execute['steps'][0]['items']
+        >[0]['txHashes'] = res.data.txHashes.map((hash: Address) => {
+          return {
+            txHash: hash,
+            chainId: res?.data?.destinationChainId ?? crossChainIntentChainId
+          }
+        })
+        setTxHashes(fillTxHashes)
+      }
 
-      const fillTxHashes: NonNullable<
-        Execute['steps'][0]['items']
-      >[0]['txHashes'] = res.data?.txHashes?.map((hash: Address) => {
-        return {
-          txHash: hash,
-          chainId: res?.data?.destinationChainId ?? crossChainIntentChainId
-        }
-      })
-      setTxHashes(fillTxHashes)
+      setCheckStatus?.('success')
+
       return true
     }
     return false
@@ -224,6 +278,12 @@ export async function sendTransactionSafely(
       let res: AxiosResponse<any, any> | undefined
       if (check?.endpoint && !request?.data?.useExternalLiquidity) {
         let endpoint = check?.endpoint
+
+        // Override v2 status endpoint to v3 to get 'submitted' status
+        if (endpoint.includes('/intents/status') && !endpoint.includes('/v3')) {
+          endpoint = endpoint.replace('/intents/status', '/intents/status/v3')
+        }
+
         if (
           client.source &&
           !endpoint.includes('referrer') &&
@@ -405,7 +465,7 @@ export async function sendTransactionSafely(
     //Sequence internal functions
     // We want synchronous execution in the following cases:
     // - Approval Signature step required first
-    // - Bitcoin is the destination
+    // - Bitcoin is the destination (need to poll status API for backend updates)
     // - Canonical route used
     step.id === 'approve' ||
     details?.currencyOut?.currency?.chainId === 8253038 ||
@@ -413,12 +473,9 @@ export async function sendTransactionSafely(
   ) {
     await waitForTransaction().promise
     //In the following cases we want to skip polling for confirmation:
-    // - Bitcoin destination chain, we want to skip polling for confirmation as the block times are lengthy
-    // - Canonical route, also lengthy fill time
-    if (
-      details?.currencyOut?.currency?.chainId !== 8253038 &&
-      !request?.data?.useExternalLiquidity
-    ) {
+    // - Canonical route, lengthy fill time (skip polling)
+    // Note: Bitcoin destination now polls status API to get 'submitted' status
+    if (!request?.data?.useExternalLiquidity) {
       await pollForConfirmation()
     }
   } else {

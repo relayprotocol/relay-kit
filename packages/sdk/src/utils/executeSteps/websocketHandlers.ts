@@ -58,6 +58,16 @@ export function handleWebSocketUpdate({
         break
     }
   }
+  // Handle pending status
+  else if (data.status === 'pending') {
+    client.log(['WebSocket received pending status'], LogLevel.Verbose)
+    handlePendingStatus(data, stepItems, setState, json, client)
+  }
+  // Handle submitted status
+  else if (data.status === 'submitted') {
+    client.log(['WebSocket received submitted status'], LogLevel.Verbose)
+    handleSubmittedStatus(data, stepItems, setState, json, client)
+  }
   // Handle failure status with delay (refund flow: pending -> failure -> pending -> refund)
   else if (data.status === 'failure') {
     handleFailureStatusWithDelay(
@@ -67,16 +77,102 @@ export function handleWebSocketUpdate({
       onTerminalError
     )
   }
-  // Handle pending status - just log it
-  else if (data.status === 'pending') {
-    client.log(['WebSocket received pending status'], LogLevel.Verbose)
-  }
 }
 
 function isTerminalStatus(status: string): boolean {
   // Note: 'failure' is not immediately terminal due to the refund flow:
   // pending -> failure -> pending -> refund
+  // 'pending' and 'submitted' are intermediate states before 'success'
   return ['success', 'refund'].includes(status)
+}
+
+function handlePendingStatus(
+  data: RequestStatusUpdatedPayload,
+  stepItems: Execute['steps'][0]['items'],
+  setState: (data: SetStateData) => void,
+  json: Execute,
+  client: RelayClient
+): void {
+  // Update internalTxHashes if provided
+  if (data.inTxHashes && data.inTxHashes.length > 0) {
+    const internalTxHashes = data.inTxHashes.map((hash: string) => ({
+      txHash: hash,
+      chainId: data.originChainId ?? data.destinationChainId
+    }))
+    updateIncompleteItems(stepItems, (item) => {
+      item.internalTxHashes = internalTxHashes
+    })
+  }
+
+  // Mark step items as pending
+  updateIncompleteItems(stepItems, (item) => {
+    item.checkStatus = 'pending'
+    item.progressState = undefined
+    item.isValidatingSignature = false
+  })
+
+  // Update state with pending status
+  setState({
+    steps: [...json.steps],
+    fees: { ...json?.fees },
+    breakdown: json?.breakdown,
+    details: json?.details
+  })
+
+  client.log(
+    ['WebSocket: Origin tx confirmed, backend processing', data],
+    LogLevel.Verbose
+  )
+}
+
+function handleSubmittedStatus(
+  data: RequestStatusUpdatedPayload,
+  stepItems: Execute['steps'][0]['items'],
+  setState: (data: SetStateData) => void,
+  json: Execute,
+  client: RelayClient
+): void {
+  // Update txHashes if provided (partial updates during submitted state)
+  if (data.txHashes && data.txHashes.length > 0) {
+    const txHashes = data.txHashes.map((hash: string) => ({
+      txHash: hash,
+      chainId: data.destinationChainId ?? data.originChainId
+    }))
+    updateIncompleteItems(stepItems, (item) => {
+      item.txHashes = txHashes
+    })
+  }
+
+  // Update internalTxHashes if provided
+  if (data.inTxHashes && data.inTxHashes.length > 0) {
+    const internalTxHashes = data.inTxHashes.map((hash: string) => ({
+      txHash: hash,
+      chainId: data.originChainId ?? data.destinationChainId
+    }))
+    updateIncompleteItems(stepItems, (item) => {
+      item.internalTxHashes = internalTxHashes
+    })
+  }
+
+  // Mark step items as submitted (intermediate state, not complete)
+  updateIncompleteItems(stepItems, (item) => {
+    item.checkStatus = 'submitted'
+    item.progressState = undefined
+    item.isValidatingSignature = false
+  })
+
+  // Update state with submitted status
+  setState({
+    steps: [...json.steps],
+    fees: { ...json?.fees },
+    breakdown: json?.breakdown,
+    details: json?.details
+  })
+
+  client.log(
+    ['WebSocket: Step submitted to relay, waiting for completion', data],
+    LogLevel.Verbose
+  )
 }
 
 function handleSuccessStatus(

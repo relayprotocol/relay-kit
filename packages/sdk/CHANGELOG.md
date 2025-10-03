@@ -1,5 +1,17 @@
 # @reservoir0x/relay-sdk
 
+## 3.0.0
+
+### Major Changes
+
+- d38abdf: Revamped transaction steps
+
+## 2.4.6
+
+### Patch Changes
+
+- 5135cd1: Fix tenderly error api
+
 ## 2.4.5
 
 ### Patch Changes

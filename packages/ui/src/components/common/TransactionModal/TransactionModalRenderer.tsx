@@ -27,6 +27,7 @@ import {
 } from '../../../utils/quote.js'
 export enum TransactionProgressStep {
   Confirmation,
+  Submitted,
   Success,
   Error
 }
@@ -62,6 +63,7 @@ export type ChildrenProps = {
   isAutoSlippage: boolean
   timeEstimate?: { time: number; formattedTime: string }
   isGasSponsored: boolean
+  currentCheckStatus?: ExecuteStepItem['checkStatus']
 }
 
 type Props = {
@@ -93,6 +95,7 @@ export const TransactionModalRenderer: FC<Props> = ({
   onValidating
 }) => {
   const relayClient = useRelayClient()
+  const chainId = quote?.details?.currencyIn?.currency?.chainId || 1
 
   const [progressStep, setProgressStep] = useState(
     TransactionProgressStep.Confirmation
@@ -168,15 +171,51 @@ export const TransactionModalRenderer: FC<Props> = ({
 
     setCurrentStep(currentStep)
     setCurrentStepItem(currentStepItem)
+
+    const isBitcoinDestination =
+      quote?.details?.currencyOut?.currency?.chainId === 8253038
+
+    const allStepsComplete = steps.every(
+      (step) =>
+        !step.items ||
+        step.items.length == 0 ||
+        step.items?.every((item) => {
+          if (isBitcoinDestination && item.checkStatus === 'submitted') {
+            return true
+          }
+          return item.status === 'complete'
+        })
+    )
+
+    const hasPendingItems = steps.some((step) =>
+      step.items?.some((item) => item.checkStatus === 'pending')
+    )
+
+    const hasSubmittedItems = steps.some((step) =>
+      step.items?.some((item) => item.checkStatus === 'submitted')
+    )
+
+    // Check if any step items are still validating
+    const hasValidatingItems = steps.some((step) =>
+      step.items?.some(
+        (item) =>
+          item.isValidatingSignature === true ||
+          item.progressState === 'validating'
+      )
+    )
+
+    // Transition to Submitted state when items are pending or submitted
     if (
-      steps.every(
-        (step) =>
-          !step.items ||
-          step.items.length == 0 ||
-          step.items?.every((item) => item.status === 'complete')
-      ) &&
-      progressStep !== TransactionProgressStep.Success
+      (hasPendingItems || hasSubmittedItems) &&
+      progressStep === TransactionProgressStep.Confirmation &&
+      !hasValidatingItems
     ) {
+      setProgressStep(TransactionProgressStep.Submitted)
+      onValidating?.(quote as Execute)
+    }
+
+    // Only show success if all steps are complete
+    if (allStepsComplete && progressStep !== TransactionProgressStep.Success) {
       setProgressStep(TransactionProgressStep.Success)
       onSuccess?.(quote as Execute, steps)
     }
@@ -204,7 +243,18 @@ export const TransactionModalRenderer: FC<Props> = ({
           if (query.state.dataUpdateCount > 10) {
             return 0
           }
-          if (!query.state.data?.pages[0].requests?.[0]) {
+          const transaction = query.state.data?.pages[0].requests?.[0]
+          if (!transaction) {
+            return 2500
+          }
+          // If this is a refund but outTxs is not populated yet, keep polling
+          const isRefund =
+            transaction.status === 'refund' ||
+            transaction.data?.refundCurrencyData
+          if (
+            isRefund &&
+            (!transaction.data?.outTxs || transaction.data.outTxs.length === 0)
+          ) {
             return 2500
           }
           return 0
@@ -242,7 +292,8 @@ export const TransactionModalRenderer: FC<Props> = ({
         isLoadingTransaction,
         isAutoSlippage,
         timeEstimate,
-        isGasSponsored: _isGasSponsored
+        isGasSponsored: _isGasSponsored,
+        currentCheckStatus: currentStepItem?.checkStatus
       })}
     </>
   )
