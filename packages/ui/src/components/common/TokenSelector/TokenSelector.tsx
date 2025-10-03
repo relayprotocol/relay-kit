@@ -97,8 +97,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     id: undefined,
     name: 'All Chains'
   })
-  const [starredChainIds, setStarredChainIds] = useState<number[]>(() =>
-    getStarredChainIds()
+  const [starredChainIds, setStarredChainIds] = useState<number[] | undefined>(
+    () => getStarredChainIds()
   )
 
   const {
@@ -337,6 +337,13 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   const handleChainStarToggle = useCallback(() => {
     setStarredChainIds(getStarredChainIds())
   }, [])
+
+  // Update starred chains when the modal opens to sync with other instances
+  useEffect(() => {
+    if (open) {
+      setStarredChainIds(getStarredChainIds())
+    }
+  }, [open])
 
   const resetState = useCallback(() => {
     setTokenSearchInput('')

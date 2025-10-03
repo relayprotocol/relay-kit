@@ -174,11 +174,11 @@ export function removeCustomAddress(address: string): void {
 
 /**
  * Get starred chain IDs from localStorage
- * @returns Array of starred chain IDs
+ * @returns Array of starred chain IDs, or undefined if never set
  */
-export function getStarredChainIds(): number[] {
+export function getStarredChainIds(): number[] | undefined {
   const data = getRelayUiKitData()
-  return data.starredChainIds || []
+  return data.starredChainIds
 }
 
 /**
@@ -213,7 +213,7 @@ export function removeStarredChain(chainId: number): void {
  */
 export function isChainStarred(chainId: number): boolean {
   const starredChainIds = getStarredChainIds()
-  return starredChainIds.includes(chainId)
+  return starredChainIds ? starredChainIds.includes(chainId) : false
 }
 
 /**

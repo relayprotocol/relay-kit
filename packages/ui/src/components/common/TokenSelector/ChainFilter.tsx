@@ -37,7 +37,7 @@ type Props = {
   onSelect: (value: ChainFilterValue) => void
   popularChainIds?: number[]
   onChainStarToggle?: () => void
-  starredChainIds?: number[]
+  starredChainIds?: number[] | undefined
 }
 
 const fuseSearchOptions = {
@@ -61,7 +61,7 @@ const ChainFilter: FC<Props> = ({
 
   const { allChainsOption, starredChains, alphabeticalChains } = useMemo(
     () => groupChains(options, popularChainIds, starredChainIds),
-    [options, popularChainIds, starredChainIds]
+    [options, popularChainIds, starredChainIds, open]
   )
 
   const filteredChains = useMemo(() => {
@@ -231,7 +231,7 @@ const ChainFilter: FC<Props> = ({
                 </>
               )}
 
-              {starredChains.length > 0 && (
+              {starredChains && starredChains.length > 0 && (
                 <>
                   <Flex align="center">
                     <Text
@@ -279,6 +279,7 @@ const ChainFilter: FC<Props> = ({
                           chain={chain}
                           tag={tag}
                           onToggleStar={onChainStarToggle}
+                          showStar={false}
                         />
                       </Flex>
                     )
@@ -329,12 +330,14 @@ type ChainFilterRowProps = {
   chain: ChainFilterValue
   tag?: string
   onToggleStar?: () => void
+  showStar?: boolean
 }
 
 const ChainFilterRow: FC<ChainFilterRowProps> = ({
   chain,
   tag,
-  onToggleStar
+  onToggleStar,
+  showStar = true
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [longPressTimer, setLongPressTimer] = useState<number | null>(null)
@@ -387,6 +390,10 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
     if (!chain.id) return
     e.preventDefault()
     const timer = setTimeout(() => {
+      // Provide haptic feedback on long press
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50) // Short 50ms vibration
+      }
       setDropdownOpen(true)
     }, 500) // 500ms long press
     setLongPressTimer(timer)
@@ -459,7 +466,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
         <Text style="subtitle2">
           {('displayName' in chain && chain.displayName) || chain.name}
         </Text>
-        {isStarred && (
+        {showStar && isStarred && (
           <Box css={{ color: 'primary9' }}>
             <FontAwesomeIcon icon={faStar} width={12} height={12} />
           </Box>

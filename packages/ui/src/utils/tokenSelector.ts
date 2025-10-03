@@ -27,20 +27,29 @@ type ChainOption = RelayChain | { id: undefined; name: string }
 
 type GroupedChains = {
   allChainsOption?: { id: undefined; name: string }
-  starredChains: RelayChain[]
+  starredChains: RelayChain[] | undefined
   alphabeticalChains: RelayChain[]
 }
 
 export const groupChains = (
   chains: ChainOption[],
   popularChainIds?: number[],
-  currentStarredChainIds?: number[]
+  currentStarredChainIds?: number[] | undefined
 ): GroupedChains => {
-  // Get starred chains from localStorage or use provided ones, fallback to popular chains if none starred
+  // Get starred chains from localStorage or use provided ones
   let starredChainIds = currentStarredChainIds ?? getStarredChainIds()
 
-  // If no starred chains exist, populate with popular chains
-  if (starredChainIds.length === 0) {
+  const allChainsOption = chains.find((chain) => chain.id === undefined) as
+    | { id: undefined; name: string }
+    | undefined
+  const otherChains = chains.filter(
+    (chain) => chain.id !== undefined
+  ) as RelayChain[]
+
+  let starredChains: RelayChain[] | undefined
+
+  // If starredChainIds is undefined, use popular chains and set them
+  if (starredChainIds === undefined) {
     const defaultStarredIds = popularChainIds || Array.from(POPULAR_CHAIN_IDS)
     // Filter to only include chains that actually exist in the chains array
     const availableChainIds = chains
@@ -51,34 +60,48 @@ export const groupChains = (
     )
 
     if (validStarredIds.length > 0) {
+      // Set the popular chains as starred and return them
       setRelayUiKitData({ starredChainIds: validStarredIds })
-      starredChainIds = validStarredIds
+      const priorityIds = new Set(validStarredIds)
+      starredChains = otherChains
+        .filter(
+          (chain) =>
+            (chain.id && priorityIds.has(chain.id)) ||
+            ('tags' in chain && chain.tags && chain.tags.length > 0)
+        )
+        .sort((a, b) => {
+          const aHasTags = 'tags' in a && a.tags && a.tags.length > 0
+          const bHasTags = 'tags' in b && b.tags && b.tags.length > 0
+          if (aHasTags && !bHasTags) return -1
+          if (!aHasTags && bHasTags) return 1
+
+          return a.displayName.localeCompare(b.displayName)
+        })
+    } else {
+      // No valid popular chains found, return undefined to hide section
+      starredChains = undefined
     }
+  } else if (starredChainIds.length === 0) {
+    // User has manually unstarred all chains, hide the section
+    starredChains = undefined
+  } else {
+    // User has starred chains, show them
+    const priorityIds = new Set(starredChainIds)
+    starredChains = otherChains
+      .filter(
+        (chain) =>
+          (chain.id && priorityIds.has(chain.id)) ||
+          ('tags' in chain && chain.tags && chain.tags.length > 0)
+      )
+      .sort((a, b) => {
+        const aHasTags = 'tags' in a && a.tags && a.tags.length > 0
+        const bHasTags = 'tags' in b && b.tags && b.tags.length > 0
+        if (aHasTags && !bHasTags) return -1
+        if (!aHasTags && bHasTags) return 1
+
+        return a.displayName.localeCompare(b.displayName)
+      })
   }
-
-  const priorityIds = new Set(starredChainIds)
-
-  const allChainsOption = chains.find((chain) => chain.id === undefined) as
-    | { id: undefined; name: string }
-    | undefined
-  const otherChains = chains.filter(
-    (chain) => chain.id !== undefined
-  ) as RelayChain[]
-
-  const starredChains = otherChains
-    .filter(
-      (chain) =>
-        (chain.id && priorityIds.has(chain.id)) ||
-        ('tags' in chain && chain.tags && chain.tags.length > 0)
-    )
-    .sort((a, b) => {
-      const aHasTags = 'tags' in a && a.tags && a.tags.length > 0
-      const bHasTags = 'tags' in b && b.tags && b.tags.length > 0
-      if (aHasTags && !bHasTags) return -1
-      if (!aHasTags && bHasTags) return 1
-
-      return a.displayName.localeCompare(b.displayName)
-    })
 
   return {
     allChainsOption,

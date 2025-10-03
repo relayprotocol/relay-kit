@@ -46,7 +46,7 @@ type ChainFilterSidebarProps = {
   popularChainIds?: number[]
   context: 'from' | 'to'
   onChainStarToggle?: () => void
-  starredChainIds?: number[]
+  starredChainIds?: number[] | undefined
 }
 
 const fuseSearchOptions = {
@@ -76,7 +76,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
 
   const { allChainsOption, starredChains, alphabeticalChains } = useMemo(
     () => groupChains(options, popularChainIds, starredChainIds),
-    [options, popularChainIds, starredChainIds]
+    [options, popularChainIds, starredChainIds, isOpen]
   )
 
   const filteredChains = useMemo(() => {
@@ -233,7 +233,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                 </>
               )}
 
-              {starredChains.length > 0 && (
+              {starredChains && starredChains.length > 0 && (
                 <>
                   <Flex align="center">
                     <Text
@@ -274,6 +274,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                         activeChainRef={active ? activeChainRef : undefined}
                         value={chain.id?.toString()}
                         key={chain.id?.toString()}
+                        showStar={false}
                       />
                     ) : null
                   })}
@@ -319,6 +320,7 @@ type ChainFilterRowProps = {
   value: string
   activeChainRef?: React.RefObject<HTMLButtonElement | null>
   onChainStarToggle?: () => void
+  showStar?: boolean
 }
 
 const ChainFilterRow: FC<ChainFilterRowProps> = ({
@@ -328,7 +330,8 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   tag,
   value,
   activeChainRef,
-  onChainStarToggle
+  onChainStarToggle,
+  showStar = true
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -457,7 +460,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           <Text style="subtitle1" ellipsify>
             {('displayName' in chain && chain.displayName) || chain.name}
           </Text>
-          {isStarred && (
+          {showStar && isStarred && (
             <Box css={{ color: 'primary9' }}>
               <FontAwesomeIcon icon={faStar} width={16} height={16} />
             </Box>
