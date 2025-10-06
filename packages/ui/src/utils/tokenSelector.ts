@@ -64,19 +64,8 @@ export const groupChains = (
       setRelayUiKitData({ starredChainIds: validStarredIds })
       const priorityIds = new Set(validStarredIds)
       starredChains = otherChains
-        .filter(
-          (chain) =>
-            (chain.id && priorityIds.has(chain.id)) ||
-            ('tags' in chain && chain.tags && chain.tags.length > 0)
-        )
-        .sort((a, b) => {
-          const aHasTags = 'tags' in a && a.tags && a.tags.length > 0
-          const bHasTags = 'tags' in b && b.tags && b.tags.length > 0
-          if (aHasTags && !bHasTags) return -1
-          if (!aHasTags && bHasTags) return 1
-
-          return a.displayName.localeCompare(b.displayName)
-        })
+        .filter((chain) => chain.id && priorityIds.has(chain.id))
+        .sort((a, b) => a.displayName.localeCompare(b.displayName))
     } else {
       // No valid popular chains found, return empty array
       starredChains = []
@@ -88,19 +77,8 @@ export const groupChains = (
     // User has starred chains, show them
     const priorityIds = new Set(starredChainIds)
     starredChains = otherChains
-      .filter(
-        (chain) =>
-          (chain.id && priorityIds.has(chain.id)) ||
-          ('tags' in chain && chain.tags && chain.tags.length > 0)
-      )
-      .sort((a, b) => {
-        const aHasTags = 'tags' in a && a.tags && a.tags.length > 0
-        const bHasTags = 'tags' in b && b.tags && b.tags.length > 0
-        if (aHasTags && !bHasTags) return -1
-        if (!aHasTags && bHasTags) return 1
-
-        return a.displayName.localeCompare(b.displayName)
-      })
+      .filter((chain) => chain.id && priorityIds.has(chain.id))
+      .sort((a, b) => a.displayName.localeCompare(b.displayName))
   }
 
   return {
@@ -114,12 +92,7 @@ export const groupChains = (
 
 export const sortChains = (chains: RelayChain[]) => {
   return chains.sort((a, b) => {
-    // First sort by tags
-    if ((a.tags?.length || 0) > 0 && (b.tags?.length || 0) === 0) return -1
-    if ((a.tags?.length || 0) === 0 && (b.tags?.length || 0) > 0) return 1
-    if ((a.tags?.length || 0) > 0 && (b.tags?.length || 0) > 0) return 0
-
-    // Then sort by priority chains
+    // First sort by priority chains
     const aIsPriority = POPULAR_CHAIN_IDS.has(a.id)
     const bIsPriority = POPULAR_CHAIN_IDS.has(b.id)
     if (aIsPriority && !bIsPriority) return -1
