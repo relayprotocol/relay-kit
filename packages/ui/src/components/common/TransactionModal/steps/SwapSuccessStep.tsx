@@ -22,7 +22,7 @@ import {
   type ExecuteStepItem
 } from '@relayprotocol/relay-sdk'
 import { bitcoin } from '../../../../utils/bitcoin.js'
-import { formatBN } from '../../../../utils/numbers.js'
+import { formatSignificantDigits } from '../../../../utils/numbers.js'
 import { TransactionsByChain } from './TransactionsByChain.js'
 import { faArrowRight, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { RelayIcon, XIcon } from '../../../../icons/index.js'
@@ -76,9 +76,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   const chains = relayClient?.chains
 
   const _fromAmountFormatted = transaction?.data?.metadata?.currencyIn?.amount
-    ? formatBN(
+    ? formatSignificantDigits(
         transaction?.data?.metadata?.currencyIn?.amount,
-        5,
         transaction?.data?.metadata?.currencyIn?.currency?.decimals ?? 18
       )
     : fromAmountFormatted
@@ -88,9 +87,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
     transaction?.data?.metadata?.currencyIn?.currency?.metadata?.logoURI ??
     fromToken?.logoURI
   const _toAmountFormatted = transaction?.data?.metadata?.currencyOut?.amount
-    ? formatBN(
+    ? formatSignificantDigits(
         transaction?.data?.metadata?.currencyOut?.amount,
-        5,
         transaction?.data?.metadata?.currencyOut?.currency?.decimals ?? 18
       )
     : toAmountFormatted
@@ -145,9 +143,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
     transaction?.data?.metadata?.currencyGasTopup?.currency
   const formattedGasTopUpAmount = transaction?.data?.metadata?.currencyGasTopup
     ?.amount
-    ? formatBN(
+    ? formatSignificantDigits(
         BigInt(transaction?.data?.metadata?.currencyGasTopup?.amount),
-        5,
         gasTopUpAmountCurrency?.decimals ?? 18
       )
     : undefined
