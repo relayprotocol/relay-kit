@@ -378,6 +378,10 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
       document.addEventListener('click', handleClickOutside, true)
       document.addEventListener('keydown', handleEscapeKey)
 
+      requestAnimationFrame(() => {
+        dropdownRef.current?.scrollIntoView({ block: 'nearest' })
+      })
+
       return () => {
         document.removeEventListener('mousedown', handleClickOutside, true)
         document.removeEventListener('touchstart', handleClickOutside, true)
@@ -406,7 +410,6 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   // Long press handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!chain.id) return
-    e.preventDefault()
     const timer = setTimeout(() => {
       // Provide haptic feedback on long press
       if ('vibrate' in navigator) {

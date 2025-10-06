@@ -369,6 +369,10 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
       document.addEventListener('mousedown', handleClickOutside)
       document.addEventListener('touchstart', handleClickOutside)
       document.addEventListener('keydown', handleEscapeKey)
+
+      requestAnimationFrame(() => {
+        dropdownRef.current?.scrollIntoView({ block: 'nearest' })
+      })
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
         document.removeEventListener('touchstart', handleClickOutside)
