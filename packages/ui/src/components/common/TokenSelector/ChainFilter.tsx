@@ -26,6 +26,7 @@ import {
   toggleStarredChain
 } from '../../../utils/localStorage.js'
 import Tooltip from '../../../components/primitives/Tooltip.js'
+import { EventNames } from '../../../constants/events.js'
 
 export type ChainFilterValue =
   | RelayChain
@@ -38,6 +39,7 @@ type Props = {
   popularChainIds?: number[]
   onChainStarToggle?: () => void
   starredChainIds?: number[]
+  onAnalyticEvent?: (eventName: string, data?: any) => void
 }
 
 const fuseSearchOptions = {
@@ -53,7 +55,8 @@ const ChainFilter: FC<Props> = ({
   onSelect,
   popularChainIds,
   onChainStarToggle,
-  starredChainIds
+  starredChainIds,
+  onAnalyticEvent
 }) => {
   const [open, setOpen] = useState(false)
   const [chainSearchInput, setChainSearchInput] = useState('')
@@ -205,6 +208,7 @@ const ChainFilter: FC<Props> = ({
                       chain={chain}
                       tag={tag}
                       onToggleStar={onChainStarToggle}
+                      onAnalyticEvent={onAnalyticEvent}
                     />
                   </Flex>
                 )
@@ -226,7 +230,10 @@ const ChainFilter: FC<Props> = ({
                     }}
                     css={{ p: '2' }}
                   >
-                    <ChainFilterRow chain={allChainsOption} />
+                    <ChainFilterRow
+                      chain={allChainsOption}
+                      onAnalyticEvent={onAnalyticEvent}
+                    />
                   </DropdownMenuItem>
                 </>
               )}
@@ -279,6 +286,7 @@ const ChainFilter: FC<Props> = ({
                           tag={tag}
                           onToggleStar={onChainStarToggle}
                           showStar={false}
+                          onAnalyticEvent={onAnalyticEvent}
                         />
                       </Flex>
                     )
@@ -313,6 +321,7 @@ const ChainFilter: FC<Props> = ({
                       chain={chain}
                       tag={tag}
                       onToggleStar={onChainStarToggle}
+                      onAnalyticEvent={onAnalyticEvent}
                     />
                   </Flex>
                 )
@@ -330,13 +339,15 @@ type ChainFilterRowProps = {
   tag?: string
   onToggleStar?: () => void
   showStar?: boolean
+  onAnalyticEvent?: (eventName: string, data?: any) => void
 }
 
 const ChainFilterRow: FC<ChainFilterRowProps> = ({
   chain,
   tag,
   onToggleStar,
-  showStar = true
+  showStar = true,
+  onAnalyticEvent
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [longPressTimer, setLongPressTimer] = useState<number | null>(null)
@@ -378,7 +389,15 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
 
   const handleToggleStar = () => {
     if (chain.id) {
+      const previouslyStarred = isStarred
       toggleStarredChain(chain.id)
+      const eventName = previouslyStarred
+        ? EventNames.CHAIN_UNSTARRED
+        : EventNames.CHAIN_STARRED
+      onAnalyticEvent?.(eventName, {
+        chain: chain.name,
+        chain_id: chain.id
+      })
       onToggleStar?.()
       setDropdownOpen(false)
     }

@@ -132,11 +132,16 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                   )
             if (chain) {
               onSelect(chain)
+              const fromStarredList =
+                chain.id !== undefined &&
+                starredChains.some((c) => c.id === chain.id)
+
               onAnalyticEvent?.(EventNames.CURRENCY_STEP_CHAIN_FILTER, {
                 chain: chain.name,
                 chain_id: chain.id,
                 search_term: chainSearchInput,
-                context
+                context,
+                from_starred_list: fromStarredList
               })
             }
           }
@@ -210,6 +215,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                   onChainStarToggle={onChainStarToggle}
                   value={chain.id?.toString() ?? 'all-chains'}
                   key={chain.id?.toString() ?? 'all-chains'}
+                  onAnalyticEvent={onAnalyticEvent}
                 />
               )
             })
@@ -229,6 +235,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                     onChainStarToggle={onChainStarToggle}
                     value="all-chains"
                     key="all-chains"
+                    onAnalyticEvent={onAnalyticEvent}
                   />
                 </>
               )}
@@ -274,6 +281,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                         value={chain.id?.toString()}
                         key={chain.id?.toString()}
                         showStar={false}
+                        onAnalyticEvent={onAnalyticEvent}
                       />
                     ) : null
                   })}
@@ -300,6 +308,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                     activeChainRef={active ? activeChainRef : undefined}
                     value={chain.id?.toString()}
                     key={chain.id?.toString()}
+                    onAnalyticEvent={onAnalyticEvent}
                   />
                 ) : null
               })}
@@ -320,6 +329,7 @@ type ChainFilterRowProps = {
   activeChainRef?: React.RefObject<HTMLButtonElement | null>
   onChainStarToggle?: () => void
   showStar?: boolean
+  onAnalyticEvent?: (eventName: string, data?: any) => void
 }
 
 const ChainFilterRow: FC<ChainFilterRowProps> = ({
@@ -330,7 +340,8 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   value,
   activeChainRef,
   onChainStarToggle,
-  showStar = true
+  showStar = true,
+  onAnalyticEvent
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -368,7 +379,15 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
 
   const handleToggleStar = () => {
     if (chain.id) {
+      const previouslyStarred = isStarred
       toggleStarredChain(chain.id)
+      const eventName = previouslyStarred
+        ? EventNames.CHAIN_UNSTARRED
+        : EventNames.CHAIN_STARRED
+      onAnalyticEvent?.(eventName, {
+        chain: chain.name,
+        chain_id: chain.id
+      })
       onChainStarToggle?.()
       setDropdownOpen(false)
     }
