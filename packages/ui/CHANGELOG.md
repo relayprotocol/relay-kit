@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.0.3
+
+### Patch Changes
+
+- d49b6e5: Fix starred chains feature bugs
+
 ## 5.0.2
 
 ### Patch Changes
