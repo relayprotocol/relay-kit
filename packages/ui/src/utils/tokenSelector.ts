@@ -1,5 +1,6 @@
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import type { Token } from '../types/index.js'
+import { getStarredChainIds, setRelayUiKitData } from './localStorage.js'
 
 export const isChainLocked = (
   chainId: number | undefined,
@@ -26,15 +27,18 @@ type ChainOption = RelayChain | { id: undefined; name: string }
 
 type GroupedChains = {
   allChainsOption?: { id: undefined; name: string }
-  popularChains: RelayChain[]
+  starredChains: RelayChain[]
   alphabeticalChains: RelayChain[]
 }
 
 export const groupChains = (
   chains: ChainOption[],
-  popularChainIds?: number[]
+  popularChainIds?: number[],
+  currentStarredChainIds?: number[] | undefined
 ): GroupedChains => {
-  const priorityIds = new Set(popularChainIds || Array.from(POPULAR_CHAIN_IDS))
+  // Get starred chains from localStorage or use provided ones
+  let starredChainIds = currentStarredChainIds ?? getStarredChainIds()
+
   const allChainsOption = chains.find((chain) => chain.id === undefined) as
     | { id: undefined; name: string }
     | undefined
@@ -42,24 +46,44 @@ export const groupChains = (
     (chain) => chain.id !== undefined
   ) as RelayChain[]
 
-  const popularChains = otherChains
-    .filter(
-      (chain) =>
-        (chain.id && priorityIds.has(chain.id)) ||
-        ('tags' in chain && chain.tags && chain.tags.length > 0)
-    )
-    .sort((a, b) => {
-      const aHasTags = 'tags' in a && a.tags && a.tags.length > 0
-      const bHasTags = 'tags' in b && b.tags && b.tags.length > 0
-      if (aHasTags && !bHasTags) return -1
-      if (!aHasTags && bHasTags) return 1
+  let starredChains: RelayChain[]
 
-      return a.displayName.localeCompare(b.displayName)
-    })
+  // If starredChainIds is undefined, use popular chains and set them
+  if (starredChainIds === undefined) {
+    const defaultStarredIds = popularChainIds || Array.from(POPULAR_CHAIN_IDS)
+    // Filter to only include chains that actually exist in the chains array
+    const availableChainIds = chains
+      .filter((chain) => chain.id !== undefined)
+      .map((chain) => (chain as RelayChain).id)
+    const validStarredIds = defaultStarredIds.filter((id) =>
+      availableChainIds.includes(id)
+    )
+
+    if (validStarredIds.length > 0) {
+      // Set the popular chains as starred and return them
+      setRelayUiKitData({ starredChainIds: validStarredIds })
+      const priorityIds = new Set(validStarredIds)
+      starredChains = otherChains
+        .filter((chain) => chain.id && priorityIds.has(chain.id))
+        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    } else {
+      // No valid popular chains found, return empty array
+      starredChains = []
+    }
+  } else if (starredChainIds.length === 0) {
+    // User has manually unstarred all chains, show empty starred section
+    starredChains = []
+  } else {
+    // User has starred chains, show them
+    const priorityIds = new Set(starredChainIds)
+    starredChains = otherChains
+      .filter((chain) => chain.id && priorityIds.has(chain.id))
+      .sort((a, b) => a.displayName.localeCompare(b.displayName))
+  }
 
   return {
     allChainsOption,
-    popularChains,
+    starredChains,
     alphabeticalChains: otherChains.sort((a, b) =>
       a.displayName.localeCompare(b.displayName)
     )
@@ -68,12 +92,7 @@ export const groupChains = (
 
 export const sortChains = (chains: RelayChain[]) => {
   return chains.sort((a, b) => {
-    // First sort by tags
-    if ((a.tags?.length || 0) > 0 && (b.tags?.length || 0) === 0) return -1
-    if ((a.tags?.length || 0) === 0 && (b.tags?.length || 0) > 0) return 1
-    if ((a.tags?.length || 0) > 0 && (b.tags?.length || 0) > 0) return 0
-
-    // Then sort by priority chains
+    // First sort by priority chains
     const aIsPriority = POPULAR_CHAIN_IDS.has(a.id)
     const bIsPriority = POPULAR_CHAIN_IDS.has(b.id)
     if (aIsPriority && !bIsPriority) return -1

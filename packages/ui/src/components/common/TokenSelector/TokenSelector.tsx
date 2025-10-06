@@ -49,6 +49,7 @@ import {
 } from '../../../utils/tokenSelector.js'
 import { useInternalRelayChains } from '../../../hooks/index.js'
 import { useTrendingCurrencies } from '@relayprotocol/relay-kit-hooks'
+import { getStarredChainIds } from '../../../utils/localStorage.js'
 
 export type TokenSelectorProps = {
   token?: Token
@@ -96,6 +97,9 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     id: undefined,
     name: 'All Chains'
   })
+  const [starredChainIds, setStarredChainIds] = useState<number[] | undefined>(
+    () => getStarredChainIds()
+  )
 
   const {
     value: tokenSearchInput,
@@ -170,12 +174,15 @@ const TokenSelector: FC<TokenSelectorProps> = ({
           configuredChainIds.includes(chain.id)
         )
 
-  const allChains = [
-    ...(isReceivingDepositAddress
-      ? []
-      : [{ id: undefined, name: 'All Chains' }]),
-    ...chainFilterOptions
-  ]
+  const allChains = useMemo(
+    () => [
+      ...(isReceivingDepositAddress
+        ? []
+        : [{ id: undefined, name: 'All Chains' }]),
+      ...chainFilterOptions
+    ],
+    [isReceivingDepositAddress, chainFilterOptions, starredChainIds]
+  )
 
   const useDefaultTokenList = debouncedTokenSearchValue === ''
 
@@ -326,6 +333,17 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   const inputElement = hasMultipleConfiguredChainIds
     ? chainSearchInputElement
     : tokenSearchInputElement
+
+  const handleChainStarToggle = useCallback(() => {
+    setStarredChainIds(getStarredChainIds())
+  }, [])
+
+  // Update starred chains when the modal opens to sync with other instances
+  useEffect(() => {
+    if (open) {
+      setStarredChainIds(getStarredChainIds())
+    }
+  }, [open])
 
   const resetState = useCallback(() => {
     setTokenSearchInput('')
@@ -526,6 +544,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                   tokenSearchInputRef={tokenSearchInputElement}
                   popularChainIds={popularChainIds}
                   context={context}
+                  onChainStarToggle={handleChainStarToggle}
+                  starredChainIds={starredChainIds}
                 />
               ) : null}
 
@@ -617,6 +637,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                       value={chainFilter}
                       onSelect={setChainFilter}
                       popularChainIds={popularChainIds}
+                      onChainStarToggle={handleChainStarToggle}
+                      starredChainIds={starredChainIds}
                     />
                   ) : null}
                 </Flex>
