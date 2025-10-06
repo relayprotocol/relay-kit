@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.0.2
+
+### Patch Changes
+
+- 7784329: Add starred chains feature to token selector
+
 ## 5.0.1
 
 ### Patch Changes
