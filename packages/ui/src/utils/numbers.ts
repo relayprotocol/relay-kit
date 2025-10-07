@@ -258,7 +258,11 @@ function formatSignificantDigits(
   if (typeof value === 'bigint') {
     num = +formatUnits(value, decimals)
   } else if (typeof value === 'string') {
-    num = parseFloat(value)
+    try {
+      num = +formatUnits(BigInt(value), decimals)
+    } catch {
+      num = parseFloat(value)
+    }
   } else {
     num = value
   }
@@ -277,11 +281,10 @@ function formatSignificantDigits(
       result = result.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '')
     }
   } else {
-    const strNum = absNum.toString()
-
-    if (strNum.includes('e') || absNum < 0.00001) {
+    if (absNum < 0.00001) {
       result = '< 0.00001'
-    } else if (strNum.includes('.')) {
+    } else {
+      const strNum = absNum.toString()
       const [, decimalPart] = strNum.split('.')
       const truncated = decimalPart.substring(0, 5)
       result = '0.' + truncated
@@ -289,8 +292,6 @@ function formatSignificantDigits(
       if (result === '0.' || result === '0') {
         result = '< 0.00001'
       }
-    } else {
-      result = strNum
     }
   }
 
