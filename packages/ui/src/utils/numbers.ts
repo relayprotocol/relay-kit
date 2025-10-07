@@ -240,10 +240,69 @@ function formatFixedLength(amount: string, maxLength: number) {
   return result
 }
 
+/**
+ * Formats a number to 6 total digits with special handling for decimals.
+ * For numbers >= 1: rounds to 6 significant digits (e.g., 289.97568 → 289.976, 1234.5678 → 1234.57)
+ * For numbers < 1: truncates to "0." + 5 digits (e.g., 0.00056 → 0.00056, 0.0001234567 → 0.00012)
+ * @param value The number to format (as number, string, or bigint)
+ * @param decimals Optional decimals for bigint conversion (default 18)
+ * @returns Formatted string with 6 total digits
+ */
+function formatSignificantDigits(
+  value: number | string | bigint | null | undefined,
+  decimals: number = 18
+): string {
+  if (value === null || value === undefined) return '-'
+
+  let num: number
+  if (typeof value === 'bigint') {
+    num = +formatUnits(value, decimals)
+  } else if (typeof value === 'string') {
+    try {
+      num = +formatUnits(BigInt(value), decimals)
+    } catch {
+      num = parseFloat(value)
+    }
+  } else {
+    num = value
+  }
+
+  if (isNaN(num) || num === 0) return '0'
+
+  const absNum = Math.abs(num)
+  const isNegative = num < 0
+
+  let result: string
+
+  if (absNum >= 1) {
+    result = absNum.toPrecision(6)
+
+    if (!result.includes('e')) {
+      result = result.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '')
+    }
+  } else {
+    if (absNum < 0.00001) {
+      result = '< 0.00001'
+    } else {
+      const strNum = absNum.toString()
+      const [, decimalPart] = strNum.split('.')
+      const truncated = decimalPart.substring(0, 5)
+      result = '0.' + truncated
+      result = result.replace(/0+$/, '')
+      if (result === '0.' || result === '0') {
+        result = '< 0.00001'
+      }
+    }
+  }
+
+  return isNegative ? '-' + result : result
+}
+
 export {
   formatDollar,
   formatBN,
   formatFixedLength,
   formatNumber,
+  formatSignificantDigits,
   truncateBalance
 }
