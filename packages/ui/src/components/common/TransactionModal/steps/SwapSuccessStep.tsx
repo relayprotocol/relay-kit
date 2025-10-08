@@ -434,8 +434,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         >
           {fillTime && fillTime !== '-' ? (
             <>
-              Completed in{' '}
-              <span className="green-time">{fillTime.replace(/s$/, 'S')}</span>
+              Completed in <span className="green-time">{fillTime}</span>
             </>
           ) : (
             'Transaction Completed'
