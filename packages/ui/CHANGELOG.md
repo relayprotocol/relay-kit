@@ -1,5 +1,12 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.0.4
+
+### Patch Changes
+
+- d830300: Display lowercase 's' for seconds on success screen
+- ae3e3bb: Improved token amount formatting on success screen
+
 ## 5.0.3
 
 ### Patch Changes
