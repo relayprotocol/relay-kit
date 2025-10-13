@@ -1,6 +1,6 @@
 import { type Execute, RelayClient } from '@relayprotocol/relay-sdk'
 import { type RelayTransaction } from '../types/index.js'
-import { relativeTime } from './time.js'
+import { formatSeconds } from './time.js'
 
 export const extractFromChain = (
   transaction?: RelayTransaction | null,
@@ -42,11 +42,7 @@ export const calculateFillTime = (transaction?: RelayTransaction | null) => {
         fillTime = '-'
         seconds = 0
       } else if (seconds > 60) {
-        fillTime = `${relativeTime(
-          txEndTimestamp * 1000,
-          txStartTimestamp * 1000,
-          true
-        )}`
+        fillTime = formatSeconds(seconds)
       } else {
         fillTime = `${seconds}s`
       }
