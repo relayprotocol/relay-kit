@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.0.5
+
+### Patch Changes
+
+- 8ca6ff5: Improve sponsored tokens logic by switching to more flexible useSecureApi method
+
 ## 5.0.4
 
 ### Patch Changes
