@@ -46,6 +46,7 @@ import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
 import GasTopUpSection from './GasTopUpSection.js'
 import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
 import { PriceImpact } from './PriceImpact.js'
+import type { useQuote } from '@relayprotocol/relay-kit-hooks'
 
 type BaseSwapWidgetProps = {
   fromToken?: Token
@@ -65,7 +66,7 @@ type BaseSwapWidgetProps = {
   disableInputAutoFocus?: boolean
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean
-  sponsoredTokens?: string[]
+  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
   onOpenSlippageConfig?: () => void
   onFromTokenChange?: (token?: Token) => void
   onToTokenChange?: (token?: Token) => void
@@ -116,7 +117,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   disableInputAutoFocus = false,
   popularChainIds,
   disablePasteWalletAddressOption,
-  sponsoredTokens,
+  useSecureBaseUrl,
   onSetPrimaryWallet,
   onLinkNewWallet,
   onFromTokenChange,
@@ -192,7 +193,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
       onSwapError={onSwapError}
       onAnalyticEvent={onAnalyticEvent}
       supportedWalletVMs={supportedWalletVMs}
-      sponsoredTokens={sponsoredTokens}
+      useSecureBaseUrl={useSecureBaseUrl}
     >
       {({
         quote,
