@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 3.0.1
+
+### Patch Changes
+
+- 028701b: Allow getQuote to pass in headers
+
 ## 3.0.0
 
 ### Major Changes
