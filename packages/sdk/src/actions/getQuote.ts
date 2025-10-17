@@ -76,7 +76,8 @@ const getDefaultQuoteParameters = async (
  */
 export async function getQuote(
   parameters: GetQuoteParameters,
-  includeDefaultParameters?: boolean
+  includeDefaultParameters?: boolean,
+  headers?: Record<string, string>
 ): Promise<Execute> {
   const {
     toChainId,
@@ -137,7 +138,6 @@ export async function getQuote(
     throw new Error('Recipient is required')
   }
 
-
   const query: QuoteBody = {
     user: includeDefaultParameters
       ? (defaultParameters?.user as string)
@@ -159,7 +159,8 @@ export async function getQuote(
   const request: AxiosRequestConfig = {
     url: `${client.baseApiUrl}/quote`,
     method: 'post',
-    data: query
+    data: query,
+    headers
   }
 
   const res = await axios.request(request)
