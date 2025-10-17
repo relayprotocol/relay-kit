@@ -23,6 +23,7 @@ const SwapActionPage: NextPage = () => {
 
   const { primaryWallet: primaryWallet } = useDynamicContext()
   const [jsonPayload, setJsonPayload] = useState<any>()
+  const [headersPayload, setHeadersPayload] = useState<any>()
   const [error, setError] = useState<string | undefined>()
   const [logs, setLogs] = useState<{ message: string[]; level: LogLevel }[]>([])
   const [quote, setQuote] = useState<Execute | undefined>()
@@ -167,6 +168,12 @@ const SwapActionPage: NextPage = () => {
             value={jsonPayload}
             onChange={(e) => setJsonPayload(e.target.value)}
           />
+          <div>Paste in headers JSON parameters below (optional):</div>
+          <textarea
+            style={{ minHeight: 200, minWidth: 500 }}
+            value={headersPayload}
+            onChange={(e) => setHeadersPayload(e.target.value)}
+          />
           <button
             style={{
               marginTop: 50,
@@ -300,7 +307,8 @@ const SwapActionPage: NextPage = () => {
                   tradeType,
                   options
                 },
-                true
+                true,
+                headersPayload ? JSON.parse(headersPayload) : undefined
               )
 
               setQuote(quote)
