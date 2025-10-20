@@ -35,7 +35,7 @@ export const BalanceDisplay: FC<BalanceDisplayProps> = ({
 
   if (pending) {
     return (
-      <Flex css={{ height: 18 }}>
+      <Flex align="center" css={{ height: 18 }}>
         <Text style={textStyle} color={'red'}>
           {hideBalanceLabel ? 'pending' : 'Balance: pending'}
         </Text>
@@ -44,11 +44,11 @@ export const BalanceDisplay: FC<BalanceDisplayProps> = ({
   }
 
   return (
-    <Flex css={{ height: 18 }}>
+    <Flex align="center" css={{ height: 18 }}>
       {isConnected ? (
         <>
           {isLoading ? (
-            <Skeleton css={{ mt: '6px' }} />
+            <Skeleton />
           ) : (
             <Text
               style={textStyle}
