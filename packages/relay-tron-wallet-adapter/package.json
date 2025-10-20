@@ -1,0 +1,63 @@
+{
+    "name": "@relayprotocol/relay-tron-wallet-adapter",
+    "version": "0.0.0",
+    "description": "A Tron adapter for use in @relayprotocol/relay-sdk",
+    "type": "module",
+    "source": "./src/index.ts",
+    "main": "./_cjs/src/index.js",
+    "module": "./_esm/src/index.js",
+    "types": "./_types/src/index.d.ts",
+    "typings": "./_types/src/index.d.ts",
+    "sideEffects": false,
+    "files": [
+        "./_cjs",
+        "./_esm",
+        "./_types"
+    ],
+    "exports": {
+        "types": "./_types/src/index.d.ts",
+        "import": "./_esm/src/index.js",
+        "require": "./_cjs/src/index.js"
+    },
+    "scripts": {
+        "build": "pnpm run clean && pnpm run build:cjs && pnpm run build:esm && pnpm run build:types",
+        "build:cjs": "tsc --project ./tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && printf '{\"type\":\"commonjs\"}' > ./_cjs/package.json",
+        "build:esm": "tsc --project ./tsconfig.build.json --module es2015 --outDir ./_esm && printf '{\"type\": \"module\",\"sideEffects\":false}' > ./_esm/package.json",
+        "build:types": "tsc --project ./tsconfig.build.json --module esnext --outDir ./_types --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
+        "dev": "concurrently \"pnpm run clean\" \"pnpm run dev:esm\" \"pnpm run dev:types\"",
+        "dev:esm": "tsc --watch --project ./tsconfig.build.json --module es2015 --outDir ./_esm && printf '{\"type\": \"module\",\"sideEffects\":false}' > ./_esm/package.json",
+        "dev:types": "tsc --watch --project ./tsconfig.build.json --module esnext --outDir ./_types --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
+        "clean": "rimraf ./_esm ./_cjs ./_types",
+        "typecheck": "tsc --noEmit"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/reservoirprotocol/relay-sdk"
+    },
+    "keywords": [
+        "reservoir",
+        "relay-tvm-wallet-adapter",
+        "relay-tron-wallet-adapter",
+        "reservoir-tron-wallet-adapter",
+        "relay",
+        "protocol",
+        "sdk-adapter",
+        "tvm",
+        "tron"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "devDependencies": {
+        "rimraf": "^5.0.5"
+    },
+    "dependencies": {
+        "@types/node": "^22.5.4",
+        "axios": "^1.6.5"
+    },
+    "peerDependencies": {
+        "@relayprotocol/relay-sdk": "workspace:*",
+        "viem": ">=2.26.0",
+        "tronweb": "^6.0.4"
+    }
+}

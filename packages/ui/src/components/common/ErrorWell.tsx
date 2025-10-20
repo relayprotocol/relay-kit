@@ -33,6 +33,8 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
       return 'Oops, something went wrong while initiating the swap. Your request was not submitted. Please try again.'
     } else if (error?.message?.includes('solver status check')) {
       return 'This transaction is taking longer than usual to process. Please visit the transaction page for more details.'
+    } else if (error?.message?.includes('OUT_OF_ENERGY')) {
+      return 'Your wallet does not have enough energy to complete the transaction. Please top up your energy.'
     } else if (error.name === 'TransactionConfirmationError') {
       return 'Transaction Failed. Try adjusting slippage or gas limits and try again.'
     }
