@@ -45,6 +45,8 @@ export const adaptTronWallet = (
         fee_limit: 30_000_000
       }
 
+      client.log(['Building Tron Transaction', body], LogLevel.Verbose)
+
       // 1) Ask the node to build the transaction from raw calldata
       const res = await tronWeb.fullNode.request<TriggerSmartContractResponse>(
         'wallet/triggersmartcontract',
