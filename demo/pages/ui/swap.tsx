@@ -34,7 +34,7 @@ import { isSuiWallet, SuiWallet } from '@dynamic-labs/sui'
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 import Head from 'next/head'
-import { isTronWallet } from '@dynamic-labs/tron'
+import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
 
 const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm', 'tvm'] as const
 
@@ -173,7 +173,14 @@ const SwapWidgetPage: NextPage = () => {
               }
             )
           } else if (isTronWallet(primaryWallet)) {
-            adaptedWallet = adaptTronWallet(primaryWallet.address)
+            const tronWeb = (primaryWallet as TronWallet).getTronWeb()
+            if (!tronWeb) {
+              throw 'Unable to setup Tron wallet'
+            }
+            adaptedWallet = adaptTronWallet(
+              (primaryWallet as TronWallet).address,
+              tronWeb
+            )
           }
 
           setWallet(adaptedWallet)

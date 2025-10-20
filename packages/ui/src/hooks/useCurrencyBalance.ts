@@ -18,6 +18,7 @@ import useRelayClient from './useRelayClient.js'
 import useEclipseBalance from '../hooks/useEclipseBalance.js'
 import { eclipse } from '../utils/solana.js'
 import useHyperliquidUsdcBalance from './useHyperliquidUsdcBalance.js'
+import useTronBalance from '../hooks/useTronBalance.js'
 
 type UseBalanceProps = {
   chain?: RelayChain
@@ -180,6 +181,19 @@ const useCurrencyBalance = ({
     staleTime: refreshInterval
   })
 
+  const tronBalance = useTronBalance(address, currency, {
+    enabled: Boolean(
+      !adaptedWalletBalanceIsEnabled &&
+        chain &&
+        chain.vmType === 'tvm' &&
+        address &&
+        _isValidAddress &&
+        enabled
+    ),
+    gcTime: refreshInterval,
+    staleTime: refreshInterval
+  })
+
   if (adaptedWalletBalanceIsEnabled) {
     return {
       value: adaptedWalletBalance.data,
@@ -288,6 +302,15 @@ const useCurrencyBalance = ({
       isLoading: hyperliquidUsdcBalance.isLoading,
       isError: hyperliquidUsdcBalance.isError,
       error: hyperliquidUsdcBalance.error,
+      isDuneBalance: false
+    }
+  } else if (chain?.vmType === 'tvm') {
+    return {
+      value: tronBalance.balance,
+      queryKey: tronBalance.queryKey,
+      isLoading: tronBalance.isLoading,
+      isError: tronBalance.isError,
+      error: tronBalance.error,
       isDuneBalance: false
     }
   } else {

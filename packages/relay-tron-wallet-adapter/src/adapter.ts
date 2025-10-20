@@ -2,23 +2,20 @@ import { TronWeb } from 'tronweb'
 import {
   getClient,
   LogLevel,
-  // LogLevel,
-  // getClient,
   type AdaptedWallet
-  // type TransactionStepItem
 } from '@relayprotocol/relay-sdk'
 import type { TriggerSmartContractResponse } from './types.js'
 
 /**
  * Adapts a Tron wallet to work with the Relay SDK
  * @param walletAddress - The public key address of the Tron wallet
- * @param chainId - The chain ID for the Tron network (e.g., 101 for mainnet, 102 for testnet)
- * @param connection - The Tron web3.js Connection instance for interacting with the network
- * @param signAndSendTransaction - Function to sign and send a transaction, returning a promise with the transaction signature
- * @param payerKey - Optional public key of the account that will pay for transaction fees (defaults to walletAddress)
+ * @param tronWeb - The TronWeb instance for interacting with the Tron network
  * @returns An AdaptedWallet object that conforms to the Relay SDK interface
  */
-export const adaptTronWallet = (walletAddress: string): AdaptedWallet => {
+export const adaptTronWallet = (
+  walletAddress: string,
+  tronWeb: TronWeb
+): AdaptedWallet => {
   const getChainId = async () => {
     return 728126428
   }
@@ -34,22 +31,18 @@ export const adaptTronWallet = (walletAddress: string): AdaptedWallet => {
     },
     handleSendTransactionStep: async (_chainId, stepItem) => {
       const client = getClient()
-      const tronWeb = new TronWeb({
-        fullHost: 'https://api.trongrid.io'
-      })
 
       if (!walletAddress) throw new Error('No wallet address provided')
-      // Safety: ensure the connected wallet matches owner, or override with the connected wallet
-      const ownerHex = tronWeb.address.toHex(walletAddress)
 
       // TRON node expects hex strings WITHOUT "0x"
       const strip0x = (s: string) => (s.startsWith('0x') ? s.slice(2) : s)
 
       const body = {
-        owner_address: ownerHex,
+        owner_address: stepItem.data.parameter?.owner_address,
         contract_address: stepItem.data.parameter?.contract_address,
         data: strip0x(stepItem.data.parameter?.data!),
-        visible: false // using hex addresses, not base58
+        visible: false,
+        fee_limit: 30_000_000
       }
 
       // 1) Ask the node to build the transaction from raw calldata
@@ -77,9 +70,6 @@ export const adaptTronWallet = (walletAddress: string): AdaptedWallet => {
       const pollMs = 1500
       const timeoutMs = 60_000
       const targetConfs = 1
-      const tronWeb = new TronWeb({
-        fullHost: 'https://api.trongrid.io'
-      })
 
       const start = Date.now()
       const getTip = async () =>

@@ -23,6 +23,7 @@ import useGasTopUpRequired from './useGasTopUpRequired.js'
 import useHyperliquidUsdcBalance from './useHyperliquidUsdcBalance.js'
 import useEOADetection from './useEOADetection.js'
 import useTransactionCount from './useTransactionCount.js'
+import useTronBalance from './useTronBalance.js'
 
 export {
   useMounted,
@@ -49,5 +50,6 @@ export {
   useGasTopUpRequired,
   useHyperliquidUsdcBalance,
   useEOADetection,
-  useTransactionCount
+  useTransactionCount,
+  useTronBalance
 }
