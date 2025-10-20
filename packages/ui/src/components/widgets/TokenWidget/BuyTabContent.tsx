@@ -1,5 +1,4 @@
 import { TabsContent } from '../../primitives/Tabs.js'
-import TokenSelectorContainer from '../TokenSelectorContainer.js'
 import { Flex, Text, Button, Box } from '../../primitives/index.js'
 import AmountInput from '../../common/AmountInput.js'
 import {
@@ -26,6 +25,7 @@ import { TokenWidgetTrigger } from './TokenWidgetTrigger.js'
 import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
 import TransactionDetailsFooter from './TransactionDetailsFooter.js'
+import SectionContainer from './SectionContainer.js'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -173,7 +173,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
 
   return (
     <TabsContent value="buy">
-      <TokenSelectorContainer
+      <SectionContainer
         css={{
           backgroundColor: 'widget-background',
           mb: 'widget-card-section-gutter'
@@ -586,7 +586,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
         </Flex>
 
         <TransactionDetailsFooter />
-      </TokenSelectorContainer>
+      </SectionContainer>
     </TabsContent>
   )
 }

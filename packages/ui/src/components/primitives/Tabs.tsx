@@ -16,7 +16,7 @@ const TabsListCss = cva({
     alignItems: 'center',
     borderRadius: 8,
     p: '1',
-    backgroundColor: 'gray2',
+    backgroundColor: 'transparent',
     border: 'none'
   }
 })
