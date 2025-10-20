@@ -1,7 +1,6 @@
 import type { FC } from 'react'
 import { Flex, Skeleton, Text } from '../primitives/index.js'
 import { formatBN } from '../../utils/numbers.js'
-import { useAccount } from 'wagmi'
 
 type BalanceDisplayProps = {
   balance?: bigint
@@ -12,6 +11,8 @@ type BalanceDisplayProps = {
   displaySymbol?: boolean
   isConnected?: boolean
   pending?: boolean
+  hideBalanceLabel?: boolean
+  size?: 'sm' | 'md'
 }
 
 export const BalanceDisplay: FC<BalanceDisplayProps> = ({
@@ -22,17 +23,21 @@ export const BalanceDisplay: FC<BalanceDisplayProps> = ({
   hasInsufficientBalance,
   displaySymbol = true,
   isConnected,
-  pending
+  pending,
+  hideBalanceLabel = false,
+  size = 'sm'
 }) => {
   const compactBalance = Boolean(
     balance && decimals && balance.toString().length - decimals > 4
   )
 
+  const textStyle = size === 'md' ? 'subtitle2' : 'subtitle3'
+
   if (pending) {
     return (
       <Flex css={{ height: 18 }}>
-        <Text style="subtitle3" color={'red'}>
-          Balance: pending
+        <Text style={textStyle} color={'red'}>
+          {hideBalanceLabel ? 'pending' : 'Balance: pending'}
         </Text>
       </Flex>
     )
@@ -46,10 +51,10 @@ export const BalanceDisplay: FC<BalanceDisplayProps> = ({
             <Skeleton css={{ mt: '6px' }} />
           ) : (
             <Text
-              style="subtitle3"
+              style={textStyle}
               color={hasInsufficientBalance ? 'red' : 'subtleSecondary'}
             >
-              Balance:{' '}
+              {hideBalanceLabel ? '' : 'Balance: '}
               {balance !== undefined
                 ? formatBN(balance ?? 0n, 5, decimals, compactBalance) +
                   (displaySymbol && symbol ? ` ${symbol}` : '')
