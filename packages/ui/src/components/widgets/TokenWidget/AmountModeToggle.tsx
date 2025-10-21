@@ -1,8 +1,4 @@
-import {
-  type ComponentPropsWithoutRef,
-  type FC,
-  type ReactNode
-} from 'react'
+import { type ComponentPropsWithoutRef, type FC, type ReactNode } from 'react'
 import { Flex, Text, Button } from '../../primitives/index.js'
 import { SwitchIcon } from '../../../icons/index.js'
 
@@ -31,7 +27,7 @@ const AmountModeToggle: FC<AmountModeToggleProps> = ({
     <Flex
       align="center"
       css={{
-        gap: '4px',
+        gap: '8px',
         _hover: { cursor: 'pointer' }
       }}
       onClick={() => {
