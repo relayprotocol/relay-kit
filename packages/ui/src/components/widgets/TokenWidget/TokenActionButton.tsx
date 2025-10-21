@@ -22,6 +22,9 @@ const TokenActionButton: FC<TokenActionButtonProps> = ({
   address
 }) => {
   const isMounted = useMounted()
+  const buttonDisabled = disabled || isFetchingQuote || !hasValidAmount
+  const buttonLabel =
+    isFetchingQuote && hasValidAmount ? 'Fetching quote...' : ctaCopy
 
   // If wallet is connected, show action button
   if (isMounted && address) {
@@ -38,11 +41,15 @@ const TokenActionButton: FC<TokenActionButtonProps> = ({
         color="primary"
         aria-label={ctaCopy}
         cta={true}
-        disabled={false}
+        disabled={buttonDisabled}
         data-testid="token-action-button"
-        onClick={onClick}
+        onClick={() => {
+          if (!buttonDisabled) {
+            onClick()
+          }
+        }}
       >
-        {ctaCopy}
+        {buttonLabel}
       </Button>
     )
   }
