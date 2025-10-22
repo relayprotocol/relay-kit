@@ -1,6 +1,5 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Text, Button, Box } from '../../primitives/index.js'
-import Skeleton from '../../primitives/Skeleton.js'
 import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
@@ -204,11 +203,10 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
     Number(debouncedOutputAmountValue) === 0 ||
     !hasSelectedTokens
 
-  const isLoadingPayWith =
-    isFetchingQuote ||
-    !toToken ||
-    !amountOutputValue ||
-    Number(amountOutputValue) === 0
+  const hasValidOutputAmount =
+    toToken && amountOutputValue && Number(amountOutputValue) > 0
+
+  const isLoadingPayWith = hasValidOutputAmount && isFetchingQuote && fromToken
 
   const disableActionButton =
     isFetchingQuote ||
@@ -313,36 +311,30 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             }}
           >
             <AmountModeToggle onToggle={toggleInputMode}>
-              {isUsdInputMode ? (
-                toToken ? (
-                  usdOutputValue && Number(usdOutputValue) > 0 ? (
-                    amountOutputValue && !isLoadingToTokenPrice ? (
-                      `${formatNumber(amountOutputValue, 4, false)} ${toToken.symbol}`
-                    ) : (
-                      <Skeleton css={{ width: 45, height: 12 }} />
-                    )
-                  ) : (
-                    `0 ${toToken.symbol}`
-                  )
-                ) : null
-              ) : toToken &&
-                quote?.details?.currencyOut?.amountUsd &&
-                !isFetchingQuote ? (
-                formatDollar(Number(quote.details.currencyOut.amountUsd))
-              ) : toToken &&
-                isLoadingToTokenPrice &&
-                amountOutputValue &&
-                Number(amountOutputValue) > 0 ? (
-                <Skeleton css={{ width: 45, height: 12 }} />
-              ) : toToken &&
-                outputAmountUsd &&
-                outputAmountUsd > 0 &&
-                toTokenPriceData?.price &&
-                toTokenPriceData.price > 0 ? (
-                formatDollar(outputAmountUsd)
-              ) : (
-                '$0.00'
-              )}
+              {isUsdInputMode
+                ? toToken
+                  ? usdOutputValue && Number(usdOutputValue) > 0
+                    ? amountOutputValue && !isLoadingToTokenPrice
+                      ? `${formatNumber(amountOutputValue, 4, false)} ${toToken.symbol}`
+                      : '...'
+                    : `0 ${toToken.symbol}`
+                  : null
+                : toToken &&
+                    quote?.details?.currencyOut?.amountUsd &&
+                    !isFetchingQuote
+                  ? formatDollar(Number(quote.details.currencyOut.amountUsd))
+                  : toToken &&
+                      isLoadingToTokenPrice &&
+                      amountOutputValue &&
+                      Number(amountOutputValue) > 0
+                    ? '...'
+                    : toToken &&
+                        outputAmountUsd &&
+                        outputAmountUsd > 0 &&
+                        toTokenPriceData?.price &&
+                        toTokenPriceData.price > 0
+                      ? formatDollar(outputAmountUsd)
+                      : '$0.00'}
             </AmountModeToggle>
             <PriceImpact
               toToken={toToken}
@@ -450,10 +442,26 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               </div>
             }
           />
-          <Flex direction="column" align="end">
+          <Flex
+            direction="column"
+            align="end"
+            css={{
+              gap: '1',
+              minHeight: 42,
+              visibility: hasValidOutputAmount ? 'visible' : 'hidden'
+            }}
+          >
             <Flex align="center" css={{ gap: '1' }}>
               {isLoadingPayWith ? (
-                <Skeleton css={{ width: 80, height: 20 }} />
+                <Text
+                  style="h6"
+                  css={{
+                    color: 'text-subtle',
+                    fontWeight: '600'
+                  }}
+                >
+                  ... total
+                </Text>
               ) : quote?.details?.currencyIn?.amountUsd &&
                 Number(quote.details.currencyIn.amountUsd) > 0 ? (
                 <Text style="h6">
@@ -476,7 +484,13 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               </Box>
             </Flex>
             {isLoadingPayWith ? (
-              <Skeleton css={{ width: 60, height: 14 }} />
+              <Text
+                style="subtitle3"
+                color="subtleSecondary"
+                css={{ fontWeight: '400' }}
+              >
+                ...
+              </Text>
             ) : fromToken &&
               amountInputValue &&
               Number(amountInputValue) > 0 ? (
