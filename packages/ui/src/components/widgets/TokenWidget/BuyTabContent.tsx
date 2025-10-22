@@ -1,5 +1,6 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Text, Button, Box } from '../../primitives/index.js'
+import Skeleton from '../../primitives/Skeleton.js'
 import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
@@ -26,6 +27,7 @@ import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
 import TransactionDetailsFooter from './TransactionDetailsFooter.js'
 import SectionContainer from './SectionContainer.js'
+import { WidgetErrorWell } from '../WidgetErrorWell.js'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -35,6 +37,7 @@ type LinkNewWalletHandler = (params: {
 type BuyTabContentProps = {
   slippageTolerance?: string
   onOpenSlippageConfig?: () => void
+  onSlippageToleranceChange?: (value: string | undefined) => void
   isUsdInputMode: boolean
   usdOutputValue: string
   tradeType: TradeType
@@ -55,9 +58,9 @@ type BuyTabContentProps = {
   debouncedAmountOutputControls: ChildrenProps['debouncedAmountOutputControls']
   onAnalyticEvent?: (eventName: string, data?: any) => void
   feeBreakdown: ChildrenProps['feeBreakdown']
-  isLoadingToBalance: ChildrenProps['isLoadingToBalance']
-  toBalance: ChildrenProps['toBalance']
-  toBalancePending: ChildrenProps['toBalancePending']
+  isLoadingFromBalance: ChildrenProps['isLoadingFromBalance']
+  fromBalance: ChildrenProps['fromBalance']
+  fromBalancePending: ChildrenProps['fromBalancePending']
   address: ChildrenProps['address']
   multiWalletSupportEnabled: boolean
   toChainWalletVMSupported: ChildrenProps['toChainWalletVMSupported']
@@ -68,6 +71,7 @@ type BuyTabContentProps = {
   onLinkNewWallet?: LinkNewWalletHandler
   linkedWallets?: LinkedWallet[]
   toChain?: RelayChain
+  fromChain?: RelayChain
   isValidToAddress: ChildrenProps['isValidToAddress']
   isRecipientLinked?: ChildrenProps['isRecipientLinked']
   setAddressModalOpen: Dispatch<SetStateAction<boolean>>
@@ -77,6 +81,7 @@ type BuyTabContentProps = {
   supportedWalletVMs: ChildrenProps['supportedWalletVMs']
   handleSetFromToken: (token?: Token) => void
   handleSetToToken: (token?: Token) => void
+  onSetPrimaryWallet?: (address: string) => void
   lockToToken: boolean
   lockFromToken: boolean
   isSingleChainLocked: boolean
@@ -93,11 +98,21 @@ type BuyTabContentProps = {
   showHighPriceImpactWarning: boolean
   disableSwapButton?: boolean
   toggleInputMode: () => void
+  onPrimaryAction: () => void
+  error: ChildrenProps['error']
+  relayerFeeProportion: ChildrenProps['relayerFeeProportion']
+  highRelayerServiceFee: ChildrenProps['highRelayerServiceFee']
+  isCapacityExceededError?: ChildrenProps['isCapacityExceededError']
+  isCouldNotExecuteError?: ChildrenProps['isCouldNotExecuteError']
+  supportsExternalLiquidity: ChildrenProps['supportsExternalLiquidity']
+  recipientLinkedWallet?: ChildrenProps['linkedWallet']
+  toChainVmType?: string
 }
 
 const BuyTabContent: FC<BuyTabContentProps> = ({
   slippageTolerance,
   onOpenSlippageConfig,
+  onSlippageToleranceChange,
   isUsdInputMode,
   usdOutputValue,
   tradeType,
@@ -118,12 +133,13 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   debouncedAmountOutputControls,
   onAnalyticEvent,
   feeBreakdown,
-  isLoadingToBalance,
-  toBalance,
-  toBalancePending,
+  isLoadingFromBalance,
+  fromBalance,
+  fromBalancePending,
   address,
   multiWalletSupportEnabled,
   toChainWalletVMSupported,
+  fromChain,
   disablePasteWalletAddressOption,
   recipient,
   setCustomToAddress,
@@ -140,6 +156,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   supportedWalletVMs,
   handleSetFromToken,
   handleSetToToken,
+  onSetPrimaryWallet,
   lockToToken,
   lockFromToken,
   isSingleChainLocked,
@@ -155,7 +172,16 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   debouncedOutputAmountValue,
   showHighPriceImpactWarning,
   disableSwapButton,
-  toggleInputMode
+  toggleInputMode,
+  onPrimaryAction,
+  error,
+  relayerFeeProportion,
+  highRelayerServiceFee,
+  isCapacityExceededError,
+  isCouldNotExecuteError,
+  supportsExternalLiquidity,
+  recipientLinkedWallet,
+  toChainVmType
 }) => {
   const fromChainId = fromToken?.chainId
   const lockedChainIds = isSingleChainLocked
@@ -171,6 +197,32 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
       ? [fromChainId]
       : undefined
 
+  const hasSelectedTokens = Boolean(fromToken && toToken)
+  const invalidAmount =
+    !quote ||
+    Number(debouncedInputAmountValue) === 0 ||
+    Number(debouncedOutputAmountValue) === 0 ||
+    !hasSelectedTokens
+
+  const isLoadingPayWith =
+    isFetchingQuote ||
+    !toToken ||
+    !amountOutputValue ||
+    Number(amountOutputValue) === 0
+
+  const disableActionButton =
+    isFetchingQuote ||
+    (isValidToAddress &&
+      (isValidFromAddress || !fromChainWalletVMSupported) &&
+      (invalidAmount ||
+        hasInsufficientBalance ||
+        isInsufficientLiquidityError ||
+        transactionModalOpen ||
+        depositAddressModalOpen ||
+        isSameCurrencySameRecipientSwap ||
+        !recipientWalletSupportsChain ||
+        disableSwapButton))
+
   return (
     <TabsContent value="buy">
       <SectionContainer
@@ -184,6 +236,8 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           label="Amount"
           slippageTolerance={slippageTolerance}
           onOpenSlippageConfig={onOpenSlippageConfig}
+          onSlippageToleranceChange={onSlippageToleranceChange}
+          onAnalyticEvent={onAnalyticEvent}
         />
         <Flex
           align="center"
@@ -265,14 +319,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                     amountOutputValue && !isLoadingToTokenPrice ? (
                       `${formatNumber(amountOutputValue, 4, false)} ${toToken.symbol}`
                     ) : (
-                      <Box
-                        css={{
-                          width: 45,
-                          height: 12,
-                          backgroundColor: 'gray7',
-                          borderRadius: 'widget-border-radius'
-                        }}
-                      />
+                      <Skeleton css={{ width: 45, height: 12 }} />
                     )
                   ) : (
                     `0 ${toToken.symbol}`
@@ -286,14 +333,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 isLoadingToTokenPrice &&
                 amountOutputValue &&
                 Number(amountOutputValue) > 0 ? (
-                <Box
-                  css={{
-                    width: 45,
-                    height: 12,
-                    backgroundColor: 'gray7',
-                    borderRadius: 'widget-border-radius'
-                  }}
-                />
+                <Skeleton css={{ width: 45, height: 12 }} />
               ) : toToken &&
                 outputAmountUsd &&
                 outputAmountUsd > 0 &&
@@ -312,20 +352,20 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             />
           </Flex>
           <Flex css={{ marginLeft: 'auto' }}>
-            {toToken ? (
+            {fromToken ? (
               <BalanceDisplay
                 hideBalanceLabel={true}
                 displaySymbol={true}
-                isLoading={isLoadingToBalance}
-                balance={toBalance}
-                decimals={toToken?.decimals}
-                symbol={toToken?.symbol}
+                isLoading={isLoadingFromBalance}
+                balance={fromBalance}
+                decimals={fromToken?.decimals}
+                symbol={fromToken?.symbol}
                 isConnected={
                   !isDeadAddress(address) &&
                   address !== tronDeadAddress &&
                   address !== undefined
                 }
-                pending={toBalancePending}
+                pending={fromBalancePending}
                 size="md"
               />
             ) : (
@@ -340,76 +380,33 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           <Text style="subtitle2" color="subtle">
             Pay with
           </Text>
-          {multiWalletSupportEnabled && toChainWalletVMSupported ? (
+          {multiWalletSupportEnabled && fromChainWalletVMSupported ? (
             <MultiWalletDropdown
-              context="destination"
+              context="origin"
               disablePasteWalletAddressOption={disablePasteWalletAddressOption}
-              selectedWalletAddress={recipient}
+              selectedWalletAddress={address}
               onSelect={(wallet) => {
-                setCustomToAddress(wallet.address)
+                onSetPrimaryWallet?.(wallet.address)
               }}
-              chain={toChain}
+              chain={fromChain}
               onLinkNewWallet={() => {
-                if (!address && toChainWalletVMSupported) {
+                if (!address && fromChainWalletVMSupported) {
                   onConnectWallet?.()
                 } else {
                   onLinkNewWallet?.({
-                    chain: toChain,
-                    direction: 'to'
+                    chain: fromChain,
+                    direction: 'from'
                   })?.then((wallet) => {
-                    setCustomToAddress(wallet.address)
+                    onSetPrimaryWallet?.(wallet.address)
                   })
                 }
               }}
               setAddressModalOpen={setAddressModalOpen}
               wallets={linkedWallets ?? []}
               onAnalyticEvent={onAnalyticEvent}
-              testId="destination-wallet-select-button"
+              testId="origin-wallet-select-button"
             />
-          ) : (
-            <Button
-              color={
-                isValidToAddress &&
-                multiWalletSupportEnabled &&
-                !isRecipientLinked
-                  ? 'warning'
-                  : 'secondary'
-              }
-              corners="pill"
-              size="none"
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                px: '2',
-                py: '1'
-              }}
-              onClick={() => {
-                setAddressModalOpen(true)
-                onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
-              }}
-            >
-              {isValidToAddress &&
-              multiWalletSupportEnabled &&
-              !isRecipientLinked ? (
-                <Box css={{ color: 'amber11' }}>
-                  <FontAwesomeIcon icon={faClipboard} width={16} height={16} />
-                </Box>
-              ) : null}
-              <Text
-                style="subtitle2"
-                css={{
-                  color:
-                    isValidToAddress &&
-                    multiWalletSupportEnabled &&
-                    !isRecipientLinked
-                      ? 'amber11'
-                      : 'anchor-color'
-                }}
-              >
-                {!isValidToAddress ? `Enter Address` : toDisplayName}
-              </Text>
-            </Button>
-          )}
+          ) : null}
         </Flex>
 
         <Flex justify="between" css={{ width: '100%' }}>
@@ -455,7 +452,17 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           />
           <Flex direction="column" align="end">
             <Flex align="center" css={{ gap: '1' }}>
-              <Text style="h6">$21 total</Text>
+              {isLoadingPayWith ? (
+                <Skeleton css={{ width: 80, height: 20 }} />
+              ) : quote?.details?.currencyIn?.amountUsd &&
+                Number(quote.details.currencyIn.amountUsd) > 0 ? (
+                <Text style="h6">
+                  {formatDollar(Number(quote.details.currencyIn.amountUsd))}{' '}
+                  total
+                </Text>
+              ) : (
+                <Text style="h6">-- total</Text>
+              )}
               <Box
                 css={{
                   color: 'gray8',
@@ -468,118 +475,138 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 <FontAwesomeIcon icon={faInfoCircle} />
               </Box>
             </Flex>
-            <Text style="subtitle3" color="subtleSecondary">
-              0.0004 ETH
-            </Text>
+            {isLoadingPayWith ? (
+              <Skeleton css={{ width: 60, height: 14 }} />
+            ) : fromToken &&
+              amountInputValue &&
+              Number(amountInputValue) > 0 ? (
+              <Text style="subtitle3" color="subtleSecondary">
+                {formatNumber(amountInputValue, 4, false)} {fromToken.symbol}
+              </Text>
+            ) : (
+              <Text style="subtitle3" color="subtleSecondary">
+                --
+              </Text>
+            )}
           </Flex>
         </Flex>
 
         <Divider color="gray4" />
 
-        <Flex align="center" css={{ width: '100%', gap: '2' }}>
-          <Text style="subtitle2" color="subtle">
-            Send to
-          </Text>
-          {multiWalletSupportEnabled && toChainWalletVMSupported ? (
-            <MultiWalletDropdown
-              context="destination"
-              disablePasteWalletAddressOption={disablePasteWalletAddressOption}
-              selectedWalletAddress={recipient}
-              onSelect={(wallet) => {
-                setCustomToAddress(wallet.address)
-              }}
-              chain={toChain}
-              onLinkNewWallet={() => {
-                if (!address && toChainWalletVMSupported) {
-                  onConnectWallet?.()
-                } else {
-                  onLinkNewWallet?.({
-                    chain: toChain,
-                    direction: 'to'
-                  })?.then((wallet) => {
-                    setCustomToAddress(wallet.address)
-                  })
+        <Flex direction="column" css={{ gap: '2', width: '100%' }}>
+          <Flex align="center" css={{ width: '100%', gap: '2' }}>
+            <Text style="subtitle2" color="subtle">
+              Send to
+            </Text>
+            {multiWalletSupportEnabled && toChainWalletVMSupported ? (
+              <MultiWalletDropdown
+                context="destination"
+                disablePasteWalletAddressOption={
+                  disablePasteWalletAddressOption
                 }
-              }}
-              setAddressModalOpen={setAddressModalOpen}
-              wallets={linkedWallets ?? []}
-              onAnalyticEvent={onAnalyticEvent}
-              testId="destination-wallet-select-button"
-            />
-          ) : (
-            <Button
-              color={
-                isValidToAddress &&
-                multiWalletSupportEnabled &&
-                !isRecipientLinked
-                  ? 'warning'
-                  : 'secondary'
-              }
-              corners="pill"
-              size="none"
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                px: '2',
-                py: '1'
-              }}
-              onClick={() => {
-                setAddressModalOpen(true)
-                onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
-              }}
-            >
-              {isValidToAddress &&
-              multiWalletSupportEnabled &&
-              !isRecipientLinked ? (
-                <Box css={{ color: 'amber11' }}>
-                  <FontAwesomeIcon icon={faClipboard} width={16} height={16} />
-                </Box>
-              ) : null}
-              <Text
-                style="subtitle2"
+                selectedWalletAddress={recipient}
+                onSelect={(wallet) => {
+                  setCustomToAddress(wallet.address)
+                }}
+                chain={toChain}
+                onLinkNewWallet={() => {
+                  if (!address && toChainWalletVMSupported) {
+                    onConnectWallet?.()
+                  } else {
+                    onLinkNewWallet?.({
+                      chain: toChain,
+                      direction: 'to'
+                    })?.then((wallet) => {
+                      setCustomToAddress(wallet.address)
+                    })
+                  }
+                }}
+                setAddressModalOpen={setAddressModalOpen}
+                wallets={linkedWallets ?? []}
+                onAnalyticEvent={onAnalyticEvent}
+                testId="destination-wallet-select-button"
+              />
+            ) : (
+              <Button
+                color={
+                  isValidToAddress &&
+                  multiWalletSupportEnabled &&
+                  !isRecipientLinked
+                    ? 'warning'
+                    : 'secondary'
+                }
+                corners="pill"
+                size="none"
                 css={{
-                  color:
-                    isValidToAddress &&
-                    multiWalletSupportEnabled &&
-                    !isRecipientLinked
-                      ? 'amber11'
-                      : 'anchor-color'
+                  display: 'flex',
+                  alignItems: 'center',
+                  px: '2',
+                  py: '1'
+                }}
+                onClick={() => {
+                  setAddressModalOpen(true)
+                  onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
                 }}
               >
-                {!isValidToAddress ? `Enter Address` : toDisplayName}
-              </Text>
-            </Button>
-          )}
+                {isValidToAddress &&
+                multiWalletSupportEnabled &&
+                !isRecipientLinked ? (
+                  <Box css={{ color: 'amber11' }}>
+                    <FontAwesomeIcon
+                      icon={faClipboard}
+                      width={16}
+                      height={16}
+                    />
+                  </Box>
+                ) : null}
+                <Text
+                  style="subtitle2"
+                  css={{
+                    color:
+                      isValidToAddress &&
+                      multiWalletSupportEnabled &&
+                      !isRecipientLinked
+                        ? 'amber11'
+                        : 'anchor-color'
+                  }}
+                >
+                  {!isValidToAddress ? `Enter Address` : toDisplayName}
+                </Text>
+              </Button>
+            )}
+          </Flex>
+          <WidgetErrorWell
+            hasInsufficientBalance={hasInsufficientBalance}
+            error={error}
+            quote={quote}
+            currency={fromToken}
+            relayerFeeProportion={relayerFeeProportion}
+            isHighRelayerServiceFee={highRelayerServiceFee}
+            isCapacityExceededError={isCapacityExceededError}
+            isCouldNotExecuteError={isCouldNotExecuteError}
+            supportsExternalLiquidity={supportsExternalLiquidity}
+            recipientWalletSupportsChain={recipientWalletSupportsChain}
+            recipient={recipient}
+            toChainWalletVMSupported={toChainWalletVMSupported}
+            recipientLinkedWallet={recipientLinkedWallet}
+            toChainVmType={toChainVmType}
+            containerCss={{ width: '100%' }}
+          />
         </Flex>
 
         <Flex css={{ width: '100%' }}>
           <TokenActionButton
             onClick={() => {
-              const token = fromToken
-              const amount = amountInputValue
-              console.log(`Buying ${token?.symbol}`, {
-                token,
-                amount
-              })
               onAnalyticEvent?.('TOKEN_BUY_CLICKED', {
-                token,
-                amount
+                token: toToken,
+                amount: amountOutputValue
               })
+              onPrimaryAction()
             }}
             ctaCopy="Buy"
-            disabled={
-              !toToken ||
-              hasInsufficientBalance ||
-              transactionModalOpen ||
-              depositAddressModalOpen ||
-              !isValidToAddress
-            }
+            disabled={disableActionButton}
             isFetchingQuote={isFetchingQuote}
-            hasValidAmount={
-              !!quote &&
-              Number(debouncedOutputAmountValue) > 0 &&
-              Number(debouncedOutputAmountValue) > 0
-            }
+            hasValidAmount={!invalidAmount}
             onConnectWallet={onConnectWallet}
             address={address}
           />
