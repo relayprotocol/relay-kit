@@ -1,6 +1,5 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Text, Button, Box } from '../../primitives/index.js'
-import Skeleton from '../../primitives/Skeleton.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboard, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import AmountInput from '../../common/AmountInput.js'
@@ -228,11 +227,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
   const chainIdsFilterForTo =
     !fromChainWalletVMSupported && fromToken ? [fromToken.chainId] : undefined
 
-  const isLoadingOutput =
-    isFetchingQuote ||
-    !toToken ||
-    !amountInputValue ||
-    Number(amountInputValue) === 0
+  const hasValidInputAmount =
+    fromToken && amountInputValue && Number(amountInputValue) > 0
+
+  const isLoadingOutput = hasValidInputAmount && isFetchingQuote && toToken
 
   return (
     <TabsContent value="sell">
@@ -320,34 +318,28 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 }
               }}
             >
-              {isUsdInputMode ? (
-                fromToken ? (
-                  usdInputValue && Number(usdInputValue) > 0 ? (
-                    amountInputValue &&
-                    conversionRate &&
-                    !isLoadingFromTokenPrice ? (
-                      `${formatNumber(amountInputValue, 4, false)} ${fromToken.symbol}`
-                    ) : (
-                      <Skeleton css={{ width: 45, height: 12 }} />
-                    )
-                  ) : (
-                    `0 ${fromToken.symbol}`
-                  )
-                ) : null
-              ) : quote?.details?.currencyIn?.amountUsd && !isFetchingQuote ? (
-                formatDollar(Number(quote.details.currencyIn.amountUsd))
-              ) : isLoadingFromTokenPrice &&
-                amountInputValue &&
-                Number(amountInputValue) > 0 ? (
-                <Skeleton css={{ width: 45, height: 12 }} />
-              ) : inputAmountUsd &&
-                inputAmountUsd > 0 &&
-                fromTokenPriceData?.price &&
-                fromTokenPriceData.price > 0 ? (
-                formatDollar(inputAmountUsd)
-              ) : (
-                '$0.00'
-              )}
+              {isUsdInputMode
+                ? fromToken
+                  ? usdInputValue && Number(usdInputValue) > 0
+                    ? amountInputValue &&
+                      conversionRate &&
+                      !isLoadingFromTokenPrice
+                      ? `${formatNumber(amountInputValue, 4, false)} ${fromToken.symbol}`
+                      : '...'
+                    : `0 ${fromToken.symbol}`
+                  : null
+                : quote?.details?.currencyIn?.amountUsd && !isFetchingQuote
+                  ? formatDollar(Number(quote.details.currencyIn.amountUsd))
+                  : isLoadingFromTokenPrice &&
+                      amountInputValue &&
+                      Number(amountInputValue) > 0
+                    ? '...'
+                    : inputAmountUsd &&
+                        inputAmountUsd > 0 &&
+                        fromTokenPriceData?.price &&
+                        fromTokenPriceData.price > 0
+                      ? formatDollar(inputAmountUsd)
+                      : '$0.00'}
             </AmountModeToggle>
           </Flex>
 
@@ -608,10 +600,26 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 </div>
               }
             />
-            <Flex direction="column" align="end">
+            <Flex
+              direction="column"
+              align="end"
+              css={{
+                gap: '1',
+                minHeight: 42,
+                visibility: hasValidInputAmount ? 'visible' : 'hidden'
+              }}
+            >
               <Flex align="center" css={{ gap: '1' }}>
                 {isLoadingOutput ? (
-                  <Skeleton css={{ width: 80, height: 20 }} />
+                  <Text
+                    style="h6"
+                    css={{
+                      color: 'text-subtle',
+                      fontWeight: '600'
+                    }}
+                  >
+                    ...
+                  </Text>
                 ) : quote?.details?.currencyOut?.amountUsd &&
                   Number(quote.details.currencyOut.amountUsd) > 0 ? (
                   <Text style="h6">
@@ -633,7 +641,13 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 </Box>
               </Flex>
               {isLoadingOutput ? (
-                <Skeleton css={{ width: 60, height: 14 }} />
+                <Text
+                  style="subtitle3"
+                  color="subtleSecondary"
+                  css={{ fontWeight: '400' }}
+                >
+                  ...
+                </Text>
               ) : toToken &&
                 amountOutputValue &&
                 Number(amountOutputValue) > 0 ? (
