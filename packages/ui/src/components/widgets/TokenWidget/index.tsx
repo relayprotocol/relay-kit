@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FC
 } from 'react'
@@ -24,7 +25,9 @@ import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
 import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
 import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
-import TokenWidgetRenderer from './TokenWidgetRenderer.js'
+import TokenWidgetRenderer, {
+  type TradeType
+} from './TokenWidgetRenderer.js'
 import BuyTabContent from './BuyTabContent.js'
 import SellTabContent from './SellTabContent.js'
 
@@ -135,6 +138,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [usdOutputValue, setUsdOutputValue] = useState('')
   const [tokenInputCache, setTokenInputCache] = useState('')
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
+  const setTradeTypeRef = useRef<
+    ((tradeType: TradeType) => void) | null
+  >(null)
+  const tradeTypeRef = useRef<TradeType>(defaultTradeType ?? 'EXPECTED_OUTPUT')
   const hasLockedToken = lockFromToken || lockToToken
   const isSingleChainLocked = singleChainMode && lockChainId !== undefined
   const [localSlippageTolerance, setLocalSlippageTolerance] = useState<
@@ -145,6 +152,15 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     setLocalSlippageTolerance(slippageTolerance)
   }, [slippageTolerance])
 
+  useEffect(() => {
+    const desiredTradeType: TradeType =
+      activeTab === 'buy' ? 'EXPECTED_OUTPUT' : 'EXACT_INPUT'
+
+    if (tradeTypeRef.current !== desiredTradeType) {
+      setTradeTypeRef.current?.(desiredTradeType)
+    }
+  }, [activeTab])
+
   const handleOpenSlippageConfig = () => {
     onOpenSlippageConfig?.()
   }
@@ -152,6 +168,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const handleSlippageToleranceChange = (value: string | undefined) => {
     setLocalSlippageTolerance(value)
   }
+
+  const computedDefaultTradeType: TradeType =
+    defaultTradeType ??
+    (activeTab === 'buy' ? 'EXPECTED_OUTPUT' : 'EXACT_INPUT')
 
   //Handle external unverified tokens
   useEffect(() => {
@@ -179,7 +199,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       depositAddressModalOpen={depositAddressModalOpen}
       defaultAmount={defaultAmount}
       defaultToAddress={defaultToAddress}
-      defaultTradeType={defaultTradeType}
+      defaultTradeType={computedDefaultTradeType}
       toToken={toToken}
       setToToken={setToToken}
       fromToken={fromToken}
@@ -263,6 +283,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         isLoadingFromTokenPrice,
         isLoadingToTokenPrice
       }) => {
+        setTradeTypeRef.current = setTradeType
+        tradeTypeRef.current = tradeType
+
         // Calculate the USD value of the input amount
         const inputAmountUsd = useMemo(() => {
           return (
@@ -847,7 +870,17 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                     <TabsRoot
                       value={activeTab}
                       onValueChange={(value) => {
-                        setActiveTab(value as 'buy' | 'sell')
+                        const nextTab = value as 'buy' | 'sell'
+                        setActiveTab(nextTab)
+                        const desiredTradeType: TradeType =
+                          nextTab === 'buy'
+                            ? 'EXPECTED_OUTPUT'
+                            : 'EXACT_INPUT'
+
+                        if (tradeType !== desiredTradeType) {
+                          setTradeType(desiredTradeType)
+                        }
+
                         onAnalyticEvent?.('TAB_SWITCHED', {
                           tab: value
                         })
