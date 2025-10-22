@@ -11,7 +11,14 @@ import {
   useUserWallets,
   Wallet
 } from '@dynamic-labs/sdk-react-core'
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent
+} from 'react'
 import { isEthereumWallet } from '@dynamic-labs/ethereum'
 import { isSolanaWallet } from '@dynamic-labs/solana'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
@@ -256,28 +263,34 @@ const TokenWidgetPage: NextPage = () => {
 
     hasCustomBuyTokenRef.current = false
     hasCustomSellTokenRef.current = false
-  }, [
-    router.isReady,
-    router.query.params,
-    relayClient,
-    getTokenKey,
-    activeTab
-  ])
+  }, [router.isReady, router.query.params, relayClient, getTokenKey, activeTab])
 
   useEffect(() => {
-    if (activeTab === 'sell' && urlTokenRef.current && !hasCustomSellTokenRef.current) {
+    if (
+      activeTab === 'sell' &&
+      urlTokenRef.current &&
+      !hasCustomSellTokenRef.current
+    ) {
       const key = getTokenKey(urlTokenRef.current)
       setFromToken((previous) => {
         const previousKey = getTokenKey(previous)
-        return previousKey === key ? previous : urlTokenRef.current ?? previous
+        return previousKey === key
+          ? previous
+          : (urlTokenRef.current ?? previous)
       })
     }
 
-    if (activeTab === 'buy' && urlTokenRef.current && !hasCustomBuyTokenRef.current) {
+    if (
+      activeTab === 'buy' &&
+      urlTokenRef.current &&
+      !hasCustomBuyTokenRef.current
+    ) {
       const key = getTokenKey(urlTokenRef.current)
       setToToken((previous) => {
         const previousKey = getTokenKey(previous)
-        return previousKey === key ? previous : urlTokenRef.current ?? previous
+        return previousKey === key
+          ? previous
+          : (urlTokenRef.current ?? previous)
       })
     }
   }, [activeTab, getTokenKey])
@@ -348,17 +361,14 @@ const TokenWidgetPage: NextPage = () => {
     [router]
   )
 
-  const handleAnalyticEvent = useCallback(
-    (eventName: string, data?: any) => {
-      if (eventName === 'TAB_SWITCHED') {
-        const tab = data?.tab === 'sell' ? 'sell' : 'buy'
-        setActiveTab(tab)
-      }
+  const handleAnalyticEvent = useCallback((eventName: string, data?: any) => {
+    if (eventName === 'TAB_SWITCHED') {
+      const tab = data?.tab === 'sell' ? 'sell' : 'buy'
+      setActiveTab(tab)
+    }
 
-      console.log('Analytic Event', eventName, data)
-    },
-    []
-  )
+    console.log('Analytic Event', eventName, data)
+  }, [])
 
   const handleApplyCustomToken = useCallback(
     (event?: FormEvent<HTMLFormElement>) => {
@@ -383,7 +393,9 @@ const TokenWidgetPage: NextPage = () => {
       hasCustomSellTokenRef.current = false
 
       if (!relayClient) {
-        setInputError('Relay client is not ready yet. Please try again shortly.')
+        setInputError(
+          'Relay client is not ready yet. Please try again shortly.'
+        )
         updateDemoUrlWithRawParams(normalizedAddress, parsedChainId)
         return
       }
@@ -401,7 +413,9 @@ const TokenWidgetPage: NextPage = () => {
         updateDemoUrl(resolvedToken)
       } else {
         setTokenNotFound(true)
-        setInputError('Token not found on the specified chain. Showing last known state.')
+        setInputError(
+          'Token not found on the specified chain. Showing last known state.'
+        )
         updateDemoUrlWithRawParams(normalizedAddress, parsedChainId)
       }
     },
@@ -528,84 +542,10 @@ const TokenWidgetPage: NextPage = () => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 8
+            alignItems: 'center',
+            gap: 20
           }}
         >
-          <form onSubmit={handleApplyCustomToken} style={{ width: '100%' }}>
-            <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 8
-              }}
-            >
-              <input
-                value={addressInput}
-                onChange={(event) => setAddressInput(event.target.value)}
-                placeholder="Token address"
-                style={{
-                  flex: '1 1 240px',
-                  padding: '10px 12px',
-                  borderRadius: 12,
-                  border: '1px solid rgba(148, 163, 184, 0.4)'
-                }}
-                autoComplete="off"
-              />
-              <input
-                value={chainInput}
-                onChange={(event) => setChainInput(event.target.value)}
-                placeholder="Chain ID"
-                style={{
-                  width: 120,
-                  padding: '10px 12px',
-                  borderRadius: 12,
-                  border: '1px solid rgba(148, 163, 184, 0.4)'
-                }}
-                inputMode="numeric"
-                autoComplete="off"
-              />
-              <button
-                type="submit"
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: 12,
-                  border: 'none',
-                  background: '#4f46e5',
-                  color: 'white',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Load token
-              </button>
-            </div>
-          </form>
-          {inputError ? (
-            <p
-              style={{
-                margin: 0,
-                color: '#b91c1c',
-                fontSize: 12
-              }}
-            >
-              {inputError}
-            </p>
-          ) : null}
-          {tokenNotFound ? (
-            <p
-              style={{
-                margin: 0,
-                padding: '8px 12px',
-                borderRadius: 12,
-                background: 'rgba(255, 231, 231, 0.6)',
-                color: '#9f1239',
-                fontSize: 14
-              }}
-            >
-              Token from URL was not found on the specified chain. Please
-              select a token manually to continue.
-            </p>
-          ) : null}
           <TokenWidget
             key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
             lockChainId={singleChainMode ? 8453 : undefined}
@@ -731,6 +671,95 @@ const TokenWidgetPage: NextPage = () => {
               // setSlippageToleranceConfigOpen(true)
             }}
           />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              width: '100%',
+              maxWidth: 400
+            }}
+          >
+            <form onSubmit={handleApplyCustomToken} style={{ width: '100%' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 8,
+                  alignItems: 'center'
+                }}
+              >
+                <input
+                  value={addressInput}
+                  onChange={(event) => setAddressInput(event.target.value)}
+                  placeholder="Token address"
+                  style={{
+                    flex: '2',
+                    padding: '10px 12px',
+                    borderRadius: 12,
+                    border: '1px solid rgba(148, 163, 184, 0.4)'
+                  }}
+                  autoComplete="off"
+                />
+                <input
+                  value={chainInput}
+                  onChange={(event) => setChainInput(event.target.value)}
+                  placeholder="Chain ID"
+                  style={{
+                    flex: '1',
+                    minWidth: 100,
+                    padding: '10px 12px',
+                    borderRadius: 12,
+                    border: '1px solid rgba(148, 163, 184, 0.4)'
+                  }}
+                  inputMode="numeric"
+                  autoComplete="off"
+                />
+                <button
+                  type="submit"
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: 12,
+                    border: 'none',
+                    background: '#4f46e5',
+                    color: 'white',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  Load token
+                </button>
+              </div>
+            </form>
+            {inputError ? (
+              <p
+                style={{
+                  margin: 0,
+                  color: '#b91c1c',
+                  fontSize: 12,
+                  textAlign: 'center'
+                }}
+              >
+                {inputError}
+              </p>
+            ) : null}
+            {tokenNotFound ? (
+              <p
+                style={{
+                  margin: 0,
+                  padding: '8px 12px',
+                  borderRadius: 12,
+                  background: 'rgba(255, 231, 231, 0.6)',
+                  color: '#9f1239',
+                  fontSize: 14,
+                  textAlign: 'center'
+                }}
+              >
+                Token from URL was not found on the specified chain. Please
+                select a token manually to continue.
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </Layout>
