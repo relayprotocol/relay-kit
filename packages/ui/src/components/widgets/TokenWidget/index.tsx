@@ -1,4 +1,4 @@
-import { Flex, Button, Text, Box } from '../../primitives/index.js'
+import { Flex, Button, Text } from '../../primitives/index.js'
 import { TabsRoot, TabsList, TabsTrigger } from '../../primitives/Tabs.js'
 import {
   useCallback,
@@ -14,23 +14,19 @@ import { formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
 import type { LinkedWallet, Token } from '../../../types/index.js'
 import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
-import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { EventNames } from '../../../constants/events.js'
 import WidgetContainer from '../WidgetContainer.js'
-import FeeBreakdown from '../FeeBreakdown.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { findSupportedWallet } from '../../../utils/address.js'
-import SwapRouteSelector from '../SwapRouteSelector.js'
 import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
 import { findBridgableToken } from '../../../utils/tokens.js'
 import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
-import { calculateUsdValue } from '../../../utils/quote.js'
+import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
 import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
 import TokenWidgetRenderer from './TokenWidgetRenderer.js'
 import BuyTabContent from './BuyTabContent.js'
 import SellTabContent from './SellTabContent.js'
-import { SlippageToleranceConfig } from '../../common/SlippageToleranceConfig.js'
 
 type BaseTokenWidgetProps = {
   fromToken?: Token
@@ -144,14 +140,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [localSlippageTolerance, setLocalSlippageTolerance] = useState<
     string | undefined
   >(slippageTolerance)
-  const [isSlippageConfigOpen, setIsSlippageConfigOpen] = useState(false)
 
   useEffect(() => {
     setLocalSlippageTolerance(slippageTolerance)
   }, [slippageTolerance])
 
   const handleOpenSlippageConfig = () => {
-    setIsSlippageConfigOpen(true)
     onOpenSlippageConfig?.()
   }
 
@@ -713,6 +707,65 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           (wallet) => wallet.address === recipient
         )
 
+        const handlePrimaryAction = () => {
+          if (fromChainWalletVMSupported) {
+            if (!isValidToAddress || !isValidFromAddress) {
+              if (
+                multiWalletSupportEnabled &&
+                (isValidToAddress ||
+                  (!isValidToAddress && toChainWalletVMSupported))
+              ) {
+                const chain = !isValidFromAddress ? fromChain : toChain
+                if (!address) {
+                  onConnectWallet?.()
+                } else {
+                  onLinkNewWallet?.({
+                    chain,
+                    direction: !isValidFromAddress ? 'from' : 'to'
+                  })?.then((wallet) => {
+                    if (!isValidFromAddress) {
+                      onSetPrimaryWallet?.(wallet.address)
+                    } else {
+                      setCustomToAddress(wallet.address)
+                    }
+                  })
+                }
+              } else {
+                setAddressModalOpen(true)
+              }
+            } else {
+              swap()
+            }
+          } else {
+            if (!isValidToAddress) {
+              if (multiWalletSupportEnabled && toChainWalletVMSupported) {
+                if (!address) {
+                  onConnectWallet?.()
+                } else {
+                  onLinkNewWallet?.({
+                    chain: toChain,
+                    direction: 'to'
+                  })?.then((wallet) => {
+                    setCustomToAddress(wallet.address)
+                  })
+                }
+              } else {
+                setAddressModalOpen(true)
+              }
+            } else {
+              const swapEventData = getSwapEventData(
+                quote?.details,
+                quote?.fees,
+                quote?.steps ? (quote?.steps as Execute['steps']) : null,
+                linkedWallet?.connector,
+                quoteParameters
+              )
+              onAnalyticEvent?.(EventNames.SWAP_CTA_CLICKED, swapEventData)
+              setDepositAddressModalOpen(true)
+            }
+          }
+        }
+
         return (
           <>
             <WidgetContainer
@@ -791,14 +844,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
               {() => {
                 return (
                   <Flex direction="column" css={{ gap: '3', width: '100%' }}>
-                    <Flex justify="end">
-                      <SlippageToleranceConfig
-                        open={isSlippageConfigOpen}
-                        setOpen={setIsSlippageConfigOpen}
-                        setSlippageTolerance={handleSlippageToleranceChange}
-                        onAnalyticEvent={onAnalyticEvent}
-                      />
-                    </Flex>
                     <TabsRoot
                       value={activeTab}
                       onValueChange={(value) => {
@@ -818,281 +863,271 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           maxWidth: 408
                         }}
                       >
-                      <TabsList>
-                        <TabsTrigger
-                          value="buy"
-                          css={{
-                            padding: '12px',
-                            background: 'none',
-                            transition: 'background 0.2s ease-in-out',
-                            outline: '1px solid transparent',
-                            '&[data-state="active"]': {
-                              background: 'white',
-                              borderRadius: '12px',
-                              '--outlineColor': 'colors.gray.4',
-                              outline: '1px solid var(--outlineColor)'
-                            },
-                            _hover: {
-                              backgroundColor: 'gray1 !important'
-                            },
-                            _dark: {
+                        <TabsList>
+                          <TabsTrigger
+                            value="buy"
+                            css={{
+                              padding: '12px',
+                              background: 'none',
+                              transition: 'background 0.2s ease-in-out',
+                              outline: '1px solid transparent',
                               '&[data-state="active"]': {
-                                background: 'gray1'
+                                background: 'white',
+                                borderRadius: '12px',
+                                '--outlineColor': 'colors.gray.4',
+                                outline: '1px solid var(--outlineColor)'
                               },
                               _hover: {
-                                backgroundColor: 'gray2 !important'
-                              }
-                            }
-                          }}
-                        >
-                          <Text style="subtitle1">Buy</Text>
-                        </TabsTrigger>
-                        <TabsTrigger
-                          value="sell"
-                          css={{
-                            padding: '12px',
-                            background: 'none',
-                            transition: 'background 0.2s ease-in-out',
-                            outline: '1px solid transparent',
-                            '&[data-state="active"]': {
-                              background: 'white',
-                              borderRadius: '12px',
-                              '--outlineColor': 'colors.gray.4',
-                              outline: '1px solid var(--outlineColor)'
-                            },
-                            _hover: {
-                              backgroundColor: 'gray1 !important'
-                            },
-                            _dark: {
-                              '&[data-state="active"]': {
-                                background: 'gray1'
+                                backgroundColor: 'gray1 !important'
                               },
-                              _hover: {
-                                backgroundColor: 'gray2 !important'
+                              _dark: {
+                                '&[data-state="active"]': {
+                                  background: 'gray1'
+                                },
+                                _hover: {
+                                  backgroundColor: 'gray2 !important'
+                                }
                               }
-                            }
-                          }}
-                        >
-                          Sell
-                        </TabsTrigger>
-                      </TabsList>
-
-                      <BuyTabContent
-                        slippageTolerance={localSlippageTolerance}
-                        onOpenSlippageConfig={handleOpenSlippageConfig}
-                        isUsdInputMode={isUsdInputMode}
-                        usdOutputValue={usdOutputValue}
-                        tradeType={tradeType}
-                        amountOutputValue={amountOutputValue}
-                        amountInputValue={amountInputValue}
-                        toToken={toToken}
-                        fromToken={fromToken}
-                        quote={quote}
-                        isFetchingQuote={isFetchingQuote}
-                        isLoadingToTokenPrice={isLoadingToTokenPrice}
-                        outputAmountUsd={outputAmountUsd}
-                        toTokenPriceData={toTokenPriceData}
-                        setUsdOutputValue={setUsdOutputValue}
-                        setTradeType={setTradeType}
-                        setAmountOutputValue={setAmountOutputValue}
-                        setAmountInputValue={setAmountInputValue}
-                        debouncedAmountOutputControls={
-                          debouncedAmountOutputControls
-                        }
-                        setUsdInputValue={setUsdInputValue}
-                        toggleInputMode={toggleInputMode}
-                        onAnalyticEvent={onAnalyticEvent}
-                        feeBreakdown={feeBreakdown}
-                        isLoadingToBalance={isLoadingToBalance}
-                        toBalance={toBalance}
-                        toBalancePending={toBalancePending}
-                        address={address}
-                        multiWalletSupportEnabled={multiWalletSupportEnabled}
-                        toChainWalletVMSupported={toChainWalletVMSupported}
-                        disablePasteWalletAddressOption={
-                          disablePasteWalletAddressOption
-                        }
-                        recipient={recipient}
-                        setCustomToAddress={setCustomToAddress}
-                        onConnectWallet={onConnectWallet}
-                        onLinkNewWallet={onLinkNewWallet}
-                        linkedWallets={linkedWallets}
-                        toChain={toChain}
-                        isValidToAddress={isValidToAddress}
-                        isRecipientLinked={isRecipientLinked}
-                        setAddressModalOpen={setAddressModalOpen}
-                        toDisplayName={toDisplayName}
-                        isValidFromAddress={isValidFromAddress}
-                        fromChainWalletVMSupported={fromChainWalletVMSupported}
-                        supportedWalletVMs={supportedWalletVMs}
-                        handleSetFromToken={handleSetFromToken}
-                        handleSetToToken={handleSetToToken}
-                        lockToToken={lockToToken}
-                        lockFromToken={lockFromToken}
-                        isSingleChainLocked={isSingleChainLocked}
-                        lockChainId={lockChainId}
-                        popularChainIds={popularChainIds}
-                        transactionModalOpen={transactionModalOpen}
-                        depositAddressModalOpen={depositAddressModalOpen}
-                        hasInsufficientBalance={hasInsufficientBalance}
-                        isInsufficientLiquidityError={isInsufficientLiquidityError}
-                        recipientWalletSupportsChain={recipientWalletSupportsChain}
-                        isSameCurrencySameRecipientSwap={isSameCurrencySameRecipientSwap}
-                        debouncedInputAmountValue={debouncedInputAmountValue}
-                        debouncedOutputAmountValue={debouncedOutputAmountValue}
-                        showHighPriceImpactWarning={showHighPriceImpactWarning}
-                        disableSwapButton={promptSwitchRoute}
-                      />
-
-                      <SellTabContent
-                        slippageTolerance={localSlippageTolerance}
-                        onOpenSlippageConfig={handleOpenSlippageConfig}
-                        disableInputAutoFocus={disableInputAutoFocus}
-                        isUsdInputMode={isUsdInputMode}
-                        usdInputValue={usdInputValue}
-                        tradeType={tradeType}
-                        amountInputValue={amountInputValue}
-                        amountOutputValue={amountOutputValue}
-                        conversionRate={conversionRate}
-                        fromToken={fromToken}
-                        quote={quote}
-                        isFetchingQuote={isFetchingQuote}
-                        inputAmountUsd={inputAmountUsd}
-                        fromTokenPriceData={fromTokenPriceData}
-                        isLoadingFromTokenPrice={isLoadingFromTokenPrice}
-                        toggleInputMode={toggleInputMode}
-                        setUsdInputValue={setUsdInputValue}
-                        setTradeType={setTradeType}
-                        setTokenInputCache={setTokenInputCache}
-                        setAmountInputValue={setAmountInputValue}
-                        setAmountOutputValue={setAmountOutputValue}
-                        setUsdOutputValue={setUsdOutputValue}
-                        debouncedAmountInputControls={
-                          debouncedAmountInputControls
-                        }
-                        onAnalyticEvent={onAnalyticEvent}
-                        fromBalance={fromBalance}
-                        isLoadingFromBalance={isLoadingFromBalance}
-                        hasInsufficientBalance={hasInsufficientBalance}
-                        address={address}
-                        fromBalancePending={fromBalancePending}
-                        multiWalletSupportEnabled={multiWalletSupportEnabled}
-                        fromChainWalletVMSupported={fromChainWalletVMSupported}
-                        disablePasteWalletAddressOption={
-                          disablePasteWalletAddressOption
-                        }
-                        onSetPrimaryWallet={onSetPrimaryWallet}
-                        fromChain={fromChain}
-                        onConnectWallet={onConnectWallet}
-                        onLinkNewWallet={onLinkNewWallet}
-                        linkedWallets={linkedWallets}
-                        setAddressModalOpen={setAddressModalOpen}
-                        transactionModalOpen={transactionModalOpen}
-                        depositAddressModalOpen={depositAddressModalOpen}
-                        isValidFromAddress={isValidFromAddress}
-                        isValidToAddress={isValidToAddress}
-                        isInsufficientLiquidityError={isInsufficientLiquidityError}
-                        recipientWalletSupportsChain={recipientWalletSupportsChain}
-                        isSameCurrencySameRecipientSwap={isSameCurrencySameRecipientSwap}
-                        debouncedInputAmountValue={debouncedInputAmountValue}
-                        debouncedOutputAmountValue={debouncedOutputAmountValue}
-                        showHighPriceImpactWarning={showHighPriceImpactWarning}
-                        disableSwapButton={promptSwitchRoute}
-                        percentOptions={percentageOptions}
-                        onSelectPercentage={handleSelectPercentage}
-                        onSelectMax={handleSelectMax}
-                      />
-
-                      {error &&
-                      !isFetchingQuote &&
-                      !isSingleChainLocked &&
-                      fromChainWalletVMSupported ? (
-                        <Box
-                          css={{
-                            borderRadius: 'widget-card-border-radius',
-                            backgroundColor: 'widget-background',
-                            border: 'widget-card-border',
-                            overflow: 'hidden',
-                            mb: 'widget-card-section-gutter'
-                          }}
-                          id={'swap-route-selection-section'}
-                        >
-                          <SwapRouteSelector
-                            chain={toChain}
-                            supportsExternalLiquidity={
-                              supportsExternalLiquidity
-                            }
-                            externalLiquidtySelected={useExternalLiquidity}
-                            canonicalTimeEstimate={
-                              canonicalTimeEstimate?.formattedTime
-                            }
-                            onExternalLiquidityChange={(selected) => {
-                              setUseExternalLiquidity(selected)
                             }}
-                            error={error}
-                          />
-                        </Box>
-                      ) : null}
-                      <FeeBreakdown
-                        feeBreakdown={feeBreakdown}
-                        isFetchingQuote={isFetchingQuote}
-                        toToken={toToken}
-                        fromToken={fromToken}
-                        quote={quote}
-                        timeEstimate={timeEstimate}
-                        supportsExternalLiquidity={supportsExternalLiquidity}
-                        useExternalLiquidity={useExternalLiquidity}
-                        isAutoSlippage={isAutoSlippage}
-                        slippageInputBps={localSlippageTolerance}
-                        toChain={toChain}
-                        setUseExternalLiquidity={(enabled) => {
-                          setUseExternalLiquidity(enabled)
-                          onAnalyticEvent?.(EventNames.SWAP_ROUTE_SELECTED, {
-                            route: enabled ? 'canonical' : 'relay'
-                          })
-                        }}
-                        canonicalTimeEstimate={canonicalTimeEstimate}
-                        isSingleChainLocked={isSingleChainLocked}
-                        fromChainWalletVMSupported={fromChainWalletVMSupported}
-                        error={error}
-                        onOpenSlippageConfig={handleOpenSlippageConfig}
-                      />
-                      <WidgetErrorWell
-                        hasInsufficientBalance={hasInsufficientBalance}
-                        error={error}
-                        quote={quote}
-                        currency={fromToken}
-                        isHighRelayerServiceFee={highRelayerServiceFee}
-                        isCapacityExceededError={isCapacityExceededError}
-                        isCouldNotExecuteError={isCouldNotExecuteError}
-                        relayerFeeProportion={relayerFeeProportion}
-                        supportsExternalLiquidity={supportsExternalLiquidity}
-                        containerCss={{
-                          mb: 'widget-card-section-gutter'
-                        }}
-                        recipientWalletSupportsChain={
-                          recipientWalletSupportsChain
-                        }
-                        recipient={recipient}
-                        toChainWalletVMSupported={toChainWalletVMSupported}
-                        recipientLinkedWallet={recipientLinkedWallet}
-                        toChainVmType={toChain?.vmType}
-                      />
-                      {promptSwitchRoute ? (
-                        <Button
-                          color="primary"
-                          cta={true}
-                          css={{ flexGrow: '1', justifyContent: 'center' }}
-                          onClick={() => {
-                            setUseExternalLiquidity(true)
-                            onAnalyticEvent?.(
-                              EventNames.CTA_SWITCH_ROUTE_CLICKED
-                            )
-                          }}
-                        >
-                          Switch Route
-                        </Button>
-                      ) : null}
+                          >
+                            <Text style="subtitle1">Buy</Text>
+                          </TabsTrigger>
+                          <TabsTrigger
+                            value="sell"
+                            css={{
+                              padding: '12px',
+                              background: 'none',
+                              transition: 'background 0.2s ease-in-out',
+                              outline: '1px solid transparent',
+                              '&[data-state="active"]': {
+                                background: 'white',
+                                borderRadius: '12px',
+                                '--outlineColor': 'colors.gray.4',
+                                outline: '1px solid var(--outlineColor)'
+                              },
+                              _hover: {
+                                backgroundColor: 'gray1 !important'
+                              },
+                              _dark: {
+                                '&[data-state="active"]': {
+                                  background: 'gray1'
+                                },
+                                _hover: {
+                                  backgroundColor: 'gray2 !important'
+                                }
+                              }
+                            }}
+                          >
+                            Sell
+                          </TabsTrigger>
+                        </TabsList>
+
+                        <BuyTabContent
+                          slippageTolerance={localSlippageTolerance}
+                          onOpenSlippageConfig={handleOpenSlippageConfig}
+                          onSlippageToleranceChange={
+                            handleSlippageToleranceChange
+                          }
+                          isUsdInputMode={isUsdInputMode}
+                          usdOutputValue={usdOutputValue}
+                          tradeType={tradeType}
+                          amountOutputValue={amountOutputValue}
+                          amountInputValue={amountInputValue}
+                          toToken={toToken}
+                          fromToken={fromToken}
+                          quote={quote}
+                          isFetchingQuote={isFetchingQuote}
+                          isLoadingToTokenPrice={isLoadingToTokenPrice}
+                          outputAmountUsd={outputAmountUsd}
+                          toTokenPriceData={toTokenPriceData}
+                          setUsdOutputValue={setUsdOutputValue}
+                          setTradeType={setTradeType}
+                          setAmountOutputValue={setAmountOutputValue}
+                          setAmountInputValue={setAmountInputValue}
+                          debouncedAmountOutputControls={
+                            debouncedAmountOutputControls
+                          }
+                          setUsdInputValue={setUsdInputValue}
+                          toggleInputMode={toggleInputMode}
+                          onAnalyticEvent={onAnalyticEvent}
+                          feeBreakdown={feeBreakdown}
+                          isLoadingFromBalance={isLoadingFromBalance}
+                          fromBalance={fromBalance}
+                          fromBalancePending={fromBalancePending}
+                          address={address}
+                          multiWalletSupportEnabled={multiWalletSupportEnabled}
+                          toChainWalletVMSupported={toChainWalletVMSupported}
+                          disablePasteWalletAddressOption={
+                            disablePasteWalletAddressOption
+                          }
+                          recipient={recipient}
+                          setCustomToAddress={setCustomToAddress}
+                          onConnectWallet={onConnectWallet}
+                          onLinkNewWallet={onLinkNewWallet}
+                          linkedWallets={linkedWallets}
+                          fromChain={fromChain}
+                          toChain={toChain}
+                          isValidToAddress={isValidToAddress}
+                          isRecipientLinked={isRecipientLinked}
+                          setAddressModalOpen={setAddressModalOpen}
+                          toDisplayName={toDisplayName}
+                          isValidFromAddress={isValidFromAddress}
+                          fromChainWalletVMSupported={
+                            fromChainWalletVMSupported
+                          }
+                          supportedWalletVMs={supportedWalletVMs}
+                          handleSetFromToken={handleSetFromToken}
+                          handleSetToToken={handleSetToToken}
+                          onSetPrimaryWallet={onSetPrimaryWallet}
+                          lockToToken={lockToToken}
+                          lockFromToken={lockFromToken}
+                          isSingleChainLocked={isSingleChainLocked}
+                          lockChainId={lockChainId}
+                          popularChainIds={popularChainIds}
+                          transactionModalOpen={transactionModalOpen}
+                          depositAddressModalOpen={depositAddressModalOpen}
+                          hasInsufficientBalance={hasInsufficientBalance}
+                          isInsufficientLiquidityError={
+                            isInsufficientLiquidityError
+                          }
+                          recipientWalletSupportsChain={
+                            recipientWalletSupportsChain
+                          }
+                          isSameCurrencySameRecipientSwap={
+                            isSameCurrencySameRecipientSwap
+                          }
+                          debouncedInputAmountValue={debouncedInputAmountValue}
+                          debouncedOutputAmountValue={
+                            debouncedOutputAmountValue
+                          }
+                          showHighPriceImpactWarning={
+                            showHighPriceImpactWarning
+                          }
+                          disableSwapButton={promptSwitchRoute}
+                          onPrimaryAction={handlePrimaryAction}
+                          error={error}
+                          relayerFeeProportion={relayerFeeProportion}
+                          highRelayerServiceFee={highRelayerServiceFee}
+                          isCapacityExceededError={isCapacityExceededError}
+                          isCouldNotExecuteError={isCouldNotExecuteError}
+                          supportsExternalLiquidity={supportsExternalLiquidity}
+                          recipientLinkedWallet={recipientLinkedWallet}
+                          toChainVmType={toChain?.vmType}
+                        />
+
+                        <SellTabContent
+                          slippageTolerance={localSlippageTolerance}
+                          onOpenSlippageConfig={handleOpenSlippageConfig}
+                          onSlippageToleranceChange={
+                            handleSlippageToleranceChange
+                          }
+                          disableInputAutoFocus={disableInputAutoFocus}
+                          isUsdInputMode={isUsdInputMode}
+                          usdInputValue={usdInputValue}
+                          tradeType={tradeType}
+                          amountInputValue={amountInputValue}
+                          amountOutputValue={amountOutputValue}
+                          conversionRate={conversionRate}
+                          fromToken={fromToken}
+                          toToken={toToken}
+                          quote={quote}
+                          isFetchingQuote={isFetchingQuote}
+                          inputAmountUsd={inputAmountUsd}
+                          fromTokenPriceData={fromTokenPriceData}
+                          isLoadingFromTokenPrice={isLoadingFromTokenPrice}
+                          toggleInputMode={toggleInputMode}
+                          setUsdInputValue={setUsdInputValue}
+                          setTradeType={setTradeType}
+                          setTokenInputCache={setTokenInputCache}
+                          setAmountInputValue={setAmountInputValue}
+                          setAmountOutputValue={setAmountOutputValue}
+                          setUsdOutputValue={setUsdOutputValue}
+                          debouncedAmountInputControls={
+                            debouncedAmountInputControls
+                          }
+                          onAnalyticEvent={onAnalyticEvent}
+                          onPrimaryAction={handlePrimaryAction}
+                          fromBalance={fromBalance}
+                          isLoadingFromBalance={isLoadingFromBalance}
+                          hasInsufficientBalance={hasInsufficientBalance}
+                          address={address}
+                          fromBalancePending={fromBalancePending}
+                          multiWalletSupportEnabled={multiWalletSupportEnabled}
+                          fromChainWalletVMSupported={
+                            fromChainWalletVMSupported
+                          }
+                          disablePasteWalletAddressOption={
+                            disablePasteWalletAddressOption
+                          }
+                          onSetPrimaryWallet={onSetPrimaryWallet}
+                          fromChain={fromChain}
+                          toChain={toChain}
+                          onConnectWallet={onConnectWallet}
+                          onLinkNewWallet={onLinkNewWallet}
+                          linkedWallets={linkedWallets}
+                          setAddressModalOpen={setAddressModalOpen}
+                          transactionModalOpen={transactionModalOpen}
+                          depositAddressModalOpen={depositAddressModalOpen}
+                          isValidFromAddress={isValidFromAddress}
+                          isValidToAddress={isValidToAddress}
+                          toChainWalletVMSupported={toChainWalletVMSupported}
+                          isInsufficientLiquidityError={
+                            isInsufficientLiquidityError
+                          }
+                          recipientWalletSupportsChain={
+                            recipientWalletSupportsChain
+                          }
+                          toDisplayName={toDisplayName}
+                          recipient={recipient}
+                          setCustomToAddress={setCustomToAddress}
+                          isRecipientLinked={isRecipientLinked}
+                          isSameCurrencySameRecipientSwap={
+                            isSameCurrencySameRecipientSwap
+                          }
+                          debouncedInputAmountValue={debouncedInputAmountValue}
+                          debouncedOutputAmountValue={
+                            debouncedOutputAmountValue
+                          }
+                          showHighPriceImpactWarning={
+                            showHighPriceImpactWarning
+                          }
+                          disableSwapButton={promptSwitchRoute}
+                          percentOptions={percentageOptions}
+                          onSelectPercentage={handleSelectPercentage}
+                          onSelectMax={handleSelectMax}
+                          supportedWalletVMs={supportedWalletVMs}
+                          lockToToken={lockToToken}
+                          lockFromToken={lockFromToken}
+                          isSingleChainLocked={isSingleChainLocked}
+                          lockChainId={lockChainId}
+                          popularChainIds={popularChainIds}
+                          handleSetFromToken={handleSetFromToken}
+                          handleSetToToken={handleSetToToken}
+                          error={error}
+                          relayerFeeProportion={relayerFeeProportion}
+                          highRelayerServiceFee={highRelayerServiceFee}
+                          isCapacityExceededError={isCapacityExceededError}
+                          isCouldNotExecuteError={isCouldNotExecuteError}
+                          supportsExternalLiquidity={supportsExternalLiquidity}
+                          recipientLinkedWallet={recipientLinkedWallet}
+                          toChainVmType={toChain?.vmType}
+                        />
+
+                        {promptSwitchRoute ? (
+                          <Button
+                            color="primary"
+                            cta={true}
+                            css={{ flexGrow: '1', justifyContent: 'center' }}
+                            onClick={() => {
+                              setUseExternalLiquidity(true)
+                              onAnalyticEvent?.(
+                                EventNames.CTA_SWITCH_ROUTE_CLICKED
+                              )
+                            }}
+                          >
+                            Switch Route
+                          </Button>
+                        ) : null}
                       </Flex>
                     </TabsRoot>
                   </Flex>
