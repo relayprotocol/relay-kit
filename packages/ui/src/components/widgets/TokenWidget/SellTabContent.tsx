@@ -1,5 +1,8 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Text, Button, Box } from '../../primitives/index.js'
+import Skeleton from '../../primitives/Skeleton.js'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faClipboard, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
@@ -9,6 +12,8 @@ import {
 import { EventNames } from '../../../constants/events.js'
 import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
+import TokenSelector from '../../common/TokenSelector/TokenSelector.js'
+import { TokenWidgetTrigger } from './TokenWidgetTrigger.js'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -23,6 +28,8 @@ import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
 import TransactionDetailsFooter from './TransactionDetailsFooter.js'
 import SectionContainer from './SectionContainer.js'
+import { isChainLocked } from '../../../utils/tokenSelector.js'
+import { WidgetErrorWell } from '../WidgetErrorWell.js'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -32,6 +39,7 @@ type LinkNewWalletHandler = (params: {
 type SellTabContentProps = {
   slippageTolerance?: string
   onOpenSlippageConfig?: () => void
+  onSlippageToleranceChange?: (value: string | undefined) => void
   disableInputAutoFocus: boolean
   isUsdInputMode: boolean
   usdInputValue: string
@@ -40,6 +48,7 @@ type SellTabContentProps = {
   amountOutputValue: string
   conversionRate: number | null
   fromToken?: Token
+  toToken?: Token
   quote: ChildrenProps['quote']
   isFetchingQuote: ChildrenProps['isFetchingQuote']
   inputAmountUsd: number | null
@@ -64,6 +73,7 @@ type SellTabContentProps = {
   disablePasteWalletAddressOption?: boolean
   onSetPrimaryWallet?: (address: string) => void
   fromChain?: RelayChain
+  toChain?: RelayChain
   onConnectWallet?: () => void
   onLinkNewWallet?: LinkNewWalletHandler
   linkedWallets?: LinkedWallet[]
@@ -72,8 +82,12 @@ type SellTabContentProps = {
   depositAddressModalOpen: boolean
   isValidFromAddress: ChildrenProps['isValidFromAddress']
   isValidToAddress: ChildrenProps['isValidToAddress']
+  toChainWalletVMSupported: ChildrenProps['toChainWalletVMSupported']
   isInsufficientLiquidityError?: ChildrenProps['isInsufficientLiquidityError']
   recipientWalletSupportsChain: ChildrenProps['recipientWalletSupportsChain']
+  recipient?: ChildrenProps['recipient']
+  setCustomToAddress: ChildrenProps['setCustomToAddress']
+  isRecipientLinked?: ChildrenProps['isRecipientLinked']
   isSameCurrencySameRecipientSwap: ChildrenProps['isSameCurrencySameRecipientSwap']
   debouncedInputAmountValue: ChildrenProps['debouncedInputAmountValue']
   debouncedOutputAmountValue: ChildrenProps['debouncedOutputAmountValue']
@@ -82,11 +96,30 @@ type SellTabContentProps = {
   percentOptions?: number[]
   onSelectPercentage?: (percent: number) => void
   onSelectMax?: () => void | Promise<void>
+  onPrimaryAction: () => void
+  toDisplayName?: ChildrenProps['toDisplayName']
+  error: ChildrenProps['error']
+  relayerFeeProportion: ChildrenProps['relayerFeeProportion']
+  highRelayerServiceFee: ChildrenProps['highRelayerServiceFee']
+  isCapacityExceededError?: ChildrenProps['isCapacityExceededError']
+  isCouldNotExecuteError?: ChildrenProps['isCouldNotExecuteError']
+  supportsExternalLiquidity: ChildrenProps['supportsExternalLiquidity']
+  recipientLinkedWallet?: ChildrenProps['linkedWallet']
+  toChainVmType?: string
+  supportedWalletVMs: ChildrenProps['supportedWalletVMs']
+  lockToToken: boolean
+  lockFromToken: boolean
+  isSingleChainLocked: boolean
+  lockChainId?: number
+  popularChainIds?: number[]
+  handleSetFromToken: (token?: Token) => void
+  handleSetToToken: (token?: Token) => void
 }
 
 const SellTabContent: FC<SellTabContentProps> = ({
   slippageTolerance,
   onOpenSlippageConfig,
+  onSlippageToleranceChange,
   disableInputAutoFocus,
   isUsdInputMode,
   usdInputValue,
@@ -95,6 +128,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
   amountOutputValue,
   conversionRate,
   fromToken,
+  toToken,
   quote,
   isFetchingQuote,
   inputAmountUsd,
@@ -119,6 +153,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
   disablePasteWalletAddressOption,
   onSetPrimaryWallet,
   fromChain,
+  toChain,
   onConnectWallet,
   onLinkNewWallet,
   linkedWallets,
@@ -127,8 +162,12 @@ const SellTabContent: FC<SellTabContentProps> = ({
   depositAddressModalOpen,
   isValidFromAddress,
   isValidToAddress,
+  toChainWalletVMSupported,
   isInsufficientLiquidityError,
   recipientWalletSupportsChain,
+  recipient,
+  setCustomToAddress,
+  isRecipientLinked,
   isSameCurrencySameRecipientSwap,
   debouncedInputAmountValue,
   debouncedOutputAmountValue,
@@ -136,194 +175,283 @@ const SellTabContent: FC<SellTabContentProps> = ({
   disableSwapButton,
   percentOptions,
   onSelectPercentage,
-  onSelectMax
-}) => (
-  <TabsContent value="sell">
-    <SectionContainer
-      css={{ backgroundColor: 'widget-background' }}
-      id={'sell-token-section'}
-    >
-      <AmountSectionHeader
-        label="Amount"
-        slippageTolerance={slippageTolerance}
-        onOpenSlippageConfig={onOpenSlippageConfig}
-      />
-      <Flex align="center" justify="between" css={{ gap: '2', width: '100%' }}>
-        <AmountInput
-          autoFocus={!disableInputAutoFocus}
-          prefixSymbol={isUsdInputMode ? '$' : undefined}
-          value={
-            isUsdInputMode
-              ? usdInputValue
-              : tradeType === 'EXACT_INPUT'
-                ? amountInputValue
-                : amountInputValue
-                  ? formatFixedLength(amountInputValue, 8)
-                  : amountInputValue
-          }
-          setValue={(value) => {
-            if (isUsdInputMode) {
-              setUsdInputValue(value)
-              setTradeType('EXACT_INPUT')
-              setTokenInputCache('')
-              if (Number(value) === 0) {
-                setAmountOutputValue('')
-                setUsdOutputValue('')
-                debouncedAmountInputControls.flush()
-              }
-            } else {
-              setAmountInputValue(value)
-              setTradeType('EXACT_INPUT')
-              if (Number(value) === 0) {
-                setAmountOutputValue('')
-                debouncedAmountInputControls.flush()
-              }
-            }
-          }}
-          onFocus={() => {
-            onAnalyticEvent?.(EventNames.SWAP_INPUT_FOCUSED)
-          }}
-          css={{
-            fontWeight: '700',
-            fontSize: 32,
-            lineHeight: '36px',
-            py: 0,
-            color:
-              isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
-                ? 'text-subtle'
-                : 'input-color',
-            _placeholder: {
-              color:
-                isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
-                  ? 'text-subtle'
-                  : 'input-color'
-            }
-          }}
+  onSelectMax,
+  onPrimaryAction,
+  toDisplayName,
+  error,
+  relayerFeeProportion,
+  highRelayerServiceFee,
+  isCapacityExceededError,
+  isCouldNotExecuteError,
+  supportsExternalLiquidity,
+  recipientLinkedWallet,
+  toChainVmType,
+  supportedWalletVMs,
+  lockToToken,
+  lockFromToken,
+  isSingleChainLocked,
+  lockChainId,
+  popularChainIds,
+  handleSetFromToken,
+  handleSetToToken
+}) => {
+  const hasSelectedTokens = Boolean(fromToken)
+  const invalidAmount =
+    !quote ||
+    Number(debouncedInputAmountValue) === 0 ||
+    Number(debouncedOutputAmountValue) === 0 ||
+    !hasSelectedTokens
+
+  const disableActionButton =
+    isFetchingQuote ||
+    (isValidToAddress &&
+      (isValidFromAddress || !fromChainWalletVMSupported) &&
+      (invalidAmount ||
+        hasInsufficientBalance ||
+        isInsufficientLiquidityError ||
+        transactionModalOpen ||
+        depositAddressModalOpen ||
+        isSameCurrencySameRecipientSwap ||
+        !recipientWalletSupportsChain ||
+        disableSwapButton))
+
+  const toChainId = toToken?.chainId
+  const lockedToChainIds = isSingleChainLocked
+    ? lockChainId !== undefined
+      ? [lockChainId]
+      : undefined
+    : isChainLocked(toChainId, lockChainId, fromToken?.chainId, lockToToken) &&
+        toChainId !== undefined
+      ? [toChainId]
+      : undefined
+
+  const chainIdsFilterForTo =
+    !fromChainWalletVMSupported && fromToken ? [fromToken.chainId] : undefined
+
+  const isLoadingOutput =
+    isFetchingQuote ||
+    !toToken ||
+    !amountInputValue ||
+    Number(amountInputValue) === 0
+
+  return (
+    <TabsContent value="sell">
+      <SectionContainer
+        css={{ backgroundColor: 'widget-background' }}
+        id={'sell-token-section'}
+      >
+        <AmountSectionHeader
+          label="Amount"
+          slippageTolerance={slippageTolerance}
+          onOpenSlippageConfig={onOpenSlippageConfig}
+          onSlippageToleranceChange={onSlippageToleranceChange}
+          onAnalyticEvent={onAnalyticEvent}
         />
-      </Flex>
-      <Flex direction="column" css={{ gap: '3', width: '100%' }}>
         <Flex
           align="center"
           justify="between"
-          css={{ gap: '3', width: '100%' }}
+          css={{ gap: '2', width: '100%' }}
         >
-          <AmountModeToggle
-            onToggle={toggleInputMode}
-            textProps={{
-              css: {
-                minHeight: 18,
-                display: 'flex',
-                alignItems: 'center'
+          <AmountInput
+            autoFocus={!disableInputAutoFocus}
+            prefixSymbol={isUsdInputMode ? '$' : undefined}
+            value={
+              isUsdInputMode
+                ? usdInputValue
+                : tradeType === 'EXACT_INPUT'
+                  ? amountInputValue
+                  : amountInputValue
+                    ? formatFixedLength(amountInputValue, 8)
+                    : amountInputValue
+            }
+            setValue={(value) => {
+              if (isUsdInputMode) {
+                setUsdInputValue(value)
+                setTradeType('EXACT_INPUT')
+                setTokenInputCache('')
+                if (Number(value) === 0) {
+                  setAmountOutputValue('')
+                  setUsdOutputValue('')
+                  debouncedAmountInputControls.flush()
+                }
+              } else {
+                setAmountInputValue(value)
+                setTradeType('EXACT_INPUT')
+                if (Number(value) === 0) {
+                  setAmountOutputValue('')
+                  debouncedAmountInputControls.flush()
+                }
               }
             }}
-          >
-            {isUsdInputMode ? (
-              fromToken ? (
-                usdInputValue && Number(usdInputValue) > 0 ? (
-                  amountInputValue &&
-                  conversionRate &&
-                  !isLoadingFromTokenPrice ? (
-                    `${formatNumber(amountInputValue, 4, false)} ${fromToken.symbol}`
-                  ) : (
-                    <Box
-                      css={{
-                        width: 45,
-                        height: 12,
-                        backgroundColor: 'gray7',
-                        borderRadius: 'widget-border-radius'
-                      }}
-                    />
-                  )
-                ) : (
-                  `0 ${fromToken.symbol}`
-                )
-              ) : null
-            ) : quote?.details?.currencyIn?.amountUsd && !isFetchingQuote ? (
-              formatDollar(Number(quote.details.currencyIn.amountUsd))
-            ) : isLoadingFromTokenPrice &&
-              amountInputValue &&
-              Number(amountInputValue) > 0 ? (
-              <Box
-                css={{
-                  width: 45,
-                  height: 12,
-                  backgroundColor: 'gray7',
-                  borderRadius: 'widget-border-radius'
-                }}
-              />
-            ) : inputAmountUsd &&
-              inputAmountUsd > 0 &&
-              fromTokenPriceData?.price &&
-              fromTokenPriceData.price > 0 ? (
-              formatDollar(inputAmountUsd)
-            ) : (
-              '$0.00'
-            )}
-          </AmountModeToggle>
+            onFocus={() => {
+              onAnalyticEvent?.(EventNames.SWAP_INPUT_FOCUSED)
+            }}
+            css={{
+              fontWeight: '700',
+              fontSize: 32,
+              lineHeight: '36px',
+              py: 0,
+              color:
+                isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
+                  ? 'text-subtle'
+                  : 'input-color',
+              _placeholder: {
+                color:
+                  isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
+                    ? 'text-subtle'
+                    : 'input-color'
+              }
+            }}
+          />
         </Flex>
-
-        <Flex align="center" css={{ width: '100%', gap: '3' }}>
-          {multiWalletSupportEnabled === true && fromChainWalletVMSupported ? (
-            <MultiWalletDropdown
-              context="origin"
-              selectedWalletAddress={address}
-              disablePasteWalletAddressOption={disablePasteWalletAddressOption}
-              onSelect={(wallet) => onSetPrimaryWallet?.(wallet.address)}
-              chain={fromChain}
-              onLinkNewWallet={() => {
-                if (!address && fromChainWalletVMSupported) {
-                  onConnectWallet?.()
-                } else {
-                  onLinkNewWallet?.({
-                    chain: fromChain,
-                    direction: 'from'
-                  })?.then((wallet) => {
-                    onSetPrimaryWallet?.(wallet.address)
-                  })
-                }
-              }}
-              setAddressModalOpen={setAddressModalOpen}
-              wallets={linkedWallets ?? []}
-              onAnalyticEvent={onAnalyticEvent}
-              testId="origin-wallet-select-button"
-            />
-          ) : (
-            <Box />
-          )}
-
+        <Flex direction="column" css={{ gap: '3', width: '100%' }}>
           <Flex
             align="center"
-            css={{
-              gap: '8px',
-              marginLeft: 'auto',
-              flexShrink: 0
-            }}
+            justify="between"
+            css={{ gap: '3', width: '100%' }}
           >
-            {fromToken ? (
-              <BalanceDisplay
-                hideBalanceLabel={true}
-                displaySymbol={true}
-                isLoading={isLoadingFromBalance}
-                balance={fromBalance}
-                decimals={fromToken?.decimals}
-                symbol={fromToken?.symbol}
-                hasInsufficientBalance={hasInsufficientBalance}
-                isConnected={
-                  !isDeadAddress(address) &&
-                  address !== tronDeadAddress &&
-                  address !== undefined
+            <AmountModeToggle
+              onToggle={toggleInputMode}
+              textProps={{
+                css: {
+                  minHeight: 18,
+                  display: 'flex',
+                  alignItems: 'center'
                 }
-                pending={fromBalancePending}
-                size="md"
+              }}
+            >
+              {isUsdInputMode ? (
+                fromToken ? (
+                  usdInputValue && Number(usdInputValue) > 0 ? (
+                    amountInputValue &&
+                    conversionRate &&
+                    !isLoadingFromTokenPrice ? (
+                      `${formatNumber(amountInputValue, 4, false)} ${fromToken.symbol}`
+                    ) : (
+                      <Skeleton css={{ width: 45, height: 12 }} />
+                    )
+                  ) : (
+                    `0 ${fromToken.symbol}`
+                  )
+                ) : null
+              ) : quote?.details?.currencyIn?.amountUsd && !isFetchingQuote ? (
+                formatDollar(Number(quote.details.currencyIn.amountUsd))
+              ) : isLoadingFromTokenPrice &&
+                amountInputValue &&
+                Number(amountInputValue) > 0 ? (
+                <Skeleton css={{ width: 45, height: 12 }} />
+              ) : inputAmountUsd &&
+                inputAmountUsd > 0 &&
+                fromTokenPriceData?.price &&
+                fromTokenPriceData.price > 0 ? (
+                formatDollar(inputAmountUsd)
+              ) : (
+                '$0.00'
+              )}
+            </AmountModeToggle>
+          </Flex>
+
+          <Flex align="center" css={{ width: '100%', gap: '3' }}>
+            {multiWalletSupportEnabled === true &&
+            fromChainWalletVMSupported ? (
+              <MultiWalletDropdown
+                context="origin"
+                selectedWalletAddress={address}
+                disablePasteWalletAddressOption={
+                  disablePasteWalletAddressOption
+                }
+                onSelect={(wallet) => onSetPrimaryWallet?.(wallet.address)}
+                chain={fromChain}
+                onLinkNewWallet={() => {
+                  if (!address && fromChainWalletVMSupported) {
+                    onConnectWallet?.()
+                  } else {
+                    onLinkNewWallet?.({
+                      chain: fromChain,
+                      direction: 'from'
+                    })?.then((wallet) => {
+                      onSetPrimaryWallet?.(wallet.address)
+                    })
+                  }
+                }}
+                setAddressModalOpen={setAddressModalOpen}
+                wallets={linkedWallets ?? []}
+                onAnalyticEvent={onAnalyticEvent}
+                testId="origin-wallet-select-button"
               />
             ) : (
-              <Flex css={{ height: 18 }} />
+              <Box />
             )}
-            <Flex align="center" css={{ gap: '1' }}>
-              {(percentOptions ?? [20, 50]).map((percent) => (
+
+            <Flex
+              align="center"
+              css={{
+                gap: '8px',
+                marginLeft: 'auto',
+                flexShrink: 0
+              }}
+            >
+              {fromToken ? (
+                <BalanceDisplay
+                  hideBalanceLabel={true}
+                  displaySymbol={true}
+                  isLoading={isLoadingFromBalance}
+                  balance={fromBalance}
+                  decimals={fromToken?.decimals}
+                  symbol={fromToken?.symbol}
+                  hasInsufficientBalance={hasInsufficientBalance}
+                  isConnected={
+                    !isDeadAddress(address) &&
+                    address !== tronDeadAddress &&
+                    address !== undefined
+                  }
+                  pending={fromBalancePending}
+                  size="md"
+                />
+              ) : (
+                <Flex css={{ height: 18 }} />
+              )}
+              <Flex align="center" css={{ gap: '1' }}>
+                {(percentOptions ?? [20, 50]).map((percent) => (
+                  <Button
+                    key={percent}
+                    aria-label={`${percent}%`}
+                    css={{
+                      fontSize: 12,
+                      fontWeight: '500',
+                      px: '1',
+                      py: '1',
+                      minHeight: '23px',
+                      lineHeight: '100%',
+                      backgroundColor: 'widget-selector-background',
+                      border: 'none',
+                      _hover: {
+                        backgroundColor: 'widget-selector-hover-background'
+                      }
+                    }}
+                    color="white"
+                    disabled={
+                      disableSwapButton ||
+                      !fromBalance ||
+                      fromBalance === 0n ||
+                      !onSelectPercentage
+                    }
+                    onClick={() => {
+                      if (
+                        !disableSwapButton &&
+                        fromBalance &&
+                        fromBalance > 0n &&
+                        onSelectPercentage
+                      ) {
+                        onSelectPercentage?.(percent)
+                      }
+                    }}
+                  >
+                    {percent}%
+                  </Button>
+                ))}
                 <Button
-                  key={percent}
-                  aria-label={`${percent}%`}
+                  aria-label="MAX"
                   css={{
                     fontSize: 12,
                     fontWeight: '500',
@@ -342,131 +470,226 @@ const SellTabContent: FC<SellTabContentProps> = ({
                     disableSwapButton ||
                     !fromBalance ||
                     fromBalance === 0n ||
-                    !onSelectPercentage
+                    !onSelectMax
                   }
                   onClick={() => {
                     if (
                       !disableSwapButton &&
                       fromBalance &&
                       fromBalance > 0n &&
-                      onSelectPercentage
+                      onSelectMax
                     ) {
-                      onSelectPercentage?.(percent)
+                      void onSelectMax?.()
                     }
                   }}
                 >
-                  {percent}%
+                  MAX
                 </Button>
-              ))}
-              <Button
-                aria-label="MAX"
-                css={{
-                  fontSize: 12,
-                  fontWeight: '500',
-                  px: '1',
-                  py: '1',
-                  minHeight: '23px',
-                  lineHeight: '100%',
-                  backgroundColor: 'widget-selector-background',
-                  border: 'none',
-                  _hover: {
-                    backgroundColor: 'widget-selector-hover-background'
-                  }
-                }}
-                color="white"
-                disabled={
-                  disableSwapButton ||
-                  !fromBalance ||
-                  fromBalance === 0n ||
-                  !onSelectMax
-                }
-                onClick={() => {
-                  if (
-                    !disableSwapButton &&
-                    fromBalance &&
-                    fromBalance > 0n &&
-                    onSelectMax
-                  ) {
-                    void onSelectMax?.()
-                  }
-                }}
-              >
-                MAX
-              </Button>
+              </Flex>
             </Flex>
           </Flex>
         </Flex>
-      </Flex>
 
-      <Divider color="gray4" />
+        <Divider color="gray4" />
 
-      <Flex align="center" css={{ width: '100%', gap: '2' }}>
-        <Text style="subtitle2" color="subtle">
-          Sell to
-        </Text>
-        {multiWalletSupportEnabled === true && fromChainWalletVMSupported ? (
-          <MultiWalletDropdown
-            context="origin"
-            selectedWalletAddress={address}
-            disablePasteWalletAddressOption={disablePasteWalletAddressOption}
-            onSelect={(wallet) => onSetPrimaryWallet?.(wallet.address)}
-            chain={fromChain}
-            onLinkNewWallet={() => {
-              if (!address && fromChainWalletVMSupported) {
-                onConnectWallet?.()
-              } else {
-                onLinkNewWallet?.({
-                  chain: fromChain,
-                  direction: 'from'
-                })?.then((wallet) => {
-                  onSetPrimaryWallet?.(wallet.address)
-                })
+        <Flex align="center" css={{ width: '100%', gap: '2' }}>
+          <Text style="subtitle2" color="subtle">
+            Sell to
+          </Text>
+          {multiWalletSupportEnabled && toChainWalletVMSupported ? (
+            <MultiWalletDropdown
+              context="destination"
+              selectedWalletAddress={recipient}
+              disablePasteWalletAddressOption={disablePasteWalletAddressOption}
+              onSelect={(wallet) => {
+                setCustomToAddress(wallet.address)
+              }}
+              chain={toChain}
+              onLinkNewWallet={() => {
+                if (!address && toChainWalletVMSupported) {
+                  onConnectWallet?.()
+                } else {
+                  onLinkNewWallet?.({
+                    chain: toChain,
+                    direction: 'to'
+                  })?.then((wallet) => {
+                    setCustomToAddress(wallet.address)
+                  })
+                }
+              }}
+              setAddressModalOpen={setAddressModalOpen}
+              wallets={linkedWallets ?? []}
+              onAnalyticEvent={onAnalyticEvent}
+              testId="destination-wallet-select-button"
+            />
+          ) : (
+            <Button
+              color={
+                isValidToAddress &&
+                multiWalletSupportEnabled &&
+                !isRecipientLinked
+                  ? 'warning'
+                  : 'secondary'
               }
-            }}
-            setAddressModalOpen={setAddressModalOpen}
-            wallets={linkedWallets ?? []}
-            onAnalyticEvent={onAnalyticEvent}
-            testId="origin-wallet-select-button"
+              corners="pill"
+              size="none"
+              css={{
+                display: 'flex',
+                alignItems: 'center',
+                px: '2',
+                py: '1'
+              }}
+              onClick={() => {
+                setAddressModalOpen(true)
+                onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
+              }}
+            >
+              {isValidToAddress &&
+              multiWalletSupportEnabled &&
+              !isRecipientLinked ? (
+                <Box css={{ color: 'amber11' }}>
+                  <FontAwesomeIcon icon={faClipboard} width={16} height={16} />
+                </Box>
+              ) : null}
+              <Text
+                style="subtitle2"
+                css={{
+                  color:
+                    isValidToAddress &&
+                    multiWalletSupportEnabled &&
+                    !isRecipientLinked
+                      ? 'amber11'
+                      : 'anchor-color'
+                }}
+              >
+                {!isValidToAddress
+                  ? `Enter Address`
+                  : (toDisplayName ?? recipient)}
+              </Text>
+            </Button>
+          )}
+        </Flex>
+
+        <Flex direction="column" css={{ gap: '2', width: '100%' }}>
+          <Flex justify="between" css={{ width: '100%' }}>
+            <TokenSelector
+              address={recipient}
+              isValidAddress={isValidToAddress}
+              token={toToken}
+              onAnalyticEvent={onAnalyticEvent}
+              multiWalletSupportEnabled={multiWalletSupportEnabled}
+              fromChainWalletVMSupported={fromChainWalletVMSupported}
+              supportedWalletVMs={supportedWalletVMs}
+              popularChainIds={popularChainIds}
+              lockedChainIds={lockedToChainIds}
+              chainIdsFilter={chainIdsFilterForTo}
+              context="to"
+              setToken={(token) => {
+                if (
+                  token?.address === fromToken?.address &&
+                  token?.chainId === fromToken?.chainId &&
+                  address === recipient &&
+                  (!lockFromToken || !toToken)
+                ) {
+                  handleSetToToken(fromToken)
+                  handleSetFromToken(toToken)
+                } else {
+                  handleSetToToken(token)
+                }
+              }}
+              trigger={
+                <div style={{ width: 'max-content' }}>
+                  <TokenWidgetTrigger
+                    token={toToken}
+                    locked={lockToToken}
+                    address={recipient}
+                    testId="destination-token-select-button"
+                  />
+                </div>
+              }
+            />
+            <Flex direction="column" align="end">
+              <Flex align="center" css={{ gap: '1' }}>
+                {isLoadingOutput ? (
+                  <Skeleton css={{ width: 80, height: 20 }} />
+                ) : quote?.details?.currencyOut?.amountUsd &&
+                  Number(quote.details.currencyOut.amountUsd) > 0 ? (
+                  <Text style="h6">
+                    {formatDollar(Number(quote.details.currencyOut.amountUsd))}
+                  </Text>
+                ) : (
+                  <Text style="h6">--</Text>
+                )}
+                <Box
+                  css={{
+                    color: 'gray8',
+                    width: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <FontAwesomeIcon icon={faInfoCircle} />
+                </Box>
+              </Flex>
+              {isLoadingOutput ? (
+                <Skeleton css={{ width: 60, height: 14 }} />
+              ) : toToken &&
+                amountOutputValue &&
+                Number(amountOutputValue) > 0 ? (
+                <Text style="subtitle3" color="subtleSecondary">
+                  {formatNumber(amountOutputValue, 4, false)} {toToken.symbol}
+                </Text>
+              ) : (
+                <Text style="subtitle3" color="subtleSecondary">
+                  --
+                </Text>
+              )}
+            </Flex>
+          </Flex>
+          <WidgetErrorWell
+            hasInsufficientBalance={hasInsufficientBalance}
+            error={error}
+            quote={quote}
+            currency={fromToken}
+            relayerFeeProportion={relayerFeeProportion}
+            isHighRelayerServiceFee={highRelayerServiceFee}
+            isCapacityExceededError={isCapacityExceededError}
+            isCouldNotExecuteError={isCouldNotExecuteError}
+            supportsExternalLiquidity={supportsExternalLiquidity}
+            recipientWalletSupportsChain={recipientWalletSupportsChain}
+            recipient={recipient}
+            toChainWalletVMSupported={toChainWalletVMSupported}
+            recipientLinkedWallet={recipientLinkedWallet}
+            toChainVmType={toChainVmType}
+            containerCss={{ width: '100%' }}
           />
-        ) : null}
-      </Flex>
+        </Flex>
 
-      <Flex css={{ width: '100%' }}>
-        <TokenActionButton
-          onClick={() => {
-            const token = fromToken
-            const amount = amountInputValue
-            console.log(`Selling ${token?.symbol}`, {
-              token,
-              amount
-            })
-            onAnalyticEvent?.('TOKEN_SELL_CLICKED', {
-              token,
-              amount
-            })
-          }}
-          ctaCopy="Sell"
-          disabled={
-            !fromToken ||
-            hasInsufficientBalance ||
-            transactionModalOpen ||
-            depositAddressModalOpen ||
-            !isValidFromAddress
-          }
-          isFetchingQuote={isFetchingQuote}
-          hasValidAmount={
-            !!quote &&
-            Number(debouncedInputAmountValue) > 0 &&
-            Number(debouncedOutputAmountValue) > 0
-          }
-          onConnectWallet={onConnectWallet}
-          address={address}
-        />
-      </Flex>
+        <Divider color="gray4" />
 
-      <TransactionDetailsFooter />
-    </SectionContainer>
-  </TabsContent>
-)
+        <Flex css={{ width: '100%' }}>
+          <TokenActionButton
+            onClick={() => {
+              onAnalyticEvent?.('TOKEN_SELL_CLICKED', {
+                token: fromToken,
+                amount: amountInputValue
+              })
+              onPrimaryAction()
+            }}
+            ctaCopy="Sell"
+            disabled={disableActionButton}
+            isFetchingQuote={isFetchingQuote}
+            hasValidAmount={!invalidAmount}
+            onConnectWallet={onConnectWallet}
+            address={address}
+          />
+        </Flex>
+
+        <TransactionDetailsFooter />
+      </SectionContainer>
+    </TabsContent>
+  )
+}
 
 export default SellTabContent
