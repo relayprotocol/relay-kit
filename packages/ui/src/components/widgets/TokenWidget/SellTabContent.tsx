@@ -605,6 +605,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                     locked={lockToToken}
                     address={recipient}
                     testId="destination-token-select-button"
+                    balanceLabel="balance"
                   />
                 </div>
               }

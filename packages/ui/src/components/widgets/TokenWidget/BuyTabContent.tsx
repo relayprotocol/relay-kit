@@ -444,6 +444,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                   locked={lockFromToken}
                   address={address}
                   testId="origin-token-select-button"
+                  balanceLabel="available"
                 />
               </div>
             }

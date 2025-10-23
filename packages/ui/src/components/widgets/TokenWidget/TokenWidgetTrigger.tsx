@@ -16,13 +16,15 @@ type TokenWidgetTriggerProps = {
   locked?: boolean
   address?: string
   testId?: string
+  balanceLabel?: string
 }
 
 export const TokenWidgetTrigger: FC<TokenWidgetTriggerProps> = ({
   token,
   locked,
   address,
-  testId
+  testId,
+  balanceLabel = 'available'
 }) => {
   const relayClient = useRelayClient()
   const chain = relayClient?.chains?.find(
@@ -75,7 +77,7 @@ export const TokenWidgetTrigger: FC<TokenWidgetTriggerProps> = ({
               color="subtle"
               css={{ lineHeight: '15px', maxWidth: '100%' }}
             >
-              $1000 available
+              $1000 {balanceLabel}
             </Text>
           </Flex>
         </Flex>
