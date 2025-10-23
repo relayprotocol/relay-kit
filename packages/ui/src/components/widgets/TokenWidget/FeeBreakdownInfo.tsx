@@ -14,7 +14,6 @@ type FeeBreakdownInfoProps = {
   amountUsd?: string
   tokenAmountFormatted?: string
   fallbackTokenAmount?: string
-  showTotalLabel?: boolean
   quote?: QuoteResponse
   feeBreakdown?: FeeBreakdown | null
   token?: Token
@@ -25,7 +24,6 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
   amountUsd,
   tokenAmountFormatted,
   fallbackTokenAmount,
-  showTotalLabel = false,
   quote,
   feeBreakdown,
   token
@@ -44,10 +42,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
           <Skeleton css={{ width: 90, height: 20 }} />
         ) : amountUsd && Number(amountUsd) > 0 ? (
           <>
-            <Text style="h6">
-              {formatDollar(Number(amountUsd))}
-              {showTotalLabel ? ' total' : ''}
-            </Text>
+            <Text style="h6">{formatDollar(Number(amountUsd))} total</Text>
             <FeeBreakdownTooltip
               quote={quote}
               feeBreakdown={feeBreakdown}
@@ -70,7 +65,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
           </>
         ) : (
           <>
-            <Text style="h6">$0{showTotalLabel ? ' total' : ''}</Text>
+            <Text style="h6">$0 total</Text>
             <Box
               css={{
                 color: 'gray6',
