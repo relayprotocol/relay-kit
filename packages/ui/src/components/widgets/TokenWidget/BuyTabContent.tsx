@@ -10,7 +10,7 @@ import { PriceImpact } from '../SwapWidget/PriceImpact.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
 import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
-import TokenSelector from '../../common/TokenSelector/TokenSelector.js'
+import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faClipboard } from '@fortawesome/free-solid-svg-icons'
 import { EventNames } from '../../../constants/events.js'
@@ -21,7 +21,7 @@ import type { Token, LinkedWallet } from '../../../types/index.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
 import TokenActionButton from './TokenActionButton.js'
-import { TokenWidgetTrigger } from './TokenWidgetTrigger.js'
+import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
 import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
 import TransactionDetailsFooter from './TransactionDetailsFooter.js'
@@ -408,7 +408,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
         </Flex>
 
         <Flex justify="between" css={{ width: '100%' }}>
-          <TokenSelector
+          <PaymentMethod
             address={address}
             isValidAddress={isValidFromAddress}
             token={fromToken}
@@ -439,7 +439,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             popularChainIds={popularChainIds}
             trigger={
               <div style={{ width: 'max-content' }}>
-                <TokenWidgetTrigger
+                <PaymentMethodTrigger
                   token={fromToken}
                   locked={lockFromToken}
                   address={address}

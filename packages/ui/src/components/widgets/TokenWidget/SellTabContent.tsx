@@ -11,8 +11,8 @@ import {
 import { EventNames } from '../../../constants/events.js'
 import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
-import TokenSelector from '../../common/TokenSelector/TokenSelector.js'
-import { TokenWidgetTrigger } from './TokenWidgetTrigger.js'
+import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
+import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -573,7 +573,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
 
         <Flex direction="column" css={{ gap: '2', width: '100%' }}>
           <Flex justify="between" css={{ width: '100%' }}>
-            <TokenSelector
+            <PaymentMethod
               address={recipient}
               isValidAddress={isValidToAddress}
               token={toToken}
@@ -600,7 +600,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
               }}
               trigger={
                 <div style={{ width: 'max-content' }}>
-                  <TokenWidgetTrigger
+                  <PaymentMethodTrigger
                     token={toToken}
                     locked={lockToToken}
                     address={recipient}
