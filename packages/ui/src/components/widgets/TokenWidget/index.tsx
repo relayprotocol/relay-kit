@@ -25,9 +25,7 @@ import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
 import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
 import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
-import TokenWidgetRenderer, {
-  type TradeType
-} from './TokenWidgetRenderer.js'
+import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
 import BuyTabContent from './BuyTabContent.js'
 import SellTabContent from './SellTabContent.js'
 
@@ -138,9 +136,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [usdOutputValue, setUsdOutputValue] = useState('')
   const [tokenInputCache, setTokenInputCache] = useState('')
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
-  const setTradeTypeRef = useRef<
-    ((tradeType: TradeType) => void) | null
-  >(null)
+  const setTradeTypeRef = useRef<((tradeType: TradeType) => void) | null>(null)
   const tradeTypeRef = useRef<TradeType>(defaultTradeType ?? 'EXPECTED_OUTPUT')
   const hasLockedToken = lockFromToken || lockToToken
   const isSingleChainLocked = singleChainMode && lockChainId !== undefined
@@ -873,9 +869,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                         const nextTab = value as 'buy' | 'sell'
                         setActiveTab(nextTab)
                         const desiredTradeType: TradeType =
-                          nextTab === 'buy'
-                            ? 'EXPECTED_OUTPUT'
-                            : 'EXACT_INPUT'
+                          nextTab === 'buy' ? 'EXPECTED_OUTPUT' : 'EXACT_INPUT'
 
                         if (tradeType !== desiredTradeType) {
                           setTradeType(desiredTradeType)
@@ -911,14 +905,14 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                                 outline: '1px solid var(--outlineColor)'
                               },
                               _hover: {
-                                backgroundColor: 'gray1 !important'
+                                backgroundColor: 'transparent !important'
                               },
                               _dark: {
                                 '&[data-state="active"]': {
                                   background: 'gray1'
                                 },
                                 _hover: {
-                                  backgroundColor: 'gray2 !important'
+                                  backgroundColor: 'transparent !important'
                                 }
                               }
                             }}
@@ -939,14 +933,14 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                                 outline: '1px solid var(--outlineColor)'
                               },
                               _hover: {
-                                backgroundColor: 'gray1 !important'
+                                backgroundColor: 'transparent !important'
                               },
                               _dark: {
                                 '&[data-state="active"]': {
                                   background: 'gray1'
                                 },
                                 _hover: {
-                                  backgroundColor: 'gray2 !important'
+                                  backgroundColor: 'transparent !important'
                                 }
                               }
                             }}
@@ -988,6 +982,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           fromBalance={fromBalance}
                           fromBalancePending={fromBalancePending}
                           address={address}
+                          timeEstimate={timeEstimate}
                           multiWalletSupportEnabled={multiWalletSupportEnabled}
                           toChainWalletVMSupported={toChainWalletVMSupported}
                           disablePasteWalletAddressOption={
@@ -1079,11 +1074,13 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             debouncedAmountInputControls
                           }
                           onAnalyticEvent={onAnalyticEvent}
+                          feeBreakdown={feeBreakdown}
                           onPrimaryAction={handlePrimaryAction}
                           fromBalance={fromBalance}
                           isLoadingFromBalance={isLoadingFromBalance}
                           hasInsufficientBalance={hasInsufficientBalance}
                           address={address}
+                          timeEstimate={timeEstimate}
                           fromBalancePending={fromBalancePending}
                           multiWalletSupportEnabled={multiWalletSupportEnabled}
                           fromChainWalletVMSupported={

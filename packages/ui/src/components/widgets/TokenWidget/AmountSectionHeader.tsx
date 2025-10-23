@@ -22,6 +22,7 @@ const AmountSectionHeader: FC<AmountSectionHeaderProps> = ({
     <SlippageToleranceConfig
       label="Slippage"
       showGearIcon={false}
+      showLabel={true}
       currentSlippageTolerance={slippageTolerance}
       setSlippageTolerance={onSlippageToleranceChange ?? (() => {})}
       onAnalyticEvent={onAnalyticEvent}

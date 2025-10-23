@@ -1,7 +1,7 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Text, Button, Box } from '../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboard, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { faClipboard } from '@fortawesome/free-solid-svg-icons'
 import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
@@ -29,6 +29,7 @@ import TransactionDetailsFooter from './TransactionDetailsFooter.js'
 import SectionContainer from './SectionContainer.js'
 import { isChainLocked } from '../../../utils/tokenSelector.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
+import { FeeBreakdownInfo } from './FeeBreakdownInfo.js'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -62,10 +63,12 @@ type SellTabContentProps = {
   setUsdOutputValue: (value: string) => void
   debouncedAmountInputControls: ChildrenProps['debouncedAmountInputControls']
   onAnalyticEvent?: (eventName: string, data?: any) => void
+  feeBreakdown: ChildrenProps['feeBreakdown']
   fromBalance: ChildrenProps['fromBalance']
   isLoadingFromBalance: ChildrenProps['isLoadingFromBalance']
   hasInsufficientBalance: ChildrenProps['hasInsufficientBalance']
   address: ChildrenProps['address']
+  timeEstimate?: ChildrenProps['timeEstimate']
   fromBalancePending: ChildrenProps['fromBalancePending']
   multiWalletSupportEnabled: boolean
   fromChainWalletVMSupported: ChildrenProps['fromChainWalletVMSupported']
@@ -142,10 +145,12 @@ const SellTabContent: FC<SellTabContentProps> = ({
   setUsdOutputValue,
   debouncedAmountInputControls,
   onAnalyticEvent,
+  feeBreakdown,
   fromBalance,
   isLoadingFromBalance,
   hasInsufficientBalance,
   address,
+  timeEstimate,
   fromBalancePending,
   multiWalletSupportEnabled,
   fromChainWalletVMSupported,
@@ -231,6 +236,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
     fromToken && amountInputValue && Number(amountInputValue) > 0
 
   const isLoadingOutput = hasValidInputAmount && isFetchingQuote && toToken
+
+  const currencyOutAmountUsd = quote?.details?.currencyOut?.amountUsd
+  const currencyOutAmountFormatted =
+    quote?.details?.currencyOut?.amountFormatted
 
   return (
     <TabsContent value="sell">
@@ -600,66 +609,16 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 </div>
               }
             />
-            <Flex
-              direction="column"
-              align="end"
-              css={{
-                gap: '1',
-                minHeight: 42,
-                visibility: hasValidInputAmount ? 'visible' : 'hidden'
-              }}
-            >
-              <Flex align="center" css={{ gap: '1' }}>
-                {isLoadingOutput ? (
-                  <Text
-                    style="h6"
-                    css={{
-                      color: 'text-subtle',
-                      fontWeight: '600'
-                    }}
-                  >
-                    ...
-                  </Text>
-                ) : quote?.details?.currencyOut?.amountUsd &&
-                  Number(quote.details.currencyOut.amountUsd) > 0 ? (
-                  <Text style="h6">
-                    {formatDollar(Number(quote.details.currencyOut.amountUsd))}
-                  </Text>
-                ) : (
-                  <Text style="h6">--</Text>
-                )}
-                <Box
-                  css={{
-                    color: 'gray8',
-                    width: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <FontAwesomeIcon icon={faInfoCircle} />
-                </Box>
-              </Flex>
-              {isLoadingOutput ? (
-                <Text
-                  style="subtitle3"
-                  color="subtleSecondary"
-                  css={{ fontWeight: '400' }}
-                >
-                  ...
-                </Text>
-              ) : toToken &&
-                amountOutputValue &&
-                Number(amountOutputValue) > 0 ? (
-                <Text style="subtitle3" color="subtleSecondary">
-                  {formatNumber(amountOutputValue, 4, false)} {toToken.symbol}
-                </Text>
-              ) : (
-                <Text style="subtitle3" color="subtleSecondary">
-                  --
-                </Text>
-              )}
-            </Flex>
+            <FeeBreakdownInfo
+              isLoading={Boolean(isLoadingOutput)}
+              amountUsd={currencyOutAmountUsd}
+              tokenAmountFormatted={currencyOutAmountFormatted}
+              fallbackTokenAmount={amountOutputValue}
+              showTotalLabel={false}
+              quote={quote}
+              feeBreakdown={feeBreakdown}
+              token={toToken}
+            />
           </Flex>
           <WidgetErrorWell
             hasInsufficientBalance={hasInsufficientBalance}
@@ -680,8 +639,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
           />
         </Flex>
 
-        <Divider color="gray4" />
-
         <Flex css={{ width: '100%' }}>
           <TokenActionButton
             onClick={() => {
@@ -700,7 +657,11 @@ const SellTabContent: FC<SellTabContentProps> = ({
           />
         </Flex>
 
-        <TransactionDetailsFooter />
+        <TransactionDetailsFooter
+          timeEstimate={timeEstimate}
+          feeBreakdown={feeBreakdown}
+          quote={quote}
+        />
       </SectionContainer>
     </TabsContent>
   )

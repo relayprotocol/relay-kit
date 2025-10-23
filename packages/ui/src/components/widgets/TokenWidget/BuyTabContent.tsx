@@ -12,7 +12,7 @@ import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import TokenSelector from '../../common/TokenSelector/TokenSelector.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboard, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { faClipboard } from '@fortawesome/free-solid-svg-icons'
 import { EventNames } from '../../../constants/events.js'
 import { isChainLocked } from '../../../utils/tokenSelector.js'
 import type { Dispatch, FC, SetStateAction } from 'react'
@@ -27,6 +27,7 @@ import AmountModeToggle from './AmountModeToggle.js'
 import TransactionDetailsFooter from './TransactionDetailsFooter.js'
 import SectionContainer from './SectionContainer.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
+import { FeeBreakdownInfo } from './FeeBreakdownInfo.js'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -61,6 +62,7 @@ type BuyTabContentProps = {
   fromBalance: ChildrenProps['fromBalance']
   fromBalancePending: ChildrenProps['fromBalancePending']
   address: ChildrenProps['address']
+  timeEstimate?: ChildrenProps['timeEstimate']
   multiWalletSupportEnabled: boolean
   toChainWalletVMSupported: ChildrenProps['toChainWalletVMSupported']
   disablePasteWalletAddressOption?: boolean
@@ -136,6 +138,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   fromBalance,
   fromBalancePending,
   address,
+  timeEstimate,
   multiWalletSupportEnabled,
   toChainWalletVMSupported,
   fromChain,
@@ -207,6 +210,9 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
     toToken && amountOutputValue && Number(amountOutputValue) > 0
 
   const isLoadingPayWith = hasValidOutputAmount && isFetchingQuote && fromToken
+
+  const currencyInAmountUsd = quote?.details?.currencyIn?.amountUsd
+  const currencyInAmountFormatted = quote?.details?.currencyIn?.amountFormatted
 
   const disableActionButton =
     isFetchingQuote ||
@@ -442,67 +448,16 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               </div>
             }
           />
-          <Flex
-            direction="column"
-            align="end"
-            css={{
-              gap: '1',
-              minHeight: 42,
-              visibility: hasValidOutputAmount ? 'visible' : 'hidden'
-            }}
-          >
-            <Flex align="center" css={{ gap: '1' }}>
-              {isLoadingPayWith ? (
-                <Text
-                  style="h6"
-                  css={{
-                    color: 'text-subtle',
-                    fontWeight: '600'
-                  }}
-                >
-                  ... total
-                </Text>
-              ) : quote?.details?.currencyIn?.amountUsd &&
-                Number(quote.details.currencyIn.amountUsd) > 0 ? (
-                <Text style="h6">
-                  {formatDollar(Number(quote.details.currencyIn.amountUsd))}{' '}
-                  total
-                </Text>
-              ) : (
-                <Text style="h6">-- total</Text>
-              )}
-              <Box
-                css={{
-                  color: 'gray8',
-                  width: 16,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <FontAwesomeIcon icon={faInfoCircle} />
-              </Box>
-            </Flex>
-            {isLoadingPayWith ? (
-              <Text
-                style="subtitle3"
-                color="subtleSecondary"
-                css={{ fontWeight: '400' }}
-              >
-                ...
-              </Text>
-            ) : fromToken &&
-              amountInputValue &&
-              Number(amountInputValue) > 0 ? (
-              <Text style="subtitle3" color="subtleSecondary">
-                {formatNumber(amountInputValue, 4, false)} {fromToken.symbol}
-              </Text>
-            ) : (
-              <Text style="subtitle3" color="subtleSecondary">
-                --
-              </Text>
-            )}
-          </Flex>
+          <FeeBreakdownInfo
+            isLoading={Boolean(isLoadingPayWith)}
+            amountUsd={currencyInAmountUsd}
+            tokenAmountFormatted={currencyInAmountFormatted}
+            fallbackTokenAmount={amountInputValue}
+            showTotalLabel={true}
+            quote={quote}
+            feeBreakdown={feeBreakdown}
+            token={fromToken}
+          />
         </Flex>
 
         <Divider color="gray4" />
@@ -626,7 +581,11 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           />
         </Flex>
 
-        <TransactionDetailsFooter />
+        <TransactionDetailsFooter
+          timeEstimate={timeEstimate}
+          feeBreakdown={feeBreakdown}
+          quote={quote}
+        />
       </SectionContainer>
     </TabsContent>
   )
