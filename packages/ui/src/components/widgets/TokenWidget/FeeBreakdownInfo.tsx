@@ -36,8 +36,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
       align="end"
       css={{
         gap: '1',
-        minHeight: 42,
-        visibility: isLoading || amountUsd ? 'visible' : 'hidden'
+        minHeight: 42
       }}
     >
       <Flex align="center" css={{ gap: '1' }}>
@@ -69,7 +68,24 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
               </Box>
             </FeeBreakdownTooltip>
           </>
-        ) : null}
+        ) : (
+          <>
+            <Text style="h6">$0{showTotalLabel ? ' total' : ''}</Text>
+            <Box
+              css={{
+                color: 'gray6',
+                width: 16,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'default',
+                opacity: 0.5
+              }}
+            >
+              <FontAwesomeIcon icon={faInfoCircle} />
+            </Box>
+          </>
+        )}
       </Flex>
       {isLoading ? (
         <Skeleton css={{ width: 70, height: 14 }} />
@@ -80,6 +96,10 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
       ) : token && fallbackTokenAmount && Number(fallbackTokenAmount) > 0 ? (
         <Text style="subtitle3" color="subtleSecondary">
           {formatNumber(fallbackTokenAmount, 4, false)} {token.symbol}
+        </Text>
+      ) : token ? (
+        <Text style="subtitle3" color="subtleSecondary">
+          0.00 {token.symbol}
         </Text>
       ) : null}
     </Flex>

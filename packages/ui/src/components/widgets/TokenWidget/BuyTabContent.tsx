@@ -454,7 +454,6 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             amountUsd={currencyInAmountUsd}
             tokenAmountFormatted={currencyInAmountFormatted}
             fallbackTokenAmount={amountInputValue}
-            showTotalLabel={true}
             quote={quote}
             feeBreakdown={feeBreakdown}
             token={fromToken}
