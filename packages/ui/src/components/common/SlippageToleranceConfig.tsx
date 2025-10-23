@@ -36,6 +36,7 @@ type SlippageToleranceConfigProps = {
   label?: string
   onOpenSlippageConfig?: () => void
   showGearIcon?: boolean
+  showLabel?: boolean
 }
 
 const convertBpsToPercent = (bps?: string) => {
@@ -59,7 +60,8 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   variant = 'dropdown',
   label = 'Slippage',
   onOpenSlippageConfig,
-  showGearIcon = true
+  showGearIcon = true,
+  showLabel = false
 }) => {
   const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
     convertBpsToPercent(currentSlippageTolerance)
@@ -183,16 +185,16 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
       size="none"
       css={{
         display: 'flex',
+        borderRadius: '8px',
         alignItems: 'center',
+        gap: '4px',
         justifyContent: 'center',
-        gap: '1',
-        bg: 'subtle-background-color',
-        color: slippageRatingColor ?? 'gray9',
-        p: '2',
-        borderRadius: 12,
-        border: 'widget-card-border',
-        height: '36px',
-        px: '10px'
+        p: '1',
+        _hover: {
+          backgroundColor: 'gray2'
+        },
+        backgroundColor: 'gray3',
+        padding: '4px 6px'
       }}
       onClick={() => {
         const nextState = !open
@@ -204,12 +206,19 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
         }
       }}
     >
-      <Text style="subtitle3" color="subtle">
-        {label}
-      </Text>
-      <Text style="subtitle2" css={{ color: slippageRatingColor ?? 'gray9' }}>
-        {buttonValueText}
-      </Text>
+      {showLabel ? (
+        <>
+          <Text style="subtitle3" color="subtle">
+            {label}
+          </Text>
+          <Text
+            style="subtitle3"
+            css={{ color: slippageRatingColor ?? 'gray12' }}
+          >
+            {buttonValueText}
+          </Text>
+        </>
+      ) : null}
       {!isInlineVariant && showGearIcon ? (
         <FontAwesomeIcon icon={faGear} />
       ) : null}
@@ -234,10 +243,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
         <Text style="subtitle3">Max Slippage</Text>
         <Tooltip
           content={
-            <Text
-              style="tiny"
-              css={{ display: 'inline-block', maxWidth: 190 }}
-            >
+            <Text style="tiny" css={{ display: 'inline-block', maxWidth: 190 }}>
               If the price exceeds the maximum slippage percentage, the
               transaction will revert.
             </Text>
