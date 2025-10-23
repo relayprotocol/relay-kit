@@ -84,14 +84,16 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
       </Flex>
       {isLoading ? (
         <Skeleton css={{ width: 70, height: 14 }} />
-      ) : token && tokenAmountFormatted && Number(tokenAmountFormatted) > 0 ? (
-        <Text style="subtitle3" color="subtleSecondary">
-          {formatNumber(tokenAmountFormatted, 4, false)} {token.symbol}
-        </Text>
-      ) : token && fallbackTokenAmount && Number(fallbackTokenAmount) > 0 ? (
-        <Text style="subtitle3" color="subtleSecondary">
-          {formatNumber(fallbackTokenAmount, 4, false)} {token.symbol}
-        </Text>
+      ) : amountUsd && Number(amountUsd) > 0 ? (
+        token && tokenAmountFormatted && Number(tokenAmountFormatted) > 0 ? (
+          <Text style="subtitle3" color="subtleSecondary">
+            {formatNumber(tokenAmountFormatted, 4, false)} {token.symbol}
+          </Text>
+        ) : token && fallbackTokenAmount && Number(fallbackTokenAmount) > 0 ? (
+          <Text style="subtitle3" color="subtleSecondary">
+            {formatNumber(fallbackTokenAmount, 4, false)} {token.symbol}
+          </Text>
+        ) : null
       ) : token ? (
         <Text style="subtitle3" color="subtleSecondary">
           0.00 {token.symbol}
