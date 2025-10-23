@@ -180,7 +180,12 @@ const ChainFilter: FC<Props> = ({
         />
         <Flex
           direction="column"
-          css={{ overflowY: 'scroll', borderRadius: 8, maxHeight: 290 }}
+          css={{
+            overflowY: 'auto',
+            borderRadius: 8,
+            maxHeight: 290,
+            scrollbarColor: 'var(--relay-colors-gray5) transparent'
+          }}
         >
           {filteredChains ? (
             filteredChains.length > 0 ? (
