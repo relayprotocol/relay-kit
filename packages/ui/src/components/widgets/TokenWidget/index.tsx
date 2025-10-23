@@ -904,15 +904,19 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                                 '--outlineColor': 'colors.gray.4',
                                 outline: '1px solid var(--outlineColor)'
                               },
-                              _hover: {
-                                backgroundColor: 'transparent !important'
+                              '&:not([data-state="active"])': {
+                                _hover: {
+                                  backgroundColor: 'transparent !important'
+                                }
                               },
                               _dark: {
                                 '&[data-state="active"]': {
                                   background: 'gray1'
                                 },
-                                _hover: {
-                                  backgroundColor: 'transparent !important'
+                                '&:not([data-state="active"])': {
+                                  _hover: {
+                                    backgroundColor: 'transparent !important'
+                                  }
                                 }
                               }
                             }}
@@ -932,15 +936,19 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                                 '--outlineColor': 'colors.gray.4',
                                 outline: '1px solid var(--outlineColor)'
                               },
-                              _hover: {
-                                backgroundColor: 'transparent !important'
+                              '&:not([data-state="active"])': {
+                                _hover: {
+                                  backgroundColor: 'transparent !important'
+                                }
                               },
                               _dark: {
                                 '&[data-state="active"]': {
                                   background: 'gray1'
                                 },
-                                _hover: {
-                                  backgroundColor: 'transparent !important'
+                                '&:not([data-state="active"])': {
+                                  _hover: {
+                                    backgroundColor: 'transparent !important'
+                                  }
                                 }
                               }
                             }}
