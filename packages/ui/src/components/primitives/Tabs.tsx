@@ -16,7 +16,7 @@ const TabsListCss = cva({
     alignItems: 'center',
     borderRadius: 8,
     p: '1',
-    backgroundColor: 'gray2',
+    backgroundColor: 'transparent',
     border: 'none'
   }
 })
@@ -31,11 +31,13 @@ const TabsTriggerCss = cva({
     color: 'gray12',
     borderRadius: 8,
     backgroundColor: 'transparent',
-    border: 'none',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: 'transparent',
     '&[data-state="active"]': {
       backgroundColor: 'subtle-background-color',
       '--borderColor': 'colors.gray.5',
-      border: '1px solid var(--borderColor)'
+      borderColor: 'var(--borderColor)'
     }
   }
 })

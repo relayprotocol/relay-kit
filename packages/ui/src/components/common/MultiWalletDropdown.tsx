@@ -137,7 +137,8 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
           corners="pill"
           css={{
             gap: '2',
-            px: '2 !important',
+            pl: '0 !important',
+            pr: '2 !important',
             py: '1',
             cursor: 'pointer',
             display: 'flex',

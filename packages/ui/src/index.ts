@@ -11,6 +11,9 @@ export { default as useRelayClient } from './hooks/useRelayClient.js'
 
 //widgets
 export { default as SwapWidget } from './components/widgets/SwapWidget/index.js'
+export type { SwapWidgetProps } from './components/widgets/SwapWidget/index.js'
+export { default as TokenWidget } from './components/widgets/TokenWidget/index.js'
+export type { TokenWidgetProps } from './components/widgets/TokenWidget/index.js'
 
 //components
 export { default as TokenSelector } from './components/common/TokenSelector/TokenSelector.js'

@@ -14,6 +14,7 @@ type ChainTokenProps = {
   css?: Styles
   size?: Size
   chainRadius?: number
+  chainIconSize?: number
 }
 
 const SIZES = {
@@ -41,10 +42,12 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   tokenSymbol,
   css = {},
   size = 'md',
-  chainRadius = 4
+  chainRadius = 4,
+  chainIconSize
 }) => {
   const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
   const dimensions = SIZES[size]
+  const chainSize = chainIconSize ?? dimensions.chain
 
   return chainId ? (
     <Flex
@@ -87,8 +90,8 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
       ) : null}
       <ChainIcon
         chainId={chainId}
-        width={dimensions.chain}
-        height={dimensions.chain}
+        width={chainSize}
+        height={chainSize}
         borderRadius={chainRadius}
         css={{
           position: 'absolute',
