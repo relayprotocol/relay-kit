@@ -61,6 +61,9 @@ type BuyTabContentProps = {
   isLoadingFromBalance: ChildrenProps['isLoadingFromBalance']
   fromBalance: ChildrenProps['fromBalance']
   fromBalancePending: ChildrenProps['fromBalancePending']
+  toBalance: ChildrenProps['toBalance']
+  isLoadingToBalance: ChildrenProps['isLoadingToBalance']
+  toBalancePending: ChildrenProps['toBalancePending']
   address: ChildrenProps['address']
   timeEstimate?: ChildrenProps['timeEstimate']
   multiWalletSupportEnabled: boolean
@@ -137,6 +140,9 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   isLoadingFromBalance,
   fromBalance,
   fromBalancePending,
+  toBalance,
+  isLoadingToBalance,
+  toBalancePending,
   address,
   timeEstimate,
   multiWalletSupportEnabled,
@@ -350,20 +356,20 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             />
           </Flex>
           <Flex css={{ marginLeft: 'auto' }}>
-            {fromToken ? (
+            {toToken ? (
               <BalanceDisplay
                 hideBalanceLabel={true}
                 displaySymbol={true}
-                isLoading={isLoadingFromBalance}
-                balance={fromBalance}
-                decimals={fromToken?.decimals}
-                symbol={fromToken?.symbol}
+                isLoading={isLoadingToBalance}
+                balance={toBalance}
+                decimals={toToken?.decimals}
+                symbol={toToken?.symbol}
                 isConnected={
-                  !isDeadAddress(address) &&
-                  address !== tronDeadAddress &&
-                  address !== undefined
+                  !isDeadAddress(recipient) &&
+                  recipient !== tronDeadAddress &&
+                  recipient !== undefined
                 }
-                pending={fromBalancePending}
+                pending={toBalancePending}
                 size="md"
               />
             ) : (
