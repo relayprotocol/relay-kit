@@ -38,7 +38,7 @@ export default async function handler(
     return
   }
 
-  const path = req.url?.replace('/api/dune/', '') || ''
+  const path = req.url?.replace('/api/dune', '') || ''
   const newPath = Object.entries(API_MAPPINGS).reduce(
     (acc, [old, new_]) => acc.replace(old, new_),
     path
@@ -59,21 +59,32 @@ export default async function handler(
 
   const url = `https://api.sim.dune.com${modifiedPath}`
 
-  if (
-    !(allowedDomains.includes(origin) && DUNE_API_KEY) &&
-    allowedDomains.length > 0
-  ) {
-    res.status(400).json({ message: 'Bad Request!' })
+  // Check if API key is configured
+  if (!DUNE_API_KEY) {
+    res.status(500).json({
+      error: 'Server configuration error'
+    })
+    return
+  }
+
+  // Check CORS if allowedDomains is configured
+  if (allowedDomains.length > 0 && !allowedDomains.includes(origin)) {
+    res.status(403).json({ message: 'Forbidden: Origin not allowed' })
     return
   }
 
   const duneResponse = await fetch(url, {
     headers: {
-      'X-Sim-Api-Key': DUNE_API_KEY!
+      'X-Sim-Api-Key': DUNE_API_KEY
     } as HeadersInit
   })
 
   const response = await duneResponse.json()
+
+  if (!duneResponse.ok) {
+    res.status(duneResponse.status).json(response)
+    return
+  }
 
   // Set response cache
   res.setHeader('Cache-Control', `public, s-maxage=${cache}`)
