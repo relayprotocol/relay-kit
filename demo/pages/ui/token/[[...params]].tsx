@@ -123,16 +123,24 @@ const TokenWidgetPage: NextPage = () => {
       setLinkWalletPromise(undefined)
     }
   })
-  const [fromToken, setFromToken] = useState<Token | undefined>({
-    chainId: 8453,
-    address: '0x0000000000000000000000000000000000000000',
-    decimals: 18,
-    name: 'ETH',
-    symbol: 'ETH',
-    logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
-  })
+
+  const getDefaultFromToken = () => {
+    // Default to ETH on Base for EVM wallets
+    return {
+      chainId: 8453,
+      address: '0x0000000000000000000000000000000000000000',
+      decimals: 18,
+      name: 'ETH',
+      symbol: 'ETH',
+      logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
+    }
+  }
+
+  const [fromToken, setFromToken] = useState<Token | undefined>(
+    getDefaultFromToken()
+  )
   const [toToken, setToToken] = useState<Token | undefined>({
-    chainId: 10,
+    chainId: 8453,
     address: '0x0000000000000000000000000000000000000000',
     decimals: 18,
     name: 'ETH',
@@ -247,6 +255,7 @@ const TokenWidgetPage: NextPage = () => {
     )}/${resolvedToken.chainId}`
     lastUpdatedUrlRef.current = canonicalPath
 
+    // Set toToken based on URL for buy tab
     if (!hasCustomBuyTokenRef.current) {
       setToToken((previous) => {
         const previousKey = getTokenKey(previous)
@@ -254,6 +263,7 @@ const TokenWidgetPage: NextPage = () => {
       })
     }
 
+    // For sell tab, also set fromToken to the URL token to sell it
     if (activeTab === 'sell' && !hasCustomSellTokenRef.current) {
       setFromToken((previous) => {
         const previousKey = getTokenKey(previous)
@@ -266,19 +276,20 @@ const TokenWidgetPage: NextPage = () => {
   }, [router.isReady, router.query.params, relayClient, getTokenKey, activeTab])
 
   useEffect(() => {
-    if (
-      activeTab === 'sell' &&
-      urlTokenRef.current &&
-      !hasCustomSellTokenRef.current
-    ) {
-      const key = getTokenKey(urlTokenRef.current)
-      setFromToken((previous) => {
-        const previousKey = getTokenKey(previous)
-        return previousKey === key
-          ? previous
-          : (urlTokenRef.current ?? previous)
-      })
-    }
+    // Don't change fromToken based on activeTab - it should always be ETH on Base
+    // if (
+    //   activeTab === 'sell' &&
+    //   urlTokenRef.current &&
+    //   !hasCustomSellTokenRef.current
+    // ) {
+    //   const key = getTokenKey(urlTokenRef.current)
+    //   setFromToken((previous) => {
+    //     const previousKey = getTokenKey(previous)
+    //     return previousKey === key
+    //       ? previous
+    //       : (urlTokenRef.current ?? previous)
+    //   })
+    // }
 
     if (
       activeTab === 'buy' &&
