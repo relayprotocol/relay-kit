@@ -1,5 +1,9 @@
 import {
+  Children,
+  cloneElement,
+  isValidElement,
   type FC,
+  type ReactElement,
   type ReactNode,
   useCallback,
   useEffect,
@@ -65,6 +69,7 @@ import { useInternalRelayChains } from '../../../hooks/index.js'
 import { useTrendingCurrencies } from '@relayprotocol/relay-kit-hooks'
 import { getStarredChainIds } from '../../../utils/localStorage.js'
 import { PaymentTokenList } from './PaymentTokenList.js'
+import { PaymentMethodTrigger } from './triggers/PaymentMethodTrigger.js'
 
 export type PaymentMethodProps = {
   token?: Token
@@ -366,6 +371,32 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     setTokenSearchInputElement(null)
   }, [])
 
+  const triggerWithBalances = useMemo(() => {
+    const injectBalances = (node: ReactNode): ReactNode => {
+      if (!isValidElement(node)) {
+        return node
+      }
+
+      const element = node as ReactElement<any>
+
+      if (element.type === PaymentMethodTrigger) {
+        return cloneElement(element, {
+          balanceMap: tokenBalances ?? undefined
+        })
+      }
+
+      const childElements = element.props?.children
+      if (!childElements) {
+        return element
+      }
+
+      const children = Children.map(childElements, injectBalances)
+      return cloneElement(element, undefined, children)
+    }
+
+    return trigger ? injectBalances(trigger) : trigger
+  }, [trigger, tokenBalances])
+
   const onOpenChange = useCallback(
     (openChange: boolean) => {
       let tokenCount = undefined
@@ -519,7 +550,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           open={open}
           onOpenChange={onOpenChange}
           showCloseButton={false}
-          trigger={trigger}
+          trigger={triggerWithBalances}
           css={{
             p: '4',
             display: 'flex',
@@ -537,7 +568,9 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               width: '100%',
               height: '100%',
               gap: '3',
-              overflowY: 'hidden'
+              overflowY: 'hidden',
+              minWidth: 0,
+              maxWidth: '100%'
             }}
           >
             {/* Header with back button */}
@@ -558,7 +591,15 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               <Text style="subtitle2">Pay with</Text>
             </Flex>
 
-            <Flex css={{ flex: 1, gap: '3', overflow: 'hidden' }}>
+            <Flex
+              css={{
+                flex: 1,
+                gap: '3',
+                overflow: 'hidden',
+                minWidth: 0,
+                maxWidth: '100%'
+              }}
+            >
               {/* Main Token Content */}
               <AccessibleList
                 onSelect={(value) => {
@@ -585,6 +626,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                   flexDirection: 'column',
                   width: '100%',
                   minWidth: 0,
+                  maxWidth: '100%',
                   height: '100%'
                 }}
               >
@@ -595,12 +637,25 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                   css={{
                     width: '100%',
                     gap: '2',
-                    background: 'modal-background'
+                    background: 'modal-background',
+                    minWidth: 0,
+                    maxWidth: '100%'
                   }}
                 >
                   {/* Search input and Chain Filter Button Row */}
-                  <Flex css={{ width: '100%', gap: '2', alignItems: 'center' }}>
-                    <AccessibleListItem value="input" asChild css={{ flex: 1 }}>
+                  <Flex
+                    css={{
+                      width: '100%',
+                      gap: '2',
+                      alignItems: 'center',
+                      minWidth: 0
+                    }}
+                  >
+                    <AccessibleListItem
+                      value="input"
+                      asChild
+                      css={{ flex: 1, minWidth: 0 }}
+                    >
                       <Input
                         ref={setTokenSearchInputElement}
                         placeholder="Search for a token"
@@ -666,7 +721,9 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                     overflowY: 'auto',
                     gap: '3',
                     pt: '2',
-                    scrollbarColor: 'var(--relay-colors-gray5) transparent'
+                    scrollbarColor: 'var(--relay-colors-gray5) transparent',
+                    minWidth: 0,
+                    maxWidth: '100%'
                   }}
                 >
                   {/* Suggested Tokens */}
@@ -694,7 +751,17 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                       isLoadingBalances={isLoadingBalances}
                       chainFilterId={chainFilter.id}
                     />
+                  ) : chainFilter.id ? (
+                    // When a specific chain is filtered, show TokenList format
+                    <TokenList
+                      title="Tokens"
+                      tokens={sortedCombinedTokens}
+                      isLoading={isLoadingTokenList}
+                      isLoadingBalances={isLoadingBalances}
+                      chainFilterId={chainFilter.id}
+                    />
                   ) : (
+                    // When "All Chains" is selected, show Recommended/Other Tokens
                     <Flex direction="column" css={{ gap: '3' }}>
                       {/* Recommended Section - First 5 user tokens */}
                       {sortedUserTokens.length > 0 && (

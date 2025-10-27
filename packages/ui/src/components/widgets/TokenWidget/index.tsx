@@ -138,6 +138,14 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
   const setTradeTypeRef = useRef<((tradeType: TradeType) => void) | null>(null)
   const tradeTypeRef = useRef<TradeType>(defaultTradeType ?? 'EXPECTED_OUTPUT')
+  const buyTokensRef = useRef<{ from?: Token; to?: Token }>({
+    from: fromToken,
+    to: toToken
+  })
+  const sellTokensRef = useRef<{ from?: Token; to?: Token }>({
+    from: undefined,
+    to: undefined
+  })
   const hasLockedToken = lockFromToken || lockToToken
   const isSingleChainLocked = singleChainMode && lockChainId !== undefined
   const [localSlippageTolerance, setLocalSlippageTolerance] = useState<
@@ -366,60 +374,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           }
         }
 
-        const handleSetFromToken = (token?: Token) => {
-          if (!token) {
-            setFromToken(undefined)
-            onFromTokenChange?.(undefined)
-            return
-          }
-
-          let _token = token
-          const newFromChain = relayClient?.chains.find(
-            (chain) => token?.chainId == chain.id
-          )
-          if (
-            newFromChain?.vmType &&
-            !supportedWalletVMs.includes(newFromChain?.vmType)
-          ) {
-            setTradeType('EXACT_INPUT')
-
-            const _toToken = findBridgableToken(toChain, toToken)
-
-            if (_toToken && _toToken?.address != toToken?.address) {
-              handleSetToToken(_toToken)
-            }
-
-            const _fromToken = findBridgableToken(newFromChain, _token)
-            if (_fromToken && _fromToken.address != _token?.address) {
-              _token = _fromToken
-            }
-          }
-          setFromToken(_token)
-          onFromTokenChange?.(_token)
-        }
-        const handleSetToToken = (token?: Token) => {
-          if (!token) {
-            setToToken(undefined)
-            onToTokenChange?.(undefined)
-            return
-          }
-
-          let _token = token
-          if (!fromChainWalletVMSupported) {
-            const newToChain = relayClient?.chains.find(
-              (chain) => token?.chainId == chain.id
-            )
-            if (newToChain) {
-              const _toToken = findBridgableToken(newToChain, _token)
-              if (_toToken && _toToken.address != _token?.address) {
-                _token = _toToken
-              }
-            }
-          }
-          setToToken(_token)
-          onToTokenChange?.(_token)
-        }
-
         const fromChain = relayClient?.chains?.find(
           (chain) => chain.id === fromToken?.chainId
         )
@@ -427,6 +381,148 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         const toChain = relayClient?.chains?.find(
           (chain) => chain.id === toToken?.chainId
         )
+
+        const tokensAreEqual = (a?: Token, b?: Token) => {
+          if (!a && !b) return true
+          if (!a || !b) return false
+          return (
+            a.chainId === b.chainId &&
+            a.address?.toLowerCase() === b.address?.toLowerCase()
+          )
+        }
+
+        const handleSetToToken = useCallback(
+          (token?: Token) => {
+            if (!token) {
+              setToToken(undefined)
+              onToTokenChange?.(undefined)
+              if (activeTab === 'buy') {
+                buyTokensRef.current.to = undefined
+              } else {
+                sellTokensRef.current.to = undefined
+              }
+              return
+            }
+
+            let _token = token
+            if (!fromChainWalletVMSupported) {
+              const newToChain = relayClient?.chains.find(
+                (chain) => token?.chainId == chain.id
+              )
+              if (newToChain) {
+                const _toToken = findBridgableToken(newToChain, _token)
+                if (_toToken && _toToken.address != _token?.address) {
+                  _token = _toToken
+                }
+              }
+            }
+            setToToken(_token)
+            onToTokenChange?.(_token)
+            if (activeTab === 'buy') {
+              buyTokensRef.current.to = _token
+            } else {
+              sellTokensRef.current.to = _token
+            }
+          },
+          [
+            activeTab,
+            fromChainWalletVMSupported,
+            onToTokenChange,
+            relayClient,
+            setToToken
+          ]
+        )
+
+        const handleSetFromToken = useCallback(
+          (token?: Token) => {
+            if (!token) {
+              setFromToken(undefined)
+              onFromTokenChange?.(undefined)
+              if (activeTab === 'buy') {
+                buyTokensRef.current.from = undefined
+              } else {
+                sellTokensRef.current.from = undefined
+              }
+              return
+            }
+
+            let _token = token
+            const newFromChain = relayClient?.chains.find(
+              (chain) => token?.chainId == chain.id
+            )
+            if (
+              newFromChain?.vmType &&
+              !supportedWalletVMs.includes(newFromChain?.vmType)
+            ) {
+              setTradeType('EXACT_INPUT')
+
+              const _toToken = findBridgableToken(toChain, toToken)
+
+              if (_toToken && _toToken?.address != toToken?.address) {
+                handleSetToToken(_toToken)
+              }
+
+              const _fromToken = findBridgableToken(newFromChain, _token)
+              if (_fromToken && _fromToken.address != _token?.address) {
+                _token = _fromToken
+              }
+            }
+            setFromToken(_token)
+            onFromTokenChange?.(_token)
+            if (activeTab === 'buy') {
+              buyTokensRef.current.from = _token
+            } else {
+              sellTokensRef.current.from = _token
+            }
+          },
+          [
+            activeTab,
+            handleSetToToken,
+            onFromTokenChange,
+            relayClient,
+            setFromToken,
+            setTradeType,
+            supportedWalletVMs,
+            toChain,
+            toToken
+          ]
+        )
+
+        useEffect(() => {
+          const activeCacheRef =
+            activeTab === 'sell' ? sellTokensRef : buyTokensRef
+          const inactiveCacheRef =
+            activeTab === 'sell' ? buyTokensRef : sellTokensRef
+
+          const activeCache = activeCacheRef.current
+          const inactiveCache = inactiveCacheRef.current
+
+          const targetFrom =
+            activeCache.from ??
+            inactiveCache.to
+          const targetTo =
+            activeCache.to ??
+            inactiveCache.from
+
+          if (
+            targetFrom &&
+            !lockFromToken &&
+            !tokensAreEqual(fromToken, targetFrom)
+          ) {
+            handleSetFromToken(targetFrom)
+          }
+          if (targetTo && !lockToToken && !tokensAreEqual(toToken, targetTo)) {
+            handleSetToToken(targetTo)
+          }
+        }, [
+          activeTab,
+          fromToken,
+          toToken,
+          handleSetFromToken,
+          handleSetToToken,
+          lockFromToken,
+          lockToToken
+        ])
 
         // Get public client for the fromChain to estimate gas
         const publicClient = usePublicClient({ chainId: fromChain?.id })
@@ -989,6 +1085,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           isLoadingFromBalance={isLoadingFromBalance}
                           fromBalance={fromBalance}
                           fromBalancePending={fromBalancePending}
+                          toBalance={toBalance}
+                          isLoadingToBalance={isLoadingToBalance}
+                          toBalancePending={toBalancePending}
                           address={address}
                           timeEstimate={timeEstimate}
                           multiWalletSupportEnabled={multiWalletSupportEnabled}

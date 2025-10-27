@@ -5,12 +5,14 @@ import {
   Flex,
   Text,
   Box,
-  ChainTokenIcon
+  ChainTokenIcon,
+  Skeleton
 } from '../../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { useDuneBalances } from '../../../../hooks/index.js'
+import type { BalanceMap } from '../../../../hooks/useDuneBalances.js'
 import { formatDollar } from '../../../../utils/numbers.js'
 import {
   evmDeadAddress,
@@ -24,6 +26,20 @@ type PaymentMethodTriggerProps = {
   address?: string
   testId?: string
   balanceLabel?: string
+  balanceMap?: BalanceMap
+}
+
+const normalizeAddress = (address?: string) => {
+  if (
+    !address ||
+    address === evmDeadAddress ||
+    address === solDeadAddress ||
+    address === bitcoinDeadAddress
+  ) {
+    return undefined
+  }
+
+  return address.startsWith('0x') ? address.toLowerCase() : address
 }
 
 export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
@@ -31,35 +47,53 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   locked,
   address,
   testId,
-  balanceLabel = 'available'
+  balanceLabel = 'available',
+  balanceMap: providedBalanceMap
 }) => {
   const relayClient = useRelayClient()
-  const chain = relayClient?.chains?.find(
-    (chain) => chain.id === token?.chainId
-  )
 
   // Fetch balance data from Dune
-  const { balanceMap } = useDuneBalances(
-    address &&
-      address !== evmDeadAddress &&
-      address !== solDeadAddress &&
-      address !== bitcoinDeadAddress
-      ? address
-      : undefined,
+  const normalizedAddress = normalizeAddress(address)
+  const shouldFetchBalances = !providedBalanceMap && Boolean(normalizedAddress)
+  const {
+    balanceMap,
+    isLoading: isLoadingBalances,
+    isFetching: isFetchingBalances,
+    isPending: isPendingBalances
+  } = useDuneBalances(
+    shouldFetchBalances ? normalizedAddress : undefined,
     relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet',
     {
+      enabled: shouldFetchBalances,
       staleTime: 60000,
       gcTime: 60000
     }
   )
+  const effectiveBalanceMap = providedBalanceMap ?? balanceMap
 
-  // Get balance USD value for the selected token
+  // Get balance USD value for the currently selected token
+  const balanceKey =
+    token?.chainId !== undefined && token?.address
+      ? `${token.chainId}:${token.address.toLowerCase()}`
+      : undefined
   const tokenBalance =
-    token && balanceMap
-      ? balanceMap[`${token.chainId}:${token.address}`]
+    balanceKey && effectiveBalanceMap
+      ? (effectiveBalanceMap[balanceKey] ??
+        effectiveBalanceMap[`${token?.chainId}:${token?.address}`])
       : undefined
   const balanceUsd = tokenBalance?.value_usd
+  const hasBalanceUsd = balanceUsd !== undefined && balanceUsd !== null
 
+  const isBalanceQueryPending =
+    isLoadingBalances || isFetchingBalances || isPendingBalances
+
+  // Prevent flashing placeholder text while the balance query is pending.
+  const showSkeleton =
+    shouldFetchBalances && (isBalanceQueryPending || !hasBalanceUsd)
+
+  const balanceText = hasBalanceUsd
+    ? `${formatDollar(balanceUsd)} ${balanceLabel}`
+    : ''
   return token ? (
     <Button
       color="white"
@@ -101,16 +135,24 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
             <Text style="h6" ellipsify css={{ maxWidth: '100%' }}>
               {token.symbol}
             </Text>
-            <Text
-              style="subtitle3"
-              ellipsify
-              color="subtle"
-              css={{ lineHeight: '15px', maxWidth: '100%' }}
-            >
-              {balanceUsd
-                ? `${formatDollar(balanceUsd)} ${balanceLabel}`
-                : balanceLabel}
-            </Text>
+            {showSkeleton ? (
+              <Skeleton
+                css={{
+                  width: 70,
+                  height: 12,
+                  borderRadius: 4
+                }}
+              />
+            ) : (
+              <Text
+                style="subtitle3"
+                ellipsify
+                color="subtle"
+                css={{ lineHeight: '15px', maxWidth: '100%' }}
+              >
+                {balanceText}
+              </Text>
+            )}
           </Flex>
         </Flex>
         {locked ? null : (
