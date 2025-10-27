@@ -205,7 +205,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   >(defaultToAddress)
   const [useExternalLiquidity, setUseExternalLiquidity] =
     useState<boolean>(false)
-  const address = useWalletAddress(wallet, linkedWallets)
+  const defaultAddress = useWalletAddress(wallet, linkedWallets)
 
   const [tradeType, setTradeType] = useState<'EXACT_INPUT' | 'EXPECTED_OUTPUT'>(
     defaultTradeType ?? 'EXACT_INPUT'
@@ -258,6 +258,38 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     fromChain?.id === 1337
   const toChainWalletVMSupported =
     !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType)
+
+  // Automatically select the correct wallet address based on fromToken's chain VM
+  const address = useMemo(() => {
+    if (!multiWalletSupportEnabled || !linkedWallets?.length || !fromChain) {
+      return defaultAddress
+    }
+
+    // Find the first wallet that supports the fromChain's VM type
+    const compatibleWallet = linkedWallets.find((wallet) => {
+      // Check if wallet VM matches chain VM
+      if (wallet.vmType !== fromChain.vmType) {
+        return false
+      }
+
+      // Additional validation for specific chains
+      return isValidAddress(
+        fromChain.vmType,
+        wallet.address,
+        fromChain.id,
+        wallet.connector,
+        connectorKeyOverrides
+      )
+    })
+
+    return compatibleWallet?.address || defaultAddress
+  }, [
+    multiWalletSupportEnabled,
+    fromChain,
+    linkedWallets,
+    defaultAddress,
+    connectorKeyOverrides
+  ])
 
   const defaultRecipient = useMemo(() => {
     const _linkedWallet = linkedWallets?.find(
