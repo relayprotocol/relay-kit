@@ -574,8 +574,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
         <Flex direction="column" css={{ gap: '2', width: '100%' }}>
           <Flex justify="between" css={{ width: '100%' }}>
             <PaymentMethod
-              address={recipient}
-              isValidAddress={isValidToAddress}
+              address={address}
+              isValidAddress={isValidFromAddress}
               token={toToken}
               onAnalyticEvent={onAnalyticEvent}
               multiWalletSupportEnabled={multiWalletSupportEnabled}
@@ -603,7 +603,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                   <PaymentMethodTrigger
                     token={toToken}
                     locked={lockToToken}
-                    address={recipient}
+                    address={address}
                     testId="destination-token-select-button"
                     balanceLabel="balance"
                   />
