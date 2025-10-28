@@ -556,10 +556,10 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
             display: 'flex',
             flexDirection: 'column',
             height: 'min(85vh, 540px)',
-            '@media(min-width: 400px)': {
-              minWidth: 400,
-              maxWidth: 408
-            }
+            width: 'min(400px, 100vw)',
+            maxWidth: 'min(400px, 100vw)',
+            minWidth: 0,
+            boxSizing: 'border-box'
           }}
         >
           <Flex
