@@ -28,12 +28,19 @@ import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
 import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
 import BuyTabContent from './BuyTabContent.js'
 import SellTabContent from './SellTabContent.js'
+import { useTokenList } from '@relayprotocol/relay-kit-hooks'
+import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
 
 type BaseTokenWidgetProps = {
   fromToken?: Token
   setFromToken?: (token?: Token) => void
   toToken?: Token
   setToToken?: (token?: Token) => void
+  // New props for automatic token resolution
+  defaultFromTokenAddress?: string
+  defaultFromTokenChainId?: number
+  defaultToTokenAddress?: string
+  defaultToTokenChainId?: number
   defaultToAddress?: Address
   defaultAmount?: string
   defaultTradeType?: 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
@@ -84,6 +91,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   setFromToken,
   toToken,
   setToToken,
+  defaultFromTokenAddress,
+  defaultFromTokenChainId,
+  defaultToTokenAddress,
+  defaultToTokenChainId,
   defaultToAddress,
   defaultAmount,
   defaultTradeType,
@@ -138,19 +149,104 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
   const setTradeTypeRef = useRef<((tradeType: TradeType) => void) | null>(null)
   const tradeTypeRef = useRef<TradeType>(defaultTradeType ?? 'EXPECTED_OUTPUT')
-  const buyTokensRef = useRef<{ from?: Token; to?: Token }>({
-    from: fromToken,
-    to: toToken
-  })
-  const sellTokensRef = useRef<{ from?: Token; to?: Token }>({
-    from: undefined,
-    to: undefined
-  })
+
+  // Token resolution from address/chainId
+  const [resolvedFromToken, setResolvedFromToken] = useState<Token | undefined>(
+    fromToken
+  )
+  const [resolvedToToken, setResolvedToToken] = useState<Token | undefined>(
+    toToken
+  )
+
   const hasLockedToken = lockFromToken || lockToToken
   const isSingleChainLocked = singleChainMode && lockChainId !== undefined
   const [localSlippageTolerance, setLocalSlippageTolerance] = useState<
     string | undefined
   >(slippageTolerance)
+
+  // Query for fromToken if address/chainId provided but no token object
+  const { data: fromTokenList } = useTokenList(
+    relayClient?.baseApiUrl,
+    defaultFromTokenAddress && defaultFromTokenChainId && !fromToken
+      ? {
+          chainIds: [defaultFromTokenChainId],
+          address: defaultFromTokenAddress,
+          limit: 1
+        }
+      : undefined,
+    {
+      enabled: !!(
+        defaultFromTokenAddress &&
+        defaultFromTokenChainId &&
+        !fromToken &&
+        relayClient
+      )
+    }
+  )
+
+  // Query for toToken if address/chainId provided but no token object
+  const { data: toTokenList } = useTokenList(
+    relayClient?.baseApiUrl,
+    defaultToTokenAddress && defaultToTokenChainId && !toToken
+      ? {
+          chainIds: [defaultToTokenChainId],
+          address: defaultToTokenAddress,
+          limit: 1
+        }
+      : undefined,
+    {
+      enabled: !!(
+        defaultToTokenAddress &&
+        defaultToTokenChainId &&
+        !toToken &&
+        relayClient
+      )
+    }
+  )
+
+  // Resolve fromToken from API response
+  useEffect(() => {
+    if (fromToken) {
+      setResolvedFromToken(fromToken)
+    } else if (fromTokenList?.[0]) {
+      const apiToken = fromTokenList[0]
+      const resolved: Token = {
+        chainId: apiToken.chainId!,
+        address: apiToken.address!,
+        name: apiToken.name!,
+        symbol: apiToken.symbol!,
+        decimals: apiToken.decimals!,
+        logoURI:
+          apiToken.metadata?.logoURI ||
+          `${ASSETS_RELAY_API}/icons/currencies/${apiToken.symbol?.toLowerCase()}.png`,
+        verified: apiToken.metadata?.verified ?? false
+      }
+      setResolvedFromToken(resolved)
+      setFromToken?.(resolved)
+    }
+  }, [fromToken, fromTokenList, setFromToken])
+
+  // Resolve toToken from API response
+  useEffect(() => {
+    if (toToken) {
+      setResolvedToToken(toToken)
+    } else if (toTokenList?.[0]) {
+      const apiToken = toTokenList[0]
+      const resolved: Token = {
+        chainId: apiToken.chainId!,
+        address: apiToken.address!,
+        name: apiToken.name!,
+        symbol: apiToken.symbol!,
+        decimals: apiToken.decimals!,
+        logoURI:
+          apiToken.metadata?.logoURI ||
+          `${ASSETS_RELAY_API}/icons/currencies/${apiToken.symbol?.toLowerCase()}.png`,
+        verified: apiToken.metadata?.verified ?? false
+      }
+      setResolvedToToken(resolved)
+      setToToken?.(resolved)
+    }
+  }, [toToken, toTokenList, setToToken])
 
   useEffect(() => {
     setLocalSlippageTolerance(slippageTolerance)
@@ -179,21 +275,31 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
   //Handle external unverified tokens
   useEffect(() => {
-    if (fromToken && 'verified' in fromToken && !fromToken.verified) {
-      const isAlreadyAccepted = alreadyAcceptedToken(fromToken)
+    if (
+      resolvedFromToken &&
+      'verified' in resolvedFromToken &&
+      !resolvedFromToken.verified
+    ) {
+      const isAlreadyAccepted = alreadyAcceptedToken(resolvedFromToken)
       if (!isAlreadyAccepted) {
-        unverifiedTokens.push({ token: fromToken, context: 'from' })
+        unverifiedTokens.push({ token: resolvedFromToken, context: 'from' })
+        setResolvedFromToken(undefined)
         setFromToken?.(undefined)
       }
     }
-    if (toToken && 'verified' in toToken && !toToken.verified) {
-      const isAlreadyAccepted = alreadyAcceptedToken(toToken)
+    if (
+      resolvedToToken &&
+      'verified' in resolvedToToken &&
+      !resolvedToToken.verified
+    ) {
+      const isAlreadyAccepted = alreadyAcceptedToken(resolvedToToken)
       if (!isAlreadyAccepted) {
-        unverifiedTokens.push({ token: toToken, context: 'to' })
+        unverifiedTokens.push({ token: resolvedToToken, context: 'to' })
+        setResolvedToToken(undefined)
         setToToken?.(undefined)
       }
     }
-  }, [fromToken, toToken])
+  }, [resolvedFromToken, resolvedToToken])
 
   return (
     <TokenWidgetRenderer
@@ -204,10 +310,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       defaultAmount={defaultAmount}
       defaultToAddress={defaultToAddress}
       defaultTradeType={computedDefaultTradeType}
-      toToken={toToken}
-      setToToken={setToToken}
-      fromToken={fromToken}
-      setFromToken={setFromToken}
+      toToken={resolvedToToken}
+      setToToken={setResolvedToToken}
+      fromToken={resolvedFromToken}
+      setFromToken={setResolvedFromToken}
       slippageTolerance={localSlippageTolerance}
       wallet={wallet}
       linkedWallets={linkedWallets}
@@ -396,11 +502,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             if (!token) {
               setToToken(undefined)
               onToTokenChange?.(undefined)
-              if (activeTab === 'buy') {
-                buyTokensRef.current.to = undefined
-              } else {
-                sellTokensRef.current.to = undefined
-              }
               return
             }
 
@@ -418,19 +519,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             }
             setToToken(_token)
             onToTokenChange?.(_token)
-            if (activeTab === 'buy') {
-              buyTokensRef.current.to = _token
-            } else {
-              sellTokensRef.current.to = _token
-            }
           },
-          [
-            activeTab,
-            fromChainWalletVMSupported,
-            onToTokenChange,
-            relayClient,
-            setToToken
-          ]
+          [fromChainWalletVMSupported, onToTokenChange, relayClient, setToToken]
         )
 
         const handleSetFromToken = useCallback(
@@ -438,11 +528,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             if (!token) {
               setFromToken(undefined)
               onFromTokenChange?.(undefined)
-              if (activeTab === 'buy') {
-                buyTokensRef.current.from = undefined
-              } else {
-                sellTokensRef.current.from = undefined
-              }
               return
             }
 
@@ -469,14 +554,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             }
             setFromToken(_token)
             onFromTokenChange?.(_token)
-            if (activeTab === 'buy') {
-              buyTokensRef.current.from = _token
-            } else {
-              sellTokensRef.current.from = _token
-            }
           },
           [
-            activeTab,
             handleSetToToken,
             onFromTokenChange,
             relayClient,
@@ -487,42 +566,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             toToken
           ]
         )
-
-        useEffect(() => {
-          const activeCacheRef =
-            activeTab === 'sell' ? sellTokensRef : buyTokensRef
-          const inactiveCacheRef =
-            activeTab === 'sell' ? buyTokensRef : sellTokensRef
-
-          const activeCache = activeCacheRef.current
-          const inactiveCache = inactiveCacheRef.current
-
-          const targetFrom =
-            activeCache.from ??
-            inactiveCache.to
-          const targetTo =
-            activeCache.to ??
-            inactiveCache.from
-
-          if (
-            targetFrom &&
-            !lockFromToken &&
-            !tokensAreEqual(fromToken, targetFrom)
-          ) {
-            handleSetFromToken(targetFrom)
-          }
-          if (targetTo && !lockToToken && !tokensAreEqual(toToken, targetTo)) {
-            handleSetToToken(targetTo)
-          }
-        }, [
-          activeTab,
-          fromToken,
-          toToken,
-          handleSetFromToken,
-          handleSetToToken,
-          lockFromToken,
-          lockToToken
-        ])
 
         // Get public client for the fromChain to estimate gas
         const publicClient = usePublicClient({ chainId: fromChain?.id })
@@ -1185,6 +1228,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           onPrimaryAction={handlePrimaryAction}
                           fromBalance={fromBalance}
                           isLoadingFromBalance={isLoadingFromBalance}
+                          toBalance={toBalance}
+                          isLoadingToBalance={isLoadingToBalance}
+                          toBalancePending={toBalancePending}
                           hasInsufficientBalance={hasInsufficientBalance}
                           address={address}
                           timeEstimate={timeEstimate}
