@@ -392,9 +392,17 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               disablePasteWalletAddressOption={disablePasteWalletAddressOption}
               selectedWalletAddress={address}
               onSelect={(wallet) => {
+                if (
+                  fromToken &&
+                  fromChain &&
+                  wallet.vmType !== fromChain.vmType
+                ) {
+                  handleSetFromToken(undefined)
+                }
                 onSetPrimaryWallet?.(wallet.address)
               }}
               chain={fromChain}
+              disableWalletFiltering={true}
               onLinkNewWallet={() => {
                 if (!address && fromChainWalletVMSupported) {
                   onConnectWallet?.()
@@ -423,6 +431,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             onAnalyticEvent={onAnalyticEvent}
             fromChainWalletVMSupported={fromChainWalletVMSupported}
             supportedWalletVMs={supportedWalletVMs}
+            linkedWallets={linkedWallets}
             setToken={(token) => {
               if (
                 token?.address === toToken?.address &&
@@ -483,9 +492,14 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 }
                 selectedWalletAddress={recipient}
                 onSelect={(wallet) => {
+                  // If wallet is incompatible with current receive token, clear it
+                  if (toToken && toChain && wallet.vmType !== toChain.vmType) {
+                    handleSetToToken(undefined)
+                  }
                   setCustomToAddress(wallet.address)
                 }}
                 chain={toChain}
+                disableWalletFiltering={true}
                 onLinkNewWallet={() => {
                   if (!address && toChainWalletVMSupported) {
                     onConnectWallet?.()
