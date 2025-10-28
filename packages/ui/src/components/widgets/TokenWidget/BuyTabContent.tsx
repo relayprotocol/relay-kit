@@ -286,7 +286,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               }
             }}
             disabled={!toToken || !fromChainWalletVMSupported}
-            onFocus={() => {
+            onClick={() => {
               onAnalyticEvent?.(EventNames.SWAP_OUTPUT_FOCUSED)
             }}
             css={{

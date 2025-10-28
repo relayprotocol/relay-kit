@@ -298,7 +298,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 }
               }
             }}
-            onFocus={() => {
+            onClick={() => {
               onAnalyticEvent?.(EventNames.SWAP_INPUT_FOCUSED)
             }}
             css={{
