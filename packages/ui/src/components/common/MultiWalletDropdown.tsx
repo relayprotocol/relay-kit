@@ -23,6 +23,7 @@ type MultiWalletDropdownProps = {
   onLinkNewWallet: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   setAddressModalOpen?: React.Dispatch<React.SetStateAction<boolean>>
+  disableWalletFiltering?: boolean
 }
 
 export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
@@ -35,13 +36,14 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
   onSelect,
   onAnalyticEvent,
   onLinkNewWallet,
-  setAddressModalOpen
+  setAddressModalOpen,
+  disableWalletFiltering = false
 }) => {
   const [open, setOpen] = useState(false)
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
   const filteredWallets = useMemo(() => {
-    if (!chain) return wallets
+    if (!chain || disableWalletFiltering) return wallets
 
     let eclipseConnectorKeys: string[] | undefined = undefined
     if (connectorKeyOverrides && connectorKeyOverrides[eclipse.id]) {

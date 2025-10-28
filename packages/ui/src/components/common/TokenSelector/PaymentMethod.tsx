@@ -33,7 +33,8 @@ import type { Token } from '../../../types/index.js'
 import { type ChainFilterValue } from './ChainFilter.js'
 import useRelayClient from '../../../hooks/useRelayClient.js'
 import { type Address } from 'viem'
-import { useDebounceState, useDuneBalances } from '../../../hooks/index.js'
+import { useDebounceState } from '../../../hooks/index.js'
+import { useMultiWalletBalances } from '../../../hooks/useMultiWalletBalances.js'
 import { useMediaQuery } from 'usehooks-ts'
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../../constants/events.js'
@@ -58,12 +59,7 @@ import {
   toggleStarredChain
 } from '../../../utils/localStorage.js'
 import { mergeTokenLists } from '../../../utils/tokens.js'
-import {
-  bitcoinDeadAddress,
-  evmDeadAddress,
-  solDeadAddress,
-  type ChainVM
-} from '@relayprotocol/relay-sdk'
+import { type ChainVM } from '@relayprotocol/relay-sdk'
 import {
   getInitialChainFilter,
   sortChains,
@@ -87,6 +83,7 @@ export type PaymentMethodProps = {
   fromChainWalletVMSupported?: boolean
   supportedWalletVMs?: Omit<ChainVM, 'hypevm'>[]
   popularChainIds?: number[]
+  linkedWallets?: any[]
   setToken: (token: Token) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
 }
@@ -103,6 +100,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   fromChainWalletVMSupported,
   supportedWalletVMs,
   popularChainIds,
+  linkedWallets,
   setToken,
   onAnalyticEvent
 }) => {
@@ -210,24 +208,16 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 
   const useDefaultTokenList = debouncedTokenSearchValue === ''
 
-  // Get user's token balances
+  // Fetch balances for all linked wallets
   const {
-    data: duneTokens,
     balanceMap: tokenBalances,
+    data: duneTokens,
     isLoading: isLoadingBalances
-  } = useDuneBalances(
-    address &&
-      address !== evmDeadAddress &&
-      address !== solDeadAddress &&
-      address !== bitcoinDeadAddress &&
-      isValidAddress
-      ? address
-      : undefined,
-    relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet',
-    {
-      staleTime: 60000,
-      gcTime: 60000
-    }
+  } = useMultiWalletBalances(
+    linkedWallets,
+    address,
+    isValidAddress,
+    relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet'
   )
 
   // Filter dune token balances based on configured chains
@@ -361,6 +351,21 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   const handleChainStarToggle = useCallback(() => {
     setStarredChainIds(getStarredChainIds())
   }, [])
+
+  // Auto-select token with highest balance when wallet connects
+  useEffect(() => {
+    if (
+      address &&
+      isValidAddress &&
+      !token &&
+      sortedUserTokens &&
+      sortedUserTokens.length > 0
+    ) {
+      // Select the first token (highest balance)
+      const topToken = sortedUserTokens[0]
+      setToken(topToken)
+    }
+  }, [address, isValidAddress, token, sortedUserTokens, setToken])
 
   // Update starred chains when the modal opens to sync with other instances
   useEffect(() => {
