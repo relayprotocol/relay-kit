@@ -66,6 +66,9 @@ type SellTabContentProps = {
   feeBreakdown: ChildrenProps['feeBreakdown']
   fromBalance: ChildrenProps['fromBalance']
   isLoadingFromBalance: ChildrenProps['isLoadingFromBalance']
+  toBalance: ChildrenProps['toBalance']
+  isLoadingToBalance: ChildrenProps['isLoadingToBalance']
+  toBalancePending: ChildrenProps['toBalancePending']
   hasInsufficientBalance: ChildrenProps['hasInsufficientBalance']
   address: ChildrenProps['address']
   timeEstimate?: ChildrenProps['timeEstimate']
@@ -148,6 +151,9 @@ const SellTabContent: FC<SellTabContentProps> = ({
   feeBreakdown,
   fromBalance,
   isLoadingFromBalance,
+  toBalance,
+  isLoadingToBalance,
+  toBalancePending,
   hasInsufficientBalance,
   address,
   timeEstimate,
@@ -235,11 +241,13 @@ const SellTabContent: FC<SellTabContentProps> = ({
   const hasValidInputAmount =
     fromToken && amountInputValue && Number(amountInputValue) > 0
 
-  const isLoadingOutput = hasValidInputAmount && isFetchingQuote && toToken
-
   const currencyOutAmountUsd = quote?.details?.currencyOut?.amountUsd
   const currencyOutAmountFormatted =
     quote?.details?.currencyOut?.amountFormatted
+
+  // Only show skeleton on initial load, not on subsequent fetches
+  const isLoadingOutput =
+    hasValidInputAmount && isFetchingQuote && toToken && !currencyOutAmountUsd
 
   return (
     <TabsContent value="sell">
@@ -392,26 +400,40 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 flexShrink: 0
               }}
             >
-              {fromToken ? (
-                <BalanceDisplay
-                  hideBalanceLabel={true}
-                  displaySymbol={true}
-                  isLoading={isLoadingFromBalance}
-                  balance={fromBalance}
-                  decimals={fromToken?.decimals}
-                  symbol={fromToken?.symbol}
-                  hasInsufficientBalance={hasInsufficientBalance}
-                  isConnected={
-                    !isDeadAddress(address) &&
-                    address !== tronDeadAddress &&
-                    address !== undefined
-                  }
-                  pending={fromBalancePending}
-                  size="md"
-                />
-              ) : (
-                <Flex css={{ height: 18 }} />
-              )}
+              {(() => {
+                // In SELL mode: Always prioritize toToken (the token you're selling from URL)
+                // The payment method (fromToken) is what you want to receive, not what you're spending
+                // So we show the balance of what you're selling (toToken), not what you're receiving (fromToken)
+                const displayToken = toToken || fromToken
+                const displayBalance = toToken ? toBalance : fromBalance
+                const displayBalancePending = toToken
+                  ? toBalancePending
+                  : fromBalancePending
+                const isLoadingDisplayBalance = toToken
+                  ? isLoadingToBalance
+                  : isLoadingFromBalance
+
+                return displayToken ? (
+                  <BalanceDisplay
+                    hideBalanceLabel={true}
+                    displaySymbol={true}
+                    isLoading={isLoadingDisplayBalance}
+                    balance={displayBalance}
+                    decimals={displayToken?.decimals}
+                    symbol={displayToken?.symbol}
+                    hasInsufficientBalance={hasInsufficientBalance}
+                    isConnected={
+                      !isDeadAddress(address) &&
+                      address !== tronDeadAddress &&
+                      address !== undefined
+                    }
+                    pending={displayBalancePending}
+                    size="md"
+                  />
+                ) : (
+                  <Flex css={{ height: 18 }} />
+                )
+              })()}
               <Flex align="center" css={{ gap: '1' }}>
                 {(percentOptions ?? [20, 50]).map((percent) => (
                   <Button

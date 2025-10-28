@@ -215,10 +215,12 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   const hasValidOutputAmount =
     toToken && amountOutputValue && Number(amountOutputValue) > 0
 
-  const isLoadingPayWith = hasValidOutputAmount && isFetchingQuote && fromToken
-
   const currencyInAmountUsd = quote?.details?.currencyIn?.amountUsd
   const currencyInAmountFormatted = quote?.details?.currencyIn?.amountFormatted
+
+  // Only show skeleton on initial load, not on subsequent fetches
+  const isLoadingPayWith =
+    hasValidOutputAmount && isFetchingQuote && fromToken && !currencyInAmountUsd
 
   const disableActionButton =
     isFetchingQuote ||

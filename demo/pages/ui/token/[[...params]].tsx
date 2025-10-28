@@ -1,4 +1,4 @@
-import { NextPage, GetServerSideProps } from 'next'
+import type { NextPage, GetServerSideProps } from 'next'
 import { TokenWidget, useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { Layout } from 'components/Layout'
 import { useTheme } from 'next-themes'
@@ -9,7 +9,7 @@ import {
   useDynamicModals,
   useSwitchWallet,
   useUserWallets,
-  Wallet
+  type Wallet
 } from '@dynamic-labs/sdk-react-core'
 import {
   useCallback,
@@ -23,11 +23,10 @@ import { isEthereumWallet } from '@dynamic-labs/ethereum'
 import { isSolanaWallet } from '@dynamic-labs/solana'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
 import {
-  AdaptedWallet,
   adaptViemWallet,
-  ChainVM,
-  ASSETS_RELAY_API,
-  RelayChain
+  RelayChain,
+  type AdaptedWallet,
+  type ChainVM
 } from '@relayprotocol/relay-sdk'
 import { useWalletFilter } from 'context/walletFilter'
 import { adaptBitcoinWallet } from '@relayprotocol/relay-bitcoin-wallet-adapter'
@@ -35,84 +34,16 @@ import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
 import { convertToLinkedWallet } from 'utils/dynamic'
 import { isEclipseWallet } from '@dynamic-labs/eclipse'
 import type { LinkedWallet, Token } from '@relayprotocol/relay-kit-ui'
-import { isSuiWallet, SuiWallet } from '@dynamic-labs/sui'
+import { isSuiWallet, type SuiWallet } from '@dynamic-labs/sui'
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import Head from 'next/head'
 
-const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm'] as const
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-
-type ChainCurrency =
-  | NonNullable<RelayChain['erc20Currencies']>[number]
-  | RelayChain['currency']
-
-const buildTokenFromCurrency = (
-  currency: ChainCurrency | null | undefined,
-  chainId: number
-): Token | undefined => {
-  if (!currency) {
-    return undefined
-  }
-
-  return {
-    chainId,
-    address: currency.address ?? ZERO_ADDRESS,
-    name: currency.name ?? '',
-    symbol: currency.symbol ?? '',
-    decimals: currency.decimals ?? 0,
-    logoURI: `${ASSETS_RELAY_API}/icons/currencies/${
-      currency.id ?? currency.symbol?.toLowerCase() ?? chainId
-    }.png`,
-    verified: true
-  }
-}
-
-const resolveTokenFromParams = (
-  chains: RelayChain[] | undefined,
-  chainId: number,
-  rawAddress: string
-): Token | undefined => {
-  if (!chains?.length) {
-    return undefined
-  }
-
-  const chain = chains.find((candidate) => candidate.id === chainId)
-
-  if (!chain) {
-    return undefined
-  }
-
-  const normalizedAddress = rawAddress.toLowerCase()
-
-  const chainCurrencyAddress = chain.currency?.address?.toLowerCase()
-
-  const isNativeRequested =
-    normalizedAddress === 'native' ||
-    normalizedAddress === ZERO_ADDRESS ||
-    (chainCurrencyAddress !== undefined &&
-      normalizedAddress === chainCurrencyAddress)
-
-  if (isNativeRequested) {
-    return buildTokenFromCurrency(chain.currency, chainId)
-  }
-
-  const currencies = chain.erc20Currencies ?? []
-  const matchedCurrency = currencies.find((currency) => {
-    const currencyAddress = currency?.address?.toLowerCase()
-
-    if (!currencyAddress) {
-      return false
-    }
-
-    return currencyAddress === normalizedAddress
-  })
-
-  if (matchedCurrency) {
-    return buildTokenFromCurrency(matchedCurrency, chainId)
-  }
-
-  return undefined
-}
+const WALLET_VM_TYPES: Exclude<ChainVM, 'hypevm'>[] = [
+  'evm',
+  'bvm',
+  'svm',
+  'suivm'
+]
 
 const TokenWidgetPage: NextPage = () => {
   const router = useRouter()
@@ -124,22 +55,8 @@ const TokenWidgetPage: NextPage = () => {
     }
   })
 
-  const getDefaultFromToken = () => {
-    // Default to ETH on Base for EVM wallets
-    return {
-      chainId: 8453,
-      address: '0x0000000000000000000000000000000000000000',
-      decimals: 18,
-      name: 'ETH',
-      symbol: 'ETH',
-      logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
-    }
-  }
-
-  const [fromToken, setFromToken] = useState<Token | undefined>(
-    getDefaultFromToken()
-  )
-  const [toToken, setToToken] = useState<Token | undefined>({
+  // Default tokens
+  const [fromToken, setFromToken] = useState<Token | undefined>({
     chainId: 8453,
     address: '0x0000000000000000000000000000000000000000',
     decimals: 18,
@@ -147,6 +64,7 @@ const TokenWidgetPage: NextPage = () => {
     symbol: 'ETH',
     logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
   })
+  const [toToken, setToToken] = useState<Token | undefined>()
 
   const getTokenKey = useCallback((token?: Token) => {
     if (!token) {
@@ -160,9 +78,9 @@ const TokenWidgetPage: NextPage = () => {
   const { setShowAuthFlow, primaryWallet } = useDynamicContext()
   const { theme } = useTheme()
   const [singleChainMode, setSingleChainMode] = useState(false)
-  const [supportedWalletVMs, setSupportedWalletVMs] = useState<ChainVM[]>([
-    ...WALLET_VM_TYPES
-  ])
+  const [supportedWalletVMs, setSupportedWalletVMs] = useState<
+    Exclude<ChainVM, 'hypevm'>[]
+  >([...WALLET_VM_TYPES])
   const _switchWallet = useSwitchWallet()
   const { setShowLinkNewWalletModal } = useDynamicModals()
   const userWallets = useUserWallets()
@@ -171,12 +89,6 @@ const TokenWidgetPage: NextPage = () => {
     useRef<(walletId: string) => Promise<void> | undefined>(undefined)
   const [wallet, setWallet] = useState<AdaptedWallet | undefined>()
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
-  const urlTokenRef = useRef<Token | undefined>(undefined)
-  const appliedUrlKeyRef = useRef<string | null>(null)
-  const lastUpdatedUrlRef = useRef<string | null>(null)
-  const hasCustomBuyTokenRef = useRef(false)
-  const hasCustomSellTokenRef = useRef(false)
-  const [tokenNotFound, setTokenNotFound] = useState(false)
   const [linkWalletPromise, setLinkWalletPromise] = useState<
     | {
         resolve: (value: LinkedWallet) => void
@@ -185,9 +97,16 @@ const TokenWidgetPage: NextPage = () => {
       }
     | undefined
   >()
+
+  // Parse URL params for token
+  const [urlTokenAddress, setUrlTokenAddress] = useState<string | undefined>()
+  const [urlTokenChainId, setUrlTokenChainId] = useState<number | undefined>()
+
+  // State for manual token input
   const [addressInput, setAddressInput] = useState('')
   const [chainInput, setChainInput] = useState('')
   const [inputError, setInputError] = useState<string | null>(null)
+  const [tokenNotFound, setTokenNotFound] = useState(false)
 
   const linkedWallets = useMemo(() => {
     const _wallets = userWallets.reduce((linkedWallets, wallet) => {
@@ -198,8 +117,9 @@ const TokenWidgetPage: NextPage = () => {
     return _wallets
   }, [userWallets])
 
+  // Parse URL params
   useEffect(() => {
-    if (!router.isReady || !relayClient) {
+    if (!router.isReady) {
       return
     }
 
@@ -207,12 +127,8 @@ const TokenWidgetPage: NextPage = () => {
     const [addressParam, chainParam] = Array.isArray(params) ? params : []
 
     if (!addressParam || !chainParam) {
-      setTokenNotFound(false)
-      urlTokenRef.current = undefined
-      appliedUrlKeyRef.current = null
-      lastUpdatedUrlRef.current = router.asPath
-      setAddressInput('')
-      setChainInput('')
+      setUrlTokenAddress(undefined)
+      setUrlTokenChainId(undefined)
       return
     }
 
@@ -224,87 +140,11 @@ const TokenWidgetPage: NextPage = () => {
     const decodedAddress = decodeURIComponent(rawAddress)
     const chainId = Number(rawChain)
 
-    setAddressInput(decodedAddress)
-    setChainInput(rawChain)
-
-    if (Number.isNaN(chainId)) {
-      setTokenNotFound(true)
-      return
+    if (!Number.isNaN(chainId)) {
+      setUrlTokenAddress(decodedAddress)
+      setUrlTokenChainId(chainId)
     }
-
-    const resolvedToken = resolveTokenFromParams(
-      relayClient.chains,
-      chainId,
-      decodedAddress
-    )
-
-    if (!resolvedToken) {
-      setTokenNotFound(true)
-      return
-    }
-
-    setTokenNotFound(false)
-    setInputError(null)
-    urlTokenRef.current = resolvedToken
-
-    const key = getTokenKey(resolvedToken)
-    appliedUrlKeyRef.current = key ?? null
-
-    const canonicalPath = `/ui/token/${encodeURIComponent(
-      resolvedToken.address
-    )}/${resolvedToken.chainId}`
-    lastUpdatedUrlRef.current = canonicalPath
-
-    // Set toToken based on URL for buy tab
-    if (!hasCustomBuyTokenRef.current) {
-      setToToken((previous) => {
-        const previousKey = getTokenKey(previous)
-        return previousKey === key ? previous : resolvedToken
-      })
-    }
-
-    // For sell tab, also set fromToken to the URL token to sell it
-    if (activeTab === 'sell' && !hasCustomSellTokenRef.current) {
-      setFromToken((previous) => {
-        const previousKey = getTokenKey(previous)
-        return previousKey === key ? previous : resolvedToken
-      })
-    }
-
-    hasCustomBuyTokenRef.current = false
-    hasCustomSellTokenRef.current = false
-  }, [router.isReady, router.query.params, relayClient, getTokenKey, activeTab])
-
-  useEffect(() => {
-    // Don't change fromToken based on activeTab - it should always be ETH on Base
-    // if (
-    //   activeTab === 'sell' &&
-    //   urlTokenRef.current &&
-    //   !hasCustomSellTokenRef.current
-    // ) {
-    //   const key = getTokenKey(urlTokenRef.current)
-    //   setFromToken((previous) => {
-    //     const previousKey = getTokenKey(previous)
-    //     return previousKey === key
-    //       ? previous
-    //       : (urlTokenRef.current ?? previous)
-    //   })
-    // }
-
-    if (
-      activeTab === 'buy' &&
-      urlTokenRef.current &&
-      !hasCustomBuyTokenRef.current
-    ) {
-      const key = getTokenKey(urlTokenRef.current)
-      setToToken((previous) => {
-        const previousKey = getTokenKey(previous)
-        return previousKey === key
-          ? previous
-          : (urlTokenRef.current ?? previous)
-      })
-    }
-  }, [activeTab, getTokenKey])
+  }, [router.isReady, router.query.params])
 
   const updateDemoUrl = useCallback(
     (token?: Token) => {
@@ -315,20 +155,13 @@ const TokenWidgetPage: NextPage = () => {
       const basePath = '/ui/token'
 
       if (!token) {
-        if (lastUpdatedUrlRef.current !== basePath) {
-          router.replace(basePath, undefined, { shallow: true })
-          lastUpdatedUrlRef.current = basePath
-        }
+        router.replace(basePath, undefined, { shallow: true })
         return
       }
 
       const encodedAddress = encodeURIComponent(token.address)
       const chainParam = token.chainId.toString()
       const nextPath = `${basePath}/${encodedAddress}/${chainParam}`
-
-      if (lastUpdatedUrlRef.current === nextPath) {
-        return
-      }
 
       router.replace(
         {
@@ -338,8 +171,6 @@ const TokenWidgetPage: NextPage = () => {
         nextPath,
         { shallow: true }
       )
-
-      lastUpdatedUrlRef.current = nextPath
     },
     [router]
   )
@@ -354,10 +185,6 @@ const TokenWidgetPage: NextPage = () => {
       const chainParam = chainId.toString()
       const nextPath = `/ui/token/${encodedAddress}/${chainParam}`
 
-      if (lastUpdatedUrlRef.current === nextPath) {
-        return
-      }
-
       router.replace(
         {
           pathname: '/ui/token/[[...params]]',
@@ -366,8 +193,6 @@ const TokenWidgetPage: NextPage = () => {
         nextPath,
         { shallow: true }
       )
-
-      lastUpdatedUrlRef.current = nextPath
     },
     [router]
   )
@@ -400,44 +225,12 @@ const TokenWidgetPage: NextPage = () => {
         return
       }
 
-      hasCustomBuyTokenRef.current = false
-      hasCustomSellTokenRef.current = false
-
-      if (!relayClient) {
-        setInputError(
-          'Relay client is not ready yet. Please try again shortly.'
-        )
-        updateDemoUrlWithRawParams(normalizedAddress, parsedChainId)
-        return
-      }
-
-      const resolvedToken = resolveTokenFromParams(
-        relayClient.chains,
-        parsedChainId,
-        normalizedAddress
-      )
-
-      if (resolvedToken) {
-        urlTokenRef.current = resolvedToken
-        appliedUrlKeyRef.current = getTokenKey(resolvedToken) ?? null
-        setTokenNotFound(false)
-        updateDemoUrl(resolvedToken)
-      } else {
-        setTokenNotFound(true)
-        setInputError(
-          'Token not found on the specified chain. Showing last known state.'
-        )
-        updateDemoUrlWithRawParams(normalizedAddress, parsedChainId)
-      }
+      // Update the URL with the new token params
+      setUrlTokenAddress(normalizedAddress)
+      setUrlTokenChainId(parsedChainId)
+      updateDemoUrlWithRawParams(normalizedAddress, parsedChainId)
     },
-    [
-      addressInput,
-      chainInput,
-      relayClient,
-      getTokenKey,
-      updateDemoUrl,
-      updateDemoUrlWithRawParams
-    ]
+    [addressInput, chainInput, updateDemoUrlWithRawParams]
   )
 
   useEffect(() => {
@@ -580,6 +373,9 @@ const TokenWidgetPage: NextPage = () => {
             // lockFromToken={true}
             fromToken={fromToken}
             setFromToken={setFromToken}
+            // Use the new token resolution props for URL tokens
+            defaultToTokenAddress={urlTokenAddress}
+            defaultToTokenChainId={urlTokenChainId}
             // defaultAmount={'5'}
             wallet={wallet}
             multiWalletSupportEnabled={true}
@@ -647,10 +443,6 @@ const TokenWidgetPage: NextPage = () => {
             onAnalyticEvent={handleAnalyticEvent}
             onFromTokenChange={(token) => {
               setFromToken(token)
-              hasCustomSellTokenRef.current = token !== undefined
-              if (token) {
-                urlTokenRef.current = token
-              }
               if (activeTab === 'sell') {
                 updateDemoUrl(token)
               }
@@ -660,10 +452,6 @@ const TokenWidgetPage: NextPage = () => {
             }}
             onToTokenChange={(token) => {
               setToToken(token)
-              hasCustomBuyTokenRef.current = token !== undefined
-              if (token) {
-                urlTokenRef.current = token
-              }
               if (activeTab === 'buy') {
                 updateDemoUrl(token)
               }

@@ -94,6 +94,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   const balanceText = hasBalanceUsd
     ? `${formatDollar(balanceUsd)} ${balanceLabel}`
     : ''
+
   return token ? (
     <Button
       color="white"
@@ -146,7 +147,6 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
             ) : (
               <Text
                 style="subtitle3"
-                ellipsify
                 color="subtle"
                 css={{ lineHeight: '15px', maxWidth: '100%' }}
               >

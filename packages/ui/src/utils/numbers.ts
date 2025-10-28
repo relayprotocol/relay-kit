@@ -24,6 +24,38 @@ function formatDollar(price?: number | null) {
   return formatted
 }
 
+function formatDollarCompact(price?: number | null) {
+  if (price === undefined || price === null || price === 0) {
+    return '-'
+  }
+
+  // For values >= $1B, show ">$1B"
+  if (Math.abs(price) >= 1000000000) {
+    return '>$1B'
+  }
+
+  // Use compact notation for values >= $1000
+  if (Math.abs(price) >= 1000) {
+    const { format } = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      notation: 'compact',
+      compactDisplay: 'short',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    })
+    return format(price)
+  }
+
+  const formatted = formatUsdCurrency(price)
+
+  if (formatted === '$0.00' && price && price > 0) {
+    return '< $0.01'
+  }
+
+  return formatted
+}
+
 function formatNumber(
   amount: number | null | undefined | string,
   maximumFractionDigits: number = 2,
@@ -300,6 +332,7 @@ function formatSignificantDigits(
 
 export {
   formatDollar,
+  formatDollarCompact,
   formatBN,
   formatFixedLength,
   formatNumber,
