@@ -298,7 +298,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 }
               }
             }}
-            onFocus={() => {
+            onClick={() => {
               onAnalyticEvent?.(EventNames.SWAP_INPUT_FOCUSED)
             }}
             css={{
@@ -369,8 +369,18 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 disablePasteWalletAddressOption={
                   disablePasteWalletAddressOption
                 }
-                onSelect={(wallet) => onSetPrimaryWallet?.(wallet.address)}
+                onSelect={(wallet) => {
+                  if (
+                    fromToken &&
+                    fromChain &&
+                    wallet.vmType !== fromChain.vmType
+                  ) {
+                    handleSetFromToken(undefined)
+                  }
+                  onSetPrimaryWallet?.(wallet.address)
+                }}
                 chain={fromChain}
+                disableWalletFiltering={true}
                 onLinkNewWallet={() => {
                   if (!address && fromChainWalletVMSupported) {
                     onConnectWallet?.()
@@ -525,9 +535,18 @@ const SellTabContent: FC<SellTabContentProps> = ({
               selectedWalletAddress={recipient}
               disablePasteWalletAddressOption={disablePasteWalletAddressOption}
               onSelect={(wallet) => {
+                // If wallet is incompatible with payment token (what you receive), clear it
+                if (
+                  fromToken &&
+                  fromChain &&
+                  wallet.vmType !== fromChain.vmType
+                ) {
+                  handleSetFromToken(undefined)
+                }
                 setCustomToAddress(wallet.address)
               }}
               chain={toChain}
+              disableWalletFiltering={true}
               onLinkNewWallet={() => {
                 if (!address && toChainWalletVMSupported) {
                   onConnectWallet?.()
@@ -598,7 +617,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
             <PaymentMethod
               address={address}
               isValidAddress={isValidFromAddress}
-              token={toToken}
+              token={fromToken}
               onAnalyticEvent={onAnalyticEvent}
               multiWalletSupportEnabled={multiWalletSupportEnabled}
               fromChainWalletVMSupported={fromChainWalletVMSupported}
@@ -606,28 +625,29 @@ const SellTabContent: FC<SellTabContentProps> = ({
               popularChainIds={popularChainIds}
               lockedChainIds={lockedToChainIds}
               chainIdsFilter={chainIdsFilterForTo}
-              context="to"
+              linkedWallets={linkedWallets}
+              context="from"
               setToken={(token) => {
                 if (
-                  token?.address === fromToken?.address &&
-                  token?.chainId === fromToken?.chainId &&
+                  token?.address === toToken?.address &&
+                  token?.chainId === toToken?.chainId &&
                   address === recipient &&
-                  (!lockFromToken || !toToken)
+                  (!lockToToken || !fromToken)
                 ) {
-                  handleSetToToken(fromToken)
                   handleSetFromToken(toToken)
+                  handleSetToToken(fromToken)
                 } else {
-                  handleSetToToken(token)
+                  handleSetFromToken(token)
                 }
               }}
               trigger={
                 <div style={{ width: 'max-content' }}>
                   <PaymentMethodTrigger
-                    token={toToken}
-                    locked={lockToToken}
+                    token={fromToken}
+                    locked={lockFromToken}
                     address={address}
-                    testId="destination-token-select-button"
-                    balanceLabel="balance"
+                    testId="payment-method-select-button"
+                    balanceLabel="available"
                   />
                 </div>
               }
