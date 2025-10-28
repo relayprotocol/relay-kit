@@ -505,14 +505,10 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 }
                 selectedWalletAddress={recipient}
                 onSelect={(wallet) => {
-                  // If wallet is incompatible with current receive token, clear it
-                  if (toToken && toChain && wallet.vmType !== toChain.vmType) {
-                    handleSetToToken(undefined)
-                  }
                   setCustomToAddress(wallet.address)
                 }}
                 chain={toChain}
-                disableWalletFiltering={true}
+                disableWalletFiltering={false}
                 onLinkNewWallet={() => {
                   if (!address && toChainWalletVMSupported) {
                     onConnectWallet?.()

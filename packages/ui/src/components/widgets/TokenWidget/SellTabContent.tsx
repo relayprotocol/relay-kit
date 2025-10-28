@@ -384,17 +384,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
                   disablePasteWalletAddressOption
                 }
                 onSelect={(wallet) => {
-                  if (
-                    fromToken &&
-                    fromChain &&
-                    wallet.vmType !== fromChain.vmType
-                  ) {
-                    handleSetFromToken(undefined)
-                  }
                   onSetPrimaryWallet?.(wallet.address)
                 }}
-                chain={fromChain}
-                disableWalletFiltering={true}
+                chain={toChain}
+                disableWalletFiltering={false}
                 onLinkNewWallet={() => {
                   if (!address && fromChainWalletVMSupported) {
                     onConnectWallet?.()
