@@ -3,7 +3,7 @@ import { Box, Flex, Text } from '../../primitives/index.js'
 import Skeleton from '../../primitives/Skeleton.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons'
-import { formatDollar, formatNumber } from '../../../utils/numbers.js'
+import { formatDollarCompact, formatNumber } from '../../../utils/numbers.js'
 import { FeeBreakdownTooltip } from './FeeBreakdownTooltip.js'
 import type { QuoteResponse } from '@relayprotocol/relay-kit-hooks'
 import type { FeeBreakdown } from '../../../types/FeeBreakdown.js'
@@ -42,7 +42,9 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
           <Skeleton css={{ width: 90, height: 20 }} />
         ) : amountUsd && Number(amountUsd) > 0 ? (
           <>
-            <Text style="h6">{formatDollar(Number(amountUsd))} total</Text>
+            <Text style="h6">
+              {formatDollarCompact(Number(amountUsd))} total
+            </Text>
             <FeeBreakdownTooltip
               quote={quote}
               feeBreakdown={feeBreakdown}
@@ -87,11 +89,11 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
       ) : amountUsd && Number(amountUsd) > 0 ? (
         token && tokenAmountFormatted && Number(tokenAmountFormatted) > 0 ? (
           <Text style="subtitle3" color="subtleSecondary">
-            {formatNumber(tokenAmountFormatted, 4, false)} {token.symbol}
+            {formatNumber(tokenAmountFormatted, 4, true)} {token.symbol}
           </Text>
         ) : token && fallbackTokenAmount && Number(fallbackTokenAmount) > 0 ? (
           <Text style="subtitle3" color="subtleSecondary">
-            {formatNumber(fallbackTokenAmount, 4, false)} {token.symbol}
+            {formatNumber(fallbackTokenAmount, 4, true)} {token.symbol}
           </Text>
         ) : null
       ) : token ? (
