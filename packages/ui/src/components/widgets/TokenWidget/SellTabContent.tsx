@@ -119,6 +119,7 @@ type SellTabContentProps = {
   popularChainIds?: number[]
   handleSetFromToken: (token?: Token) => void
   handleSetToToken: (token?: Token) => void
+  ctaCopy: ChildrenProps['ctaCopy']
 }
 
 const SellTabContent: FC<SellTabContentProps> = ({
@@ -203,8 +204,21 @@ const SellTabContent: FC<SellTabContentProps> = ({
   lockChainId,
   popularChainIds,
   handleSetFromToken,
-  handleSetToToken
+  handleSetToToken,
+  ctaCopy
 }) => {
+  // Use ctaCopy for wallet/address prompts, override transaction operations to "Sell"
+  const displayCta = [
+    'Swap',
+    'Confirm',
+    'Bridge',
+    'Send',
+    'Wrap',
+    'Unwrap'
+  ].includes(ctaCopy)
+    ? 'Sell'
+    : ctaCopy
+
   const hasSelectedTokens = Boolean(fromToken)
   const invalidAmount =
     !quote ||
@@ -690,7 +704,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
               })
               onPrimaryAction()
             }}
-            ctaCopy="Sell"
+            ctaCopy={displayCta}
             disabled={disableActionButton}
             isFetchingQuote={isFetchingQuote}
             hasValidAmount={!invalidAmount}

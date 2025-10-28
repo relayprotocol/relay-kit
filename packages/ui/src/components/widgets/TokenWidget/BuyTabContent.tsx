@@ -111,6 +111,7 @@ type BuyTabContentProps = {
   supportsExternalLiquidity: ChildrenProps['supportsExternalLiquidity']
   recipientLinkedWallet?: ChildrenProps['linkedWallet']
   toChainVmType?: string
+  ctaCopy: ChildrenProps['ctaCopy']
 }
 
 const BuyTabContent: FC<BuyTabContentProps> = ({
@@ -189,8 +190,20 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   isCouldNotExecuteError,
   supportsExternalLiquidity,
   recipientLinkedWallet,
-  toChainVmType
+  toChainVmType,
+  ctaCopy
 }) => {
+  const displayCta = [
+    'Swap',
+    'Confirm',
+    'Bridge',
+    'Send',
+    'Wrap',
+    'Unwrap'
+  ].includes(ctaCopy)
+    ? 'Buy'
+    : ctaCopy
+
   const fromChainId = fromToken?.chainId
   const lockedChainIds = isSingleChainLocked
     ? lockChainId !== undefined
@@ -594,7 +607,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               })
               onPrimaryAction()
             }}
-            ctaCopy="Buy"
+            ctaCopy={displayCta}
             disabled={disableActionButton}
             isFetchingQuote={isFetchingQuote}
             hasValidAmount={!invalidAmount}

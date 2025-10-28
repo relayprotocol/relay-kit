@@ -1191,6 +1191,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           supportsExternalLiquidity={supportsExternalLiquidity}
                           recipientLinkedWallet={recipientLinkedWallet}
                           toChainVmType={toChain?.vmType}
+                          ctaCopy={ctaCopy}
                         />
 
                         <SellTabContent
@@ -1294,6 +1295,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           supportsExternalLiquidity={supportsExternalLiquidity}
                           recipientLinkedWallet={recipientLinkedWallet}
                           toChainVmType={toChain?.vmType}
+                          ctaCopy={ctaCopy}
                         />
 
                         {promptSwitchRoute ? (
