@@ -56,14 +56,7 @@ const TokenWidgetPage: NextPage = () => {
   })
 
   // Default tokens
-  const [fromToken, setFromToken] = useState<Token | undefined>({
-    chainId: 8453,
-    address: '0x0000000000000000000000000000000000000000',
-    decimals: 18,
-    name: 'ETH',
-    symbol: 'ETH',
-    logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
-  })
+  const [fromToken, setFromToken] = useState<Token | undefined>()
   const [toToken, setToToken] = useState<Token | undefined>()
 
   const getTokenKey = useCallback((token?: Token) => {
