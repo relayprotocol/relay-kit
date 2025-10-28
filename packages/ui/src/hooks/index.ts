@@ -4,6 +4,7 @@ import useCurrencyBalance from './useCurrencyBalance.js'
 import useRelayClient from './useRelayClient.js'
 import useDebounceState from './useDebounceState.js'
 import useDuneBalances from './useDuneBalances.js'
+import { useMultiWalletBalances } from './useMultiWalletBalances.js'
 import useWalletAddress from './useWalletAddress.js'
 import useDisconnected from './useDisconnected.js'
 import usePreviousValueChange from './usePreviousValueChange.js'
@@ -31,6 +32,7 @@ export {
   useRelayClient,
   useDebounceState,
   useDuneBalances,
+  useMultiWalletBalances,
   useWalletAddress,
   useDisconnected,
   usePreviousValueChange,
