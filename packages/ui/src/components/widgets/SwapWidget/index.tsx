@@ -24,6 +24,7 @@ import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
 import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
+import { PercentageButtons } from '../../common/PercentageButtons.js'
 import { EventNames } from '../../../constants/events.js'
 import SwapWidgetRenderer from '../SwapWidgetRenderer.js'
 import WidgetContainer from '../WidgetContainer.js'
@@ -911,251 +912,165 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                         />
                       </Flex>
                       <Flex
-                        align="center"
-                        justify="between"
+                        direction="column"
                         css={{ gap: '3', width: '100%' }}
                       >
                         <Flex
                           align="center"
-                          css={{ gap: '4px', _hover: { cursor: 'pointer' } }}
-                          onClick={() => {
-                            toggleInputMode()
-                          }}
+                          justify="between"
+                          css={{ gap: '3', width: '100%' }}
                         >
-                          <Text
-                            style="subtitle3"
-                            color="subtleSecondary"
-                            css={{
-                              minHeight: 18,
-                              display: 'flex',
-                              alignItems: 'center'
+                          <Flex
+                            align="center"
+                            css={{ gap: '4px', _hover: { cursor: 'pointer' } }}
+                            onClick={() => {
+                              toggleInputMode()
                             }}
                           >
-                            {isUsdInputMode ? (
-                              fromToken ? (
-                                // In USD input mode, show token equivalent
-                                usdInputValue && Number(usdInputValue) > 0 ? (
-                                  // USD input has a value
-                                  amountInputValue &&
-                                  conversionRate &&
-                                  !isLoadingFromTokenPrice ? (
-                                    `${formatNumber(amountInputValue, 4, false)} ${fromToken.symbol}`
+                            <Text
+                              style="subtitle3"
+                              color="subtleSecondary"
+                              css={{
+                                minHeight: 18,
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
+                              {isUsdInputMode ? (
+                                fromToken ? (
+                                  // In USD input mode, show token equivalent
+                                  usdInputValue && Number(usdInputValue) > 0 ? (
+                                    // USD input has a value
+                                    amountInputValue &&
+                                    conversionRate &&
+                                    !isLoadingFromTokenPrice ? (
+                                      `${formatNumber(amountInputValue, 4, false)} ${fromToken.symbol}`
+                                    ) : (
+                                      <Box
+                                        css={{
+                                          width: 45,
+                                          height: 12,
+                                          backgroundColor: 'gray7',
+                                          borderRadius: 'widget-border-radius'
+                                        }}
+                                      />
+                                    )
                                   ) : (
-                                    <Box
-                                      css={{
-                                        width: 45,
-                                        height: 12,
-                                        backgroundColor: 'gray7',
-                                        borderRadius: 'widget-border-radius'
-                                      }}
-                                    />
+                                    // USD input is empty or zero, show "0 TOKEN_SYMBOL"
+                                    `0 ${fromToken.symbol}`
                                   )
-                                ) : (
-                                  // USD input is empty or zero, show "0 TOKEN_SYMBOL"
-                                  `0 ${fromToken.symbol}`
+                                ) : null
+                              ) : quote?.details?.currencyIn?.amountUsd &&
+                                !isFetchingQuote ? (
+                                // In token input mode, show USD equivalent from quote
+                                formatDollar(
+                                  Number(quote.details.currencyIn.amountUsd)
                                 )
-                              ) : null
-                            ) : quote?.details?.currencyIn?.amountUsd &&
-                              !isFetchingQuote ? (
-                              // In token input mode, show USD equivalent from quote
-                              formatDollar(
-                                Number(quote.details.currencyIn.amountUsd)
-                              )
-                            ) : isLoadingFromTokenPrice && // This is for the direct fromToken price, used when quote isn't available yet
-                              amountInputValue &&
-                              Number(amountInputValue) > 0 ? (
+                              ) : isLoadingFromTokenPrice && // This is for the direct fromToken price, used when quote isn't available yet
+                                amountInputValue &&
+                                Number(amountInputValue) > 0 ? (
+                                <Box
+                                  css={{
+                                    width: 45,
+                                    height: 12,
+                                    backgroundColor: 'gray7',
+                                    borderRadius: 'widget-border-radius'
+                                  }}
+                                />
+                              ) : inputAmountUsd &&
+                                inputAmountUsd > 0 &&
+                                fromTokenPriceData?.price &&
+                                fromTokenPriceData.price > 0 ? (
+                                formatDollar(inputAmountUsd)
+                              ) : (
+                                '$0.00'
+                              )}
+                            </Text>
+                            <Button
+                              aria-label="Switch Input Mode"
+                              size="none"
+                              color="ghost"
+                              css={{
+                                color: 'gray11',
+                                alignSelf: 'center',
+                                justifyContent: 'center',
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '100px',
+                                padding: '4px',
+                                backgroundColor: 'gray3'
+                              }}
+                              onClick={toggleInputMode}
+                            >
+                              <SwitchIcon width={16} height={10} />
+                            </Button>
+                          </Flex>
+
+                          <Flex
+                            align="center"
+                            css={{ gap: '3', marginLeft: 'auto', height: 23 }}
+                          >
+                            {fromToken ? (
+                              <BalanceDisplay
+                                isLoading={isLoadingFromBalance}
+                                balance={fromBalance}
+                                decimals={fromToken?.decimals}
+                                symbol={fromToken?.symbol}
+                                hasInsufficientBalance={hasInsufficientBalance}
+                                displaySymbol={false}
+                                isConnected={
+                                  !isDeadAddress(address) &&
+                                  address !== tronDeadAddress &&
+                                  address !== undefined
+                                }
+                                pending={fromBalancePending}
+                              />
+                            ) : (
+                              <Flex css={{ height: 18 }} />
+                            )}
+
+                            {/* Desktop Percentage Buttons - Hidden on Mobile */}
+                            {fromBalance &&
+                            (fromChain?.vmType === 'evm' ||
+                              fromChain?.vmType === 'svm') ? (
                               <Box
                                 css={{
-                                  width: 45,
-                                  height: 12,
-                                  backgroundColor: 'gray7',
-                                  borderRadius: 'widget-border-radius'
+                                  display: 'none',
+                                  sm: { display: 'block' }
                                 }}
-                              />
-                            ) : inputAmountUsd &&
-                              inputAmountUsd > 0 &&
-                              fromTokenPriceData?.price &&
-                              fromTokenPriceData.price > 0 ? (
-                              formatDollar(inputAmountUsd)
-                            ) : (
-                              '$0.00'
-                            )}
-                          </Text>
-                          <Button
-                            aria-label="Switch Input Mode"
-                            size="none"
-                            color="ghost"
-                            css={{
-                              color: 'gray11',
-                              alignSelf: 'center',
-                              justifyContent: 'center',
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '100px',
-                              padding: '4px',
-                              backgroundColor: 'gray3'
-                            }}
-                            onClick={toggleInputMode}
+                              >
+                                <PercentageButtons
+                                  balance={fromBalance}
+                                  onPercentageClick={handleMaxAmountClicked}
+                                  getFeeBufferAmount={getFeeBufferAmount}
+                                  fromChain={fromChain}
+                                  publicClient={publicClient}
+                                  isFromNative={isFromNative}
+                                  variant="desktop"
+                                />
+                              </Box>
+                            ) : null}
+                          </Flex>
+                        </Flex>
+
+                        {/* Mobile Percentage Buttons - Hidden on Desktop */}
+                        {fromBalance &&
+                        (fromChain?.vmType === 'evm' ||
+                          fromChain?.vmType === 'svm') ? (
+                          <Box
+                            css={{ display: 'block', sm: { display: 'none' } }}
                           >
-                            <SwitchIcon width={16} height={10} />
-                          </Button>
-                        </Flex>
-                        <Flex
-                          align="center"
-                          css={{ gap: '3', marginLeft: 'auto', height: 23 }}
-                        >
-                          {fromToken ? (
-                            <BalanceDisplay
-                              isLoading={isLoadingFromBalance}
+                            <PercentageButtons
                               balance={fromBalance}
-                              decimals={fromToken?.decimals}
-                              symbol={fromToken?.symbol}
-                              hasInsufficientBalance={hasInsufficientBalance}
-                              displaySymbol={false}
-                              isConnected={
-                                !isDeadAddress(address) &&
-                                address !== tronDeadAddress &&
-                                address !== undefined
-                              }
-                              pending={fromBalancePending}
+                              onPercentageClick={handleMaxAmountClicked}
+                              getFeeBufferAmount={getFeeBufferAmount}
+                              fromChain={fromChain}
+                              publicClient={publicClient}
+                              isFromNative={isFromNative}
+                              variant="mobile"
                             />
-                          ) : (
-                            <Flex css={{ height: 18 }} />
-                          )}
-                          {fromBalance &&
-                          (fromChain?.vmType === 'evm' || // EVM
-                            fromChain?.vmType === 'svm') ? (
-                            <Flex css={{ gap: '1' }}>
-                              <Button
-                                aria-label="20%"
-                                css={{
-                                  fontSize: 12,
-                                  fontWeight: '500',
-                                  px: '1',
-                                  py: '1',
-                                  minHeight: '23px',
-                                  lineHeight: '100%',
-                                  backgroundColor: 'widget-selector-background',
-                                  border: 'none',
-                                  _hover: {
-                                    backgroundColor:
-                                      'widget-selector-hover-background'
-                                  }
-                                }}
-                                color="white"
-                                onClick={() => {
-                                  const percentageBuffer =
-                                    (fromBalance * 20n) / 100n // 20% of the balance
-                                  handleMaxAmountClicked(
-                                    percentageBuffer,
-                                    '20%'
-                                  )
-                                }}
-                              >
-                                20%
-                              </Button>
-                              <Button
-                                aria-label="50%"
-                                css={{
-                                  fontSize: 12,
-                                  fontWeight: '500',
-                                  px: '1',
-                                  py: '1',
-                                  minHeight: '23px',
-                                  lineHeight: '100%',
-                                  backgroundColor: 'widget-selector-background',
-                                  border: 'none',
-                                  _hover: {
-                                    backgroundColor:
-                                      'widget-selector-hover-background'
-                                  }
-                                }}
-                                color="white"
-                                onClick={() => {
-                                  const percentageBuffer =
-                                    (fromBalance * 50n) / 100n // 50% of the balance
-                                  handleMaxAmountClicked(
-                                    percentageBuffer,
-                                    '50%'
-                                  )
-                                }}
-                              >
-                                50%
-                              </Button>
-                              <Button
-                                aria-label="MAX"
-                                css={{
-                                  fontSize: 12,
-                                  fontWeight: '500',
-                                  px: '1',
-                                  py: '1',
-                                  minHeight: '23px',
-                                  lineHeight: '100%',
-                                  backgroundColor: 'widget-selector-background',
-                                  border: 'none',
-                                  _hover: {
-                                    backgroundColor:
-                                      'widget-selector-hover-background'
-                                  }
-                                }}
-                                color="white"
-                                onMouseEnter={() => {
-                                  if (
-                                    fromChain?.vmType === 'evm' &&
-                                    publicClient &&
-                                    fromBalance
-                                  ) {
-                                    getFeeBufferAmount(
-                                      fromChain.vmType,
-                                      fromChain.id,
-                                      fromBalance,
-                                      publicClient
-                                    )
-                                  } else if (
-                                    fromChain?.vmType === 'svm' &&
-                                    fromChain.id
-                                  ) {
-                                    getFeeBufferAmount(
-                                      fromChain.vmType,
-                                      fromChain.id,
-                                      0n,
-                                      null
-                                    )
-                                  }
-                                }}
-                                onClick={async () => {
-                                  if (!fromBalance || !fromToken || !fromChain)
-                                    return
-
-                                  let feeBufferAmount: bigint = 0n
-                                  if (isFromNative) {
-                                    feeBufferAmount = await getFeeBufferAmount(
-                                      fromChain.vmType,
-                                      fromChain.id,
-                                      fromBalance,
-                                      publicClient ?? null
-                                    )
-                                  }
-
-                                  const finalMaxAmount =
-                                    isFromNative && feeBufferAmount > 0n
-                                      ? fromBalance > feeBufferAmount
-                                        ? fromBalance - feeBufferAmount
-                                        : 0n
-                                      : fromBalance
-
-                                  handleMaxAmountClicked(
-                                    finalMaxAmount,
-                                    'max',
-                                    isFromNative ? feeBufferAmount : 0n
-                                  )
-                                }}
-                              >
-                                MAX
-                              </Button>
-                            </Flex>
-                          ) : null}
-                        </Flex>
+                          </Box>
+                        ) : null}
                       </Flex>
                     </TokenSelectorContainer>
                     <Box

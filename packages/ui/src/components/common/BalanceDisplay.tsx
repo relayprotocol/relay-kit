@@ -1,7 +1,6 @@
 import type { FC } from 'react'
 import { Flex, Skeleton, Text } from '../primitives/index.js'
 import { formatBN } from '../../utils/numbers.js'
-import { useAccount } from 'wagmi'
 
 type BalanceDisplayProps = {
   balance?: bigint
