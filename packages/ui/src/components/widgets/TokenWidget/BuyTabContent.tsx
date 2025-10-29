@@ -86,6 +86,7 @@ type BuyTabContentProps = {
   handleSetFromToken: (token?: Token) => void
   handleSetToToken: (token?: Token) => void
   onSetPrimaryWallet?: (address: string) => void
+  setOriginAddressOverride: Dispatch<SetStateAction<ChildrenProps['address']>>
   lockToToken: boolean
   lockFromToken: boolean
   isSingleChainLocked: boolean
@@ -166,6 +167,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   handleSetFromToken,
   handleSetToToken,
   onSetPrimaryWallet,
+  setOriginAddressOverride,
   lockToToken,
   lockFromToken,
   isSingleChainLocked,
@@ -405,13 +407,10 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               disablePasteWalletAddressOption={disablePasteWalletAddressOption}
               selectedWalletAddress={address}
               onSelect={(wallet) => {
-                if (
-                  fromToken &&
-                  fromChain &&
-                  wallet.vmType !== fromChain.vmType
-                ) {
-                  handleSetFromToken(undefined)
-                }
+                // Always clear payment token when switching wallets
+                // Let auto-select choose the best token for the new wallet
+                setOriginAddressOverride(wallet.address)
+                handleSetFromToken(undefined)
                 onSetPrimaryWallet?.(wallet.address)
               }}
               chain={fromChain}
@@ -424,7 +423,10 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                     chain: fromChain,
                     direction: 'from'
                   })?.then((wallet) => {
-                    onSetPrimaryWallet?.(wallet.address)
+                    if (wallet) {
+                      setOriginAddressOverride(wallet.address)
+                      onSetPrimaryWallet?.(wallet.address)
+                    }
                   })
                 }
               }}

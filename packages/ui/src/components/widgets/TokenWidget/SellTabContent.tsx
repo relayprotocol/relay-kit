@@ -77,6 +77,7 @@ type SellTabContentProps = {
   fromChainWalletVMSupported: ChildrenProps['fromChainWalletVMSupported']
   disablePasteWalletAddressOption?: boolean
   onSetPrimaryWallet?: (address: string) => void
+  setOriginAddressOverride: Dispatch<SetStateAction<ChildrenProps['address']>>
   fromChain?: RelayChain
   toChain?: RelayChain
   onConnectWallet?: () => void
@@ -163,6 +164,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
   fromChainWalletVMSupported,
   disablePasteWalletAddressOption,
   onSetPrimaryWallet,
+  setOriginAddressOverride,
   fromChain,
   toChain,
   onConnectWallet,
@@ -249,8 +251,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
       ? [toChainId]
       : undefined
 
-  const chainIdsFilterForTo =
-    !fromChainWalletVMSupported && fromToken ? [fromToken.chainId] : undefined
+  const chainIdsFilterForDestination =
+    !toChainWalletVMSupported && fromToken ? [fromToken.chainId] : undefined
 
   const hasValidInputAmount =
     fromToken && amountInputValue && Number(amountInputValue) > 0
@@ -375,8 +377,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
           </Flex>
 
           <Flex align="center" css={{ width: '100%', gap: '3' }}>
-            {multiWalletSupportEnabled === true &&
-            fromChainWalletVMSupported ? (
+            {multiWalletSupportEnabled === true ? (
               <MultiWalletDropdown
                 context="origin"
                 selectedWalletAddress={address}
@@ -384,9 +385,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
                   disablePasteWalletAddressOption
                 }
                 onSelect={(wallet) => {
+                  setOriginAddressOverride(wallet.address)
                   onSetPrimaryWallet?.(wallet.address)
                 }}
-                chain={toChain}
+                chain={fromChain}
                 disableWalletFiltering={false}
                 onLinkNewWallet={() => {
                   if (!address && fromChainWalletVMSupported) {
@@ -396,7 +398,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
                       chain: fromChain,
                       direction: 'from'
                     })?.then((wallet) => {
-                      onSetPrimaryWallet?.(wallet.address)
+                      if (wallet) {
+                        setOriginAddressOverride(wallet.address)
+                        onSetPrimaryWallet?.(wallet.address)
+                      }
                     })
                   }
                 }}
@@ -418,17 +423,16 @@ const SellTabContent: FC<SellTabContentProps> = ({
               }}
             >
               {(() => {
-                // In SELL mode: Always prioritize toToken (the token you're selling from URL)
-                // The payment method (fromToken) is what you want to receive, not what you're spending
-                // So we show the balance of what you're selling (toToken), not what you're receiving (fromToken)
-                const displayToken = toToken || fromToken
-                const displayBalance = toToken ? toBalance : fromBalance
-                const displayBalancePending = toToken
-                  ? toBalancePending
-                  : fromBalancePending
-                const isLoadingDisplayBalance = toToken
-                  ? isLoadingToBalance
-                  : isLoadingFromBalance
+                // Always display the balance for the asset being sold (fromToken)
+                // regardless of the payout token shown in the payment method trigger.
+                const displayToken = fromToken || toToken
+                const displayBalance = fromToken ? fromBalance : toBalance
+                const displayBalancePending = fromToken
+                  ? fromBalancePending
+                  : toBalancePending
+                const isLoadingDisplayBalance = fromToken
+                  ? isLoadingFromBalance
+                  : isLoadingToBalance
 
                 return displayToken ? (
                   <BalanceDisplay
@@ -542,14 +546,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
               selectedWalletAddress={recipient}
               disablePasteWalletAddressOption={disablePasteWalletAddressOption}
               onSelect={(wallet) => {
-                // If wallet is incompatible with payment token (what you receive), clear it
-                if (
-                  fromToken &&
-                  fromChain &&
-                  wallet.vmType !== fromChain.vmType
-                ) {
-                  handleSetFromToken(undefined)
-                }
                 setCustomToAddress(wallet.address)
               }}
               chain={toChain}
@@ -622,37 +618,37 @@ const SellTabContent: FC<SellTabContentProps> = ({
         <Flex direction="column" css={{ gap: '2', width: '100%' }}>
           <Flex justify="between" css={{ width: '100%' }}>
             <PaymentMethod
-              address={address}
-              isValidAddress={isValidFromAddress}
-              token={fromToken}
+              address={recipient}
+              isValidAddress={isValidToAddress}
+              token={toToken}
               onAnalyticEvent={onAnalyticEvent}
               multiWalletSupportEnabled={multiWalletSupportEnabled}
-              fromChainWalletVMSupported={fromChainWalletVMSupported}
+              fromChainWalletVMSupported={toChainWalletVMSupported}
               supportedWalletVMs={supportedWalletVMs}
               popularChainIds={popularChainIds}
               lockedChainIds={lockedToChainIds}
-              chainIdsFilter={chainIdsFilterForTo}
+              chainIdsFilter={chainIdsFilterForDestination}
               linkedWallets={linkedWallets}
-              context="from"
+              context="to"
               setToken={(token) => {
                 if (
-                  token?.address === toToken?.address &&
-                  token?.chainId === toToken?.chainId &&
-                  address === recipient &&
-                  (!lockToToken || !fromToken)
+                  token?.address === fromToken?.address &&
+                  token?.chainId === fromToken?.chainId &&
+                  recipient === address &&
+                  (!lockFromToken || !toToken)
                 ) {
-                  handleSetFromToken(toToken)
                   handleSetToToken(fromToken)
+                  handleSetFromToken(toToken)
                 } else {
-                  handleSetFromToken(token)
+                  handleSetToToken(token)
                 }
               }}
               trigger={
                 <div style={{ width: 'max-content' }}>
                   <PaymentMethodTrigger
-                    token={fromToken}
-                    locked={lockFromToken}
-                    address={address}
+                    token={toToken}
+                    locked={lockToToken}
+                    address={recipient}
                     testId="payment-method-select-button"
                     balanceLabel="available"
                   />
