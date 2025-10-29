@@ -24,8 +24,12 @@ const TokenActionButton: FC<TokenActionButtonProps> = ({
   const isMounted = useMounted()
   const isWalletSelectionPrompt =
     ctaCopy.includes('Select') || ctaCopy.includes('Enter')
+  const isSelectTokenPrompt = ctaCopy === 'Select a token'
   const buttonDisabled =
-    disabled || isFetchingQuote || (!isWalletSelectionPrompt && !hasValidAmount)
+    disabled ||
+    isFetchingQuote ||
+    isSelectTokenPrompt ||
+    (!isWalletSelectionPrompt && !hasValidAmount)
   const buttonLabel =
     isFetchingQuote && hasValidAmount ? 'Fetching quote' : ctaCopy
 
