@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 3.1.0
+
+### Minor Changes
+
+- 5108307: Add Tron adapter and balance logic
+
 ## 3.0.1
 
 ### Patch Changes
