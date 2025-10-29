@@ -11,7 +11,8 @@ import type { Token } from '../../types/index.js'
 import {
   faCircleCheck,
   faTriangleExclamation,
-  faClipboard
+  faClipboard,
+  faCircleXmark
 } from '@fortawesome/free-solid-svg-icons'
 import { AnchorButton } from '../primitives/Anchor.js'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
@@ -133,7 +134,7 @@ export const CustomAddressModal: FC<Props> = ({
           height: '100%',
           gap: '4',
           sm: {
-            width: 370
+            width: 386
           }
         }}
       >
@@ -155,6 +156,9 @@ export const CustomAddressModal: FC<Props> = ({
                 width: '100%',
                 height: 48
               }}
+              inputStyle={{
+                paddingRight: input.length > 0 ? '42px' : '16px'
+              }}
               placeholder={
                 !toChain
                   ? 'Enter address'
@@ -167,6 +171,37 @@ export const CustomAddressModal: FC<Props> = ({
                 setInput((e.target as HTMLInputElement).value)
               }}
             />
+            {input.length > 0 && !isLoading && (
+              <Button
+                color="ghost"
+                size="none"
+                css={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '24px',
+                  height: '24px',
+                  minWidth: '24px',
+                  minHeight: '24px',
+                  padding: '0',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'gray3',
+                  color: 'gray8'
+                }}
+                onMouseDown={(e) => {
+                  e.preventDefault() // Prevent input from losing focus
+                }}
+                onClick={() => {
+                  setInput('')
+                }}
+              >
+                <FontAwesomeIcon icon={faCircleXmark} width={16} height={16} />
+              </Button>
+            )}
             {isLoading && (
               <LoadingSpinner
                 css={{
