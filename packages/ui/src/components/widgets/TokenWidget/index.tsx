@@ -147,6 +147,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [usdOutputValue, setUsdOutputValue] = useState('')
   const [tokenInputCache, setTokenInputCache] = useState('')
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
+  const tabTokenStateRef = useRef<{
+    buy: { fromToken?: Token; toToken?: Token }
+    sell: { fromToken?: Token; toToken?: Token }
+  }>({ buy: {}, sell: {} })
   const setTradeTypeRef = useRef<((tradeType: TradeType) => void) | null>(null)
   const tradeTypeRef = useRef<TradeType>(defaultTradeType ?? 'EXPECTED_OUTPUT')
 
@@ -336,12 +340,17 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         error,
         toDisplayName,
         address,
+        setOriginAddressOverride,
         recipient,
         customToAddress,
         setCustomToAddress,
         tradeType,
         setTradeType,
         isSameCurrencySameRecipientSwap,
+        allowUnsupportedOrigin,
+        setAllowUnsupportedOrigin,
+        allowUnsupportedRecipient,
+        setAllowUnsupportedRecipient,
         debouncedInputAmountValue,
         debouncedAmountInputControls,
         setAmountInputValue,
@@ -395,6 +404,22 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       }) => {
         setTradeTypeRef.current = setTradeType
         tradeTypeRef.current = tradeType
+
+        useEffect(() => {
+          tabTokenStateRef.current[activeTab] = {
+            fromToken,
+            toToken
+          }
+        }, [activeTab, fromToken, toToken])
+
+        useEffect(() => {
+          setAllowUnsupportedOrigin(activeTab === 'buy')
+          setAllowUnsupportedRecipient(activeTab === 'sell')
+        }, [
+          activeTab,
+          setAllowUnsupportedOrigin,
+          setAllowUnsupportedRecipient
+        ])
 
         // Calculate the USD value of the input amount
         const inputAmountUsd = useMemo(() => {
@@ -572,6 +597,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
         useEffect(() => {
           if (
+            !allowUnsupportedOrigin &&
             multiWalletSupportEnabled &&
             fromChain &&
             address &&
@@ -585,11 +611,13 @@ const TokenWidget: FC<TokenWidgetProps> = ({
               connectorKeyOverrides
             )
             if (supportedAddress) {
+              setOriginAddressOverride(undefined)
               onSetPrimaryWallet?.(supportedAddress)
             }
           }
 
           if (
+            !allowUnsupportedRecipient &&
             multiWalletSupportEnabled &&
             toChain &&
             recipient &&
@@ -609,15 +637,20 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             }
           }
         }, [
+          allowUnsupportedOrigin,
+          allowUnsupportedRecipient,
           multiWalletSupportEnabled,
           fromChain?.id,
           toChain?.id,
           address,
+          recipient,
           linkedWallets,
           onSetPrimaryWallet,
           isValidFromAddress,
           isValidToAddress,
-          connectorKeyOverrides
+          connectorKeyOverrides,
+          setOriginAddressOverride,
+          setCustomToAddress
         ])
 
         //Handle if the paste wallet address option is disabled while there is a custom to address
@@ -1006,7 +1039,72 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                       value={activeTab}
                       onValueChange={(value) => {
                         const nextTab = value as 'buy' | 'sell'
+
+                        if (nextTab !== activeTab) {
+                          tabTokenStateRef.current[activeTab] = {
+                            fromToken,
+                            toToken
+                          }
+
+                          const currentState =
+                            tabTokenStateRef.current[activeTab] ?? {}
+                          const storedNextState =
+                            tabTokenStateRef.current[nextTab] ?? {}
+
+                          let nextFromToken: Token | undefined =
+                            storedNextState.fromToken
+                          let nextToToken: Token | undefined =
+                            storedNextState.toToken
+
+                          if (nextTab === 'sell') {
+                            const sellToken =
+                              nextFromToken ??
+                              currentState.toToken ??
+                              toToken ??
+                              fromToken
+                            const receiveToken =
+                              nextToToken ?? currentState.fromToken ?? fromToken
+
+                            nextFromToken = sellToken ?? undefined
+                            nextToToken = receiveToken ?? undefined
+                          } else {
+                            const buyToken =
+                              nextToToken ??
+                              currentState.toToken ??
+                              toToken ??
+                              fromToken
+                            const payToken =
+                              nextFromToken ??
+                              currentState.fromToken ??
+                              fromToken ??
+                              currentState.toToken
+
+                            nextFromToken = payToken ?? undefined
+                            nextToToken = buyToken ?? undefined
+                          }
+
+                          tabTokenStateRef.current[nextTab] = {
+                            fromToken: nextFromToken,
+                            toToken: nextToToken
+                          }
+
+                          handleSetFromToken(nextFromToken)
+                          handleSetToToken(nextToToken)
+
+                          setAmountInputValue('')
+                          setAmountOutputValue('')
+                          setUsdInputValue('')
+                          setUsdOutputValue('')
+                          setTokenInputCache('')
+                          setIsUsdInputMode(false)
+                          debouncedAmountInputControls.cancel()
+                          debouncedAmountOutputControls.cancel()
+                          setCustomToAddress(undefined)
+                          setOriginAddressOverride(undefined)
+                        }
+
                         setActiveTab(nextTab)
+
                         const desiredTradeType: TradeType =
                           nextTab === 'buy' ? 'EXPECTED_OUTPUT' : 'EXACT_INPUT'
 
@@ -1157,6 +1255,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           handleSetFromToken={handleSetFromToken}
                           handleSetToToken={handleSetToToken}
                           onSetPrimaryWallet={onSetPrimaryWallet}
+                          setOriginAddressOverride={setOriginAddressOverride}
                           lockToToken={lockToToken}
                           lockFromToken={lockFromToken}
                           isSingleChainLocked={isSingleChainLocked}
@@ -1191,6 +1290,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           supportsExternalLiquidity={supportsExternalLiquidity}
                           recipientLinkedWallet={recipientLinkedWallet}
                           toChainVmType={toChain?.vmType}
+                          ctaCopy={ctaCopy}
                         />
 
                         <SellTabContent
@@ -1243,6 +1343,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             disablePasteWalletAddressOption
                           }
                           onSetPrimaryWallet={onSetPrimaryWallet}
+                          setOriginAddressOverride={setOriginAddressOverride}
                           fromChain={fromChain}
                           toChain={toChain}
                           onConnectWallet={onConnectWallet}
@@ -1294,6 +1395,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           supportsExternalLiquidity={supportsExternalLiquidity}
                           recipientLinkedWallet={recipientLinkedWallet}
                           toChainVmType={toChain?.vmType}
+                          ctaCopy={ctaCopy}
                         />
 
                         {promptSwitchRoute ? (

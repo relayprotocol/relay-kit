@@ -352,7 +352,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     setStarredChainIds(getStarredChainIds())
   }, [])
 
-  // Auto-select token with highest balance when wallet connects
+  // Auto-select token with highest balance when wallet connects or changes
   useEffect(() => {
     if (
       address &&

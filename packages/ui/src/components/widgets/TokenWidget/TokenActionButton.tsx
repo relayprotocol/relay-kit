@@ -22,7 +22,14 @@ const TokenActionButton: FC<TokenActionButtonProps> = ({
   address
 }) => {
   const isMounted = useMounted()
-  const buttonDisabled = disabled || isFetchingQuote || !hasValidAmount
+  const isWalletSelectionPrompt =
+    ctaCopy.includes('Select') || ctaCopy.includes('Enter')
+  const isSelectTokenPrompt = ctaCopy === 'Select a token'
+  const buttonDisabled =
+    disabled ||
+    isFetchingQuote ||
+    isSelectTokenPrompt ||
+    (!isWalletSelectionPrompt && !hasValidAmount)
   const buttonLabel =
     isFetchingQuote && hasValidAmount ? 'Fetching quote' : ctaCopy
 
