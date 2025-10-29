@@ -32,9 +32,11 @@ import { isEclipseWallet } from '@dynamic-labs/eclipse'
 import { type Token } from '@relayprotocol/relay-kit-ui'
 import { isSuiWallet, SuiWallet } from '@dynamic-labs/sui'
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
+import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 import Head from 'next/head'
+import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
 
-const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm'] as const
+const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm', 'tvm'] as const
 
 const SwapWidgetPage: NextPage = () => {
   useDynamicEvents('walletAdded', (newWallet) => {
@@ -170,6 +172,15 @@ const SwapWidgetPage: NextPage = () => {
                 return executionResult
               }
             )
+          } else if (isTronWallet(primaryWallet)) {
+            const tronWeb = (primaryWallet as TronWallet).getTronWeb()
+            if (!tronWeb) {
+              throw 'Unable to setup Tron wallet'
+            }
+            adaptedWallet = adaptTronWallet(
+              (primaryWallet as TronWallet).address,
+              tronWeb
+            )
           }
 
           setWallet(adaptedWallet)
@@ -293,6 +304,8 @@ const SwapWidgetPage: NextPage = () => {
                 setWalletFilter('ECLIPSE')
               } else if (chain?.vmType === 'suivm') {
                 setWalletFilter('SUI')
+              } else if (chain?.vmType === 'tvm') {
+                setWalletFilter('TRON')
               } else {
                 setWalletFilter(undefined)
               }

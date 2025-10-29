@@ -24,5 +24,6 @@ export const NormalizedWalletName: Record<string, string> = {
   magicedensol: 'magiceden',
   roninwallet: 'ronin',
   portoevm: 'porto',
-  surfwalletsui: 'surf'
+  surfwalletsui: 'surf',
+  trusttron: 'trust'
 }

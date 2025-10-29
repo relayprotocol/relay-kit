@@ -6,7 +6,8 @@ import type {
   TransactionStepItem,
   paths,
   SvmReceipt,
-  SuiReceipt
+  SuiReceipt,
+  TronReceipt
 } from '../types/index.js'
 import { axios } from '../utils/axios.js'
 import type {
@@ -48,7 +49,9 @@ export async function sendTransactionSafely(
   crossChainIntentChainId?: number,
   isValidating?: (res?: AxiosResponse<any, any>) => void,
   details?: Execute['details'],
-  setReceipt?: (receipt: TransactionReceipt | SvmReceipt | SuiReceipt) => void,
+  setReceipt?: (
+    receipt: TransactionReceipt | SvmReceipt | SuiReceipt | TronReceipt
+  ) => void,
   setCheckStatus?: (
     checkStatus: NonNullable<Execute['steps'][0]['items']>[0]['checkStatus']
   ) => void,
@@ -71,7 +74,12 @@ export async function sendTransactionSafely(
     const walletChainId = await wallet.getChainId()
     throw `Current chain id: ${walletChainId} does not match expected chain id: ${chainId} `
   }
-  let receipt: TransactionReceipt | SvmReceipt | SuiReceipt | undefined
+  let receipt:
+    | TransactionReceipt
+    | SvmReceipt
+    | SuiReceipt
+    | TronReceipt
+    | undefined
   let transactionCancelled = false
   let confirmationError = false
   const pollingInterval = client.pollingInterval ?? 5000
