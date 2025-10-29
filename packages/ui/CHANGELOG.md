@@ -1,5 +1,13 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.1.1
+
+### Patch Changes
+
+- 70badbb: Update mobile percentage buttons
+- 5c80c9a: Improve mobile ui for slippage configuration
+- 38ea2b6: Add clear input button to custom address modal
+
 ## 5.1.0
 
 ### Minor Changes
