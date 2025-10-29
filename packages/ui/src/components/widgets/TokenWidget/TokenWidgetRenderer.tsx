@@ -36,8 +36,8 @@ import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../../types/index.js'
 import {
   addressWithFallback,
-  isValidAddress,
-  findSupportedWallet
+  addressesEqual,
+  isValidAddress
 } from '../../../utils/address.js'
 import { adaptViemWallet, getDeadAddress } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../../utils/errors.js'
@@ -88,6 +88,10 @@ export type ChildrenProps = {
   error: Error | null
   toDisplayName?: string
   address?: Address | string
+  originAddressOverride?: Address | string
+  setOriginAddressOverride: Dispatch<
+    React.SetStateAction<Address | string | undefined>
+  >
   recipient?: Address | string
   customToAddress?: Address | string
   setCustomToAddress: Dispatch<
@@ -96,6 +100,10 @@ export type ChildrenProps = {
   tradeType: TradeType
   setTradeType: Dispatch<React.SetStateAction<TradeType>>
   isSameCurrencySameRecipientSwap: boolean
+  allowUnsupportedOrigin: boolean
+  setAllowUnsupportedOrigin: Dispatch<React.SetStateAction<boolean>>
+  allowUnsupportedRecipient: boolean
+  setAllowUnsupportedRecipient: Dispatch<React.SetStateAction<boolean>>
   amountInputValue: string
   debouncedInputAmountValue: string
   setAmountInputValue: (value: string) => void
@@ -203,6 +211,13 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   const [customToAddress, setCustomToAddress] = useState<
     Address | string | undefined
   >(defaultToAddress)
+  const [originAddressOverride, setOriginAddressOverride] = useState<
+    Address | string | undefined
+  >(undefined)
+  const [allowUnsupportedOrigin, setAllowUnsupportedOrigin] =
+    useState<boolean>(false)
+  const [allowUnsupportedRecipient, setAllowUnsupportedRecipient] =
+    useState<boolean>(false)
   const [useExternalLiquidity, setUseExternalLiquidity] =
     useState<boolean>(false)
   const defaultAddress = useWalletAddress(wallet, linkedWallets)
@@ -260,23 +275,33 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType)
 
   // Automatically select the correct wallet address based on fromToken's chain VM
+  // In sell mode (no fromChain), use toChain to find compatible wallet
   const address = useMemo(() => {
-    if (!multiWalletSupportEnabled || !linkedWallets?.length || !fromChain) {
+    if (!multiWalletSupportEnabled || !linkedWallets?.length) {
       return defaultAddress
     }
 
-    // Find the first wallet that supports the fromChain's VM type
+    if (originAddressOverride) {
+      return originAddressOverride
+    }
+
+    const targetChain = fromChain || toChain
+    if (!targetChain) {
+      return defaultAddress
+    }
+
+    // Find the first wallet that supports the target chain's VM type
     const compatibleWallet = linkedWallets.find((wallet) => {
       // Check if wallet VM matches chain VM
-      if (wallet.vmType !== fromChain.vmType) {
+      if (wallet.vmType !== targetChain.vmType) {
         return false
       }
 
       // Additional validation for specific chains
       return isValidAddress(
-        fromChain.vmType,
+        targetChain.vmType,
         wallet.address,
-        fromChain.id,
+        targetChain.id,
         wallet.connector,
         connectorKeyOverrides
       )
@@ -285,7 +310,9 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     return compatibleWallet?.address || defaultAddress
   }, [
     multiWalletSupportEnabled,
+    originAddressOverride,
     fromChain,
+    toChain,
     linkedWallets,
     defaultAddress,
     connectorKeyOverrides
@@ -314,14 +341,20 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       linkedWallets &&
       !_isValidToAddress
     ) {
-      const supportedAddress = findSupportedWallet(
-        toChain,
-        customToAddress,
-        linkedWallets,
-        connectorKeyOverrides
+      // Find a compatible wallet, excluding the origin wallet
+      const supportedWallet = linkedWallets.find(
+        (wallet) =>
+          wallet.address !== address &&
+          isValidAddress(
+            toChain.vmType,
+            wallet.address,
+            toChain.id,
+            wallet.connector,
+            connectorKeyOverrides
+          )
       )
 
-      return supportedAddress
+      return supportedWallet?.address
     }
   }, [
     multiWalletSupportEnabled,
@@ -329,10 +362,12 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     customToAddress,
     address,
     linkedWallets,
-    setCustomToAddress
+    setCustomToAddress,
+    connectorKeyOverrides
   ])
 
-  const recipient = customToAddress ?? defaultRecipient ?? address
+  // Don't default to origin address as recipient (prevents selling to yourself)
+  const recipient = customToAddress ?? defaultRecipient
 
   const {
     value: fromBalance,
@@ -752,8 +787,34 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
 
   useDisconnected(address, () => {
     setCustomToAddress(undefined)
+    setOriginAddressOverride(undefined)
   })
 
+  useEffect(() => {
+    if (!multiWalletSupportEnabled) {
+      if (originAddressOverride !== undefined) {
+        setOriginAddressOverride(undefined)
+      }
+      return
+    }
+
+    if (!originAddressOverride) {
+      return
+    }
+
+    const overrideStillExists = linkedWallets?.some((wallet) =>
+      addressesEqual(wallet.vmType, wallet.address, originAddressOverride as string)
+    )
+
+    if (!overrideStillExists) {
+      setOriginAddressOverride(undefined)
+    }
+  }, [
+    multiWalletSupportEnabled,
+    linkedWallets,
+    originAddressOverride,
+    setOriginAddressOverride
+  ])
   useEffect(() => {
     if (tradeType === 'EXACT_INPUT') {
       const amountOut = quote?.details?.currencyOut?.amount ?? ''
@@ -1189,6 +1250,8 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
         error,
         toDisplayName,
         address,
+        originAddressOverride,
+        setOriginAddressOverride,
         recipient,
         customToAddress,
         setCustomToAddress,
@@ -1196,6 +1259,10 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
         setTradeType,
         details,
         isSameCurrencySameRecipientSwap,
+        allowUnsupportedOrigin,
+        setAllowUnsupportedOrigin,
+        allowUnsupportedRecipient,
+        setAllowUnsupportedRecipient,
         debouncedInputAmountValue,
         debouncedAmountInputControls,
         setAmountInputValue,
