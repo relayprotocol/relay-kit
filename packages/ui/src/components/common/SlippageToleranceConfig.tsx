@@ -17,8 +17,9 @@ import {
   type SlippageToleranceMode
 } from '../../utils/slippage.js'
 import { EventNames } from '../../constants/events.js'
-import { useDebounceValue } from 'usehooks-ts'
+import { useDebounceValue, useMediaQuery } from 'usehooks-ts'
 import useFallbackState from '../../hooks/useFallbackState.js'
+import { Modal } from './Modal.js'
 
 type SlippageToleranceConfigProps = {
   open?: boolean
@@ -27,12 +28,228 @@ type SlippageToleranceConfigProps = {
   onAnalyticEvent?: (eventName: string, data?: any) => void
 }
 
+type SlippageTabsProps = {
+  mode: SlippageToleranceMode
+  setMode: (mode: SlippageToleranceMode) => void
+  displayValue: string | undefined
+  setDisplayValue: (value: string | undefined) => void
+  handleInputChange: (value: string) => void
+  handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  handleClose: () => void
+  slippageRating: string | undefined
+  slippageRatingColor: string | undefined
+  inputRef: React.RefObject<HTMLInputElement | null>
+}
+
+const SlippageTabs: FC<SlippageTabsProps> = ({
+  mode,
+  setMode,
+  displayValue,
+  setDisplayValue,
+  handleInputChange,
+  handleKeyDown,
+  handleClose,
+  slippageRating,
+  slippageRatingColor,
+  inputRef
+}) => {
+  const isMobile = useMediaQuery('(max-width: 520px)')
+  return (
+    <TabsRoot
+      value={mode}
+      onValueChange={(value) => {
+        setMode(value as SlippageToleranceMode)
+        if (value === 'Auto') {
+          setDisplayValue(undefined)
+        }
+      }}
+      css={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        gap: '3',
+        sm: {
+          gap: '2'
+        }
+      }}
+    >
+      <TabsList css={{ width: '100%' }}>
+        <TabsTrigger value="Auto" css={{ width: '50%' }}>
+          Auto
+        </TabsTrigger>
+        <TabsTrigger value="Custom" css={{ width: '50%' }}>
+          Custom
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="Auto" css={{ width: '100%' }}>
+        <Text
+          style="body2"
+          color="subtle"
+          css={{ lineHeight: '14px', sm: { fontSize: '12px' } }}
+        >
+          We'll set the slippage automatically to minimize the failure rate.
+        </Text>
+      </TabsContent>
+
+      <TabsContent
+        value="Custom"
+        css={{
+          display: 'flex',
+          width: '100%',
+          overflow: 'hidden',
+          flexDirection: 'column',
+          gap: '1'
+        }}
+      >
+        {/* Mobile shortcut buttons */}
+        <Flex
+          css={{
+            display: 'none',
+            smDown: {
+              display: 'flex',
+              width: '100%',
+              gap: '2',
+              mb: '2'
+            }
+          }}
+        >
+          <Button
+            color="ghost"
+            size="small"
+            css={{
+              flex: 1,
+              minHeight: 32,
+              backgroundColor: 'gray3',
+              fontWeight: 500,
+              fontSize: 14,
+              py: 2,
+              borderRadius: '6px',
+              justifyContent: 'center',
+              '&:hover': {
+                backgroundColor: 'gray5'
+              }
+            }}
+            onClick={() => handleInputChange('1')}
+          >
+            1%
+          </Button>
+          <Button
+            color="ghost"
+            size="small"
+            css={{
+              flex: 1,
+              minHeight: 32,
+              backgroundColor: 'gray3',
+              fontWeight: 500,
+              fontSize: 14,
+              py: 2,
+              borderRadius: '6px',
+              justifyContent: 'center',
+              '&:hover': {
+                backgroundColor: 'gray5'
+              }
+            }}
+            onClick={() => handleInputChange('2')}
+          >
+            2%
+          </Button>
+          <Button
+            color="ghost"
+            size="small"
+            css={{
+              flex: 1,
+              minHeight: 32,
+              backgroundColor: 'gray3',
+              fontWeight: 500,
+              fontSize: 14,
+              py: 2,
+              borderRadius: '6px',
+              justifyContent: 'center',
+              '&:hover': {
+                backgroundColor: 'gray5'
+              }
+            }}
+            onClick={() => handleInputChange('5')}
+          >
+            5%
+          </Button>
+        </Flex>
+
+        <Flex css={{ display: 'flex', width: '100%', position: 'relative' }}>
+          <Input
+            ref={inputRef}
+            value={displayValue || ''}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleInputChange(e.target.value)
+            }
+            onKeyDown={handleKeyDown}
+            onBlur={handleClose}
+            onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
+              // Move cursor to end of input on focus for better mobile UX
+              if (isMobile) {
+                const input = e.target
+                setTimeout(() => {
+                  input.setSelectionRange(
+                    input.value.length,
+                    input.value.length
+                  )
+                }, 0)
+              }
+            }}
+            placeholder="2"
+            containerCss={{
+              width: '100%'
+            }}
+            css={{
+              height: '36px',
+              pr: '28px !important',
+              border: 'none',
+              textAlign: 'right',
+              width: '100%',
+              smDown: {
+                backgroundColor: 'transparent',
+                '--borderColor': 'colors.gray.5',
+                border: '1px solid var(--borderColor)'
+              },
+              color: slippageRatingColor
+            }}
+          />
+          <Box
+            css={{
+              position: 'absolute',
+              right: 8,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: slippageRatingColor
+            }}
+          >
+            %
+          </Box>
+        </Flex>
+
+        {slippageRating === 'very-high' ? (
+          <Text style="body3" css={{ color: 'red11' }}>
+            Very high slippage
+          </Text>
+        ) : null}
+        {slippageRating === 'high' ? (
+          <Text style="body3" css={{ color: 'amber11' }}>
+            High slippage
+          </Text>
+        ) : null}
+      </TabsContent>
+    </TabsRoot>
+  )
+}
+
 export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   open: _open,
   setOpen: _setOpen,
   setSlippageTolerance: externalSetValue,
   onAnalyticEvent
 }) => {
+  const isMobile = useMediaQuery('(max-width: 520px)')
   const [displayValue, setDisplayValue] = useState<string | undefined>(
     undefined
   )
@@ -135,164 +352,123 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     })
   }
 
+  const triggerButton = (
+    <Button
+      aria-label="Slippage Tolerance Configuration"
+      color="ghost"
+      size="none"
+      css={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1',
+        bg: 'subtle-background-color',
+        color: slippageRatingColor ?? 'gray9',
+        p: '2',
+        borderRadius: 12,
+        border: 'widget-card-border',
+        height: '36px',
+        px: '10px'
+      }}
+    >
+      {open === false && displayValue && (
+        <Text style="subtitle2" css={{ color: slippageRatingColor }}>
+          {displayValue}%
+        </Text>
+      )}
+      <FontAwesomeIcon icon={faGear} />
+    </Button>
+  )
+
+  const slippageTabsProps = {
+    mode,
+    setMode,
+    displayValue,
+    setDisplayValue,
+    handleInputChange,
+    handleKeyDown,
+    handleClose,
+    slippageRating,
+    slippageRatingColor,
+    inputRef
+  }
+
   return (
     <div className="relay-kit-reset">
-      <Dropdown
-        open={open}
-        onOpenChange={(isOpen) => {
-          setOpen(isOpen)
-          if (!isOpen) {
-            handleClose()
-          }
-        }}
-        trigger={
-          <Button
-            aria-label="Slippage Tolerance Configuration"
-            color="ghost"
-            size="none"
-            css={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '1',
-              bg: 'subtle-background-color',
-              color: slippageRatingColor ?? 'gray9',
-              p: '2',
-              borderRadius: 12,
-              border: 'widget-card-border',
-              height: '36px',
-              px: '10px'
-            }}
-          >
-            {open === false && displayValue && (
-              <Text style="subtitle2" css={{ color: slippageRatingColor }}>
-                {displayValue}%
-              </Text>
-            )}
-            <FontAwesomeIcon icon={faGear} />
-          </Button>
-        }
-        contentProps={{
-          align: 'end',
-          sideOffset: 5,
-          css: { maxWidth: 188, mx: 0 },
-          avoidCollisions: false,
-          onCloseAutoFocus: (e) => {
-            e.preventDefault()
-          }
-        }}
-      >
-        <Flex
-          direction="column"
-          css={{ width: '100%', gap: '2', maxWidth: 188 }}
+      {isMobile ? (
+        <Modal
+          open={open}
+          onOpenChange={(isOpen) => {
+            setOpen(isOpen)
+            if (!isOpen) {
+              handleClose()
+            }
+          }}
+          trigger={triggerButton}
+          css={{
+            width: '100%',
+            minHeight: '262px',
+            maxHeight: '90vh'
+          }}
         >
-          <Flex direction="row" css={{ gap: '1', alignItems: 'center' }}>
-            <Text style="subtitle3">Max Slippage</Text>
-            <Tooltip
-              content={
-                <Text
-                  style="tiny"
-                  css={{ display: 'inline-block', maxWidth: 190 }}
-                >
-                  If the price exceeds the maximum slippage percentage, the
-                  transaction will revert.
-                </Text>
-              }
-            >
-              <Box css={{ color: 'gray8' }}>
-                <FontAwesomeIcon icon={faInfoCircle} width={14} height={14} />
-              </Box>
-            </Tooltip>
+          <Flex direction="column" css={{ width: '100%', gap: '4' }}>
+            <Text style="h6">Max Slippage</Text>
+
+            <Text style="body3" color="subtle">
+              If the price exceeds the maximum slippage percentage, the
+              transaction will revert.
+            </Text>
+
+            <SlippageTabs {...slippageTabsProps} />
           </Flex>
-
-          <TabsRoot
-            value={mode}
-            onValueChange={(value) => {
-              setMode(value as SlippageToleranceMode)
-              if (value === 'Auto') {
-                setDisplayValue(undefined)
-              }
-            }}
-            css={{
-              display: 'flex',
-              flexDirection: 'column',
-              width: '100%',
-              gap: '2'
-            }}
+        </Modal>
+      ) : (
+        <Dropdown
+          open={open}
+          onOpenChange={(isOpen) => {
+            setOpen(isOpen)
+            if (!isOpen) {
+              handleClose()
+            }
+          }}
+          trigger={triggerButton}
+          contentProps={{
+            align: 'end',
+            sideOffset: 5,
+            css: { maxWidth: 188, mx: 0 },
+            avoidCollisions: false,
+            onCloseAutoFocus: (e) => {
+              e.preventDefault()
+            }
+          }}
+        >
+          <Flex
+            direction="column"
+            css={{ width: '100%', gap: '2', maxWidth: 188 }}
           >
-            <TabsList css={{ width: '100%' }}>
-              <TabsTrigger value="Auto" css={{ width: '50%' }}>
-                Auto
-              </TabsTrigger>
-              <TabsTrigger value="Custom" css={{ width: '50%' }}>
-                Custom
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="Auto" css={{ width: '100%' }}>
-              <Text style="body3" color="subtle" css={{ lineHeight: '14px' }}>
-                We'll set the slippage automatically to minimize the failure
-                rate.
-              </Text>
-            </TabsContent>
-
-            <TabsContent
-              value="Custom"
-              css={{
-                display: 'flex',
-                width: '100%',
-                overflow: 'hidden',
-                flexDirection: 'column',
-                gap: '1'
-              }}
-            >
-              <Flex
-                css={{ display: 'flex', width: '100%', position: 'relative' }}
+            <Flex direction="row" css={{ gap: '1', alignItems: 'center' }}>
+              <Text style="subtitle3">Max Slippage</Text>
+              <Tooltip
+                content={
+                  <Text
+                    style="tiny"
+                    css={{ display: 'inline-block', maxWidth: 190 }}
+                  >
+                    If the price exceeds the maximum slippage percentage, the
+                    transaction will revert.
+                  </Text>
+                }
               >
-                <Input
-                  ref={inputRef}
-                  value={displayValue || ''}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    handleInputChange(e.target.value)
-                  }
-                  onKeyDown={handleKeyDown}
-                  onBlur={handleClose}
-                  placeholder="2"
-                  css={{
-                    height: '36px',
-                    pr: '28px !important',
-                    border: 'none',
-                    textAlign: 'right',
-                    width: '100%',
-                    color: slippageRatingColor
-                  }}
-                />
-                <Box
-                  css={{
-                    position: 'absolute',
-                    right: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: slippageRatingColor
-                  }}
-                >
-                  %
+                <Box css={{ color: 'gray8' }}>
+                  <FontAwesomeIcon icon={faInfoCircle} width={14} height={14} />
                 </Box>
-              </Flex>
-              {slippageRating === 'very-high' ? (
-                <Text style="body3" css={{ color: 'red11' }}>
-                  Very high slippage
-                </Text>
-              ) : null}
-              {slippageRating === 'high' ? (
-                <Text style="body3" css={{ color: 'amber11' }}>
-                  High slippage
-                </Text>
-              ) : null}
-            </TabsContent>
-          </TabsRoot>
-        </Flex>
-      </Dropdown>
+              </Tooltip>
+            </Flex>
+
+            <SlippageTabs {...slippageTabsProps} />
+          </Flex>
+        </Dropdown>
+      )}
     </div>
   )
 }
