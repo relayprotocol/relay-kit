@@ -11,9 +11,9 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
-import { useDuneBalances } from '../../../../hooks/index.js'
+import { useDuneBalances, useCurrencyBalance } from '../../../../hooks/index.js'
 import type { BalanceMap } from '../../../../hooks/useDuneBalances.js'
-import { formatDollar } from '../../../../utils/numbers.js'
+import { formatDollarCompact, formatNumber } from '../../../../utils/numbers.js'
 import {
   evmDeadAddress,
   solDeadAddress,
@@ -71,7 +71,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   )
   const effectiveBalanceMap = providedBalanceMap ?? balanceMap
 
-  // Get balance USD value for the currently selected token
+  // Get balance USD value for the currently selected token from Dune
   const balanceKey =
     token?.chainId !== undefined && token?.address
       ? `${token.chainId}:${token.address.toLowerCase()}`
@@ -84,16 +84,42 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   const balanceUsd = tokenBalance?.value_usd
   const hasBalanceUsd = balanceUsd !== undefined && balanceUsd !== null
 
+  // Fallback to useCurrencyBalance for chains not supported by Dune (Bitcoin, etc.)
+  const chain = relayClient?.chains?.find((c) => c.id === token?.chainId)
+  const shouldUseCurrencyBalance = token && !hasBalanceUsd && Boolean(chain)
+  const {
+    value: currencyBalanceValue,
+    isLoading: isLoadingCurrencyBalance
+  } = useCurrencyBalance({
+    chain,
+    address: normalizedAddress,
+    currency: token?.address,
+    enabled: shouldUseCurrencyBalance
+  })
+
   const isBalanceQueryPending =
-    isLoadingBalances || isFetchingBalances || isPendingBalances
+    isLoadingBalances || 
+    isFetchingBalances || 
+    isPendingBalances ||
+    (shouldUseCurrencyBalance && isLoadingCurrencyBalance)
 
   // Prevent flashing placeholder text while the balance query is pending.
   const showSkeleton =
-    shouldFetchBalances && (isBalanceQueryPending || !hasBalanceUsd)
+    (shouldFetchBalances || shouldUseCurrencyBalance) && 
+    isBalanceQueryPending && 
+    !hasBalanceUsd && 
+    !currencyBalanceValue
 
-  const balanceText = hasBalanceUsd
-    ? `${formatDollar(balanceUsd)} ${balanceLabel}`
-    : ''
+  // Display balance - prefer Dune USD value, fallback to token amount
+  let balanceText = ''
+  if (hasBalanceUsd) {
+    balanceText = `${formatDollarCompact(balanceUsd)} ${balanceLabel}`
+  } else if (currencyBalanceValue && token) {
+    // Convert from Wei/Lamports/Satoshi to token units
+    const balanceInTokenUnits = Number(currencyBalanceValue) / Math.pow(10, token.decimals)
+    const formattedBalance = formatNumber(balanceInTokenUnits, 4, false)
+    balanceText = `${formattedBalance} ${token.symbol} ${balanceLabel}`
+  }
 
   return token ? (
     <Button
@@ -131,7 +157,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
           <Flex
             direction="column"
             align="start"
-            css={{ maxWidth: 100, minWidth: 60 }}
+            css={{ maxWidth: 150, minWidth: 60, flex: 1 }}
           >
             <Text style="h6" ellipsify css={{ maxWidth: '100%' }}>
               {token.symbol}
@@ -148,7 +174,13 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
               <Text
                 style="subtitle3"
                 color="subtle"
-                css={{ lineHeight: '15px', maxWidth: '100%' }}
+                css={{ 
+                  lineHeight: '15px', 
+                  maxWidth: '100%',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
               >
                 {balanceText}
               </Text>
