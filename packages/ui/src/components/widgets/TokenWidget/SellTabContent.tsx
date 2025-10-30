@@ -1,5 +1,5 @@
 import { TabsContent } from '../../primitives/Tabs.js'
-import { Flex, Text, Button, Box } from '../../primitives/index.js'
+import { Flex, Button, Box } from '../../primitives/index.js'
 import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
@@ -11,7 +11,7 @@ import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -216,24 +216,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
     [toChain, toChainVmType]
   )
   const recipientVmType = recipientLinkedWallet?.vmType
-  
+
   // Keep a ref to track the current toToken to avoid infinite loops
   const toTokenRef = useRef(toToken)
   toTokenRef.current = toToken
-
-  useEffect(() => {
-    console.log('[SELL TAB] useEffect triggered:', {
-      recipientVmType,
-      selectedPaymentVmType,
-      currentToToken: toTokenRef.current?.symbol,
-      vmTypesMatch: recipientVmType === selectedPaymentVmType
-    })
-    
-    // This useEffect is now only for debugging - wallet selection handles reset directly
-  }, [
-    recipientVmType,
-    selectedPaymentVmType
-  ])
 
   // Use ctaCopy for wallet/address prompts, override transaction operations to "Sell"
   const displayCta = [
@@ -570,17 +556,9 @@ const SellTabContent: FC<SellTabContentProps> = ({
             selectedWalletAddress: recipient,
             disablePasteWalletAddressOption,
             onSelect: (wallet) => {
-              console.log('[SELL TAB] Wallet selected:', {
-                walletAddress: wallet.address,
-                walletVmType: wallet.vmType,
-                currentToToken: toToken?.symbol,
-                currentPaymentVmType: selectedPaymentVmType,
-                recipientVmType
-              })
               setDestinationAddressOverride(wallet.address)
               setCustomToAddress(undefined)
               // Always reset payment method when switching wallets (like buy tab)
-              console.log('[SELL TAB] Resetting payment method to undefined')
               handleSetToToken(undefined)
             },
             chain: toChain,
@@ -594,15 +572,9 @@ const SellTabContent: FC<SellTabContentProps> = ({
                   direction: 'to'
                 })?.then((wallet) => {
                   if (!wallet) return
-                  console.log('[SELL TAB] New wallet linked:', {
-                    walletAddress: wallet.address,
-                    walletVmType: wallet.vmType,
-                    currentToToken: toToken?.symbol
-                  })
                   setDestinationAddressOverride(wallet.address)
                   setCustomToAddress(undefined)
                   // Always reset payment method when linking new wallets (like buy tab)
-                  console.log('[SELL TAB] Resetting payment method to undefined after linking')
                   handleSetToToken(undefined)
                 })
               }
@@ -613,26 +585,24 @@ const SellTabContent: FC<SellTabContentProps> = ({
             testId: 'destination-wallet-select-button'
           }}
           fallback={{
-            highlighted:
-              Boolean(
-                isValidToAddress &&
-                  multiWalletSupportEnabled &&
-                  !isRecipientLinked
-              ),
+            highlighted: Boolean(
+              isValidToAddress &&
+                multiWalletSupportEnabled &&
+                !isRecipientLinked
+            ),
             text: !isValidToAddress
               ? 'Enter Address'
-              : (toDisplayName ?? recipient) ?? 'Select wallet',
+              : (toDisplayName ?? recipient ?? 'Select wallet'),
             onClick: () => {
               setDestinationAddressOverride(undefined)
               setAddressModalOpen(true)
               onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
             },
-            showClipboard:
-              Boolean(
-                isValidToAddress &&
-                  multiWalletSupportEnabled &&
-                  !isRecipientLinked
-              )
+            showClipboard: Boolean(
+              isValidToAddress &&
+                multiWalletSupportEnabled &&
+                !isRecipientLinked
+            )
           }}
         />
 
