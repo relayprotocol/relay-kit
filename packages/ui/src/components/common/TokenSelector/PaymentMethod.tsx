@@ -783,41 +783,39 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                       chainFilterId={chainFilter.id}
                     />
                   ) : (
-                    // When "All Chains" is selected, show Recommended/Other Tokens
+                    // When "All Chains" is selected, show Recommended tokens or global volume-sorted tokens
                     <Flex direction="column" css={{ gap: '3' }}>
-                      {/* Recommended Section */}
-                      {sortedUserTokens.length > 0 ? (
-                        <PaymentTokenList
-                          title="Recommended"
-                          tokens={sortedUserTokens.slice(0, 5)}
-                          isLoading={isLoadingUserTokens}
-                          isLoadingBalances={isLoadingBalances}
-                          chainFilterId={chainFilter.id}
-                          limit={5}
-                        />
-                      ) : (
-                        <PaymentTokenList
-                          title="Tokens"
-                          tokens={sortedCombinedTokens.slice(0, 10)}
-                          isLoading={isLoadingTokenList}
-                          isLoadingBalances={isLoadingBalances}
-                          chainFilterId={chainFilter.id}
-                          limit={10}
-                        />
-                      )}
-
-                      {/* Other Tokens Section - Next 5 user tokens (6-10) */}
-                      {sortedUserTokens.length > 5 && (
-                        <PaymentTokenList
-                          title="Other Tokens"
-                          tokens={sortedUserTokens.slice(5)}
-                          isLoading={isLoadingUserTokens}
-                          isLoadingBalances={isLoadingBalances}
-                          chainFilterId={chainFilter.id}
-                          limit={5}
-                          opacity={0.5}
-                        />
-                      )}
+                      {/* Show all user tokens with USD value > 0, or fallback to trending tokens sorted by 24h volume */}
+                      {(() => {
+                        // Filter out tokens with no USD value or 0 USD value
+                        const tokensWithValue = sortedUserTokens.filter(token => 
+                          token.balance?.value_usd && token.balance.value_usd > 0
+                        )
+                        
+                        if (tokensWithValue.length > 0) {
+                          return (
+                            <PaymentTokenList
+                              title="Recommended"
+                              tokens={tokensWithValue}
+                              isLoading={isLoadingUserTokens}
+                              isLoadingBalances={isLoadingBalances}
+                              chainFilterId={chainFilter.id}
+                              limit={tokensWithValue.length}
+                            />
+                          )
+                        } else {
+                          return (
+                            <PaymentTokenList
+                              title="Tokens"
+                              tokens={sortedTrendingTokens.slice(0, 10)}
+                              isLoading={isLoadingTrendingTokens}
+                              isLoadingBalances={isLoadingBalances}
+                              chainFilterId={chainFilter.id}
+                              limit={10}
+                            />
+                          )
+                        }
+                      })()}
                     </Flex>
                   )}
 
