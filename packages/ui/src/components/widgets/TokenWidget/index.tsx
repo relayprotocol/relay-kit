@@ -440,6 +440,44 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           setAllowUnsupportedRecipient(activeTab === 'sell')
         }, [activeTab, setAllowUnsupportedOrigin, setAllowUnsupportedRecipient])
 
+        // Auto-select first compatible wallet in buy tab when toToken is set and no destination is selected
+        useEffect(() => {
+          if (activeTab === 'buy' && 
+              toToken && 
+              multiWalletSupportEnabled && 
+              linkedWallets && 
+              linkedWallets.length > 0 &&
+              !recipient &&
+              !destinationAddressOverride && 
+              !customToAddress) {
+            
+            // Find the destination chain for filtering compatible wallets
+            const toChain = relayClient?.chains?.find((c) => c.id === toToken.chainId)
+            
+            if (toChain) {
+              // Filter wallets compatible with the destination chain VM type
+              const compatibleWallets = linkedWallets.filter((wallet) => {
+                return wallet.vmType === toChain.vmType
+              })
+              
+              // Auto-select the first compatible wallet
+              if (compatibleWallets.length > 0) {
+                setDestinationAddressOverride(compatibleWallets[0].address)
+              }
+            }
+          }
+        }, [
+          activeTab, 
+          toToken, 
+          multiWalletSupportEnabled, 
+          linkedWallets, 
+          recipient,
+          destinationAddressOverride, 
+          customToAddress, 
+          relayClient?.chains,
+          setDestinationAddressOverride
+        ])
+
         // Calculate the USD value of the input amount
         const inputAmountUsd = useMemo(() => {
           return (
@@ -1092,6 +1130,30 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             storedNextRecipient.override
                           )
                           setCustomToAddress(storedNextRecipient.custom)
+
+                          // Auto-select first compatible wallet in buy tab if no destination is set
+                          if (nextTab === 'buy' && 
+                              multiWalletSupportEnabled && 
+                              linkedWallets && 
+                              linkedWallets.length > 0 &&
+                              !storedNextRecipient.override && 
+                              !storedNextRecipient.custom) {
+                            
+                            // Find the destination chain for filtering compatible wallets
+                            const toChain = relayClient?.chains?.find((c) => c.id === nextToToken?.chainId)
+                            
+                            if (toChain) {
+                              // Filter wallets compatible with the destination chain VM type
+                              const compatibleWallets = linkedWallets.filter((wallet) => {
+                                return wallet.vmType === toChain.vmType
+                              })
+                              
+                              // Auto-select the first compatible wallet
+                              if (compatibleWallets.length > 0) {
+                                setDestinationAddressOverride(compatibleWallets[0].address)
+                              }
+                            }
+                          }
 
                           setAmountInputValue('')
                           setAmountOutputValue('')
