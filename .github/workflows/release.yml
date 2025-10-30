@@ -93,4 +93,8 @@ jobs:
         with:
           title: ${{ env.FINAL_RELEASE_TITLE }}
           publish: pnpm package:release
+          commitMode: github-api
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
