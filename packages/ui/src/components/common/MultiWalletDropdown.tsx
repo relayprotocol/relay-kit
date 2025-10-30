@@ -282,3 +282,5 @@ const DropdownItemBaseStyle = {
   alignContent: 'center',
   width: '100%'
 }
+
+export type { MultiWalletDropdownProps }

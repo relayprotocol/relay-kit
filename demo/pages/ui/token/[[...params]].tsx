@@ -436,18 +436,12 @@ const TokenWidgetPage: NextPage = () => {
             onAnalyticEvent={handleAnalyticEvent}
             onFromTokenChange={(token) => {
               setFromToken(token)
-              if (activeTab === 'sell') {
-                updateDemoUrl(token)
-              }
               if (token) {
                 setTokenNotFound(false)
               }
             }}
             onToTokenChange={(token) => {
               setToToken(token)
-              if (activeTab === 'buy') {
-                updateDemoUrl(token)
-              }
               if (token) {
                 setTokenNotFound(false)
               }

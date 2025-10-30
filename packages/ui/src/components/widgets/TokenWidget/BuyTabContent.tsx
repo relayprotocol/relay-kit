@@ -11,8 +11,6 @@ import { BalanceDisplay } from '../../common/BalanceDisplay.js'
 import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboard } from '@fortawesome/free-solid-svg-icons'
 import { EventNames } from '../../../constants/events.js'
 import { isChainLocked } from '../../../utils/tokenSelector.js'
 import type { Dispatch, FC, SetStateAction } from 'react'
@@ -28,6 +26,7 @@ import TransactionDetailsFooter from './TransactionDetailsFooter.js'
 import SectionContainer from './SectionContainer.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { FeeBreakdownInfo } from './FeeBreakdownInfo.js'
+import { DestinationWalletSelector } from './DestinationWalletSelector.js'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -71,6 +70,7 @@ type BuyTabContentProps = {
   disablePasteWalletAddressOption?: boolean
   recipient: ChildrenProps['recipient']
   setCustomToAddress: ChildrenProps['setCustomToAddress']
+  setDestinationAddressOverride: ChildrenProps['setDestinationAddressOverride']
   onConnectWallet?: () => void
   onLinkNewWallet?: LinkNewWalletHandler
   linkedWallets?: LinkedWallet[]
@@ -153,6 +153,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   disablePasteWalletAddressOption,
   recipient,
   setCustomToAddress,
+  setDestinationAddressOverride,
   onConnectWallet,
   onLinkNewWallet,
   linkedWallets,
@@ -495,88 +496,61 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
         <Divider color="gray4" />
 
         <Flex direction="column" css={{ gap: '2', width: '100%' }}>
-          <Flex align="center" css={{ width: '100%', gap: '2' }}>
-            <Text style="subtitle2" color="subtle">
-              Send to
-            </Text>
-            {multiWalletSupportEnabled && toChainWalletVMSupported ? (
-              <MultiWalletDropdown
-                context="destination"
-                disablePasteWalletAddressOption={
-                  disablePasteWalletAddressOption
+          <DestinationWalletSelector
+            label="Send to"
+            isMultiWalletEnabled={multiWalletSupportEnabled}
+            walletSupported={toChainWalletVMSupported}
+            dropdownProps={{
+              disablePasteWalletAddressOption,
+              selectedWalletAddress: recipient,
+              onSelect: (wallet) => {
+                setDestinationAddressOverride(wallet.address)
+                setCustomToAddress(undefined)
+              },
+              chain: toChain,
+              disableWalletFiltering: false,
+              onLinkNewWallet: () => {
+                if (!address && toChainWalletVMSupported) {
+                  onConnectWallet?.()
+                } else {
+                  onLinkNewWallet?.({
+                    chain: toChain,
+                    direction: 'to'
+                  })?.then((wallet) => {
+                    if (!wallet) {
+                      return
+                    }
+                    setDestinationAddressOverride(wallet.address)
+                    setCustomToAddress(undefined)
+                  })
                 }
-                selectedWalletAddress={recipient}
-                onSelect={(wallet) => {
-                  setCustomToAddress(wallet.address)
-                }}
-                chain={toChain}
-                disableWalletFiltering={false}
-                onLinkNewWallet={() => {
-                  if (!address && toChainWalletVMSupported) {
-                    onConnectWallet?.()
-                  } else {
-                    onLinkNewWallet?.({
-                      chain: toChain,
-                      direction: 'to'
-                    })?.then((wallet) => {
-                      setCustomToAddress(wallet.address)
-                    })
-                  }
-                }}
-                setAddressModalOpen={setAddressModalOpen}
-                wallets={linkedWallets ?? []}
-                onAnalyticEvent={onAnalyticEvent}
-                testId="destination-wallet-select-button"
-              />
-            ) : (
-              <Button
-                color={
+              },
+              setAddressModalOpen,
+              wallets: linkedWallets ?? [],
+              onAnalyticEvent,
+              testId: 'destination-wallet-select-button'
+            }}
+            fallback={{
+              highlighted:
+                Boolean(
                   isValidToAddress &&
-                  multiWalletSupportEnabled &&
-                  !isRecipientLinked
-                    ? 'warning'
-                    : 'secondary'
-                }
-                corners="pill"
-                size="none"
-                css={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  px: '2',
-                  py: '1'
-                }}
-                onClick={() => {
-                  setAddressModalOpen(true)
-                  onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
-                }}
-              >
-                {isValidToAddress &&
-                multiWalletSupportEnabled &&
-                !isRecipientLinked ? (
-                  <Box css={{ color: 'amber11' }}>
-                    <FontAwesomeIcon
-                      icon={faClipboard}
-                      width={16}
-                      height={16}
-                    />
-                  </Box>
-                ) : null}
-                <Text
-                  style="subtitle2"
-                  css={{
-                    color:
-                      isValidToAddress &&
-                      multiWalletSupportEnabled &&
-                      !isRecipientLinked
-                        ? 'amber11'
-                        : 'anchor-color'
-                  }}
-                >
-                  {!isValidToAddress ? `Enter Address` : toDisplayName}
-                </Text>
-              </Button>
-            )}
-          </Flex>
+                    multiWalletSupportEnabled &&
+                    !isRecipientLinked
+                ),
+              text: !isValidToAddress ? 'Enter Address' : toDisplayName ?? '',
+              onClick: () => {
+                setDestinationAddressOverride(undefined)
+                setAddressModalOpen(true)
+                onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
+              },
+              showClipboard:
+                Boolean(
+                  isValidToAddress &&
+                    multiWalletSupportEnabled &&
+                    !isRecipientLinked
+                )
+            }}
+          />
           <WidgetErrorWell
             hasInsufficientBalance={hasInsufficientBalance}
             error={error}

@@ -36,7 +36,6 @@ import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../../types/index.js'
 import {
   addressWithFallback,
-  addressesEqual,
   isValidAddress
 } from '../../../utils/address.js'
 import { adaptViemWallet, getDeadAddress } from '@relayprotocol/relay-sdk'
@@ -45,6 +44,7 @@ import { useSwapButtonCta } from '../../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../../utils/hashing.js'
 import { get15MinuteInterval } from '../../../utils/time.js'
 import type { FeeBreakdown } from '../../../types/FeeBreakdown.js'
+import { useSwapQuote } from './hooks/useSwapQuote.js'
 
 export type TradeType = 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
 
@@ -93,8 +93,12 @@ export type ChildrenProps = {
     React.SetStateAction<Address | string | undefined>
   >
   recipient?: Address | string
+  destinationAddressOverride?: Address | string
   customToAddress?: Address | string
   setCustomToAddress: Dispatch<
+    React.SetStateAction<Address | string | undefined>
+  >
+  setDestinationAddressOverride: Dispatch<
     React.SetStateAction<Address | string | undefined>
   >
   tradeType: TradeType
@@ -211,6 +215,9 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   const [customToAddress, setCustomToAddress] = useState<
     Address | string | undefined
   >(defaultToAddress)
+  const [destinationAddressOverride, setDestinationAddressOverride] = useState<
+    Address | string | undefined
+  >(undefined)
   const [originAddressOverride, setOriginAddressOverride] = useState<
     Address | string | undefined
   >(undefined)
@@ -367,7 +374,8 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   ])
 
   // Don't default to origin address as recipient (prevents selling to yourself)
-  const recipient = customToAddress ?? defaultRecipient
+  const recipient =
+    destinationAddressOverride ?? customToAddress ?? defaultRecipient
 
   const {
     value: fromBalance,
@@ -737,84 +745,58 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       !depositAddressModalOpen
   )
 
+  const quoteRefetchInterval =
+    !transactionModalOpen &&
+    !depositAddressModalOpen &&
+    debouncedInputAmountValue === amountInputValue &&
+    debouncedOutputAmountValue === amountOutputValue
+      ? 12000
+      : undefined
+
+  const handleQuoteError = (e: any) => {
+    const errorMessage = errorToJSON(
+      e?.response?.data?.message ? new Error(e?.response?.data?.message) : e
+    )
+    const interval = get15MinuteInterval()
+    const quoteRequestId = sha256({ ...quoteParameters, interval })
+    onAnalyticEvent?.(EventNames.QUOTE_ERROR, {
+      wallet_connector: linkedWallet?.connector,
+      error_message: errorMessage,
+      parameters: quoteParameters,
+      quote_request_id: quoteRequestId,
+      status_code: e.response.status ?? e.status ?? ''
+    })
+  }
+
   const {
-    data: _quoteData,
-    error: quoteError,
-    isFetching: isFetchingQuote,
-    executeQuote: executeSwap,
-    queryKey: quoteQueryKey
-  } = useQuote(
-    relayClient ? relayClient : undefined,
+    quote,
+    error,
+    rawError: quoteError,
+    isFetchingQuote,
+    executeSwap,
+    quoteQueryKey,
+    invalidateQuoteQuery
+  } = useSwapQuote({
+    client: relayClient ? relayClient : undefined,
     wallet,
-    quoteParameters,
-    onQuoteRequested,
-    onQuoteReceived,
-    {
-      refetchOnWindowFocus: false,
-      enabled: quoteFetchingEnabled && quoteParameters !== undefined,
-      refetchInterval:
-        !transactionModalOpen &&
-        !depositAddressModalOpen &&
-        debouncedInputAmountValue === amountInputValue &&
-        debouncedOutputAmountValue === amountOutputValue
-          ? 12000
-          : undefined
-    },
-    (e: any) => {
-      const errorMessage = errorToJSON(
-        e?.response?.data?.message ? new Error(e?.response?.data?.message) : e
-      )
-      const interval = get15MinuteInterval()
-      const quoteRequestId = sha256({ ...quoteParameters, interval })
-      onAnalyticEvent?.(EventNames.QUOTE_ERROR, {
-        wallet_connector: linkedWallet?.connector,
-        error_message: errorMessage,
-        parameters: quoteParameters,
-        quote_request_id: quoteRequestId,
-        status_code: e.response.status ?? e.status ?? ''
-      })
-    },
-    undefined,
-    isGasSponsorshipEnabled ? providerOptionsContext?.secureBaseUrl : undefined
-  )
-
-  const invalidateQuoteQuery = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: quoteQueryKey })
-  }, [queryClient, quoteQueryKey])
-  let error =
-    _quoteData || (isFetchingQuote && quoteFetchingEnabled) ? null : quoteError
-  let quote = error ? undefined : _quoteData
-
-  useDisconnected(address, () => {
-    setCustomToAddress(undefined)
-    setOriginAddressOverride(undefined)
+    parameters: quoteParameters,
+    onRequested: onQuoteRequested,
+    onReceived: onQuoteReceived,
+    enabled: Boolean(quoteFetchingEnabled && quoteParameters !== undefined),
+    refetchInterval: quoteRefetchInterval,
+    onError: handleQuoteError,
+    secureBaseUrl: isGasSponsorshipEnabled
+      ? providerOptionsContext?.secureBaseUrl
+      : undefined,
+    queryClient
   })
 
-  useEffect(() => {
-    if (!multiWalletSupportEnabled) {
-      if (originAddressOverride !== undefined) {
-        setOriginAddressOverride(undefined)
-      }
-      return
-    }
+useDisconnected(address, () => {
+  setCustomToAddress(undefined)
+  setOriginAddressOverride(undefined)
+  setDestinationAddressOverride(undefined)
+})
 
-    if (!originAddressOverride) {
-      return
-    }
-
-    const overrideStillExists = linkedWallets?.some((wallet) =>
-      addressesEqual(wallet.vmType, wallet.address, originAddressOverride as string)
-    )
-
-    if (!overrideStillExists) {
-      setOriginAddressOverride(undefined)
-    }
-  }, [
-    multiWalletSupportEnabled,
-    linkedWallets,
-    originAddressOverride,
-    setOriginAddressOverride
-  ])
   useEffect(() => {
     if (tradeType === 'EXACT_INPUT') {
       const amountOut = quote?.details?.currencyOut?.amount ?? ''
@@ -1253,8 +1235,10 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
         originAddressOverride,
         setOriginAddressOverride,
         recipient,
+        destinationAddressOverride,
         customToAddress,
         setCustomToAddress,
+        setDestinationAddressOverride,
         tradeType,
         setTradeType,
         details,
