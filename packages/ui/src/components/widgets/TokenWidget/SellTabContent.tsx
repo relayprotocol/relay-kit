@@ -1,7 +1,5 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Text, Button, Box } from '../../primitives/index.js'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboard } from '@fortawesome/free-solid-svg-icons'
 import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
@@ -13,6 +11,7 @@ import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
+import { useEffect, useMemo, useRef } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -30,6 +29,7 @@ import SectionContainer from './SectionContainer.js'
 import { isChainLocked } from '../../../utils/tokenSelector.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { FeeBreakdownInfo } from './FeeBreakdownInfo.js'
+import { DestinationWalletSelector } from './DestinationWalletSelector.js'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -93,6 +93,7 @@ type SellTabContentProps = {
   recipientWalletSupportsChain: ChildrenProps['recipientWalletSupportsChain']
   recipient?: ChildrenProps['recipient']
   setCustomToAddress: ChildrenProps['setCustomToAddress']
+  setDestinationAddressOverride: ChildrenProps['setDestinationAddressOverride']
   isRecipientLinked?: ChildrenProps['isRecipientLinked']
   isSameCurrencySameRecipientSwap: ChildrenProps['isSameCurrencySameRecipientSwap']
   debouncedInputAmountValue: ChildrenProps['debouncedInputAmountValue']
@@ -180,6 +181,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
   recipientWalletSupportsChain,
   recipient,
   setCustomToAddress,
+  setDestinationAddressOverride,
   isRecipientLinked,
   isSameCurrencySameRecipientSwap,
   debouncedInputAmountValue,
@@ -209,6 +211,30 @@ const SellTabContent: FC<SellTabContentProps> = ({
   handleSetToToken,
   ctaCopy
 }) => {
+  const selectedPaymentVmType = useMemo(
+    () => toChain?.vmType ?? toChainVmType,
+    [toChain, toChainVmType]
+  )
+  const recipientVmType = recipientLinkedWallet?.vmType
+  
+  // Keep a ref to track the current toToken to avoid infinite loops
+  const toTokenRef = useRef(toToken)
+  toTokenRef.current = toToken
+
+  useEffect(() => {
+    console.log('[SELL TAB] useEffect triggered:', {
+      recipientVmType,
+      selectedPaymentVmType,
+      currentToToken: toTokenRef.current?.symbol,
+      vmTypesMatch: recipientVmType === selectedPaymentVmType
+    })
+    
+    // This useEffect is now only for debugging - wallet selection handles reset directly
+  }, [
+    recipientVmType,
+    selectedPaymentVmType
+  ])
+
   // Use ctaCopy for wallet/address prompts, override transaction operations to "Sell"
   const displayCta = [
     'Swap',
@@ -536,84 +562,79 @@ const SellTabContent: FC<SellTabContentProps> = ({
 
         <Divider color="gray4" />
 
-        <Flex align="center" css={{ width: '100%', gap: '2' }}>
-          <Text style="subtitle2" color="subtle">
-            Sell to
-          </Text>
-          {multiWalletSupportEnabled && toChainWalletVMSupported ? (
-            <MultiWalletDropdown
-              context="destination"
-              selectedWalletAddress={recipient}
-              disablePasteWalletAddressOption={disablePasteWalletAddressOption}
-              onSelect={(wallet) => {
-                setCustomToAddress(wallet.address)
-              }}
-              chain={toChain}
-              disableWalletFiltering={true}
-              onLinkNewWallet={() => {
-                if (!address && toChainWalletVMSupported) {
-                  onConnectWallet?.()
-                } else {
-                  onLinkNewWallet?.({
-                    chain: toChain,
-                    direction: 'to'
-                  })?.then((wallet) => {
-                    setCustomToAddress(wallet.address)
+        <DestinationWalletSelector
+          label="Sell to"
+          isMultiWalletEnabled={multiWalletSupportEnabled}
+          walletSupported={toChainWalletVMSupported}
+          dropdownProps={{
+            selectedWalletAddress: recipient,
+            disablePasteWalletAddressOption,
+            onSelect: (wallet) => {
+              console.log('[SELL TAB] Wallet selected:', {
+                walletAddress: wallet.address,
+                walletVmType: wallet.vmType,
+                currentToToken: toToken?.symbol,
+                currentPaymentVmType: selectedPaymentVmType,
+                recipientVmType
+              })
+              setDestinationAddressOverride(wallet.address)
+              setCustomToAddress(undefined)
+              // Always reset payment method when switching wallets (like buy tab)
+              console.log('[SELL TAB] Resetting payment method to undefined')
+              handleSetToToken(undefined)
+            },
+            chain: toChain,
+            disableWalletFiltering: true,
+            onLinkNewWallet: () => {
+              if (!address && toChainWalletVMSupported) {
+                onConnectWallet?.()
+              } else {
+                onLinkNewWallet?.({
+                  chain: toChain,
+                  direction: 'to'
+                })?.then((wallet) => {
+                  if (!wallet) return
+                  console.log('[SELL TAB] New wallet linked:', {
+                    walletAddress: wallet.address,
+                    walletVmType: wallet.vmType,
+                    currentToToken: toToken?.symbol
                   })
-                }
-              }}
-              setAddressModalOpen={setAddressModalOpen}
-              wallets={linkedWallets ?? []}
-              onAnalyticEvent={onAnalyticEvent}
-              testId="destination-wallet-select-button"
-            />
-          ) : (
-            <Button
-              color={
-                isValidToAddress &&
-                multiWalletSupportEnabled &&
-                !isRecipientLinked
-                  ? 'warning'
-                  : 'secondary'
+                  setDestinationAddressOverride(wallet.address)
+                  setCustomToAddress(undefined)
+                  // Always reset payment method when linking new wallets (like buy tab)
+                  console.log('[SELL TAB] Resetting payment method to undefined after linking')
+                  handleSetToToken(undefined)
+                })
               }
-              corners="pill"
-              size="none"
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                px: '2',
-                py: '1'
-              }}
-              onClick={() => {
-                setAddressModalOpen(true)
-                onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
-              }}
-            >
-              {isValidToAddress &&
-              multiWalletSupportEnabled &&
-              !isRecipientLinked ? (
-                <Box css={{ color: 'amber11' }}>
-                  <FontAwesomeIcon icon={faClipboard} width={16} height={16} />
-                </Box>
-              ) : null}
-              <Text
-                style="subtitle2"
-                css={{
-                  color:
-                    isValidToAddress &&
-                    multiWalletSupportEnabled &&
-                    !isRecipientLinked
-                      ? 'amber11'
-                      : 'anchor-color'
-                }}
-              >
-                {!isValidToAddress
-                  ? `Enter Address`
-                  : (toDisplayName ?? recipient)}
-              </Text>
-            </Button>
-          )}
-        </Flex>
+            },
+            setAddressModalOpen,
+            wallets: linkedWallets ?? [],
+            onAnalyticEvent,
+            testId: 'destination-wallet-select-button'
+          }}
+          fallback={{
+            highlighted:
+              Boolean(
+                isValidToAddress &&
+                  multiWalletSupportEnabled &&
+                  !isRecipientLinked
+              ),
+            text: !isValidToAddress
+              ? 'Enter Address'
+              : (toDisplayName ?? recipient) ?? 'Select wallet',
+            onClick: () => {
+              setDestinationAddressOverride(undefined)
+              setAddressModalOpen(true)
+              onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
+            },
+            showClipboard:
+              Boolean(
+                isValidToAddress &&
+                  multiWalletSupportEnabled &&
+                  !isRecipientLinked
+              )
+          }}
+        />
 
         <Flex direction="column" css={{ gap: '2', width: '100%' }}>
           <Flex justify="between" css={{ width: '100%' }}>
@@ -630,6 +651,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
               chainIdsFilter={chainIdsFilterForDestination}
               linkedWallets={linkedWallets}
               context="to"
+              autoSelectToken={false}
               setToken={(token) => {
                 if (
                   token?.address === fromToken?.address &&

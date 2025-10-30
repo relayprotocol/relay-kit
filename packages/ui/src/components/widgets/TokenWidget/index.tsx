@@ -18,7 +18,6 @@ import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
 import { EventNames } from '../../../constants/events.js'
 import WidgetContainer from '../WidgetContainer.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
-import { findSupportedWallet } from '../../../utils/address.js'
 import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
 import { findBridgableToken } from '../../../utils/tokens.js'
 import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
@@ -30,6 +29,7 @@ import BuyTabContent from './BuyTabContent.js'
 import SellTabContent from './SellTabContent.js'
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
 import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
+import { useWalletGuards } from './hooks/useWalletGuards.js'
 
 type BaseTokenWidgetProps = {
   fromToken?: Token
@@ -151,6 +151,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
   }>({ buy: {}, sell: {} })
+  const tabRecipientRef = useRef<{
+    buy: { override?: string; custom?: string }
+    sell: { override?: string; custom?: string }
+  }>({ buy: {}, sell: {} })
   const setTradeTypeRef = useRef<((tradeType: TradeType) => void) | null>(null)
   const tradeTypeRef = useRef<TradeType>(defaultTradeType ?? 'EXPECTED_OUTPUT')
 
@@ -234,7 +238,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   useEffect(() => {
     if (toToken) {
       setResolvedToToken(toToken)
-    } else if (toTokenList?.[0]) {
+    } else if (toTokenList?.[0] && activeTab !== 'sell') {
+      // Don't auto-select tokens in sell tab - let user explicitly choose
       const apiToken = toTokenList[0]
       const resolved: Token = {
         chainId: apiToken.chainId!,
@@ -250,7 +255,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       setResolvedToToken(resolved)
       setToToken?.(resolved)
     }
-  }, [toToken, toTokenList, setToToken])
+  }, [toToken, toTokenList, setToToken, activeTab])
 
   useEffect(() => {
     setLocalSlippageTolerance(slippageTolerance)
@@ -340,10 +345,13 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         error,
         toDisplayName,
         address,
+        originAddressOverride: _originAddressOverride,
         setOriginAddressOverride,
         recipient,
         customToAddress,
         setCustomToAddress,
+        destinationAddressOverride,
+        setDestinationAddressOverride,
         tradeType,
         setTradeType,
         isSameCurrencySameRecipientSwap,
@@ -413,13 +421,24 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         }, [activeTab, fromToken, toToken])
 
         useEffect(() => {
-          setAllowUnsupportedOrigin(activeTab === 'buy')
-          setAllowUnsupportedRecipient(activeTab === 'sell')
+          tabRecipientRef.current[activeTab] = {
+            override:
+              typeof destinationAddressOverride === 'string'
+                ? destinationAddressOverride
+                : undefined,
+            custom:
+              typeof customToAddress === 'string' ? customToAddress : undefined
+          }
         }, [
           activeTab,
-          setAllowUnsupportedOrigin,
-          setAllowUnsupportedRecipient
+          destinationAddressOverride,
+          customToAddress
         ])
+
+        useEffect(() => {
+          setAllowUnsupportedOrigin(activeTab === 'buy')
+          setAllowUnsupportedRecipient(activeTab === 'sell')
+        }, [activeTab, setAllowUnsupportedOrigin, setAllowUnsupportedRecipient])
 
         // Calculate the USD value of the input amount
         const inputAmountUsd = useMemo(() => {
@@ -595,70 +614,28 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         // Get public client for the fromChain to estimate gas
         const publicClient = usePublicClient({ chainId: fromChain?.id })
 
-        useEffect(() => {
-          if (
-            !allowUnsupportedOrigin &&
-            multiWalletSupportEnabled &&
-            fromChain &&
-            address &&
-            linkedWallets &&
-            !isValidFromAddress
-          ) {
-            const supportedAddress = findSupportedWallet(
-              fromChain,
-              address,
-              linkedWallets,
-              connectorKeyOverrides
-            )
-            if (supportedAddress) {
-              setOriginAddressOverride(undefined)
-              onSetPrimaryWallet?.(supportedAddress)
-            }
-          }
-
-          if (
-            !allowUnsupportedRecipient &&
-            multiWalletSupportEnabled &&
-            toChain &&
-            recipient &&
-            linkedWallets &&
-            !isValidToAddress
-          ) {
-            const supportedAddress = findSupportedWallet(
-              toChain,
-              recipient,
-              linkedWallets,
-              connectorKeyOverrides
-            )
-            if (supportedAddress) {
-              setCustomToAddress(supportedAddress)
-            } else {
-              setCustomToAddress(undefined)
-            }
-          }
-        }, [
+        useWalletGuards({
+          multiWalletSupportEnabled,
           allowUnsupportedOrigin,
           allowUnsupportedRecipient,
-          multiWalletSupportEnabled,
-          fromChain?.id,
-          toChain?.id,
+          fromChain,
+          toChain,
           address,
           recipient,
           linkedWallets,
+          connectorKeyOverrides,
           onSetPrimaryWallet,
           isValidFromAddress,
           isValidToAddress,
-          connectorKeyOverrides,
           setOriginAddressOverride,
-          setCustomToAddress
-        ])
-
-        //Handle if the paste wallet address option is disabled while there is a custom to address
-        useEffect(() => {
-          if (disablePasteWalletAddressOption && customToAddress) {
-            setCustomToAddress(undefined)
-          }
-        }, [disablePasteWalletAddressOption])
+          setCustomToAddress,
+          disablePasteWalletAddressOption,
+          customToAddress: customToAddress as string | undefined,
+          originAddressOverride: _originAddressOverride as string | undefined,
+          destinationAddressOverride:
+            destinationAddressOverride as string | undefined,
+          setDestinationAddressOverride
+        })
 
         const promptSwitchRoute =
           (isCapacityExceededError || isCouldNotExecuteError) &&
@@ -917,7 +894,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                     if (!isValidFromAddress) {
                       onSetPrimaryWallet?.(wallet.address)
                     } else {
-                      setCustomToAddress(wallet.address)
+                      setDestinationAddressOverride(wallet.address)
+                      setCustomToAddress(undefined)
                     }
                   })
                 }
@@ -937,7 +915,11 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                     chain: toChain,
                     direction: 'to'
                   })?.then((wallet) => {
-                    setCustomToAddress(wallet.address)
+                    if (!wallet) {
+                      return
+                    }
+                    setDestinationAddressOverride(wallet.address)
+                    setCustomToAddress(undefined)
                   })
                 }
               } else {
@@ -1040,16 +1022,31 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                       onValueChange={(value) => {
                         const nextTab = value as 'buy' | 'sell'
 
+                        setAllowUnsupportedOrigin(nextTab === 'buy')
+                        setAllowUnsupportedRecipient(nextTab === 'sell')
+
                         if (nextTab !== activeTab) {
                           tabTokenStateRef.current[activeTab] = {
                             fromToken,
                             toToken
+                          }
+                          tabRecipientRef.current[activeTab] = {
+                            override:
+                              typeof destinationAddressOverride === 'string'
+                                ? destinationAddressOverride
+                                : undefined,
+                            custom:
+                              typeof customToAddress === 'string'
+                                ? customToAddress
+                                : undefined
                           }
 
                           const currentState =
                             tabTokenStateRef.current[activeTab] ?? {}
                           const storedNextState =
                             tabTokenStateRef.current[nextTab] ?? {}
+                          const storedNextRecipient =
+                            tabRecipientRef.current[nextTab] ?? {}
 
                           let nextFromToken: Token | undefined =
                             storedNextState.fromToken
@@ -1087,9 +1084,14 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             fromToken: nextFromToken,
                             toToken: nextToToken
                           }
+                          tabRecipientRef.current[nextTab] = storedNextRecipient
 
                           handleSetFromToken(nextFromToken)
                           handleSetToToken(nextToToken)
+                          setDestinationAddressOverride(
+                            storedNextRecipient.override
+                          )
+                          setCustomToAddress(storedNextRecipient.custom)
 
                           setAmountInputValue('')
                           setAmountOutputValue('')
@@ -1099,7 +1101,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           setIsUsdInputMode(false)
                           debouncedAmountInputControls.cancel()
                           debouncedAmountOutputControls.cancel()
-                          setCustomToAddress(undefined)
                           setOriginAddressOverride(undefined)
                         }
 
@@ -1238,6 +1239,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           }
                           recipient={recipient}
                           setCustomToAddress={setCustomToAddress}
+                          setDestinationAddressOverride={
+                            setDestinationAddressOverride
+                          }
                           onConnectWallet={onConnectWallet}
                           onLinkNewWallet={onLinkNewWallet}
                           linkedWallets={linkedWallets}
@@ -1364,6 +1368,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           toDisplayName={toDisplayName}
                           recipient={recipient}
                           setCustomToAddress={setCustomToAddress}
+                          setDestinationAddressOverride={
+                            setDestinationAddressOverride
+                          }
                           isRecipientLinked={isRecipientLinked}
                           isSameCurrencySameRecipientSwap={
                             isSameCurrencySameRecipientSwap

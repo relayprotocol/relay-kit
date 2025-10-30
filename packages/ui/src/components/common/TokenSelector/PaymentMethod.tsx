@@ -86,6 +86,7 @@ export type PaymentMethodProps = {
   linkedWallets?: any[]
   setToken: (token: Token) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
+  autoSelectToken?: boolean
 }
 
 const PaymentMethod: FC<PaymentMethodProps> = ({
@@ -102,7 +103,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   popularChainIds,
   linkedWallets,
   setToken,
-  onAnalyticEvent
+  onAnalyticEvent,
+  autoSelectToken = true
 }) => {
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
@@ -354,6 +356,10 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 
   // Auto-select token with highest balance when wallet connects or changes
   useEffect(() => {
+    if (!autoSelectToken) {
+      return
+    }
+
     if (
       address &&
       isValidAddress &&
@@ -365,7 +371,14 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       const topToken = sortedUserTokens[0]
       setToken(topToken)
     }
-  }, [address, isValidAddress, token, sortedUserTokens, setToken])
+  }, [
+    address,
+    isValidAddress,
+    token,
+    sortedUserTokens,
+    setToken,
+    autoSelectToken
+  ])
 
   // Update starred chains when the modal opens to sync with other instances
   useEffect(() => {
