@@ -785,8 +785,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                   ) : (
                     // When "All Chains" is selected, show Recommended/Other Tokens
                     <Flex direction="column" css={{ gap: '3' }}>
-                      {/* Recommended Section - First 5 user tokens */}
-                      {sortedUserTokens.length > 0 && (
+                      {/* Recommended Section */}
+                      {sortedUserTokens.length > 0 ? (
                         <PaymentTokenList
                           title="Recommended"
                           tokens={sortedUserTokens.slice(0, 5)}
@@ -794,6 +794,15 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                           isLoadingBalances={isLoadingBalances}
                           chainFilterId={chainFilter.id}
                           limit={5}
+                        />
+                      ) : (
+                        <PaymentTokenList
+                          title="Tokens"
+                          tokens={sortedCombinedTokens.slice(0, 10)}
+                          isLoading={isLoadingTokenList}
+                          isLoadingBalances={isLoadingBalances}
+                          chainFilterId={chainFilter.id}
+                          limit={10}
                         />
                       )}
 
