@@ -19,7 +19,7 @@ import { EventNames } from '../../../constants/events.js'
 import WidgetContainer from '../WidgetContainer.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
-import { findBridgableToken } from '../../../utils/tokens.js'
+import { findBridgableToken, generateTokenImageUrl, tokensAreEqual } from '../../../utils/tokens.js'
 import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
 import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
@@ -224,9 +224,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         name: apiToken.name!,
         symbol: apiToken.symbol!,
         decimals: apiToken.decimals!,
-        logoURI:
-          apiToken.metadata?.logoURI ||
-          `${ASSETS_RELAY_API}/icons/currencies/${apiToken.symbol?.toLowerCase()}.png`,
+        logoURI: generateTokenImageUrl(apiToken),
         verified: apiToken.metadata?.verified ?? false
       }
       setResolvedFromToken(resolved)
@@ -247,9 +245,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         name: apiToken.name!,
         symbol: apiToken.symbol!,
         decimals: apiToken.decimals!,
-        logoURI:
-          apiToken.metadata?.logoURI ||
-          `${ASSETS_RELAY_API}/icons/currencies/${apiToken.symbol?.toLowerCase()}.png`,
+        logoURI: generateTokenImageUrl(apiToken),
         verified: apiToken.metadata?.verified ?? false
       }
       setResolvedToToken(resolved)
@@ -570,14 +566,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           (chain) => chain.id === toToken?.chainId
         )
 
-        const tokensAreEqual = (a?: Token, b?: Token) => {
-          if (!a && !b) return true
-          if (!a || !b) return false
-          return (
-            a.chainId === b.chainId &&
-            a.address?.toLowerCase() === b.address?.toLowerCase()
-          )
-        }
 
         const handleSetToToken = useCallback(
           (token?: Token) => {

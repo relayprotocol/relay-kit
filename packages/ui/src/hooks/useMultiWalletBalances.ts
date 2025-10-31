@@ -23,11 +23,9 @@ export const useMultiWalletBalances = (
   isValidAddress?: boolean,
   evmChainIds: 'mainnet' | 'testnet' = 'mainnet'
 ) => {
-  // Get all unique wallet addresses
   const walletAddresses = useMemo(() => {
     const addresses = new Set<string>()
 
-    // Add primary address
     if (
       primaryAddress &&
       primaryAddress !== evmDeadAddress &&
@@ -38,7 +36,6 @@ export const useMultiWalletBalances = (
       addresses.add(primaryAddress)
     }
 
-    // Add all linked wallet addresses
     if (linkedWallets) {
       linkedWallets.forEach((wallet) => {
         if (
@@ -55,8 +52,6 @@ export const useMultiWalletBalances = (
     return Array.from(addresses)
   }, [primaryAddress, isValidAddress, linkedWallets])
 
-  // Fetch balances for each wallet (up to 10 wallets)
-  // React hooks must be called unconditionally, so we call up to a fixed max
   const balance1 = useDuneBalances(walletAddresses[0], evmChainIds, {
     staleTime: 60000,
     gcTime: 60000

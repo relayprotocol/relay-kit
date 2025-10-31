@@ -435,8 +435,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
               }}
             >
               {(() => {
-                // Always display the balance for the asset being sold (fromToken)
-                // regardless of the payout token shown in the payment method trigger.
                 const displayToken = fromToken || toToken
                 const displayBalance = fromToken ? fromBalance : toBalance
                 const displayBalancePending = fromToken

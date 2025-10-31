@@ -44,6 +44,37 @@ export const findBridgableToken = (chain?: RelayChain, token?: Token) => {
   return null
 }
 
+/**
+ * Generates a standard token image URL from symbol or metadata
+ */
+export const generateTokenImageUrl = (token: { 
+  symbol?: string, 
+  metadata?: { logoURI?: string } 
+}): string => {
+  return token.metadata?.logoURI ||
+    `${ASSETS_RELAY_API}/icons/currencies/${token.symbol?.toLowerCase()}.png`
+}
+
+/**
+ * Compares two tokens for equality based on chainId and address
+ */
+export const tokensAreEqual = (a?: Token, b?: Token): boolean => {
+  if (!a && !b) return true
+  if (!a || !b) return false
+  return (
+    a.chainId === b.chainId &&
+    a.address?.toLowerCase() === b.address?.toLowerCase()
+  )
+}
+
+/**
+ * Normalizes token identifier for cross-chain consistency
+ */
+export const normalizeTokenId = (chainId: number, address: string, vmType?: string): string => {
+  const normalizedAddress = vmType === 'evm' ? address.toLowerCase() : address
+  return `${chainId}:${normalizedAddress}`
+}
+
 export const mergeTokenLists = (lists: (CurrencyList | undefined)[]) => {
   const mergedList: CurrencyList = []
   const seenTokens = new Set<string>()

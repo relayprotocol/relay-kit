@@ -25,6 +25,7 @@ type PaymentTokenListProps = {
   showMoreButton?: boolean
   limit?: number
   opacity?: number
+  stickyHeader?: boolean
 }
 
 export const PaymentTokenList: FC<PaymentTokenListProps> = ({
@@ -35,7 +36,8 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
   chainFilterId,
   showMoreButton,
   limit = 5,
-  opacity = 1
+  opacity = 1,
+  stickyHeader = false
 }) => {
   const [tokensExpanded, setTokensExpanded] = useState(false)
   const tokens =
@@ -73,7 +75,21 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
   if (tokens.length > 0)
     return (
       <Flex direction="column" css={{ gap: '0', width: '100%' }}>
-        <Text style="subtitle2" color="subtle" css={{ mb: '1' }}>
+        <Text 
+          style="subtitle2" 
+          color="subtle" 
+          css={{ 
+            mb: '1',
+            ...(stickyHeader && {
+              position: 'sticky',
+              top: 0,
+              backgroundColor: 'modal-background',
+              zIndex: 10,
+              py: '2',
+              mt: '-2'
+            })
+          }}
+        >
           {title}
         </Text>
         {tokens.map((token, index) => {
