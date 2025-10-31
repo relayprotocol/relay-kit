@@ -392,6 +392,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
       aria-label="Slippage Tolerance Configuration"
       color="ghost"
       size="none"
+      css={{
         alignItems: 'center',
         justifyContent: 'center',
         gap: '1',
