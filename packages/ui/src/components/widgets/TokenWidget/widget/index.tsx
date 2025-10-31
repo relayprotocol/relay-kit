@@ -1,5 +1,5 @@
-import { Flex, Button, Text } from '../../primitives/index.js'
-import { TabsRoot, TabsList, TabsTrigger } from '../../primitives/Tabs.js'
+import { Flex, Button, Text } from '../../../primitives/index.js'
+import { TabsRoot, TabsList, TabsTrigger } from '../../../primitives/Tabs.js'
 import {
   useCallback,
   useContext,
@@ -9,27 +9,27 @@ import {
   useState,
   type FC
 } from 'react'
-import { useRelayClient } from '../../../hooks/index.js'
+import { useRelayClient } from '../../../../hooks/index.js'
 import type { Address } from 'viem'
 import { formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
-import type { LinkedWallet, Token } from '../../../types/index.js'
+import type { LinkedWallet, Token } from '../../../../types/index.js'
 import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
-import { EventNames } from '../../../constants/events.js'
-import WidgetContainer from '../WidgetContainer.js'
+import { EventNames } from '../../../../constants/events.js'
+import WidgetContainer from '../../WidgetContainer.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
-import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
-import { findBridgableToken, generateTokenImageUrl, tokensAreEqual } from '../../../utils/tokens.js'
-import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
-import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
-import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
-import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
+import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
+import { findBridgableToken, generateTokenImageUrl, tokensAreEqual } from '../../../../utils/tokens.js'
+import { UnverifiedTokenModal } from '../../../common/UnverifiedTokenModal.js'
+import { alreadyAcceptedToken } from '../../../../utils/localStorage.js'
+import { calculateUsdValue, getSwapEventData } from '../../../../utils/quote.js'
+import { getFeeBufferAmount } from '../../../../utils/nativeMaxAmount.js'
 import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
-import BuyTabContent from './BuyTabContent.js'
-import SellTabContent from './SellTabContent.js'
+import BuyTabContent from '../BuyTabContent.js'
+import SellTabContent from '../SellTabContent.js'
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
 import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
-import { useWalletGuards } from './hooks/useWalletGuards.js'
+import { useWalletGuards } from '../hooks/useWalletGuards.js'
 
 type BaseTokenWidgetProps = {
   fromToken?: Token
