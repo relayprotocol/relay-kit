@@ -13,7 +13,7 @@ import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
 import { useMemo, useRef } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
-import type { TradeType, ChildrenProps } from './TokenWidgetRenderer.js'
+import type { TradeType, ChildrenProps } from './widget/TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
 import {
   isDeadAddress,
