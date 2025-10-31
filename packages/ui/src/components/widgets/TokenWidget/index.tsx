@@ -23,7 +23,6 @@ import { findBridgableToken, generateTokenImageUrl, tokensAreEqual } from '../..
 import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
 import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
-import { safeNumberConversion } from '../../../utils/numbers.js'
 import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
 import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
 import BuyTabContent from './BuyTabContent.js'

@@ -331,26 +331,7 @@ function formatSignificantDigits(
 }
 
 
-/**
- * Safe number conversion with validation for common widget patterns
- */
-function safeNumberConversion(value: string | number | undefined): number {
-  if (value === undefined || value === null || value === '') return 0
-  const num = Number(value)
-  return isNaN(num) ? 0 : num
-}
 
-/**
- * Calculates USD value from token amount and price with proper handling
- */
-function calculateUsdValue(price: number | undefined, amount: string | number): number | null {
-  if (!price || price <= 0 || !amount) return null
-  
-  const numericAmount = safeNumberConversion(amount)
-  if (numericAmount === 0) return null
-  
-  return numericAmount * price
-}
 
 export {
   formatDollar,
@@ -359,7 +340,5 @@ export {
   formatFixedLength,
   formatNumber,
   formatSignificantDigits,
-  truncateBalance,
-  safeNumberConversion,
-  calculateUsdValue
+  truncateBalance
 }

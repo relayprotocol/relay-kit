@@ -4,8 +4,7 @@ import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
   formatNumber,
-  formatDollar,
-  safeNumberConversion
+  formatDollar
 } from '../../../utils/numbers.js'
 import { PriceImpact } from '../SwapWidget/PriceImpact.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
@@ -225,12 +224,12 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   const hasSelectedTokens = Boolean(fromToken && toToken)
   const invalidAmount =
     !quote ||
-    safeNumberConversion(debouncedInputAmountValue) === 0 ||
-    safeNumberConversion(debouncedOutputAmountValue) === 0 ||
+    Number(debouncedInputAmountValue) === 0 ||
+    Number(debouncedOutputAmountValue) === 0 ||
     !hasSelectedTokens
 
   const hasValidOutputAmount =
-    toToken && amountOutputValue && safeNumberConversion(amountOutputValue) > 0
+    toToken && amountOutputValue && Number(amountOutputValue) > 0
 
   const currencyInAmountUsd = quote?.details?.currencyIn?.amountUsd
   const currencyInAmountFormatted = quote?.details?.currencyIn?.amountFormatted
@@ -288,7 +287,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               if (isUsdInputMode) {
                 setUsdOutputValue(value)
                 setTradeType('EXPECTED_OUTPUT')
-                if (safeNumberConversion(value) === 0) {
+                if (Number(value) === 0) {
                   setAmountInputValue('')
                   setUsdInputValue('')
                   debouncedAmountOutputControls.flush()
@@ -296,7 +295,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               } else {
                 setAmountOutputValue(value)
                 setTradeType('EXPECTED_OUTPUT')
-                if (safeNumberConversion(value) === 0) {
+                if (Number(value) === 0) {
                   setAmountInputValue('')
                   debouncedAmountOutputControls.flush()
                 }
@@ -344,7 +343,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             <AmountModeToggle onToggle={toggleInputMode}>
               {isUsdInputMode
                 ? toToken
-                  ? usdOutputValue && safeNumberConversion(usdOutputValue) > 0
+                  ? usdOutputValue && Number(usdOutputValue) > 0
                     ? amountOutputValue && !isLoadingToTokenPrice
                       ? `${formatNumber(amountOutputValue, 4, false)} ${toToken.symbol}`
                       : '...'
@@ -357,7 +356,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                   : toToken &&
                       isLoadingToTokenPrice &&
                       amountOutputValue &&
-                      safeNumberConversion(amountOutputValue) > 0
+                      Number(amountOutputValue) > 0
                     ? '...'
                     : toToken &&
                         outputAmountUsd &&

@@ -15,7 +15,6 @@ import {
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
 import { normalizeTokenId } from '../../../utils/tokens.js'
-import { safeNumberConversion } from '../../../utils/numbers.js'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useCapabilities } from 'wagmi/experimental'
 import type { Token } from '../../../types/index.js'
@@ -732,11 +731,11 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       ((tradeType === 'EXACT_INPUT' &&
         debouncedInputAmountValue &&
         debouncedInputAmountValue.length > 0 &&
-        safeNumberConversion(debouncedInputAmountValue) !== 0) ||
+        Number(debouncedInputAmountValue) !== 0) ||
         (tradeType === 'EXPECTED_OUTPUT' &&
           debouncedOutputAmountValue &&
           debouncedOutputAmountValue.length > 0 &&
-          safeNumberConversion(debouncedOutputAmountValue) !== 0)) &&
+          Number(debouncedOutputAmountValue) !== 0)) &&
       fromToken !== undefined &&
       toToken !== undefined &&
       !transactionModalOpen &&
