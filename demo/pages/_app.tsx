@@ -30,6 +30,7 @@ import { EIP1193RequestFn, fallback, Transport } from 'viem'
 import { chainIdToAlchemyNetworkMap } from 'utils/chainIdToAlchemyNetworkMap'
 import { useWalletFilter, WalletFilterProvider } from 'context/walletFilter'
 import { EclipseWalletConnectors } from '@dynamic-labs/eclipse'
+import { TronWalletConnectors } from '@dynamic-labs/tron'
 import { AbstractEvmWalletConnectors } from '@dynamic-labs-connectors/abstract-global-wallet-evm'
 import { MoonPayProvider } from 'context/MoonpayProvider'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
@@ -142,7 +143,8 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
                 BitcoinWalletConnectors,
                 EclipseWalletConnectors,
                 SuiWalletConnectors,
-                AbstractEvmWalletConnectors
+                AbstractEvmWalletConnectors,
+                TronWalletConnectors
               ],
               cssOverrides: `
               [data-testid="send-balance-button"] {

@@ -1,5 +1,25 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.1.1
+
+### Patch Changes
+
+- 70badbb: Update mobile percentage buttons
+- 5c80c9a: Improve mobile ui for slippage configuration
+- 38ea2b6: Add clear input button to custom address modal
+
+## 5.1.0
+
+### Minor Changes
+
+- 5108307: Add Tron adapter and balance logic
+
+### Patch Changes
+
+- Updated dependencies [5108307]
+  - @relayprotocol/relay-sdk@3.1.0
+  - @relayprotocol/relay-kit-hooks@2.0.8
+
 ## 5.0.6
 
 ### Patch Changes

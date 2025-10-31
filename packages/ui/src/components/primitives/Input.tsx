@@ -62,20 +62,30 @@ const Input = forwardRef<
       iconPosition?: 'left' | 'right'
       iconCss?: Styles
       containerCss?: Styles
+      inputStyle?: React.CSSProperties
     } & { css?: Styles } & StyledInputCssVariants
 >(
   (
-    { children, icon, iconPosition, iconCss, containerCss, css, ...props },
+    {
+      children,
+      icon,
+      iconPosition,
+      iconCss,
+      containerCss,
+      inputStyle,
+      css,
+      ...props
+    },
     ref
   ) => {
-    const { size, ellipsify, ...inputProps } = props
+    const { size, ellipsify, style, ...inputProps } = props
 
     return (
       <Flex
         css={{
           ...containerCss
         }}
-        style={{ ...props.style }}
+        style={{ ...style }}
       >
         {icon && (
           <Flex css={{ position: 'relative' }}>
@@ -99,7 +109,8 @@ const Input = forwardRef<
           ref={ref}
           style={{
             paddingLeft: icon && iconPosition !== 'right' ? 42 : 16,
-            paddingRight: icon && iconPosition === 'right' ? 42 : 16
+            paddingRight: icon && iconPosition === 'right' ? 42 : 16,
+            ...inputStyle
           }}
           className={designCss(
             StyledInputCss.raw({ size, ellipsify }),

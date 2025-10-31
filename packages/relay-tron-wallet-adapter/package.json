@@ -1,7 +1,7 @@
 {
-    "name": "@relayprotocol/relay-bitcoin-wallet-adapter",
-    "version": "12.0.0",
-    "description": "A Bitcoin adapter for use in @relayprotocol/relay-sdk",
+    "name": "@relayprotocol/relay-tron-wallet-adapter",
+    "version": "1.0.0",
+    "description": "A Tron adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
     "main": "./_cjs/src/index.js",
@@ -35,13 +35,15 @@
         "url": "https://github.com/reservoirprotocol/relay-sdk"
     },
     "keywords": [
-        "bitcoin",
         "reservoir",
-        "relay-bitcoin-wallet-adapter",
-        "reservoir-bitcoin-wallet-adapter",
+        "relay-tvm-wallet-adapter",
+        "relay-tron-wallet-adapter",
+        "reservoir-tron-wallet-adapter",
         "relay",
         "protocol",
-        "sdk-adapter"
+        "sdk-adapter",
+        "tvm",
+        "tron"
     ],
     "publishConfig": {
         "access": "public"
@@ -51,11 +53,11 @@
     },
     "dependencies": {
         "@types/node": "^22.5.4",
-        "axios": "^1.6.5",
-        "bitcoinjs-lib": "7.0.0-rc.0"
+        "axios": "^1.6.5"
     },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
-        "viem": ">=2.26.0"
+        "viem": ">=2.26.0",
+        "tronweb": "^6.0.4"
     }
 }

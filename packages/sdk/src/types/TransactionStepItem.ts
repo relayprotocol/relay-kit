@@ -32,7 +32,15 @@ export type TransactionStepItem = Pick<
       programId: string
       data: string
     }[]
+    //Bitcoin
     addressLookupTableAddresses?: string[]
     psbt?: string
+    // Tron
+    parameter?: {
+      owner_address: string
+      contract_address: string
+      data: string
+    }
+    type?: string
   }
 }

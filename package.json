@@ -23,7 +23,7 @@
     "build:ui": "pnpm run -C packages/ui build",
     "build:hooks": "pnpm run -C packages/hooks build",
     "build:sdk": "pnpm run -C packages/sdk build",
-    "build:adapter": "pnpm run -C packages/relay-ethers-wallet-adapter build && pnpm run -C packages/relay-svm-wallet-adapter build && pnpm run -C packages/relay-bitcoin-wallet-adapter build && pnpm run -C packages/relay-sui-wallet-adapter build",
+    "build:adapter": "pnpm run -C packages/relay-ethers-wallet-adapter build && pnpm run -C packages/relay-svm-wallet-adapter build && pnpm run -C packages/relay-bitcoin-wallet-adapter build && pnpm run -C packages/relay-sui-wallet-adapter build && pnpm run -C packages/relay-tron-wallet-adapter build",
     "syncSdkTypes": "node packages/sdk/scripts/sync-api.mjs",
     "sdk": "pnpm run -C packages/sdk dev",
     "typecheck": "tsc --noEmit",
