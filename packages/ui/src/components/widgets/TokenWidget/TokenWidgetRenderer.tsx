@@ -34,10 +34,7 @@ import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
 import type { DebouncedState } from 'usehooks-ts'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../../types/index.js'
-import {
-  addressWithFallback,
-  isValidAddress
-} from '../../../utils/address.js'
+import { addressWithFallback, isValidAddress } from '../../../utils/address.js'
 import { adaptViemWallet, getDeadAddress } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../../utils/errors.js'
 import { useSwapButtonCta } from '../../../hooks/widget/useSwapButtonCta.js'
@@ -791,11 +788,11 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     queryClient
   })
 
-useDisconnected(address, () => {
-  setCustomToAddress(undefined)
-  setOriginAddressOverride(undefined)
-  setDestinationAddressOverride(undefined)
-})
+  useDisconnected(address, () => {
+    setCustomToAddress(undefined)
+    setOriginAddressOverride(undefined)
+    setDestinationAddressOverride(undefined)
+  })
 
   useEffect(() => {
     if (tradeType === 'EXACT_INPUT') {

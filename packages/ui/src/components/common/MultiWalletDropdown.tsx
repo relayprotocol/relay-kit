@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState, useEffect, type FC } from 'react'
+import { useContext, useMemo, useState, type FC } from 'react'
 import { Dropdown, DropdownMenuItem } from '../primitives/Dropdown.js'
 import { Box, Button, Flex, Text } from '../primitives/index.js'
 import type { LinkedWallet } from '../../types/index.js'

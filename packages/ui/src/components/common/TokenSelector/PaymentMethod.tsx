@@ -238,7 +238,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     return undefined
   }, [filteredDuneTokenBalances])
 
-  // Get user's tokens from currencies api
   const { data: userTokens, isLoading: isLoadingUserTokens } = useTokenList(
     relayClient?.baseApiUrl,
     userTokensQuery
@@ -287,7 +286,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     }
   )
 
-  // Get external token list for search
   const { data: externalTokenList, isLoading: isLoadingExternalList } =
     useTokenList(
       relayClient?.baseApiUrl,
@@ -774,7 +772,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                       chainFilterId={chainFilter.id}
                     />
                   ) : chainFilter.id ? (
-                    // When a specific chain is filtered, show TokenList format
                     <TokenList
                       title="Tokens"
                       tokens={sortedCombinedTokens}
@@ -783,33 +780,51 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                       chainFilterId={chainFilter.id}
                     />
                   ) : (
-                    // When "All Chains" is selected, show Recommended tokens or global volume-sorted tokens
                     <Flex direction="column" css={{ gap: '3' }}>
-                      {/* Show all user tokens with USD value > 0, or fallback to trending tokens sorted by 24h volume */}
                       {(() => {
-                        // Filter out tokens with no USD value or 0 USD value
-                        const tokensWithValue = sortedUserTokens.filter(token => 
-                          token.balance?.value_usd && token.balance.value_usd > 0
+                        const tokensWithValue = sortedUserTokens.filter(
+                          (token) =>
+                            token.balance?.value_usd &&
+                            token.balance.value_usd > 0
                         )
-                        
+
                         if (tokensWithValue.length > 0) {
+                          const shouldShowBalanceLoading =
+                            isLoadingBalances &&
+                            Boolean(address && isValidAddress)
+
                           return (
                             <PaymentTokenList
                               title="Recommended"
                               tokens={tokensWithValue}
                               isLoading={isLoadingUserTokens}
-                              isLoadingBalances={isLoadingBalances}
+                              isLoadingBalances={shouldShowBalanceLoading}
                               chainFilterId={chainFilter.id}
                               limit={tokensWithValue.length}
                             />
                           )
                         } else {
+                          const fallbackTokens =
+                            context === 'to' && sortedTrendingTokens.length > 0
+                              ? sortedTrendingTokens
+                              : sortedCombinedTokens
+
+                          const isTrendingTokens =
+                            context === 'to' && sortedTrendingTokens.length > 0
+                          const shouldShowBalanceLoading =
+                            isLoadingBalances &&
+                            Boolean(address && isValidAddress)
+
                           return (
                             <PaymentTokenList
-                              title="Tokens"
-                              tokens={sortedTrendingTokens.slice(0, 10)}
-                              isLoading={isLoadingTrendingTokens}
-                              isLoadingBalances={isLoadingBalances}
+                              title={isTrendingTokens ? 'Global 24h' : 'Tokens'}
+                              tokens={fallbackTokens.slice(0, 10)}
+                              isLoading={
+                                context === 'to'
+                                  ? isLoadingTrendingTokens
+                                  : isLoadingTokenList
+                              }
+                              isLoadingBalances={shouldShowBalanceLoading}
                               chainFilterId={chainFilter.id}
                               limit={10}
                             />
