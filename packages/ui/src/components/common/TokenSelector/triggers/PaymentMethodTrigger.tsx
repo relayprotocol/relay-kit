@@ -13,7 +13,7 @@ import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { useCurrencyBalance } from '../../../../hooks/index.js'
 import type { BalanceMap } from '../../../../hooks/useDuneBalances.js'
-import { formatDollarCompact, formatNumber } from '../../../../utils/numbers.js'
+import { formatDollarCompact, formatBN } from '../../../../utils/numbers.js'
 import {
   evmDeadAddress,
   solDeadAddress,
@@ -94,9 +94,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   if (hasBalanceUsd) {
     balanceText = `${formatDollarCompact(balanceUsd)} ${balanceLabel}`
   } else if (currencyBalanceValue && token) {
-    const balanceInTokenUnits =
-      Number(currencyBalanceValue) / Math.pow(10, token.decimals)
-    const formattedBalance = formatNumber(balanceInTokenUnits, 4, false)
+    const formattedBalance = formatBN(currencyBalanceValue, 4, token.decimals, false)
     balanceText = `${formattedBalance} ${token.symbol} ${balanceLabel}`
   }
 

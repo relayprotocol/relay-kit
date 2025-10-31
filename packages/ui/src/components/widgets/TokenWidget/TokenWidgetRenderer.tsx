@@ -14,6 +14,8 @@ import {
 } from '../../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
+import { normalizeTokenId } from '../../../utils/tokens.js'
+import { safeNumberConversion } from '../../../utils/numbers.js'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useCapabilities } from 'wagmi/experimental'
 import type { Token } from '../../../types/index.js'
@@ -41,7 +43,6 @@ import { useSwapButtonCta } from '../../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../../utils/hashing.js'
 import { get15MinuteInterval } from '../../../utils/time.js'
 import type { FeeBreakdown } from '../../../types/FeeBreakdown.js'
-import { useSwapQuote } from './hooks/useSwapQuote.js'
 
 export type TradeType = 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
 
@@ -617,20 +618,20 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     })
   }, [sponsoredTokens, relayClient?.chains])
 
-  const normalizedToToken =
-    toChain?.vmType === 'evm'
-      ? `${toToken?.chainId}:${toToken?.address.toLowerCase()}`
-      : `${toToken?.chainId}:${toToken?.address}`
-  const normalizedFromToken =
-    fromChain?.vmType === 'evm'
-      ? `${fromToken?.chainId}:${fromToken?.address.toLowerCase()}`
-      : `${fromToken?.chainId}:${fromToken?.address}`
+  const normalizedToToken = toToken && toToken.address
+    ? normalizeTokenId(toToken.chainId, toToken.address, toChain?.vmType)
+    : undefined
+  const normalizedFromToken = fromToken && fromToken.address
+    ? normalizeTokenId(fromToken.chainId, fromToken.address, fromChain?.vmType) 
+    : undefined
 
   const isGasSponsorshipEnabled =
     normalizedSponsoredTokens &&
     normalizedSponsoredTokens.length > 0 &&
     toToken &&
     fromToken &&
+    normalizedToToken &&
+    normalizedFromToken &&
     normalizedSponsoredTokens.includes(normalizedToToken) &&
     normalizedSponsoredTokens.includes(normalizedFromToken)
 
@@ -731,11 +732,11 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       ((tradeType === 'EXACT_INPUT' &&
         debouncedInputAmountValue &&
         debouncedInputAmountValue.length > 0 &&
-        Number(debouncedInputAmountValue) !== 0) ||
+        safeNumberConversion(debouncedInputAmountValue) !== 0) ||
         (tradeType === 'EXPECTED_OUTPUT' &&
           debouncedOutputAmountValue &&
           debouncedOutputAmountValue.length > 0 &&
-          Number(debouncedOutputAmountValue) !== 0)) &&
+          safeNumberConversion(debouncedOutputAmountValue) !== 0)) &&
       fromToken !== undefined &&
       toToken !== undefined &&
       !transactionModalOpen &&
@@ -766,27 +767,35 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   }
 
   const {
-    quote,
-    error,
-    rawError: quoteError,
-    isFetchingQuote,
-    executeSwap,
-    quoteQueryKey,
-    invalidateQuoteQuery
-  } = useSwapQuote({
-    client: relayClient ? relayClient : undefined,
+    data: quote,
+    error: quoteError,
+    isFetching: isFetchingQuote,
+    executeQuote: executeSwap,
+    queryKey: quoteQueryKey
+  } = useQuote(
+    relayClient ? relayClient : undefined,
     wallet,
-    parameters: quoteParameters,
-    onRequested: onQuoteRequested,
-    onReceived: onQuoteReceived,
-    enabled: Boolean(quoteFetchingEnabled && quoteParameters !== undefined),
-    refetchInterval: quoteRefetchInterval,
-    onError: handleQuoteError,
-    secureBaseUrl: isGasSponsorshipEnabled
+    quoteParameters,
+    onQuoteRequested,
+    onQuoteReceived,
+    {
+      refetchOnWindowFocus: false,
+      enabled: Boolean(quoteFetchingEnabled && quoteParameters !== undefined),
+      refetchInterval: quoteRefetchInterval
+    },
+    handleQuoteError,
+    undefined,
+    isGasSponsorshipEnabled
       ? providerOptionsContext?.secureBaseUrl
-      : undefined,
-    queryClient
-  })
+      : undefined
+  )
+
+  const invalidateQuoteQuery = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: quoteQueryKey })
+  }, [queryClient, quoteQueryKey])
+
+  const derivedError = quote || (isFetchingQuote && Boolean(quoteFetchingEnabled && quoteParameters !== undefined)) ? null : quoteError
+  const error = derivedError
 
   useDisconnected(address, () => {
     setCustomToAddress(undefined)

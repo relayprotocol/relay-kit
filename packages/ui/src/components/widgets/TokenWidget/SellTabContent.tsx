@@ -4,7 +4,8 @@ import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
   formatNumber,
-  formatDollar
+  formatDollar,
+  safeNumberConversion
 } from '../../../utils/numbers.js'
 import { EventNames } from '../../../constants/events.js'
 import { Divider } from '@relayprotocol/relay-design-system/jsx'
@@ -236,8 +237,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
   const hasSelectedTokens = Boolean(fromToken)
   const invalidAmount =
     !quote ||
-    Number(debouncedInputAmountValue) === 0 ||
-    Number(debouncedOutputAmountValue) === 0 ||
+    safeNumberConversion(debouncedInputAmountValue) === 0 ||
+    safeNumberConversion(debouncedOutputAmountValue) === 0 ||
     !hasSelectedTokens
 
   const disableActionButton =
@@ -267,7 +268,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
     !toChainWalletVMSupported && fromToken ? [fromToken.chainId] : undefined
 
   const hasValidInputAmount =
-    fromToken && amountInputValue && Number(amountInputValue) > 0
+    fromToken && amountInputValue && safeNumberConversion(amountInputValue) > 0
 
   const currencyOutAmountUsd = quote?.details?.currencyOut?.amountUsd
   const currencyOutAmountFormatted =
@@ -312,7 +313,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 setUsdInputValue(value)
                 setTradeType('EXACT_INPUT')
                 setTokenInputCache('')
-                if (Number(value) === 0) {
+                if (safeNumberConversion(value) === 0) {
                   setAmountOutputValue('')
                   setUsdOutputValue('')
                   debouncedAmountInputControls.flush()
@@ -320,7 +321,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
               } else {
                 setAmountInputValue(value)
                 setTradeType('EXACT_INPUT')
-                if (Number(value) === 0) {
+                if (safeNumberConversion(value) === 0) {
                   setAmountOutputValue('')
                   debouncedAmountInputControls.flush()
                 }
@@ -365,7 +366,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
             >
               {isUsdInputMode
                 ? fromToken
-                  ? usdInputValue && Number(usdInputValue) > 0
+                  ? usdInputValue && safeNumberConversion(usdInputValue) > 0
                     ? amountInputValue &&
                       conversionRate &&
                       !isLoadingFromTokenPrice
@@ -377,7 +378,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                   ? formatDollar(Number(quote.details.currencyIn.amountUsd))
                   : isLoadingFromTokenPrice &&
                       amountInputValue &&
-                      Number(amountInputValue) > 0
+                      safeNumberConversion(amountInputValue) > 0
                     ? '...'
                     : inputAmountUsd &&
                         inputAmountUsd > 0 &&
@@ -435,8 +436,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
               }}
             >
               {(() => {
-                // Always display the balance for the asset being sold (fromToken)
-                // regardless of the payout token shown in the payment method trigger.
                 const displayToken = fromToken || toToken
                 const displayBalance = fromToken ? fromBalance : toBalance
                 const displayBalancePending = fromToken

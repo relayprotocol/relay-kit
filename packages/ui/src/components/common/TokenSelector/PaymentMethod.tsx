@@ -104,7 +104,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   linkedWallets,
   setToken,
   onAnalyticEvent,
-  autoSelectToken = true
+  autoSelectToken = false
 }) => {
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
@@ -210,7 +210,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 
   const useDefaultTokenList = debouncedTokenSearchValue === ''
 
-  // Fetch balances for all linked wallets
   const {
     balanceMap: tokenBalances,
     data: duneTokens,
@@ -222,7 +221,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet'
   )
 
-  // Filter dune token balances based on configured chains
   const filteredDuneTokenBalances = useMemo(() => {
     return duneTokens?.balances?.filter((balance) =>
       configuredChainIds.includes(balance.chain_id)
@@ -352,7 +350,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     setStarredChainIds(getStarredChainIds())
   }, [])
 
-  // Auto-select token with highest balance when wallet connects or changes
   useEffect(() => {
     if (!autoSelectToken) {
       return
@@ -365,7 +362,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       sortedUserTokens &&
       sortedUserTokens.length > 0
     ) {
-      // Select the first token (highest balance)
       const topToken = sortedUserTokens[0]
       setToken(topToken)
     }
@@ -378,7 +374,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     autoSelectToken
   ])
 
-  // Update starred chains when the modal opens to sync with other instances
   useEffect(() => {
     if (open) {
       setStarredChainIds(getStarredChainIds())
@@ -462,7 +457,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       }
 
       if (openChange) {
-        // Set the initial chain filter before opening the modal
         const chainFilter = getInitialChainFilter(
           chainFilterOptions,
           context,
@@ -668,13 +662,20 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                     css={{
                       width: '100%',
                       gap: '2',
-                      minWidth: 0
+                      minWidth: 0,
+                      alignItems: 'center',
+                      height: 40
                     }}
                   >
                     <AccessibleListItem
                       value="input"
                       asChild
-                      css={{ flex: 1, minWidth: 0 }}
+                      css={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
                     >
                       <Input
                         ref={setTokenSearchInputElement}
@@ -690,8 +691,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                         }
                         containerCss={{
                           width: '100%',
-                          height: 40,
-                          mb: isDesktop ? '1' : '0'
+                          height: 40
                         }}
                         css={{
                           width: '100%',
@@ -801,6 +801,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                               isLoadingBalances={shouldShowBalanceLoading}
                               chainFilterId={chainFilter.id}
                               limit={tokensWithValue.length}
+                              stickyHeader={true}
                             />
                           )
                         } else {

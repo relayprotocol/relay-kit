@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-// Map to override old API paths to new SIM API paths
 const API_MAPPINGS = {
   'api/echo/v1/balances/evm': 'v1/evm/balances',
   'api/echo/beta2/balances/svm': 'beta/svm/balances'
@@ -21,7 +20,6 @@ export default async function handler(
     origin = new URL(origin).origin
   } catch (e) {}
 
-  // CORS: If the origin is allowed, set CORS headers
   if (allowedDomains.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
     res.setHeader('Vary', 'Origin')
@@ -32,7 +30,6 @@ export default async function handler(
     )
   }
 
-  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     res.status(200).end()
     return
@@ -47,7 +44,6 @@ export default async function handler(
   let modifiedPath = newPath
   const chainIdsMatch = modifiedPath.match(/chain_ids=([^&]*)/)
   if (chainIdsMatch && chainIdsMatch[1].includes('mainnet')) {
-    // Only append if not already present
     if (!chainIdsMatch[1].includes('747474')) {
       const newChainIds = chainIdsMatch[1] + ',747474'
       modifiedPath = modifiedPath.replace(
@@ -59,7 +55,6 @@ export default async function handler(
 
   const url = `https://api.sim.dune.com${modifiedPath}`
 
-  // Check if API key is configured
   if (!DUNE_API_KEY) {
     res.status(500).json({
       error: 'Server configuration error'
@@ -67,7 +62,6 @@ export default async function handler(
     return
   }
 
-  // Check CORS if allowedDomains is configured
   if (allowedDomains.length > 0 && !allowedDomains.includes(origin)) {
     res.status(403).json({ message: 'Forbidden: Origin not allowed' })
     return
