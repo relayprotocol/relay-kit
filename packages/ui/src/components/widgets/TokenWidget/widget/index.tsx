@@ -19,7 +19,10 @@ import { EventNames } from '../../../../constants/events.js'
 import WidgetContainer from '../../WidgetContainer.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
-import { findBridgableToken, generateTokenImageUrl, tokensAreEqual } from '../../../../utils/tokens.js'
+import {
+  findBridgableToken,
+  generateTokenImageUrl
+} from '../../../../utils/tokens.js'
 import { UnverifiedTokenModal } from '../../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../../utils/localStorage.js'
 import { calculateUsdValue, getSwapEventData } from '../../../../utils/quote.js'
@@ -28,7 +31,6 @@ import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
 import BuyTabContent from '../BuyTabContent.js'
 import SellTabContent from '../SellTabContent.js'
 import { useTokenList, useQuote } from '@relayprotocol/relay-kit-hooks'
-import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
 import { useWalletGuards } from '../hooks/useWalletGuards.js'
 
 type BaseTokenWidgetProps = {
@@ -227,10 +229,26 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         logoURI: generateTokenImageUrl(apiToken),
         verified: apiToken.metadata?.verified ?? false
       }
-      setResolvedFromToken(resolved)
-      setFromToken?.(resolved)
+
+      // In buy mode, the token from URL should be the token to buy (toToken)
+      // In sell mode, it should be the token to sell (fromToken)
+      if (activeTab === 'buy' && !toToken && !resolvedToToken) {
+        setResolvedToToken(resolved)
+        setToToken?.(resolved)
+      } else if (activeTab === 'sell') {
+        setResolvedFromToken(resolved)
+        setFromToken?.(resolved)
+      }
     }
-  }, [fromToken, fromTokenList, setFromToken])
+  }, [
+    fromToken,
+    fromTokenList,
+    setFromToken,
+    activeTab,
+    toToken,
+    resolvedToToken,
+    setToToken
+  ])
 
   // Resolve toToken from API response
   useEffect(() => {
@@ -425,11 +443,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             custom:
               typeof customToAddress === 'string' ? customToAddress : undefined
           }
-        }, [
-          activeTab,
-          destinationAddressOverride,
-          customToAddress
-        ])
+        }, [activeTab, destinationAddressOverride, customToAddress])
 
         useEffect(() => {
           setAllowUnsupportedOrigin(activeTab === 'buy')
@@ -438,40 +452,48 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
         // Auto-select first compatible wallet in buy tab when toToken is set and no destination is selected
         useEffect(() => {
-          if (activeTab === 'buy' && 
-              toToken && 
-              multiWalletSupportEnabled && 
-              linkedWallets && 
-              linkedWallets.length > 0 &&
-              !recipient &&
-              !destinationAddressOverride && 
-              !customToAddress) {
-            
+          if (
+            activeTab === 'buy' &&
+            toToken &&
+            multiWalletSupportEnabled &&
+            linkedWallets &&
+            linkedWallets.length > 0 &&
+            !destinationAddressOverride &&
+            !customToAddress
+          ) {
             // Find the destination chain for filtering compatible wallets
-            const toChain = relayClient?.chains?.find((c) => c.id === toToken.chainId)
-            
+            const toChain = relayClient?.chains?.find(
+              (c) => c.id === toToken.chainId
+            )
+
             if (toChain) {
               // Filter wallets compatible with the destination chain VM type
               const compatibleWallets = linkedWallets.filter((wallet) => {
                 return wallet.vmType === toChain.vmType
               })
-              
-              // Auto-select the first compatible wallet
-              if (compatibleWallets.length > 0) {
-                setDestinationAddressOverride(compatibleWallets[0].address)
+
+              // Auto-select the first compatible wallet (prefer the current address if compatible)
+              const currentAddressWallet = compatibleWallets.find(
+                (w) => w.address.toLowerCase() === address?.toLowerCase()
+              )
+              const walletToSelect =
+                currentAddressWallet || compatibleWallets[0]
+
+              if (walletToSelect) {
+                setDestinationAddressOverride(walletToSelect.address)
               }
             }
           }
         }, [
-          activeTab, 
-          toToken, 
-          multiWalletSupportEnabled, 
-          linkedWallets, 
-          recipient,
-          destinationAddressOverride, 
-          customToAddress, 
+          activeTab,
+          toToken,
+          multiWalletSupportEnabled,
+          linkedWallets,
+          destinationAddressOverride,
+          customToAddress,
           relayClient?.chains,
-          setDestinationAddressOverride
+          setDestinationAddressOverride,
+          address
         ])
 
         // Calculate the USD value of the input amount
@@ -566,7 +588,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           (chain) => chain.id === toToken?.chainId
         )
 
-
         const handleSetToToken = useCallback(
           (token?: Token) => {
             if (!token) {
@@ -658,8 +679,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           disablePasteWalletAddressOption,
           customToAddress: customToAddress as string | undefined,
           originAddressOverride: _originAddressOverride as string | undefined,
-          destinationAddressOverride:
-            destinationAddressOverride as string | undefined,
+          destinationAddressOverride: destinationAddressOverride as
+            | string
+            | undefined,
           setDestinationAddressOverride
         })
 
@@ -1048,6 +1070,26 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                       onValueChange={(value) => {
                         const nextTab = value as 'buy' | 'sell'
 
+                        console.log(
+                          '🔍 Tab switching:',
+                          JSON.stringify(
+                            {
+                              activeTab,
+                              nextTab,
+                              recipient,
+                              address,
+                              destinationAddressOverride,
+                              customToAddress,
+                              allowUnsupportedOrigin,
+                              allowUnsupportedRecipient,
+                              fromToken: fromToken?.address,
+                              toToken: toToken?.address
+                            },
+                            null,
+                            2
+                          )
+                        )
+
                         setAllowUnsupportedOrigin(nextTab === 'buy')
                         setAllowUnsupportedRecipient(nextTab === 'sell')
 
@@ -1120,25 +1162,32 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           setCustomToAddress(storedNextRecipient.custom)
 
                           // Auto-select first compatible wallet in buy tab if no destination is set
-                          if (nextTab === 'buy' && 
-                              multiWalletSupportEnabled && 
-                              linkedWallets && 
-                              linkedWallets.length > 0 &&
-                              !storedNextRecipient.override && 
-                              !storedNextRecipient.custom) {
-                            
+                          if (
+                            nextTab === 'buy' &&
+                            multiWalletSupportEnabled &&
+                            linkedWallets &&
+                            linkedWallets.length > 0 &&
+                            !storedNextRecipient.override &&
+                            !storedNextRecipient.custom
+                          ) {
                             // Find the destination chain for filtering compatible wallets
-                            const toChain = relayClient?.chains?.find((c) => c.id === nextToToken?.chainId)
-                            
+                            const toChain = relayClient?.chains?.find(
+                              (c) => c.id === nextToToken?.chainId
+                            )
+
                             if (toChain) {
                               // Filter wallets compatible with the destination chain VM type
-                              const compatibleWallets = linkedWallets.filter((wallet) => {
-                                return wallet.vmType === toChain.vmType
-                              })
-                              
+                              const compatibleWallets = linkedWallets.filter(
+                                (wallet) => {
+                                  return wallet.vmType === toChain.vmType
+                                }
+                              )
+
                               // Auto-select the first compatible wallet
                               if (compatibleWallets.length > 0) {
-                                setDestinationAddressOverride(compatibleWallets[0].address)
+                                setDestinationAddressOverride(
+                                  compatibleWallets[0].address
+                                )
                               }
                             }
                           }
@@ -1178,13 +1227,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           maxWidth: 408
                         }}
                       >
-                        <TabsList>
+                        <TabsList css={{ backgroundColor: 'transparent' }}>
                           <TabsTrigger
                             value="buy"
                             css={{
                               padding: '12px',
                               background: 'none',
-                              transition: 'background 0.2s ease-in-out',
                               outline: '1px solid transparent',
                               '&[data-state="active"]': {
                                 background: 'white',
@@ -1216,7 +1264,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             css={{
                               padding: '12px',
                               background: 'none',
-                              transition: 'background 0.2s ease-in-out',
                               outline: '1px solid transparent',
                               '&[data-state="active"]': {
                                 background: 'white',
@@ -1250,8 +1297,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             // Slippage configuration
                             slippageTolerance: localSlippageTolerance,
                             onOpenSlippageConfig: handleOpenSlippageConfig,
-                            onSlippageToleranceChange: handleSlippageToleranceChange,
-                            
+                            onSlippageToleranceChange:
+                              handleSlippageToleranceChange,
+
                             // Input/output state
                             isUsdInputMode,
                             usdOutputValue,
@@ -1266,7 +1314,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             setUsdInputValue,
                             toggleInputMode,
                             debouncedAmountOutputControls,
-                            
+
                             // Tokens and pricing
                             toToken,
                             fromToken,
@@ -1276,7 +1324,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             toTokenPriceData,
                             handleSetFromToken,
                             handleSetToToken,
-                            
+
                             // Balance information
                             feeBreakdown,
                             isLoadingFromBalance,
@@ -1286,7 +1334,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isLoadingToBalance,
                             toBalancePending,
                             hasInsufficientBalance,
-                            
+
                             // Wallet and address management
                             address,
                             multiWalletSupportEnabled,
@@ -1297,14 +1345,14 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             onLinkNewWallet,
                             disablePasteWalletAddressOption,
                             setAddressModalOpen,
-                            
+
                             // Chain and VM support
                             fromChain,
                             toChain,
                             toChainWalletVMSupported,
                             fromChainWalletVMSupported,
                             supportedWalletVMs,
-                            
+
                             // Recipient configuration
                             recipient,
                             setCustomToAddress,
@@ -1315,18 +1363,18 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isValidFromAddress,
                             recipientWalletSupportsChain,
                             recipientLinkedWallet,
-                            
+
                             // Chain and token locking
                             lockToToken,
                             lockFromToken,
                             isSingleChainLocked,
                             lockChainId,
                             popularChainIds,
-                            
+
                             // Modal states
                             transactionModalOpen,
                             depositAddressModalOpen,
-                            
+
                             // Error and validation states
                             error,
                             isInsufficientLiquidityError,
@@ -1334,19 +1382,19 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isCapacityExceededError,
                             isCouldNotExecuteError,
                             supportsExternalLiquidity,
-                            
+
                             // UI state and interactions
                             showHighPriceImpactWarning,
                             disableSwapButton: promptSwitchRoute,
                             onPrimaryAction: handlePrimaryAction,
                             debouncedInputAmountValue,
                             debouncedOutputAmountValue,
-                            
+
                             // Fee and estimation
                             timeEstimate,
                             relayerFeeProportion,
                             highRelayerServiceFee,
-                            
+
                             // Event handling and misc
                             onAnalyticEvent,
                             toChainVmType: toChain?.vmType,
@@ -1359,8 +1407,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             // Slippage configuration
                             slippageTolerance: localSlippageTolerance,
                             onOpenSlippageConfig: handleOpenSlippageConfig,
-                            onSlippageToleranceChange: handleSlippageToleranceChange,
-                            
+                            onSlippageToleranceChange:
+                              handleSlippageToleranceChange,
+
                             // Input/output state
                             disableInputAutoFocus,
                             isUsdInputMode,
@@ -1378,7 +1427,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             setUsdOutputValue,
                             toggleInputMode,
                             debouncedAmountInputControls,
-                            
+
                             // Tokens and pricing
                             fromToken,
                             toToken,
@@ -1388,7 +1437,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isLoadingFromTokenPrice,
                             handleSetFromToken,
                             handleSetToToken,
-                            
+
                             // Balance information
                             feeBreakdown,
                             fromBalance,
@@ -1398,7 +1447,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             toBalancePending,
                             hasInsufficientBalance,
                             fromBalancePending,
-                            
+
                             // Wallet and address management
                             address,
                             multiWalletSupportEnabled,
@@ -1409,14 +1458,14 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             onLinkNewWallet,
                             disablePasteWalletAddressOption,
                             setAddressModalOpen,
-                            
+
                             // Chain and VM support
                             fromChain,
                             toChain,
                             fromChainWalletVMSupported,
                             toChainWalletVMSupported,
                             supportedWalletVMs,
-                            
+
                             // Recipient configuration
                             recipient,
                             setCustomToAddress,
@@ -1427,18 +1476,18 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isValidFromAddress,
                             recipientWalletSupportsChain,
                             recipientLinkedWallet,
-                            
+
                             // Chain and token locking
                             lockToToken,
                             lockFromToken,
                             isSingleChainLocked,
                             lockChainId,
                             popularChainIds,
-                            
+
                             // Modal states
                             transactionModalOpen,
                             depositAddressModalOpen,
-                            
+
                             // Error and validation states
                             error,
                             isInsufficientLiquidityError,
@@ -1446,7 +1495,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isCapacityExceededError,
                             isCouldNotExecuteError,
                             supportsExternalLiquidity,
-                            
+
                             // UI state and interactions
                             showHighPriceImpactWarning,
                             disableSwapButton: promptSwitchRoute,
@@ -1456,12 +1505,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             percentOptions: percentageOptions,
                             onSelectPercentage: handleSelectPercentage,
                             onSelectMax: handleSelectMax,
-                            
+
                             // Fee and estimation
                             timeEstimate,
                             relayerFeeProportion,
                             highRelayerServiceFee,
-                            
+
                             // Event handling and misc
                             onAnalyticEvent,
                             toChainVmType: toChain?.vmType,

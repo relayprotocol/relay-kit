@@ -3,7 +3,10 @@ import type { Dispatch, SetStateAction } from 'react'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../../../types/index.js'
 import type { RelayKitProviderProps } from '../../../../providers/RelayKitProvider.js'
-import { addressesEqual, findSupportedWallet } from '../../../../utils/address.js'
+import {
+  addressesEqual,
+  findSupportedWallet
+} from '../../../../utils/address.js'
 
 type Params = {
   multiWalletSupportEnabled: boolean
@@ -133,7 +136,11 @@ export const useWalletGuards = ({
     ) {
       setDestinationAddressOverride(undefined)
     }
-  }, [destinationAddressOverride, customToAddress, setDestinationAddressOverride])
+  }, [
+    destinationAddressOverride,
+    customToAddress,
+    setDestinationAddressOverride
+  ])
 
   useEffect(() => {
     if (!multiWalletSupportEnabled) {
@@ -147,18 +154,22 @@ export const useWalletGuards = ({
     }
 
     if (originAddressOverride) {
-      const originMatches = linkedWallets?.some((wallet) =>
+      const originExists = linkedWallets?.some((wallet) =>
         addressesEqual(wallet.vmType, wallet.address, originAddressOverride)
       )
 
-      if (!originMatches) {
+      if (!originExists) {
         setOriginAddressOverride(undefined)
       }
     }
 
     if (destinationAddressOverride) {
       const destinationMatches = linkedWallets?.some((wallet) =>
-        addressesEqual(wallet.vmType, wallet.address, destinationAddressOverride)
+        addressesEqual(
+          wallet.vmType,
+          wallet.address,
+          destinationAddressOverride
+        )
       )
 
       if (!destinationMatches) {
@@ -171,7 +182,8 @@ export const useWalletGuards = ({
     originAddressOverride,
     destinationAddressOverride,
     setOriginAddressOverride,
-    setDestinationAddressOverride
+    setDestinationAddressOverride,
+    allowUnsupportedOrigin
   ])
 }
 

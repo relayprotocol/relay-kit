@@ -24,10 +24,10 @@ import { isSolanaWallet } from '@dynamic-labs/solana'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
 import {
   adaptViemWallet,
-  RelayChain,
   type AdaptedWallet,
   type ChainVM
 } from '@relayprotocol/relay-sdk'
+import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { useWalletFilter } from 'context/walletFilter'
 import { adaptBitcoinWallet } from '@relayprotocol/relay-bitcoin-wallet-adapter'
 import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
@@ -123,6 +123,8 @@ const TokenWidgetPage: NextPage = () => {
     if (!addressParam || !chainParam) {
       setUrlTokenAddress(undefined)
       setUrlTokenChainId(undefined)
+      setAddressInput('')
+      setChainInput('')
       return
     }
 
@@ -137,6 +139,10 @@ const TokenWidgetPage: NextPage = () => {
     if (!Number.isNaN(chainId)) {
       setUrlTokenAddress(decodedAddress)
       setUrlTokenChainId(chainId)
+      // Auto-populate form inputs with URL params
+      setAddressInput(decodedAddress)
+      setChainInput(chainId.toString())
+      setTokenNotFound(false)
     }
   }, [router.isReady, router.query.params])
 
@@ -219,6 +225,10 @@ const TokenWidgetPage: NextPage = () => {
         return
       }
 
+      setFromToken(undefined)
+      setToToken(undefined)
+      setTokenNotFound(false)
+
       // Update the URL with the new token params
       setUrlTokenAddress(normalizedAddress)
       setUrlTokenChainId(parsedChainId)
@@ -230,6 +240,20 @@ const TokenWidgetPage: NextPage = () => {
   useEffect(() => {
     switchWallet.current = _switchWallet
   }, [_switchWallet])
+
+  // Check if token should have loaded but didn't (token not found)
+  useEffect(() => {
+    if (urlTokenAddress && urlTokenChainId && !fromToken && relayClient) {
+      // Wait a bit for the query to complete, then check if token was not found
+      const timer = setTimeout(() => {
+        if (!fromToken) {
+          setTokenNotFound(true)
+        }
+      }, 2000) // Wait 2 seconds for token query to complete
+
+      return () => clearTimeout(timer)
+    }
+  }, [urlTokenAddress, urlTokenChainId, fromToken, relayClient])
 
   useEffect(() => {
     const adaptWallet = async () => {
@@ -345,7 +369,7 @@ const TokenWidgetPage: NextPage = () => {
           }}
         >
           <TokenWidget
-            key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
+            key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain-${urlTokenAddress}-${urlTokenChainId}`}
             lockChainId={singleChainMode ? 8453 : undefined}
             singleChainMode={singleChainMode}
             supportedWalletVMs={supportedWalletVMs}
@@ -353,8 +377,8 @@ const TokenWidgetPage: NextPage = () => {
             setToToken={setToToken}
             fromToken={fromToken}
             setFromToken={setFromToken}
-            defaultToTokenAddress={urlTokenAddress}
-            defaultToTokenChainId={urlTokenChainId}
+            defaultFromTokenAddress={urlTokenAddress}
+            defaultFromTokenChainId={urlTokenChainId}
             wallet={wallet}
             multiWalletSupportEnabled={true}
             linkedWallets={linkedWallets}
@@ -425,6 +449,7 @@ const TokenWidgetPage: NextPage = () => {
               setFromToken(token)
               if (token) {
                 setTokenNotFound(false)
+                updateDemoUrl(token)
               }
             }}
             onToTokenChange={(token) => {

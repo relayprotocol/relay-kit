@@ -14,7 +14,6 @@ import {
 } from '../../../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
-import { normalizeTokenAddress } from '../../../../utils/tokens.js'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useCapabilities } from 'wagmi/experimental'
 import type { Token } from '../../../../types/index.js'
@@ -35,7 +34,10 @@ import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.j
 import type { DebouncedState } from 'usehooks-ts'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../../../types/index.js'
-import { addressWithFallback, isValidAddress } from '../../../../utils/address.js'
+import {
+  addressWithFallback,
+  isValidAddress
+} from '../../../../utils/address.js'
 import { adaptViemWallet, getDeadAddress } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../../../utils/errors.js'
 import { useSwapButtonCta } from '../../../../hooks/widget/useSwapButtonCta.js'
@@ -263,19 +265,28 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     toToken?.chainId !== undefined &&
     fromToken.symbol === toToken.symbol
 
-  const toChain = relayClient?.chains.find(
-    (chain) => chain.id === toToken?.chainId
-  )
-  const fromChain = relayClient?.chains?.find(
-    (chain) => chain.id === fromToken?.chainId
+  const toChain = useMemo(
+    () => relayClient?.chains?.find((chain) => chain.id === toToken?.chainId),
+    [relayClient?.chains, toToken?.chainId]
   )
 
-  const fromChainWalletVMSupported =
-    !fromChain?.vmType ||
-    supportedWalletVMs.includes(fromChain?.vmType) ||
-    fromChain?.id === 1337
-  const toChainWalletVMSupported =
-    !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType)
+  const fromChain = useMemo(
+    () => relayClient?.chains?.find((chain) => chain.id === fromToken?.chainId),
+    [relayClient?.chains, fromToken?.chainId]
+  )
+
+  const fromChainWalletVMSupported = useMemo(
+    () =>
+      !fromChain?.vmType ||
+      supportedWalletVMs.includes(fromChain?.vmType) ||
+      fromChain?.id === 1337,
+    [fromChain?.vmType, fromChain?.id, supportedWalletVMs]
+  )
+
+  const toChainWalletVMSupported = useMemo(
+    () => !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType),
+    [toChain?.vmType, supportedWalletVMs]
+  )
 
   // Automatically select the correct wallet address based on fromToken's chain VM
   // In sell mode (no fromChain), use toChain to find compatible wallet
@@ -338,6 +349,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
         : undefined,
       connectorKeyOverrides
     )
+
     if (
       multiWalletSupportEnabled &&
       toChain &&
@@ -359,6 +371,8 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
 
       return supportedWallet?.address
     }
+
+    return undefined
   }, [
     multiWalletSupportEnabled,
     toChain,
@@ -369,9 +383,11 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     connectorKeyOverrides
   ])
 
-  // Don't default to origin address as recipient (prevents selling to yourself)
   const recipient =
-    destinationAddressOverride ?? customToAddress ?? defaultRecipient
+    destinationAddressOverride ??
+    customToAddress ??
+    defaultRecipient ??
+    (!allowUnsupportedRecipient && address ? address : undefined)
 
   const {
     value: fromBalance,
@@ -399,7 +415,8 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     chain: toChain,
     address: recipient,
     currency: toToken?.address ? (toToken.address as Address) : undefined,
-    enabled: toToken !== undefined,
+    enabled:
+      toToken !== undefined && recipient !== undefined && recipient !== '',
     refreshInterval: undefined,
     wallet
   })
@@ -472,12 +489,22 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       ? linkedWallets?.find((wallet) => wallet.address === recipient)
       : undefined) !== undefined
 
-  const isValidFromAddress = isValidAddress(
-    fromChain?.vmType,
-    address ?? '',
-    fromChain?.id,
-    linkedWallet?.connector,
-    connectorKeyOverrides
+  const isValidFromAddress = useMemo(
+    () =>
+      isValidAddress(
+        fromChain?.vmType,
+        address ?? '',
+        fromChain?.id,
+        linkedWallet?.connector,
+        connectorKeyOverrides
+      ),
+    [
+      fromChain?.vmType,
+      address,
+      fromChain?.id,
+      linkedWallet?.connector,
+      connectorKeyOverrides
+    ]
   )
   const fromAddressWithFallback = addressWithFallback(
     fromChain?.vmType,
@@ -487,10 +514,9 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     connectorKeyOverrides
   )
 
-  const isValidToAddress = isValidAddress(
-    toChain?.vmType,
-    recipient ?? '',
-    toChain?.id
+  const isValidToAddress = useMemo(
+    () => isValidAddress(toChain?.vmType, recipient ?? '', toChain?.id),
+    [toChain?.vmType, recipient, toChain?.id]
   )
 
   const toAddressWithFallback = addressWithFallback(
@@ -598,8 +624,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     fromBalance,
     isFromNative
   )
-
-
 
   const shouldSetQuoteParameters =
     fromToken &&
@@ -760,7 +784,12 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     queryClient.invalidateQueries({ queryKey: quoteQueryKey })
   }, [queryClient, quoteQueryKey])
 
-  const derivedError = quote || (isFetchingQuote && Boolean(quoteFetchingEnabled && quoteParameters !== undefined)) ? null : quoteError
+  const derivedError =
+    quote ||
+    (isFetchingQuote &&
+      Boolean(quoteFetchingEnabled && quoteParameters !== undefined))
+      ? null
+      : quoteError
   const error = derivedError
 
   useDisconnected(address, () => {

@@ -571,7 +571,9 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               >
                 <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
               </Button>
-              <Text style="subtitle2">{context === 'from' ? 'Pay with' : 'Sell to'}</Text>
+              <Text style="subtitle2">
+                {context === 'from' ? 'Pay with' : 'Sell to'}
+              </Text>
             </Flex>
 
             <Flex
@@ -948,11 +950,7 @@ const ChainSearchInput: FC<ChainSearchInputProps> = ({ value, onChange }) => (
     placeholder="Search for a chain"
     icon={
       <Box css={{ color: 'gray9' }}>
-        <FontAwesomeIcon
-          icon={faMagnifyingGlass}
-          width={16}
-          height={16}
-        />
+        <FontAwesomeIcon icon={faMagnifyingGlass} width={16} height={16} />
       </Box>
     }
     containerCss={{

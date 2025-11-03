@@ -270,7 +270,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
   const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
-    convertBpsToPercent(currentSlippageTolerance)
+    currentSlippageTolerance ? convertBpsToPercent(currentSlippageTolerance) : undefined
   )
   const [debouncedDisplayValue] = useDebounceValue(displayValue, 500)
 
@@ -304,7 +304,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   }, [open, mode])
 
   useEffect(() => {
-    if (!open) {
+    if (!open && currentSlippageTolerance !== undefined) {
       setDisplayValue(convertBpsToPercent(currentSlippageTolerance))
       setMode(currentSlippageTolerance ? 'Custom' : 'Auto')
     }
