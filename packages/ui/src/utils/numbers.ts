@@ -330,8 +330,22 @@ function formatSignificantDigits(
   return isNegative ? '-' + result : result
 }
 
+/**
+ * Converts basis points to percentage string
+ * @param bps Basis points as string (e.g. "250" for 2.5%)
+ * @returns Formatted percentage string or undefined
+ */
+function convertBpsToPercent(bps?: string) {
+  if (bps === undefined) return undefined
+  const numeric = Number(bps)
+  if (!Number.isFinite(numeric)) return undefined
 
+  const percent = numeric / 100
+  if (!Number.isFinite(percent)) return undefined
 
+  const formatted = percent.toFixed(percent % 1 === 0 ? 0 : 2)
+  return formatted.replace(/\.0+$/, '').replace(/\.00$/, '')
+}
 
 export {
   formatDollar,
@@ -340,5 +354,6 @@ export {
   formatFixedLength,
   formatNumber,
   formatSignificantDigits,
-  truncateBalance
+  truncateBalance,
+  convertBpsToPercent
 }

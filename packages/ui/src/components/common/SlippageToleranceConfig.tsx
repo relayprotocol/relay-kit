@@ -26,6 +26,7 @@ import { EventNames } from '../../constants/events.js'
 import { useDebounceValue, useMediaQuery } from 'usehooks-ts'
 import useFallbackState from '../../hooks/useFallbackState.js'
 import { Modal } from './Modal.js'
+import { convertBpsToPercent } from '../../utils/numbers.js'
 
 type SlippageToleranceConfigProps = {
   open?: boolean
@@ -38,18 +39,6 @@ type SlippageToleranceConfigProps = {
   onOpenSlippageConfig?: () => void
   showGearIcon?: boolean
   showLabel?: boolean
-}
-
-const convertBpsToPercent = (bps?: string) => {
-  if (bps === undefined) return undefined
-  const numeric = Number(bps)
-  if (!Number.isFinite(numeric)) return undefined
-
-  const percent = numeric / 100
-  if (!Number.isFinite(percent)) return undefined
-
-  const formatted = percent.toFixed(percent % 1 === 0 ? 0 : 2)
-  return formatted.replace(/\.0+$/, '').replace(/\.00$/, '')
 }
 
 type SlippageTabsProps = {

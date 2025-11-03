@@ -3,11 +3,7 @@ import useDuneBalances, {
   type BalanceMap,
   type DuneBalanceResponse
 } from './useDuneBalances.js'
-import {
-  evmDeadAddress,
-  solDeadAddress,
-  bitcoinDeadAddress
-} from '@relayprotocol/relay-sdk'
+import { isDeadAddress } from '@relayprotocol/relay-sdk'
 
 type LinkedWallet = {
   address: string
@@ -28,9 +24,7 @@ export const useMultiWalletBalances = (
 
     if (
       primaryAddress &&
-      primaryAddress !== evmDeadAddress &&
-      primaryAddress !== solDeadAddress &&
-      primaryAddress !== bitcoinDeadAddress &&
+      !isDeadAddress(primaryAddress) &&
       isValidAddress
     ) {
       addresses.add(primaryAddress)
@@ -40,9 +34,7 @@ export const useMultiWalletBalances = (
       linkedWallets.forEach((wallet) => {
         if (
           wallet.address &&
-          wallet.address !== evmDeadAddress &&
-          wallet.address !== solDeadAddress &&
-          wallet.address !== bitcoinDeadAddress
+          !isDeadAddress(wallet.address)
         ) {
           addresses.add(wallet.address)
         }

@@ -69,7 +69,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
       }
       return true
     })
-  }, [wallets, chain])
+  }, [wallets, chain, disableWalletFiltering])
 
   const selectedWallet = useMemo(
     () =>

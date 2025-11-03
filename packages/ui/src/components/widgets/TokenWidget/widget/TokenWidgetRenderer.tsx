@@ -14,7 +14,7 @@ import {
 } from '../../../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
-import { normalizeTokenId } from '../../../../utils/tokens.js'
+import { normalizeTokenAddress } from '../../../../utils/tokens.js'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useCapabilities } from 'wagmi/experimental'
 import type { Token } from '../../../../types/index.js'
@@ -620,10 +620,10 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   }, [sponsoredTokens, relayClient?.chains])
 
   const normalizedToToken = toToken && toToken.address
-    ? normalizeTokenId(toToken.chainId, toToken.address, toChain?.vmType)
+    ? normalizeTokenAddress(toToken.chainId, toToken.address, toChain?.vmType)
     : undefined
   const normalizedFromToken = fromToken && fromToken.address
-    ? normalizeTokenId(fromToken.chainId, fromToken.address, fromChain?.vmType) 
+    ? normalizeTokenAddress(fromToken.chainId, fromToken.address, fromChain?.vmType) 
     : undefined
 
   const isGasSponsorshipEnabled =

@@ -68,9 +68,9 @@ export const tokensAreEqual = (a?: Token, b?: Token): boolean => {
 }
 
 /**
- * Normalizes token identifier for cross-chain consistency
+ * Normalizes token address for cross-chain consistency
  */
-export const normalizeTokenId = (chainId: number, address: string, vmType?: string): string => {
+export const normalizeTokenAddress = (chainId: number, address: string, vmType?: string): string => {
   const normalizedAddress = vmType === 'evm' ? address.toLowerCase() : address
   return `${chainId}:${normalizedAddress}`
 }
