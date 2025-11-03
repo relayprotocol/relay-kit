@@ -67,6 +67,7 @@ type TokenWidgetRendererProps = {
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
   sponsoredTokens?: string[]
+  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
 }
 
 export type ChildrenProps = {
@@ -185,6 +186,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   linkedWallets,
   supportedWalletVMs,
   sponsoredTokens,
+  useSecureBaseUrl,
   children,
   onAnalyticEvent,
   onSwapError
@@ -784,7 +786,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     },
     handleQuoteError,
     undefined,
-    isGasSponsorshipEnabled
+    useSecureBaseUrl?.(quoteParameters)
       ? providerOptionsContext?.secureBaseUrl
       : undefined
   )

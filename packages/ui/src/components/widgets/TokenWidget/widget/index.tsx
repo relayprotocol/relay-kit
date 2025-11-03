@@ -27,7 +27,7 @@ import { getFeeBufferAmount } from '../../../../utils/nativeMaxAmount.js'
 import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
 import BuyTabContent from '../BuyTabContent.js'
 import SellTabContent from '../SellTabContent.js'
-import { useTokenList } from '@relayprotocol/relay-kit-hooks'
+import { useTokenList, useQuote } from '@relayprotocol/relay-kit-hooks'
 import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
 import { useWalletGuards } from '../hooks/useWalletGuards.js'
 
@@ -55,6 +55,7 @@ type BaseTokenWidgetProps = {
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean
   sponsoredTokens?: string[]
+  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
   onOpenSlippageConfig?: () => void
   onFromTokenChange?: (token?: Token) => void
   onToTokenChange?: (token?: Token) => void
@@ -112,6 +113,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   popularChainIds,
   disablePasteWalletAddressOption,
   sponsoredTokens,
+  useSecureBaseUrl,
   onSetPrimaryWallet,
   onLinkNewWallet,
   onFromTokenChange,
@@ -327,6 +329,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       onAnalyticEvent={onAnalyticEvent}
       supportedWalletVMs={supportedWalletVMs}
       sponsoredTokens={sponsoredTokens}
+      useSecureBaseUrl={useSecureBaseUrl}
     >
       {({
         quote,
