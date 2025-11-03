@@ -42,7 +42,8 @@ const WALLET_VM_TYPES: Exclude<ChainVM, 'hypevm'>[] = [
   'evm',
   'bvm',
   'svm',
-  'suivm'
+  'suivm',
+  'tvm'
 ]
 
 const TokenWidgetPage: NextPage = () => {
@@ -358,18 +359,12 @@ const TokenWidgetPage: NextPage = () => {
               '42161:0xaf88d065e77c8cc2239327c5edb3a432268e5831',
               '10:0x0b2c639c533813f4aa9d7837caf62653d097ff85'
             ]}
-            // popularChainIds={[]}
-            // disableInputAutoFocus={true}
             toToken={toToken}
             setToToken={setToToken}
-            // lockToToken={true}
-            // lockFromToken={true}
             fromToken={fromToken}
             setFromToken={setFromToken}
-            // Use the new token resolution props for URL tokens
             defaultToTokenAddress={urlTokenAddress}
             defaultToTokenChainId={urlTokenChainId}
-            // defaultAmount={'5'}
             wallet={wallet}
             multiWalletSupportEnabled={true}
             linkedWallets={linkedWallets}
@@ -388,6 +383,8 @@ const TokenWidgetPage: NextPage = () => {
                 setWalletFilter('ECLIPSE')
               } else if (chain?.vmType === 'suivm') {
                 setWalletFilter('SUI')
+              } else if (chain?.vmType === 'tvm') {
+                setWalletFilter('TRON')
               } else {
                 setWalletFilter(undefined)
               }
