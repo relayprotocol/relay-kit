@@ -20,7 +20,7 @@ import {
   tronDeadAddress,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
-import TokenActionButton from './TokenActionButton.js'
+import SwapButton from '../SwapButton.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
 import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
@@ -260,19 +260,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
     Number(debouncedInputAmountValue) === 0 ||
     Number(debouncedOutputAmountValue) === 0 ||
     !hasSelectedTokens
-
-  const disableActionButton =
-    isFetchingQuote ||
-    (isValidToAddress &&
-      (isValidFromAddress || !fromChainWalletVMSupported) &&
-      (invalidAmount ||
-        hasInsufficientBalance ||
-        isInsufficientLiquidityError ||
-        transactionModalOpen ||
-        depositAddressModalOpen ||
-        isSameCurrencySameRecipientSwap ||
-        !recipientWalletSupportsChain ||
-        disableSwapButton))
 
   const toChainId = toToken?.chainId
   const lockedToChainIds = isSingleChainLocked
@@ -696,7 +683,27 @@ const SellTabContent: FC<SellTabContentProps> = ({
         </Flex>
 
         <Flex css={{ width: '100%' }}>
-          <TokenActionButton
+          <SwapButton
+            context="Sell"
+            transactionModalOpen={transactionModalOpen}
+            depositAddressModalOpen={depositAddressModalOpen}
+            showHighPriceImpactWarning={showHighPriceImpactWarning}
+            disableSwapButton={disableSwapButton}
+            tokenWidgetMode={true}
+            hasValidAmount={!invalidAmount}
+            quote={quote}
+            address={address}
+            hasInsufficientBalance={hasInsufficientBalance}
+            isInsufficientLiquidityError={isInsufficientLiquidityError}
+            debouncedInputAmountValue={debouncedInputAmountValue}
+            debouncedOutputAmountValue={debouncedOutputAmountValue}
+            isSameCurrencySameRecipientSwap={isSameCurrencySameRecipientSwap}
+            ctaCopy={displayCta}
+            isValidFromAddress={isValidFromAddress}
+            isValidToAddress={isValidToAddress}
+            fromChainWalletVMSupported={fromChainWalletVMSupported}
+            recipientWalletSupportsChain={recipientWalletSupportsChain}
+            isFetchingQuote={isFetchingQuote}
             onClick={() => {
               onAnalyticEvent?.('TOKEN_SELL_CLICKED', {
                 token: fromToken,
@@ -704,12 +711,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
               })
               onPrimaryAction()
             }}
-            ctaCopy={displayCta}
-            disabled={disableActionButton}
-            isFetchingQuote={isFetchingQuote}
-            hasValidAmount={!invalidAmount}
             onConnectWallet={onConnectWallet}
-            address={address}
+            onAnalyticEvent={onAnalyticEvent}
           />
         </Flex>
 

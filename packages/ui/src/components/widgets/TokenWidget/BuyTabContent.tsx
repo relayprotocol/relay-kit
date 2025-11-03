@@ -18,7 +18,7 @@ import type { TradeType, ChildrenProps } from './widget/TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
-import TokenActionButton from './TokenActionButton.js'
+import SwapButton from '../SwapButton.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
 import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
@@ -255,22 +255,8 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   const currencyInAmountUsd = quote?.details?.currencyIn?.amountUsd
   const currencyInAmountFormatted = quote?.details?.currencyIn?.amountFormatted
 
-  // Only show skeleton on initial load, not on subsequent fetches
   const isLoadingPayWith =
     hasValidOutputAmount && isFetchingQuote && fromToken && !currencyInAmountUsd
-
-  const disableActionButton =
-    isFetchingQuote ||
-    (isValidToAddress &&
-      (isValidFromAddress || !fromChainWalletVMSupported) &&
-      (invalidAmount ||
-        hasInsufficientBalance ||
-        isInsufficientLiquidityError ||
-        transactionModalOpen ||
-        depositAddressModalOpen ||
-        isSameCurrencySameRecipientSwap ||
-        !recipientWalletSupportsChain ||
-        disableSwapButton))
 
   return (
     <TabsContent value="buy">
@@ -590,7 +576,27 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
         </Flex>
 
         <Flex css={{ width: '100%' }}>
-          <TokenActionButton
+          <SwapButton
+            context="Buy"
+            transactionModalOpen={transactionModalOpen}
+            depositAddressModalOpen={depositAddressModalOpen}
+            showHighPriceImpactWarning={showHighPriceImpactWarning}
+            disableSwapButton={disableSwapButton}
+            tokenWidgetMode={true}
+            hasValidAmount={!invalidAmount}
+            quote={quote}
+            address={address}
+            hasInsufficientBalance={hasInsufficientBalance}
+            isInsufficientLiquidityError={isInsufficientLiquidityError}
+            debouncedInputAmountValue={debouncedInputAmountValue}
+            debouncedOutputAmountValue={debouncedOutputAmountValue}
+            isSameCurrencySameRecipientSwap={isSameCurrencySameRecipientSwap}
+            ctaCopy={displayCta}
+            isValidFromAddress={isValidFromAddress}
+            isValidToAddress={isValidToAddress}
+            fromChainWalletVMSupported={fromChainWalletVMSupported}
+            recipientWalletSupportsChain={recipientWalletSupportsChain}
+            isFetchingQuote={isFetchingQuote}
             onClick={() => {
               onAnalyticEvent?.('TOKEN_BUY_CLICKED', {
                 token: toToken,
@@ -598,12 +604,8 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               })
               onPrimaryAction()
             }}
-            ctaCopy={displayCta}
-            disabled={disableActionButton}
-            isFetchingQuote={isFetchingQuote}
-            hasValidAmount={!invalidAmount}
             onConnectWallet={onConnectWallet}
-            address={address}
+            onAnalyticEvent={onAnalyticEvent}
           />
         </Flex>
 
