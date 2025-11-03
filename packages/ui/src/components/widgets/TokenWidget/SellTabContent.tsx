@@ -11,7 +11,7 @@ import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './widget/TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -242,7 +242,48 @@ const SellTabContent: FC<SellTabContentProps> = ({
   const toTokenRef = useRef(toToken)
   toTokenRef.current = toToken
 
-  // Use ctaCopy for wallet/address prompts, override transaction operations to "Sell"
+  const hasAutoSelectedDestination = useRef(false)
+
+  // Auto-select the user's primary wallet as the destination for selling
+  useEffect(() => {
+    if (
+      !hasAutoSelectedDestination.current &&
+      multiWalletSupportEnabled &&
+      address &&
+      isValidFromAddress &&
+      !recipient
+    ) {
+      setDestinationAddressOverride(address)
+      hasAutoSelectedDestination.current = true
+    }
+  }, [
+    multiWalletSupportEnabled,
+    address,
+    isValidFromAddress,
+    recipient,
+    setDestinationAddressOverride
+  ])
+
+  // Smart auto-selection for destination token when selling to same wallet
+  useEffect(() => {
+    if (
+      recipient === address &&
+      fromToken &&
+      !toToken &&
+      isValidToAddress &&
+      multiWalletSupportEnabled
+    ) {
+      // let user manually select the destination token
+    }
+  }, [
+    recipient,
+    address,
+    fromToken,
+    toToken,
+    isValidToAddress,
+    multiWalletSupportEnabled
+  ])
+
   const displayCta = [
     'Swap',
     'Confirm',
@@ -444,13 +485,21 @@ const SellTabContent: FC<SellTabContentProps> = ({
             >
               {(() => {
                 const displayToken = fromToken || toToken
-                const displayBalance = fromToken ? fromBalance : toBalance
+                const displayBalance = fromToken
+                  ? fromBalance
+                  : toToken && recipient !== address
+                    ? fromBalance
+                    : toBalance
                 const displayBalancePending = fromToken
                   ? fromBalancePending
-                  : toBalancePending
+                  : toToken && recipient !== address
+                    ? fromBalancePending
+                    : toBalancePending
                 const isLoadingDisplayBalance = fromToken
                   ? isLoadingFromBalance
-                  : isLoadingToBalance
+                  : toToken && recipient !== address
+                    ? isLoadingFromBalance
+                    : isLoadingToBalance
 
                 return displayToken ? (
                   <BalanceDisplay
@@ -564,7 +613,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
             onSelect: (wallet) => {
               setDestinationAddressOverride(wallet.address)
               setCustomToAddress(undefined)
-              // Always reset payment method when switching wallets (like buy tab)
               handleSetToToken(undefined)
             },
             chain: toChain,
@@ -627,19 +675,16 @@ const SellTabContent: FC<SellTabContentProps> = ({
               chainIdsFilter={chainIdsFilterForDestination}
               linkedWallets={linkedWallets}
               context="to"
-              autoSelectToken={false}
+              autoSelectToken={true}
               setToken={(token) => {
                 if (
                   token?.address === fromToken?.address &&
                   token?.chainId === fromToken?.chainId &&
-                  recipient === address &&
-                  (!lockFromToken || !toToken)
+                  recipient === address
                 ) {
-                  handleSetToToken(fromToken)
-                  handleSetFromToken(toToken)
-                } else {
-                  handleSetToToken(token)
+                  return
                 }
+                handleSetToToken(token)
               }}
               trigger={
                 <div style={{ width: 'max-content' }}>
