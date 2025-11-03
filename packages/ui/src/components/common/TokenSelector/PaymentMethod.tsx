@@ -1,9 +1,5 @@
 import {
-  Children,
-  cloneElement,
-  isValidElement,
   type FC,
-  type ReactElement,
   type ReactNode,
   useCallback,
   useEffect,
@@ -69,7 +65,6 @@ import { useInternalRelayChains } from '../../../hooks/index.js'
 import { useTrendingCurrencies } from '@relayprotocol/relay-kit-hooks'
 import { getStarredChainIds } from '../../../utils/localStorage.js'
 import { PaymentTokenList } from './PaymentTokenList.js'
-import { PaymentMethodTrigger } from './triggers/PaymentMethodTrigger.js'
 
 export type PaymentMethodProps = {
   token?: Token
@@ -101,7 +96,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   fromChainWalletVMSupported,
   supportedWalletVMs,
   popularChainIds,
-  linkedWallets,
   setToken,
   onAnalyticEvent,
   autoSelectToken = false
@@ -386,32 +380,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     setTokenSearchInputElement(null)
   }, [])
 
-  const triggerWithBalances = useMemo(() => {
-    const injectBalances = (node: ReactNode): ReactNode => {
-      if (!isValidElement(node)) {
-        return node
-      }
-
-      const element = node as ReactElement<any>
-
-      if (element.type === PaymentMethodTrigger) {
-        return cloneElement(element, {
-          balanceMap: tokenBalances ?? undefined
-        })
-      }
-
-      const childElements = element.props?.children
-      if (!childElements) {
-        return element
-      }
-
-      const children = Children.map(childElements, injectBalances)
-      return cloneElement(element, undefined, children)
-    }
-
-    return trigger ? injectBalances(trigger) : trigger
-  }, [trigger, tokenBalances])
-
   const onOpenChange = useCallback(
     (openChange: boolean) => {
       let tokenCount = undefined
@@ -564,7 +532,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           open={open}
           onOpenChange={onOpenChange}
           showCloseButton={false}
-          trigger={triggerWithBalances}
+          trigger={trigger}
           css={{
             p: '4',
             display: 'flex',
@@ -916,6 +884,91 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   )
 }
 
+// Chain Filter Trigger Component
+type ChainFilterTriggerProps = {
+  value: ChainFilterValue
+  open: boolean
+}
+
+const ChainFilterTrigger: FC<ChainFilterTriggerProps> = ({ value, open }) => (
+  <Button
+    aria-label="Chain filter"
+    color="ghost"
+    size="none"
+    css={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      height: 40,
+      px: '12px',
+      cursor: 'pointer',
+      backgroundColor: 'dropdown-background',
+      borderRadius: 'dropdown-border-radius',
+      flexShrink: 0
+    }}
+  >
+    {value.id ? (
+      <ChainIcon
+        chainId={value.id}
+        width={20}
+        height={20}
+        css={{ borderRadius: 4, overflow: 'hidden' }}
+      />
+    ) : (
+      <AllChainsLogo style={{ width: 20, height: 20 }} />
+    )}
+    <Box css={{ color: 'gray9' }}>
+      <FontAwesomeIcon
+        icon={faChevronDown}
+        width={12}
+        height={12}
+        style={{
+          transform: open ? 'rotate(180deg)' : 'rotate(0)',
+          transition: 'transform 0.2s'
+        }}
+      />
+    </Box>
+  </Button>
+)
+
+// Chain Search Input Component
+type ChainSearchInputProps = {
+  value: string
+  onChange: (value: string) => void
+}
+
+const ChainSearchInput: FC<ChainSearchInputProps> = ({ value, onChange }) => (
+  <Input
+    placeholder="Search for a chain"
+    icon={
+      <Box css={{ color: 'gray9' }}>
+        <FontAwesomeIcon
+          icon={faMagnifyingGlass}
+          width={16}
+          height={16}
+        />
+      </Box>
+    }
+    containerCss={{
+      width: '100%',
+      height: 40,
+      mb: '2'
+    }}
+    css={{
+      width: '100%',
+      _placeholder_parent: {
+        textOverflow: 'ellipsis'
+      },
+      '--borderColor': 'colors.subtle-border-color',
+      border: '1px solid var(--borderColor)',
+      backgroundColor: 'modal-background'
+    }}
+    value={value}
+    onChange={(e) => onChange((e.target as HTMLInputElement).value)}
+    onKeyDown={(e) => e.stopPropagation()}
+  />
+)
+
 // Compact Chain Filter Component
 type CompactChainFilterProps = {
   options: ChainFilterValue[]
@@ -968,46 +1021,7 @@ const CompactChainFilter: FC<CompactChainFilterProps> = ({
     <Dropdown
       open={open}
       onOpenChange={(open) => setOpen(open)}
-      trigger={
-        <Button
-          aria-label="Chain filter"
-          color="ghost"
-          size="none"
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            height: 40,
-            px: '12px',
-            cursor: 'pointer',
-            backgroundColor: 'dropdown-background',
-            borderRadius: 'dropdown-border-radius',
-            flexShrink: 0
-          }}
-        >
-          {value.id ? (
-            <ChainIcon
-              chainId={value.id}
-              width={20}
-              height={20}
-              css={{ borderRadius: 4, overflow: 'hidden' }}
-            />
-          ) : (
-            <AllChainsLogo style={{ width: 20, height: 20 }} />
-          )}
-          <Box css={{ color: 'gray9' }}>
-            <FontAwesomeIcon
-              icon={faChevronDown}
-              width={12}
-              height={12}
-              style={{
-                transform: open ? 'rotate(180deg)' : 'rotate(0)',
-                transition: 'transform 0.2s'
-              }}
-            />
-          </Box>
-        </Button>
-      }
+      trigger={<ChainFilterTrigger value={value} open={open} />}
       contentProps={{
         align: 'end',
         avoidCollisions: false,
@@ -1020,36 +1034,9 @@ const CompactChainFilter: FC<CompactChainFilterProps> = ({
       }}
     >
       <Flex direction="column" css={{ p: '2' }}>
-        <Input
-          placeholder="Search for a chain"
-          icon={
-            <Box css={{ color: 'gray9' }}>
-              <FontAwesomeIcon
-                icon={faMagnifyingGlass}
-                width={16}
-                height={16}
-              />
-            </Box>
-          }
-          containerCss={{
-            width: '100%',
-            height: 40,
-            mb: '2'
-          }}
-          css={{
-            width: '100%',
-            _placeholder_parent: {
-              textOverflow: 'ellipsis'
-            },
-            '--borderColor': 'colors.subtle-border-color',
-            border: '1px solid var(--borderColor)',
-            backgroundColor: 'modal-background'
-          }}
+        <ChainSearchInput
           value={chainSearchInput}
-          onChange={(e) =>
-            setChainSearchInput((e.target as HTMLInputElement).value)
-          }
-          onKeyDown={(e) => e.stopPropagation()}
+          onChange={setChainSearchInput}
         />
         <Flex
           direction="column"

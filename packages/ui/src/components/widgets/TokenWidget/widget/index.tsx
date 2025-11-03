@@ -27,7 +27,7 @@ import { getFeeBufferAmount } from '../../../../utils/nativeMaxAmount.js'
 import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
 import BuyTabContent from '../BuyTabContent.js'
 import SellTabContent from '../SellTabContent.js'
-import { useTokenList } from '@relayprotocol/relay-kit-hooks'
+import { useTokenList, useQuote } from '@relayprotocol/relay-kit-hooks'
 import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
 import { useWalletGuards } from '../hooks/useWalletGuards.js'
 
@@ -54,7 +54,7 @@ type BaseTokenWidgetProps = {
   disableInputAutoFocus?: boolean
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean
-  sponsoredTokens?: string[]
+  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
   onOpenSlippageConfig?: () => void
   onFromTokenChange?: (token?: Token) => void
   onToTokenChange?: (token?: Token) => void
@@ -111,7 +111,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   disableInputAutoFocus = false,
   popularChainIds,
   disablePasteWalletAddressOption,
-  sponsoredTokens,
+  useSecureBaseUrl,
   onSetPrimaryWallet,
   onLinkNewWallet,
   onFromTokenChange,
@@ -326,7 +326,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       onSwapError={onSwapError}
       onAnalyticEvent={onAnalyticEvent}
       supportedWalletVMs={supportedWalletVMs}
-      sponsoredTokens={sponsoredTokens}
+      useSecureBaseUrl={useSecureBaseUrl}
     >
       {({
         quote,
@@ -1246,213 +1246,227 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                         </TabsList>
 
                         <BuyTabContent
-                          slippageTolerance={localSlippageTolerance}
-                          onOpenSlippageConfig={handleOpenSlippageConfig}
-                          onSlippageToleranceChange={
-                            handleSlippageToleranceChange
-                          }
-                          isUsdInputMode={isUsdInputMode}
-                          usdOutputValue={usdOutputValue}
-                          tradeType={tradeType}
-                          amountOutputValue={amountOutputValue}
-                          amountInputValue={amountInputValue}
-                          toToken={toToken}
-                          fromToken={fromToken}
-                          quote={quote}
-                          isFetchingQuote={isFetchingQuote}
-                          isLoadingToTokenPrice={isLoadingToTokenPrice}
-                          outputAmountUsd={outputAmountUsd}
-                          toTokenPriceData={toTokenPriceData}
-                          setUsdOutputValue={setUsdOutputValue}
-                          setTradeType={setTradeType}
-                          setAmountOutputValue={setAmountOutputValue}
-                          setAmountInputValue={setAmountInputValue}
-                          debouncedAmountOutputControls={
-                            debouncedAmountOutputControls
-                          }
-                          setUsdInputValue={setUsdInputValue}
-                          toggleInputMode={toggleInputMode}
-                          onAnalyticEvent={onAnalyticEvent}
-                          feeBreakdown={feeBreakdown}
-                          isLoadingFromBalance={isLoadingFromBalance}
-                          fromBalance={fromBalance}
-                          fromBalancePending={fromBalancePending}
-                          toBalance={toBalance}
-                          isLoadingToBalance={isLoadingToBalance}
-                          toBalancePending={toBalancePending}
-                          address={address}
-                          timeEstimate={timeEstimate}
-                          multiWalletSupportEnabled={multiWalletSupportEnabled}
-                          toChainWalletVMSupported={toChainWalletVMSupported}
-                          disablePasteWalletAddressOption={
-                            disablePasteWalletAddressOption
-                          }
-                          recipient={recipient}
-                          setCustomToAddress={setCustomToAddress}
-                          setDestinationAddressOverride={
-                            setDestinationAddressOverride
-                          }
-                          onConnectWallet={onConnectWallet}
-                          onLinkNewWallet={onLinkNewWallet}
-                          linkedWallets={linkedWallets}
-                          fromChain={fromChain}
-                          toChain={toChain}
-                          isValidToAddress={isValidToAddress}
-                          isRecipientLinked={isRecipientLinked}
-                          setAddressModalOpen={setAddressModalOpen}
-                          toDisplayName={toDisplayName}
-                          isValidFromAddress={isValidFromAddress}
-                          fromChainWalletVMSupported={
-                            fromChainWalletVMSupported
-                          }
-                          supportedWalletVMs={supportedWalletVMs}
-                          handleSetFromToken={handleSetFromToken}
-                          handleSetToToken={handleSetToToken}
-                          onSetPrimaryWallet={onSetPrimaryWallet}
-                          setOriginAddressOverride={setOriginAddressOverride}
-                          lockToToken={lockToToken}
-                          lockFromToken={lockFromToken}
-                          isSingleChainLocked={isSingleChainLocked}
-                          lockChainId={lockChainId}
-                          popularChainIds={popularChainIds}
-                          transactionModalOpen={transactionModalOpen}
-                          depositAddressModalOpen={depositAddressModalOpen}
-                          hasInsufficientBalance={hasInsufficientBalance}
-                          isInsufficientLiquidityError={
-                            isInsufficientLiquidityError
-                          }
-                          recipientWalletSupportsChain={
-                            recipientWalletSupportsChain
-                          }
-                          isSameCurrencySameRecipientSwap={
-                            isSameCurrencySameRecipientSwap
-                          }
-                          debouncedInputAmountValue={debouncedInputAmountValue}
-                          debouncedOutputAmountValue={
-                            debouncedOutputAmountValue
-                          }
-                          showHighPriceImpactWarning={
-                            showHighPriceImpactWarning
-                          }
-                          disableSwapButton={promptSwitchRoute}
-                          onPrimaryAction={handlePrimaryAction}
-                          error={error}
-                          relayerFeeProportion={relayerFeeProportion}
-                          highRelayerServiceFee={highRelayerServiceFee}
-                          isCapacityExceededError={isCapacityExceededError}
-                          isCouldNotExecuteError={isCouldNotExecuteError}
-                          supportsExternalLiquidity={supportsExternalLiquidity}
-                          recipientLinkedWallet={recipientLinkedWallet}
-                          toChainVmType={toChain?.vmType}
-                          ctaCopy={ctaCopy}
+                          {...{
+                            // Slippage configuration
+                            slippageTolerance: localSlippageTolerance,
+                            onOpenSlippageConfig: handleOpenSlippageConfig,
+                            onSlippageToleranceChange: handleSlippageToleranceChange,
+                            
+                            // Input/output state
+                            isUsdInputMode,
+                            usdOutputValue,
+                            tradeType,
+                            amountOutputValue,
+                            amountInputValue,
+                            outputAmountUsd,
+                            setUsdOutputValue,
+                            setTradeType,
+                            setAmountOutputValue,
+                            setAmountInputValue,
+                            setUsdInputValue,
+                            toggleInputMode,
+                            debouncedAmountOutputControls,
+                            
+                            // Tokens and pricing
+                            toToken,
+                            fromToken,
+                            quote,
+                            isFetchingQuote,
+                            isLoadingToTokenPrice,
+                            toTokenPriceData,
+                            handleSetFromToken,
+                            handleSetToToken,
+                            
+                            // Balance information
+                            feeBreakdown,
+                            isLoadingFromBalance,
+                            fromBalance,
+                            fromBalancePending,
+                            toBalance,
+                            isLoadingToBalance,
+                            toBalancePending,
+                            hasInsufficientBalance,
+                            
+                            // Wallet and address management
+                            address,
+                            multiWalletSupportEnabled,
+                            linkedWallets,
+                            onSetPrimaryWallet,
+                            setOriginAddressOverride,
+                            onConnectWallet,
+                            onLinkNewWallet,
+                            disablePasteWalletAddressOption,
+                            setAddressModalOpen,
+                            
+                            // Chain and VM support
+                            fromChain,
+                            toChain,
+                            toChainWalletVMSupported,
+                            fromChainWalletVMSupported,
+                            supportedWalletVMs,
+                            
+                            // Recipient configuration
+                            recipient,
+                            setCustomToAddress,
+                            setDestinationAddressOverride,
+                            isValidToAddress,
+                            isRecipientLinked,
+                            toDisplayName,
+                            isValidFromAddress,
+                            recipientWalletSupportsChain,
+                            recipientLinkedWallet,
+                            
+                            // Chain and token locking
+                            lockToToken,
+                            lockFromToken,
+                            isSingleChainLocked,
+                            lockChainId,
+                            popularChainIds,
+                            
+                            // Modal states
+                            transactionModalOpen,
+                            depositAddressModalOpen,
+                            
+                            // Error and validation states
+                            error,
+                            isInsufficientLiquidityError,
+                            isSameCurrencySameRecipientSwap,
+                            isCapacityExceededError,
+                            isCouldNotExecuteError,
+                            supportsExternalLiquidity,
+                            
+                            // UI state and interactions
+                            showHighPriceImpactWarning,
+                            disableSwapButton: promptSwitchRoute,
+                            onPrimaryAction: handlePrimaryAction,
+                            debouncedInputAmountValue,
+                            debouncedOutputAmountValue,
+                            
+                            // Fee and estimation
+                            timeEstimate,
+                            relayerFeeProportion,
+                            highRelayerServiceFee,
+                            
+                            // Event handling and misc
+                            onAnalyticEvent,
+                            toChainVmType: toChain?.vmType,
+                            ctaCopy
+                          }}
                         />
 
                         <SellTabContent
-                          slippageTolerance={localSlippageTolerance}
-                          onOpenSlippageConfig={handleOpenSlippageConfig}
-                          onSlippageToleranceChange={
-                            handleSlippageToleranceChange
-                          }
-                          disableInputAutoFocus={disableInputAutoFocus}
-                          isUsdInputMode={isUsdInputMode}
-                          usdInputValue={usdInputValue}
-                          tradeType={tradeType}
-                          amountInputValue={amountInputValue}
-                          amountOutputValue={amountOutputValue}
-                          conversionRate={conversionRate}
-                          fromToken={fromToken}
-                          toToken={toToken}
-                          quote={quote}
-                          isFetchingQuote={isFetchingQuote}
-                          inputAmountUsd={inputAmountUsd}
-                          fromTokenPriceData={fromTokenPriceData}
-                          isLoadingFromTokenPrice={isLoadingFromTokenPrice}
-                          toggleInputMode={toggleInputMode}
-                          setUsdInputValue={setUsdInputValue}
-                          setTradeType={setTradeType}
-                          setTokenInputCache={setTokenInputCache}
-                          setAmountInputValue={setAmountInputValue}
-                          setAmountOutputValue={setAmountOutputValue}
-                          setUsdOutputValue={setUsdOutputValue}
-                          debouncedAmountInputControls={
-                            debouncedAmountInputControls
-                          }
-                          onAnalyticEvent={onAnalyticEvent}
-                          feeBreakdown={feeBreakdown}
-                          onPrimaryAction={handlePrimaryAction}
-                          fromBalance={fromBalance}
-                          isLoadingFromBalance={isLoadingFromBalance}
-                          toBalance={toBalance}
-                          isLoadingToBalance={isLoadingToBalance}
-                          toBalancePending={toBalancePending}
-                          hasInsufficientBalance={hasInsufficientBalance}
-                          address={address}
-                          timeEstimate={timeEstimate}
-                          fromBalancePending={fromBalancePending}
-                          multiWalletSupportEnabled={multiWalletSupportEnabled}
-                          fromChainWalletVMSupported={
-                            fromChainWalletVMSupported
-                          }
-                          disablePasteWalletAddressOption={
-                            disablePasteWalletAddressOption
-                          }
-                          onSetPrimaryWallet={onSetPrimaryWallet}
-                          setOriginAddressOverride={setOriginAddressOverride}
-                          fromChain={fromChain}
-                          toChain={toChain}
-                          onConnectWallet={onConnectWallet}
-                          onLinkNewWallet={onLinkNewWallet}
-                          linkedWallets={linkedWallets}
-                          setAddressModalOpen={setAddressModalOpen}
-                          transactionModalOpen={transactionModalOpen}
-                          depositAddressModalOpen={depositAddressModalOpen}
-                          isValidFromAddress={isValidFromAddress}
-                          isValidToAddress={isValidToAddress}
-                          toChainWalletVMSupported={toChainWalletVMSupported}
-                          isInsufficientLiquidityError={
-                            isInsufficientLiquidityError
-                          }
-                          recipientWalletSupportsChain={
-                            recipientWalletSupportsChain
-                          }
-                          toDisplayName={toDisplayName}
-                          recipient={recipient}
-                          setCustomToAddress={setCustomToAddress}
-                          setDestinationAddressOverride={
-                            setDestinationAddressOverride
-                          }
-                          isRecipientLinked={isRecipientLinked}
-                          isSameCurrencySameRecipientSwap={
-                            isSameCurrencySameRecipientSwap
-                          }
-                          debouncedInputAmountValue={debouncedInputAmountValue}
-                          debouncedOutputAmountValue={
-                            debouncedOutputAmountValue
-                          }
-                          showHighPriceImpactWarning={
-                            showHighPriceImpactWarning
-                          }
-                          disableSwapButton={promptSwitchRoute}
-                          percentOptions={percentageOptions}
-                          onSelectPercentage={handleSelectPercentage}
-                          onSelectMax={handleSelectMax}
-                          supportedWalletVMs={supportedWalletVMs}
-                          lockToToken={lockToToken}
-                          lockFromToken={lockFromToken}
-                          isSingleChainLocked={isSingleChainLocked}
-                          lockChainId={lockChainId}
-                          popularChainIds={popularChainIds}
-                          handleSetFromToken={handleSetFromToken}
-                          handleSetToToken={handleSetToToken}
-                          error={error}
-                          relayerFeeProportion={relayerFeeProportion}
-                          highRelayerServiceFee={highRelayerServiceFee}
-                          isCapacityExceededError={isCapacityExceededError}
-                          isCouldNotExecuteError={isCouldNotExecuteError}
-                          supportsExternalLiquidity={supportsExternalLiquidity}
-                          recipientLinkedWallet={recipientLinkedWallet}
-                          toChainVmType={toChain?.vmType}
-                          ctaCopy={ctaCopy}
+                          {...{
+                            // Slippage configuration
+                            slippageTolerance: localSlippageTolerance,
+                            onOpenSlippageConfig: handleOpenSlippageConfig,
+                            onSlippageToleranceChange: handleSlippageToleranceChange,
+                            
+                            // Input/output state
+                            disableInputAutoFocus,
+                            isUsdInputMode,
+                            usdInputValue,
+                            tradeType,
+                            amountInputValue,
+                            amountOutputValue,
+                            conversionRate,
+                            inputAmountUsd,
+                            setUsdInputValue,
+                            setTradeType,
+                            setTokenInputCache,
+                            setAmountInputValue,
+                            setAmountOutputValue,
+                            setUsdOutputValue,
+                            toggleInputMode,
+                            debouncedAmountInputControls,
+                            
+                            // Tokens and pricing
+                            fromToken,
+                            toToken,
+                            quote,
+                            isFetchingQuote,
+                            fromTokenPriceData,
+                            isLoadingFromTokenPrice,
+                            handleSetFromToken,
+                            handleSetToToken,
+                            
+                            // Balance information
+                            feeBreakdown,
+                            fromBalance,
+                            isLoadingFromBalance,
+                            toBalance,
+                            isLoadingToBalance,
+                            toBalancePending,
+                            hasInsufficientBalance,
+                            fromBalancePending,
+                            
+                            // Wallet and address management
+                            address,
+                            multiWalletSupportEnabled,
+                            linkedWallets,
+                            onSetPrimaryWallet,
+                            setOriginAddressOverride,
+                            onConnectWallet,
+                            onLinkNewWallet,
+                            disablePasteWalletAddressOption,
+                            setAddressModalOpen,
+                            
+                            // Chain and VM support
+                            fromChain,
+                            toChain,
+                            fromChainWalletVMSupported,
+                            toChainWalletVMSupported,
+                            supportedWalletVMs,
+                            
+                            // Recipient configuration
+                            recipient,
+                            setCustomToAddress,
+                            setDestinationAddressOverride,
+                            isValidToAddress,
+                            isRecipientLinked,
+                            toDisplayName,
+                            isValidFromAddress,
+                            recipientWalletSupportsChain,
+                            recipientLinkedWallet,
+                            
+                            // Chain and token locking
+                            lockToToken,
+                            lockFromToken,
+                            isSingleChainLocked,
+                            lockChainId,
+                            popularChainIds,
+                            
+                            // Modal states
+                            transactionModalOpen,
+                            depositAddressModalOpen,
+                            
+                            // Error and validation states
+                            error,
+                            isInsufficientLiquidityError,
+                            isSameCurrencySameRecipientSwap,
+                            isCapacityExceededError,
+                            isCouldNotExecuteError,
+                            supportsExternalLiquidity,
+                            
+                            // UI state and interactions
+                            showHighPriceImpactWarning,
+                            disableSwapButton: promptSwitchRoute,
+                            onPrimaryAction: handlePrimaryAction,
+                            debouncedInputAmountValue,
+                            debouncedOutputAmountValue,
+                            percentOptions: percentageOptions,
+                            onSelectPercentage: handleSelectPercentage,
+                            onSelectMax: handleSelectMax,
+                            
+                            // Fee and estimation
+                            timeEstimate,
+                            relayerFeeProportion,
+                            highRelayerServiceFee,
+                            
+                            // Event handling and misc
+                            onAnalyticEvent,
+                            toChainVmType: toChain?.vmType,
+                            ctaCopy
+                          }}
                         />
 
                         {promptSwitchRoute ? (

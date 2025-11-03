@@ -1,13 +1,10 @@
-import { useMemo } from 'react'
-import useDuneBalances, {
-  type BalanceMap,
-  type DuneBalanceResponse
-} from './useDuneBalances.js'
-import {
-  evmDeadAddress,
-  solDeadAddress,
-  bitcoinDeadAddress
-} from '@relayprotocol/relay-sdk'
+import { useMemo, useContext } from 'react'
+import { useQueries } from '@tanstack/react-query'
+import { type BalanceMap, type DuneBalanceResponse } from './useDuneBalances.js'
+import { isDeadAddress } from '@relayprotocol/relay-sdk'
+import { ProviderOptionsContext } from '../providers/RelayKitProvider.js'
+import { isAddress } from 'viem'
+import { isSolanaAddress } from '../utils/solana.js'
 
 type LinkedWallet = {
   address: string
@@ -15,7 +12,7 @@ type LinkedWallet = {
 }
 
 /**
- * Fetches and merges balances for multiple linked wallets
+ * Fetches and merges balances for linked wallets
  */
 export const useMultiWalletBalances = (
   linkedWallets?: LinkedWallet[],
@@ -26,24 +23,13 @@ export const useMultiWalletBalances = (
   const walletAddresses = useMemo(() => {
     const addresses = new Set<string>()
 
-    if (
-      primaryAddress &&
-      primaryAddress !== evmDeadAddress &&
-      primaryAddress !== solDeadAddress &&
-      primaryAddress !== bitcoinDeadAddress &&
-      isValidAddress
-    ) {
+    if (primaryAddress && !isDeadAddress(primaryAddress) && isValidAddress) {
       addresses.add(primaryAddress)
     }
 
     if (linkedWallets) {
       linkedWallets.forEach((wallet) => {
-        if (
-          wallet.address &&
-          wallet.address !== evmDeadAddress &&
-          wallet.address !== solDeadAddress &&
-          wallet.address !== bitcoinDeadAddress
-        ) {
+        if (wallet.address && !isDeadAddress(wallet.address)) {
           addresses.add(wallet.address)
         }
       })
@@ -52,43 +38,91 @@ export const useMultiWalletBalances = (
     return Array.from(addresses)
   }, [primaryAddress, isValidAddress, linkedWallets])
 
-  const balance1 = useDuneBalances(walletAddresses[0], evmChainIds, {
-    staleTime: 60000,
-    gcTime: 60000
-  })
-  const balance2 = useDuneBalances(walletAddresses[1], evmChainIds, {
-    staleTime: 60000,
-    gcTime: 60000
-  })
-  const balance3 = useDuneBalances(walletAddresses[2], evmChainIds, {
-    staleTime: 60000,
-    gcTime: 60000
-  })
-  const balance4 = useDuneBalances(walletAddresses[3], evmChainIds, {
-    staleTime: 60000,
-    gcTime: 60000
-  })
-  const balance5 = useDuneBalances(walletAddresses[4], evmChainIds, {
-    staleTime: 60000,
-    gcTime: 60000
+  const providerOptions = useContext(ProviderOptionsContext)
+
+  const balanceQueries = useQueries({
+    queries: walletAddresses.map((address) => {
+      const isEvmAddress = isAddress(address)
+      const isSvmAddress = isSolanaAddress(address)
+
+      let url = `${
+        providerOptions?.duneConfig?.apiBaseUrl ?? 'https://api.sim.dune.com'
+      }/v1/evm/balances/${address.toLowerCase()}?chain_ids=${evmChainIds}&exclude_spam_tokens=true`
+
+      if (isSvmAddress) {
+        url = `${
+          providerOptions?.duneConfig?.apiBaseUrl ?? 'https://api.sim.dune.com'
+        }/beta/svm/balances/${address}?chain_ids=all&exclude_spam_tokens=true`
+      }
+
+      return {
+        queryKey: ['useDuneBalances', address],
+        queryFn: async (): Promise<DuneBalanceResponse> => {
+          if (!isSvmAddress && !isEvmAddress) {
+            return null
+          }
+
+          const response = await fetch(url, {
+            headers: providerOptions?.duneConfig?.apiKey
+              ? {
+                  'X-Sim-Api-Key': providerOptions.duneConfig.apiKey
+                }
+              : {}
+          })
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch balance for ${address}`)
+          }
+
+          const data = await response.json()
+
+          if (data?.balances) {
+            // Filter out invalid amounts like useDuneBalances does
+            const validBalances = data.balances.filter((balance: any) => {
+              try {
+                BigInt(balance.amount)
+                return true
+              } catch (e) {
+                return false
+              }
+            })
+
+            return {
+              ...data,
+              balances: validBalances
+            } as DuneBalanceResponse
+          }
+
+          return data as DuneBalanceResponse
+        },
+        enabled: Boolean(
+          address && address.trim() !== '' && (isEvmAddress || isSvmAddress)
+        ),
+        staleTime: 60000,
+        gcTime: 60000,
+        retry: 1
+      }
+    })
   })
 
-  // Merge all balance data
+  // Merge all balance data with proper parallelization - no more 5-wallet limit!
   const { mergedBalanceMap, mergedDuneTokens, isLoadingBalances } =
     useMemo(() => {
-      const queries = [balance1, balance2, balance3, balance4, balance5].slice(
-        0,
-        walletAddresses.length
-      )
       const mergedMap: BalanceMap = {}
       const allBalances: NonNullable<DuneBalanceResponse>['balances'] = []
       let anyLoading = false
 
-      queries.forEach((query) => {
+      balanceQueries.forEach((query) => {
         if (query.isLoading) anyLoading = true
-        if (query.balanceMap) {
-          // Merge balances - if token exists in multiple wallets, sum them
-          Object.entries(query.balanceMap).forEach(([key, balance]) => {
+
+        if (query.data?.balances) {
+          const balanceMap: BalanceMap = {}
+          query.data.balances.forEach((balance) => {
+            const key = `${balance.chain_id}:${balance.address.toLowerCase()}`
+            balanceMap[key] = balance
+          })
+
+          Object.entries(balanceMap).forEach(([key, balance]) => {
             if (mergedMap[key]) {
               // Token exists in multiple wallets - sum the amounts
               const existingAmount = BigInt(mergedMap[key].amount)
@@ -105,8 +139,7 @@ export const useMultiWalletBalances = (
               mergedMap[key] = balance
             }
           })
-        }
-        if (query.data?.balances) {
+
           allBalances.push(...query.data.balances)
         }
       })
@@ -117,14 +150,7 @@ export const useMultiWalletBalances = (
           allBalances.length > 0 ? { balances: allBalances } : undefined,
         isLoadingBalances: anyLoading
       }
-    }, [
-      balance1,
-      balance2,
-      balance3,
-      balance4,
-      balance5,
-      walletAddresses.length
-    ])
+    }, [balanceQueries])
 
   return {
     balanceMap: mergedBalanceMap,

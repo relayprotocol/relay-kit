@@ -14,7 +14,7 @@ import {
 } from '../../../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
-import { normalizeTokenId } from '../../../../utils/tokens.js'
+import { normalizeTokenAddress } from '../../../../utils/tokens.js'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useCapabilities } from 'wagmi/experimental'
 import type { Token } from '../../../../types/index.js'
@@ -66,7 +66,7 @@ type TokenWidgetRendererProps = {
   onConnectWallet?: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
-  sponsoredTokens?: string[]
+  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
 }
 
 export type ChildrenProps = {
@@ -157,7 +157,6 @@ export type ChildrenProps = {
   isLoadingFromTokenPrice: boolean
   toTokenPriceData: ReturnType<typeof useTokenPrice>['data']
   isLoadingToTokenPrice: boolean
-  sponsoredTokens?: string[]
 }
 
 // shared query options for useTokenPrice
@@ -184,7 +183,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   multiWalletSupportEnabled = false,
   linkedWallets,
   supportedWalletVMs,
-  sponsoredTokens,
+  useSecureBaseUrl,
   children,
   onAnalyticEvent,
   onSwapError
@@ -600,39 +599,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     isFromNative
   )
 
-  const normalizedSponsoredTokens = useMemo(() => {
-    const chainVms = relayClient?.chains.reduce(
-      (chains, chain) => {
-        chains[chain.id] = chain.vmType as ChainVM
-        return chains
-      },
-      {} as Record<number, ChainVM>
-    )
-    return sponsoredTokens?.map((token) => {
-      const [chainId, address] = token.match(/^([^:]*):?(.*)$/)?.slice(1) ?? []
-      const chainVm = chainVms?.[Number(chainId)]
-      const normalizedAddress =
-        chainVm && chainVm === 'evm' ? address.toLowerCase() : address
-      return `${chainId}:${normalizedAddress}`
-    })
-  }, [sponsoredTokens, relayClient?.chains])
 
-  const normalizedToToken = toToken && toToken.address
-    ? normalizeTokenId(toToken.chainId, toToken.address, toChain?.vmType)
-    : undefined
-  const normalizedFromToken = fromToken && fromToken.address
-    ? normalizeTokenId(fromToken.chainId, fromToken.address, fromChain?.vmType) 
-    : undefined
-
-  const isGasSponsorshipEnabled =
-    normalizedSponsoredTokens &&
-    normalizedSponsoredTokens.length > 0 &&
-    toToken &&
-    fromToken &&
-    normalizedToToken &&
-    normalizedFromToken &&
-    normalizedSponsoredTokens.includes(normalizedToToken) &&
-    normalizedSponsoredTokens.includes(normalizedFromToken)
 
   const shouldSetQuoteParameters =
     fromToken &&
@@ -784,7 +751,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     },
     handleQuoteError,
     undefined,
-    isGasSponsorshipEnabled
+    useSecureBaseUrl?.(quoteParameters)
       ? providerOptionsContext?.secureBaseUrl
       : undefined
   )

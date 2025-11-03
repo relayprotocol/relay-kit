@@ -20,7 +20,7 @@ import {
   tronDeadAddress,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
-import TokenActionButton from './TokenActionButton.js'
+import SwapButton from '../SwapButton.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
 import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
@@ -36,10 +36,58 @@ type LinkNewWalletHandler = (params: {
   direction: 'to' | 'from'
 }) => Promise<LinkedWallet> | void
 
-type SellTabContentProps = {
+type SellChildrenPropsSubset = Pick<
+  ChildrenProps,
+  | 'quote'
+  | 'isFetchingQuote'
+  | 'fromTokenPriceData'
+  | 'isLoadingFromTokenPrice'
+  | 'setTradeType'
+  | 'setAmountInputValue'
+  | 'setAmountOutputValue'
+  | 'debouncedAmountInputControls'
+  | 'feeBreakdown'
+  | 'fromBalance'
+  | 'isLoadingFromBalance'
+  | 'toBalance'
+  | 'isLoadingToBalance'
+  | 'toBalancePending'
+  | 'hasInsufficientBalance'
+  | 'address'
+  | 'timeEstimate'
+  | 'fromBalancePending'
+  | 'fromChainWalletVMSupported'
+  | 'transactionModalOpen'
+  | 'isValidFromAddress'
+  | 'isValidToAddress'
+  | 'toChainWalletVMSupported'
+  | 'isInsufficientLiquidityError'
+  | 'recipientWalletSupportsChain'
+  | 'recipient'
+  | 'setCustomToAddress'
+  | 'setDestinationAddressOverride'
+  | 'isRecipientLinked'
+  | 'isSameCurrencySameRecipientSwap'
+  | 'debouncedInputAmountValue'
+  | 'debouncedOutputAmountValue'
+  | 'toDisplayName'
+  | 'error'
+  | 'relayerFeeProportion'
+  | 'highRelayerServiceFee'
+  | 'isCapacityExceededError'
+  | 'isCouldNotExecuteError'
+  | 'supportsExternalLiquidity'
+  | 'supportedWalletVMs'
+  | 'ctaCopy'
+>
+
+type SellTabContentProps = SellChildrenPropsSubset & {
+  // Slippage configuration
   slippageTolerance?: string
   onOpenSlippageConfig?: () => void
   onSlippageToleranceChange?: (value: string | undefined) => void
+
+  // Input/output state
   disableInputAutoFocus: boolean
   isUsdInputMode: boolean
   usdInputValue: string
@@ -47,81 +95,54 @@ type SellTabContentProps = {
   amountInputValue: string
   amountOutputValue: string
   conversionRate: number | null
-  fromToken?: Token
-  toToken?: Token
-  quote: ChildrenProps['quote']
-  isFetchingQuote: ChildrenProps['isFetchingQuote']
   inputAmountUsd: number | null
-  fromTokenPriceData: ChildrenProps['fromTokenPriceData']
-  isLoadingFromTokenPrice: ChildrenProps['isLoadingFromTokenPrice']
   toggleInputMode: () => void
   setUsdInputValue: (value: string) => void
-  setTradeType: ChildrenProps['setTradeType']
   setTokenInputCache: (value: string) => void
-  setAmountInputValue: ChildrenProps['setAmountInputValue']
-  setAmountOutputValue: ChildrenProps['setAmountOutputValue']
   setUsdOutputValue: (value: string) => void
-  debouncedAmountInputControls: ChildrenProps['debouncedAmountInputControls']
-  onAnalyticEvent?: (eventName: string, data?: any) => void
-  feeBreakdown: ChildrenProps['feeBreakdown']
-  fromBalance: ChildrenProps['fromBalance']
-  isLoadingFromBalance: ChildrenProps['isLoadingFromBalance']
-  toBalance: ChildrenProps['toBalance']
-  isLoadingToBalance: ChildrenProps['isLoadingToBalance']
-  toBalancePending: ChildrenProps['toBalancePending']
-  hasInsufficientBalance: ChildrenProps['hasInsufficientBalance']
-  address: ChildrenProps['address']
-  timeEstimate?: ChildrenProps['timeEstimate']
-  fromBalancePending: ChildrenProps['fromBalancePending']
+
+  // Tokens
+  fromToken?: Token
+  toToken?: Token
+  handleSetFromToken: (token?: Token) => void
+  handleSetToToken: (token?: Token) => void
+
+  // Wallet and address management
   multiWalletSupportEnabled: boolean
-  fromChainWalletVMSupported: ChildrenProps['fromChainWalletVMSupported']
-  disablePasteWalletAddressOption?: boolean
+  linkedWallets?: LinkedWallet[]
   onSetPrimaryWallet?: (address: string) => void
   setOriginAddressOverride: Dispatch<SetStateAction<ChildrenProps['address']>>
+  setAddressModalOpen: Dispatch<SetStateAction<boolean>>
+  disablePasteWalletAddressOption?: boolean
+
+  // Chain configuration
   fromChain?: RelayChain
   toChain?: RelayChain
-  onConnectWallet?: () => void
-  onLinkNewWallet?: LinkNewWalletHandler
-  linkedWallets?: LinkedWallet[]
-  setAddressModalOpen: Dispatch<SetStateAction<boolean>>
-  transactionModalOpen: ChildrenProps['transactionModalOpen']
+  lockToToken: boolean
+  lockFromToken: boolean
+  isSingleChainLocked: boolean
+  lockChainId?: number
+  popularChainIds?: number[]
+
+  // Modal states
   depositAddressModalOpen: boolean
-  isValidFromAddress: ChildrenProps['isValidFromAddress']
-  isValidToAddress: ChildrenProps['isValidToAddress']
-  toChainWalletVMSupported: ChildrenProps['toChainWalletVMSupported']
-  isInsufficientLiquidityError?: ChildrenProps['isInsufficientLiquidityError']
-  recipientWalletSupportsChain: ChildrenProps['recipientWalletSupportsChain']
-  recipient?: ChildrenProps['recipient']
-  setCustomToAddress: ChildrenProps['setCustomToAddress']
-  setDestinationAddressOverride: ChildrenProps['setDestinationAddressOverride']
-  isRecipientLinked?: ChildrenProps['isRecipientLinked']
-  isSameCurrencySameRecipientSwap: ChildrenProps['isSameCurrencySameRecipientSwap']
-  debouncedInputAmountValue: ChildrenProps['debouncedInputAmountValue']
-  debouncedOutputAmountValue: ChildrenProps['debouncedOutputAmountValue']
+
+  // UI state and actions
   showHighPriceImpactWarning: boolean
   disableSwapButton?: boolean
   percentOptions?: number[]
   onSelectPercentage?: (percent: number) => void
   onSelectMax?: () => void | Promise<void>
   onPrimaryAction: () => void
-  toDisplayName?: ChildrenProps['toDisplayName']
-  error: ChildrenProps['error']
-  relayerFeeProportion: ChildrenProps['relayerFeeProportion']
-  highRelayerServiceFee: ChildrenProps['highRelayerServiceFee']
-  isCapacityExceededError?: ChildrenProps['isCapacityExceededError']
-  isCouldNotExecuteError?: ChildrenProps['isCouldNotExecuteError']
-  supportsExternalLiquidity: ChildrenProps['supportsExternalLiquidity']
-  recipientLinkedWallet?: ChildrenProps['linkedWallet']
+
+  // Event handlers
+  onAnalyticEvent?: (eventName: string, data?: any) => void
+  onConnectWallet?: () => void
+  onLinkNewWallet?: LinkNewWalletHandler
+
+  // Additional props not covered by ChildrenProps
+  recipientLinkedWallet?: LinkedWallet
   toChainVmType?: string
-  supportedWalletVMs: ChildrenProps['supportedWalletVMs']
-  lockToToken: boolean
-  lockFromToken: boolean
-  isSingleChainLocked: boolean
-  lockChainId?: number
-  popularChainIds?: number[]
-  handleSetFromToken: (token?: Token) => void
-  handleSetToToken: (token?: Token) => void
-  ctaCopy: ChildrenProps['ctaCopy']
 }
 
 const SellTabContent: FC<SellTabContentProps> = ({
@@ -239,19 +260,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
     Number(debouncedInputAmountValue) === 0 ||
     Number(debouncedOutputAmountValue) === 0 ||
     !hasSelectedTokens
-
-  const disableActionButton =
-    isFetchingQuote ||
-    (isValidToAddress &&
-      (isValidFromAddress || !fromChainWalletVMSupported) &&
-      (invalidAmount ||
-        hasInsufficientBalance ||
-        isInsufficientLiquidityError ||
-        transactionModalOpen ||
-        depositAddressModalOpen ||
-        isSameCurrencySameRecipientSwap ||
-        !recipientWalletSupportsChain ||
-        disableSwapButton))
 
   const toChainId = toToken?.chainId
   const lockedToChainIds = isSingleChainLocked
@@ -675,7 +683,27 @@ const SellTabContent: FC<SellTabContentProps> = ({
         </Flex>
 
         <Flex css={{ width: '100%' }}>
-          <TokenActionButton
+          <SwapButton
+            context="Sell"
+            transactionModalOpen={transactionModalOpen}
+            depositAddressModalOpen={depositAddressModalOpen}
+            showHighPriceImpactWarning={showHighPriceImpactWarning}
+            disableSwapButton={disableSwapButton}
+            tokenWidgetMode={true}
+            hasValidAmount={!invalidAmount}
+            quote={quote}
+            address={address}
+            hasInsufficientBalance={hasInsufficientBalance}
+            isInsufficientLiquidityError={isInsufficientLiquidityError}
+            debouncedInputAmountValue={debouncedInputAmountValue}
+            debouncedOutputAmountValue={debouncedOutputAmountValue}
+            isSameCurrencySameRecipientSwap={isSameCurrencySameRecipientSwap}
+            ctaCopy={displayCta}
+            isValidFromAddress={isValidFromAddress}
+            isValidToAddress={isValidToAddress}
+            fromChainWalletVMSupported={fromChainWalletVMSupported}
+            recipientWalletSupportsChain={recipientWalletSupportsChain}
+            isFetchingQuote={isFetchingQuote}
             onClick={() => {
               onAnalyticEvent?.('TOKEN_SELL_CLICKED', {
                 token: fromToken,
@@ -683,12 +711,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
               })
               onPrimaryAction()
             }}
-            ctaCopy={displayCta}
-            disabled={disableActionButton}
-            isFetchingQuote={isFetchingQuote}
-            hasValidAmount={!invalidAmount}
             onConnectWallet={onConnectWallet}
-            address={address}
+            onAnalyticEvent={onAnalyticEvent}
           />
         </Flex>
 
