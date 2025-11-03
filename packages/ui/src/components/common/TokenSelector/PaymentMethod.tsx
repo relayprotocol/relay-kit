@@ -5,7 +5,8 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
+  forwardRef
 } from 'react'
 import {
   Flex,
@@ -570,7 +571,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               >
                 <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
               </Button>
-              <Text style="subtitle2">Pay with</Text>
+              <Text style="subtitle2">{context === 'from' ? 'Pay with' : 'Sell to'}</Text>
             </Flex>
 
             <Flex
@@ -888,10 +889,15 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 type ChainFilterTriggerProps = {
   value: ChainFilterValue
   open: boolean
-}
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'value'>
 
-const ChainFilterTrigger: FC<ChainFilterTriggerProps> = ({ value, open }) => (
+const ChainFilterTrigger = forwardRef<
+  HTMLButtonElement,
+  ChainFilterTriggerProps
+>(({ value, open, ...props }, ref) => (
   <Button
+    {...props}
+    ref={ref}
     aria-label="Chain filter"
     color="ghost"
     size="none"
@@ -929,7 +935,7 @@ const ChainFilterTrigger: FC<ChainFilterTriggerProps> = ({ value, open }) => (
       />
     </Box>
   </Button>
-)
+))
 
 // Chain Search Input Component
 type ChainSearchInputProps = {
