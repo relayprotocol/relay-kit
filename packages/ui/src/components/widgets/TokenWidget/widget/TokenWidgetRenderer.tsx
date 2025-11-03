@@ -66,7 +66,6 @@ type TokenWidgetRendererProps = {
   onConnectWallet?: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
-  sponsoredTokens?: string[]
   useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
 }
 
@@ -158,7 +157,6 @@ export type ChildrenProps = {
   isLoadingFromTokenPrice: boolean
   toTokenPriceData: ReturnType<typeof useTokenPrice>['data']
   isLoadingToTokenPrice: boolean
-  sponsoredTokens?: string[]
 }
 
 // shared query options for useTokenPrice
@@ -185,7 +183,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   multiWalletSupportEnabled = false,
   linkedWallets,
   supportedWalletVMs,
-  sponsoredTokens,
   useSecureBaseUrl,
   children,
   onAnalyticEvent,
@@ -602,39 +599,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     isFromNative
   )
 
-  const normalizedSponsoredTokens = useMemo(() => {
-    const chainVms = relayClient?.chains.reduce(
-      (chains, chain) => {
-        chains[chain.id] = chain.vmType as ChainVM
-        return chains
-      },
-      {} as Record<number, ChainVM>
-    )
-    return sponsoredTokens?.map((token) => {
-      const [chainId, address] = token.match(/^([^:]*):?(.*)$/)?.slice(1) ?? []
-      const chainVm = chainVms?.[Number(chainId)]
-      const normalizedAddress =
-        chainVm && chainVm === 'evm' ? address.toLowerCase() : address
-      return `${chainId}:${normalizedAddress}`
-    })
-  }, [sponsoredTokens, relayClient?.chains])
 
-  const normalizedToToken = toToken && toToken.address
-    ? normalizeTokenAddress(toToken.chainId, toToken.address, toChain?.vmType)
-    : undefined
-  const normalizedFromToken = fromToken && fromToken.address
-    ? normalizeTokenAddress(fromToken.chainId, fromToken.address, fromChain?.vmType) 
-    : undefined
-
-  const isGasSponsorshipEnabled =
-    normalizedSponsoredTokens &&
-    normalizedSponsoredTokens.length > 0 &&
-    toToken &&
-    fromToken &&
-    normalizedToToken &&
-    normalizedFromToken &&
-    normalizedSponsoredTokens.includes(normalizedToToken) &&
-    normalizedSponsoredTokens.includes(normalizedFromToken)
 
   const shouldSetQuoteParameters =
     fromToken &&

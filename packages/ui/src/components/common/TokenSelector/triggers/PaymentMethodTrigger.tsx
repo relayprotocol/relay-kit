@@ -12,8 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { useCurrencyBalance } from '../../../../hooks/index.js'
-import type { BalanceMap } from '../../../../hooks/useDuneBalances.js'
-import { formatDollarCompact, formatBN } from '../../../../utils/numbers.js'
+import { formatBN } from '../../../../utils/numbers.js'
 import {
   evmDeadAddress,
   solDeadAddress,
@@ -26,7 +25,6 @@ type PaymentMethodTriggerProps = {
   address?: string
   testId?: string
   balanceLabel?: string
-  balanceMap?: BalanceMap
   placeholderText?: string
 }
 
@@ -49,52 +47,32 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   address,
   testId,
   balanceLabel = 'available',
-  balanceMap: providedBalanceMap,
   placeholderText = 'Select Token'
 }) => {
   const relayClient = useRelayClient()
 
-  // Always use useCurrencyBalance for wallet-specific balance
   const normalizedAddress = normalizeAddress(address)
   const chain = relayClient?.chains?.find((c) => c.id === token?.chainId)
 
-  const {
-    value: currencyBalanceValue,
-    isLoading: isLoadingCurrencyBalance,
-    isDuneBalance,
-    error: currencyBalanceError
-  } = useCurrencyBalance({
-    chain,
-    address: normalizedAddress,
-    currency: token?.address,
-    enabled: Boolean(token && chain && normalizedAddress)
-  })
-
-  let balanceUsd: number | undefined
-  let hasBalanceUsd = false
-
-  if (isDuneBalance && currencyBalanceValue && token) {
-    const balanceKey = `${token.chainId}:${token.address.toLowerCase()}`
-    const duneBalance =
-      providedBalanceMap?.[balanceKey] ??
-      providedBalanceMap?.[`${token?.chainId}:${token?.address}`]
-    balanceUsd = duneBalance?.value_usd
-    hasBalanceUsd = balanceUsd !== undefined && balanceUsd !== null
-  }
-
-  const isBalanceQueryPending = isLoadingCurrencyBalance
+  const { value: currencyBalanceValue, isLoading: isLoadingCurrencyBalance } =
+    useCurrencyBalance({
+      chain,
+      address: normalizedAddress,
+      currency: token?.address,
+      enabled: Boolean(token && chain && normalizedAddress)
+    })
 
   const showSkeleton =
-    normalizedAddress &&
-    isBalanceQueryPending &&
-    !hasBalanceUsd &&
-    !currencyBalanceValue
+    normalizedAddress && isLoadingCurrencyBalance && !currencyBalanceValue
 
   let balanceText = ''
-  if (hasBalanceUsd) {
-    balanceText = `${formatDollarCompact(balanceUsd)} ${balanceLabel}`
-  } else if (currencyBalanceValue && token) {
-    const formattedBalance = formatBN(currencyBalanceValue, 4, token.decimals, false)
+  if (currencyBalanceValue && token) {
+    const formattedBalance = formatBN(
+      currencyBalanceValue,
+      4,
+      token.decimals,
+      false
+    )
     balanceText = `${formattedBalance} ${token.symbol} ${balanceLabel}`
   }
 
