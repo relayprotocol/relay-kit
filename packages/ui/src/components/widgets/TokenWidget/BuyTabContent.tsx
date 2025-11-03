@@ -415,11 +415,12 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               disablePasteWalletAddressOption={disablePasteWalletAddressOption}
               selectedWalletAddress={address}
               onSelect={(wallet) => {
-                // Always clear payment token when switching wallets
-                // Let auto-select choose the best token for the new wallet
                 setOriginAddressOverride(wallet.address)
-                handleSetFromToken(undefined)
                 onSetPrimaryWallet?.(wallet.address)
+
+                if (wallet.address !== address) {
+                  handleSetFromToken(undefined)
+                }
               }}
               chain={fromChain}
               disableWalletFiltering={true}
@@ -455,6 +456,9 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             fromChainWalletVMSupported={fromChainWalletVMSupported}
             supportedWalletVMs={supportedWalletVMs}
             linkedWallets={linkedWallets}
+            multiWalletSupportEnabled={multiWalletSupportEnabled}
+            context="from"
+            autoSelectToken={false}
             setToken={(token) => {
               if (
                 token?.address === toToken?.address &&
@@ -468,8 +472,6 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 handleSetFromToken(token)
               }
             }}
-            context="from"
-            multiWalletSupportEnabled={multiWalletSupportEnabled}
             lockedChainIds={lockedChainIds}
             chainIdsFilter={
               !fromChainWalletVMSupported && toToken

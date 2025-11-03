@@ -24,10 +24,10 @@ import { isSolanaWallet } from '@dynamic-labs/solana'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
 import {
   adaptViemWallet,
-  RelayChain,
   type AdaptedWallet,
   type ChainVM
 } from '@relayprotocol/relay-sdk'
+import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { useWalletFilter } from 'context/walletFilter'
 import { adaptBitcoinWallet } from '@relayprotocol/relay-bitcoin-wallet-adapter'
 import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
@@ -225,6 +225,10 @@ const TokenWidgetPage: NextPage = () => {
         return
       }
 
+      setFromToken(undefined)
+      setToToken(undefined)
+      setTokenNotFound(false)
+
       // Update the URL with the new token params
       setUrlTokenAddress(normalizedAddress)
       setUrlTokenChainId(parsedChainId)
@@ -365,7 +369,7 @@ const TokenWidgetPage: NextPage = () => {
           }}
         >
           <TokenWidget
-            key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
+            key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain-${urlTokenAddress}-${urlTokenChainId}`}
             lockChainId={singleChainMode ? 8453 : undefined}
             singleChainMode={singleChainMode}
             supportedWalletVMs={supportedWalletVMs}

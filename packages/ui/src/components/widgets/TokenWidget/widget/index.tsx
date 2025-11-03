@@ -235,7 +235,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       if (activeTab === 'buy' && !toToken && !resolvedToToken) {
         setResolvedToToken(resolved)
         setToToken?.(resolved)
-      } else {
+      } else if (activeTab === 'sell') {
         setResolvedFromToken(resolved)
         setFromToken?.(resolved)
       }
