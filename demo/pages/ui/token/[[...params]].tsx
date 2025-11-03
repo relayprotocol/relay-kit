@@ -123,6 +123,8 @@ const TokenWidgetPage: NextPage = () => {
     if (!addressParam || !chainParam) {
       setUrlTokenAddress(undefined)
       setUrlTokenChainId(undefined)
+      setAddressInput('')
+      setChainInput('')
       return
     }
 
@@ -137,6 +139,10 @@ const TokenWidgetPage: NextPage = () => {
     if (!Number.isNaN(chainId)) {
       setUrlTokenAddress(decodedAddress)
       setUrlTokenChainId(chainId)
+      // Auto-populate form inputs with URL params
+      setAddressInput(decodedAddress)
+      setChainInput(chainId.toString())
+      setTokenNotFound(false)
     }
   }, [router.isReady, router.query.params])
 
@@ -230,6 +236,20 @@ const TokenWidgetPage: NextPage = () => {
   useEffect(() => {
     switchWallet.current = _switchWallet
   }, [_switchWallet])
+
+  // Check if token should have loaded but didn't (token not found)
+  useEffect(() => {
+    if (urlTokenAddress && urlTokenChainId && !fromToken && relayClient) {
+      // Wait a bit for the query to complete, then check if token was not found
+      const timer = setTimeout(() => {
+        if (!fromToken) {
+          setTokenNotFound(true)
+        }
+      }, 2000) // Wait 2 seconds for token query to complete
+
+      return () => clearTimeout(timer)
+    }
+  }, [urlTokenAddress, urlTokenChainId, fromToken, relayClient])
 
   useEffect(() => {
     const adaptWallet = async () => {
@@ -353,8 +373,8 @@ const TokenWidgetPage: NextPage = () => {
             setToToken={setToToken}
             fromToken={fromToken}
             setFromToken={setFromToken}
-            defaultToTokenAddress={urlTokenAddress}
-            defaultToTokenChainId={urlTokenChainId}
+            defaultFromTokenAddress={urlTokenAddress}
+            defaultFromTokenChainId={urlTokenChainId}
             wallet={wallet}
             multiWalletSupportEnabled={true}
             linkedWallets={linkedWallets}
@@ -425,6 +445,7 @@ const TokenWidgetPage: NextPage = () => {
               setFromToken(token)
               if (token) {
                 setTokenNotFound(false)
+                updateDemoUrl(token)
               }
             }}
             onToTokenChange={(token) => {
