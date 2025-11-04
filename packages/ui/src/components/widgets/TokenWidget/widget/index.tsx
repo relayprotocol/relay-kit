@@ -1070,26 +1070,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                       onValueChange={(value) => {
                         const nextTab = value as 'buy' | 'sell'
 
-                        console.log(
-                          '🔍 Tab switching:',
-                          JSON.stringify(
-                            {
-                              activeTab,
-                              nextTab,
-                              recipient,
-                              address,
-                              destinationAddressOverride,
-                              customToAddress,
-                              allowUnsupportedOrigin,
-                              allowUnsupportedRecipient,
-                              fromToken: fromToken?.address,
-                              toToken: toToken?.address
-                            },
-                            null,
-                            2
-                          )
-                        )
-
                         setAllowUnsupportedOrigin(nextTab === 'buy')
                         setAllowUnsupportedRecipient(nextTab === 'sell')
 

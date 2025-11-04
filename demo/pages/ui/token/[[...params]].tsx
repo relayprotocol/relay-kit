@@ -82,7 +82,6 @@ const TokenWidgetPage: NextPage = () => {
   const switchWallet =
     useRef<(walletId: string) => Promise<void> | undefined>(undefined)
   const [wallet, setWallet] = useState<AdaptedWallet | undefined>()
-  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
   const [linkWalletPromise, setLinkWalletPromise] = useState<
     | {
         resolve: (value: LinkedWallet) => void
@@ -198,11 +197,6 @@ const TokenWidgetPage: NextPage = () => {
   )
 
   const handleAnalyticEvent = useCallback((eventName: string, data?: any) => {
-    if (eventName === 'TAB_SWITCHED') {
-      const tab = data?.tab === 'sell' ? 'sell' : 'buy'
-      setActiveTab(tab)
-    }
-
     console.log('Analytic Event', eventName, data)
   }, [])
 
@@ -369,7 +363,7 @@ const TokenWidgetPage: NextPage = () => {
           }}
         >
           <TokenWidget
-            key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain-${urlTokenAddress}-${urlTokenChainId}`}
+            key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
             lockChainId={singleChainMode ? 8453 : undefined}
             singleChainMode={singleChainMode}
             supportedWalletVMs={supportedWalletVMs}
