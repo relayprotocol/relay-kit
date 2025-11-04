@@ -179,6 +179,10 @@ const useEOADetection = (
     detectEOA()
   }, [conditionKey, shouldDetect, wallet, chainId])
 
+  if (!shouldDetect && protocolVersion === 'preferV2' && chainVmType === 'evm') {
+    return explicitDeposit ?? true
+  }
+
   return explicitDeposit
 }
 
