@@ -953,13 +953,14 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           }
         }
 
-        // Auto-select USDC on Base when no wallet is connected
         useEffect(() => {
           if (
             activeTab === 'buy' &&
             !address &&
             !linkedWallets?.length &&
             !fromToken &&
+            !defaultFromTokenAddress &&
+            !defaultFromTokenChainId &&
             relayClient
           ) {
             const baseUSDC: Token = {
@@ -979,6 +980,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           address,
           linkedWallets?.length,
           fromToken,
+          defaultFromTokenAddress,
+          defaultFromTokenChainId,
           relayClient,
           handleSetFromToken
         ])
