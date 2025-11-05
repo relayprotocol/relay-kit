@@ -14,7 +14,12 @@ import type { Address } from 'viem'
 import { formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
 import type { LinkedWallet, Token } from '../../../../types/index.js'
-import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
+import {
+  ASSETS_RELAY_API,
+  type ChainVM,
+  type Execute,
+  type RelayChain
+} from '@relayprotocol/relay-sdk'
 import { EventNames } from '../../../../constants/events.js'
 import WidgetContainer from '../../WidgetContainer.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
@@ -986,6 +991,36 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             }
           }
         }
+
+        // Auto-select USDC on Base when no wallet is connected
+        useEffect(() => {
+          if (
+            activeTab === 'buy' &&
+            !address &&
+            !linkedWallets?.length &&
+            !fromToken &&
+            relayClient
+          ) {
+            const baseUSDC: Token = {
+              chainId: 8453,
+              address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+              name: 'USD Coin',
+              symbol: 'USDC',
+              decimals: 6,
+              logoURI: `${ASSETS_RELAY_API}/icons/currencies/usdc.png`,
+              verified: true
+            }
+
+            handleSetFromToken(baseUSDC)
+          }
+        }, [
+          activeTab,
+          address,
+          linkedWallets?.length,
+          fromToken,
+          relayClient,
+          handleSetFromToken
+        ])
 
         return (
           <>
