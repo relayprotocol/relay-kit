@@ -66,22 +66,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
             </FeeBreakdownTooltip>
           </>
         ) : (
-          <>
-            <Text style="h6">$0 total</Text>
-            <Box
-              css={{
-                color: 'gray6',
-                width: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'default',
-                opacity: 0.5
-              }}
-            >
-              <FontAwesomeIcon icon={faInfoCircle} />
-            </Box>
-          </>
+          <Text style="h6">$0 total</Text>
         )}
       </Flex>
       {isLoading ? (
