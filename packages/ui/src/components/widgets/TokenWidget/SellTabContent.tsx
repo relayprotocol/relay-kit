@@ -1,5 +1,5 @@
 import { TabsContent } from '../../primitives/Tabs.js'
-import { Flex, Button, Box } from '../../primitives/index.js'
+import { Flex, Box } from '../../primitives/index.js'
 import AmountInput from '../../common/AmountInput.js'
 import {
   formatFixedLength,
@@ -18,7 +18,8 @@ import type { Token, LinkedWallet } from '../../../types/index.js'
 import {
   isDeadAddress,
   tronDeadAddress,
-  type RelayChain
+  type RelayChain,
+  type ChainVM
 } from '@relayprotocol/relay-sdk'
 import SwapButton from '../SwapButton.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
@@ -30,6 +31,8 @@ import { isChainLocked } from '../../../utils/tokenSelector.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { FeeBreakdownInfo } from './FeeBreakdownInfo.js'
 import { DestinationWalletSelector } from './DestinationWalletSelector.js'
+import { PercentageButtons } from '../../common/PercentageButtons.js'
+import type { PublicClient } from 'viem'
 
 type LinkNewWalletHandler = (params: {
   chain?: RelayChain
@@ -131,9 +134,20 @@ type SellTabContentProps = SellChildrenPropsSubset & {
   showHighPriceImpactWarning: boolean
   disableSwapButton?: boolean
   percentOptions?: number[]
-  onSelectPercentage?: (percent: number) => void
-  onSelectMax?: () => void | Promise<void>
+  onMaxAmountClicked?: (
+    amount: bigint,
+    label: string,
+    feeBuffer?: bigint
+  ) => void
   onPrimaryAction: () => void
+  publicClient?: PublicClient | null
+  isFromNative?: boolean
+  getFeeBufferAmount?: (
+    vmType: ChainVM | undefined | null,
+    chainId: number | undefined | null,
+    balance: bigint,
+    publicClient: PublicClient | null
+  ) => Promise<bigint>
 
   // Event handlers
   onAnalyticEvent?: (eventName: string, data?: any) => void
@@ -210,8 +224,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
   showHighPriceImpactWarning,
   disableSwapButton,
   percentOptions,
-  onSelectPercentage,
-  onSelectMax,
+  onMaxAmountClicked,
+  publicClient,
+  isFromNative,
+  getFeeBufferAmount,
   onPrimaryAction,
   toDisplayName,
   error,
@@ -518,48 +534,16 @@ const SellTabContent: FC<SellTabContentProps> = ({
                   <Flex css={{ height: 18 }} />
                 )
               })()}
-              <Flex align="center" css={{ gap: '1' }}>
-                {(percentOptions ?? [20, 50]).map((percent) => (
-                  <Button
-                    key={percent}
-                    aria-label={`${percent}%`}
-                    css={{
-                      fontSize: 12,
-                      fontWeight: '500',
-                      px: '1',
-                      py: '1',
-                      minHeight: '23px',
-                      lineHeight: '100%',
-                      backgroundColor: 'widget-selector-background',
-                      border: 'none',
-                      _hover: {
-                        backgroundColor: 'widget-selector-hover-background'
-                      }
-                    }}
-                    color="white"
-                    disabled={
-                      disableSwapButton ||
-                      !fromBalance ||
-                      fromBalance === 0n ||
-                      !onSelectPercentage
-                    }
-                    onClick={() => {
-                      if (
-                        !disableSwapButton &&
-                        fromBalance &&
-                        fromBalance > 0n &&
-                        onSelectPercentage
-                      ) {
-                        onSelectPercentage?.(percent)
-                      }
-                    }}
-                  >
-                    {percent}%
-                  </Button>
-                ))}
-                <Button
-                  aria-label="MAX"
-                  css={{
+              {fromBalance && fromBalance > 0n && onMaxAmountClicked ? (
+                <PercentageButtons
+                  balance={fromBalance}
+                  onPercentageClick={onMaxAmountClicked}
+                  getFeeBufferAmount={getFeeBufferAmount}
+                  fromChain={fromChain}
+                  publicClient={publicClient}
+                  isFromNative={isFromNative}
+                  percentages={percentOptions}
+                  buttonStyles={{
                     fontSize: 12,
                     fontWeight: '500',
                     px: '1',
@@ -572,27 +556,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
                       backgroundColor: 'widget-selector-hover-background'
                     }
                   }}
-                  color="white"
-                  disabled={
-                    disableSwapButton ||
-                    !fromBalance ||
-                    fromBalance === 0n ||
-                    !onSelectMax
-                  }
-                  onClick={() => {
-                    if (
-                      !disableSwapButton &&
-                      fromBalance &&
-                      fromBalance > 0n &&
-                      onSelectMax
-                    ) {
-                      void onSelectMax?.()
-                    }
-                  }}
-                >
-                  MAX
-                </Button>
-              </Flex>
+                />
+              ) : null}
             </Flex>
           </Flex>
         </Flex>

@@ -1,5 +1,6 @@
 import type { NextPage, GetServerSideProps } from 'next'
-import { TokenWidget, useRelayClient } from '@relayprotocol/relay-kit-ui'
+import { TokenWidget } from '@relayprotocol/relay-kit-ui/TokenWidget'
+import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { Layout } from 'components/Layout'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'

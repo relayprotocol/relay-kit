@@ -35,6 +35,9 @@
   "paths": {
       "@relayprotocol/relay-kit-ui/OnrampWidget": [
         "./node_modules/@relayprotocol/relay-kit-ui/_esm/src/components/widgets/OnrampWidget/index.js"
+      ],
+      "@relayprotocol/relay-kit-ui/TokenWidget": [
+        "./node_modules/@relayprotocol/relay-kit-ui/_esm/src/components/widgets/TokenWidget/index.js"
       ]
     }
 }

@@ -519,45 +519,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
         const percentageOptions = [20, 50]
 
-        const handleSelectPercentage = (percent: number) => {
-          if (!fromBalance || fromBalance === 0n || percent <= 0) {
-            return
-          }
-
-          const percentageAmount = (fromBalance * BigInt(percent)) / 100n
-          handleMaxAmountClicked(percentageAmount, `${percent}%`)
-        }
-
-        const handleSelectMax = async () => {
-          if (!fromBalance || !fromToken || !fromChain) {
-            return
-          }
-
-          let feeBufferAmount: bigint = 0n
-
-          if (isFromNative) {
-            feeBufferAmount = await getFeeBufferAmount(
-              fromChain.vmType,
-              fromChain.id,
-              fromBalance,
-              publicClient ?? null
-            )
-          }
-
-          const finalMaxAmount =
-            isFromNative && feeBufferAmount > 0n
-              ? fromBalance > feeBufferAmount
-                ? fromBalance - feeBufferAmount
-                : 0n
-              : fromBalance
-
-          handleMaxAmountClicked(
-            finalMaxAmount,
-            'max',
-            isFromNative ? feeBufferAmount : 0n
-          )
-        }
-
         const handleMaxAmountClicked = async (
           amount: bigint,
           percent: string,
@@ -1518,8 +1479,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             debouncedInputAmountValue,
                             debouncedOutputAmountValue,
                             percentOptions: percentageOptions,
-                            onSelectPercentage: handleSelectPercentage,
-                            onSelectMax: handleSelectMax,
+                            onMaxAmountClicked: handleMaxAmountClicked,
+                            publicClient,
+                            isFromNative,
+                            getFeeBufferAmount,
 
                             // Fee and estimation
                             timeEstimate,
