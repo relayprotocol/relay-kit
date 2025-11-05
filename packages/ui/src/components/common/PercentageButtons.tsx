@@ -13,9 +13,11 @@ type PercentageButtonsProps = {
     publicClient: PublicClient | null
   ) => Promise<bigint>
   fromChain?: RelayChain
-  publicClient?: PublicClient
+  publicClient?: PublicClient | null
   isFromNative?: boolean
   variant?: 'desktop' | 'mobile'
+  percentages?: number[]
+  buttonStyles?: Record<string, any>
 }
 
 export const PercentageButtons: FC<PercentageButtonsProps> = ({
@@ -25,11 +27,13 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   fromChain,
   publicClient,
   isFromNative,
-  variant = 'desktop'
+  variant = 'desktop',
+  percentages = [20, 50],
+  buttonStyles: customButtonStyles
 }) => {
   const isMobile = variant === 'mobile'
 
-  const buttonStyles = {
+  const defaultButtonStyles = {
     fontSize: isMobile ? 14 : 12,
     fontWeight: '500',
     px: '1',
@@ -45,6 +49,8 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
       backgroundColor: 'widget-selector-hover-background'
     }
   }
+
+  const buttonStyles = customButtonStyles || defaultButtonStyles
 
   const handleMaxClick = async () => {
     if (!balance || !fromChain) return
@@ -98,34 +104,29 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
         mb: isMobile ? '1' : '0'
       }}
     >
-      <Button
-        aria-label="20%"
-        css={buttonStyles}
-        color="white"
-        onClick={() => {
-          const percentageBuffer = (balance * 20n) / 100n
-          onPercentageClick(percentageBuffer, '20%')
-        }}
-      >
-        20%
-      </Button>
-
-      <Button
-        aria-label="50%"
-        css={buttonStyles}
-        color="white"
-        onClick={() => {
-          const percentageBuffer = (balance * 50n) / 100n
-          onPercentageClick(percentageBuffer, '50%')
-        }}
-      >
-        50%
-      </Button>
+      {percentages.map((percent) => (
+        <Button
+          key={percent}
+          aria-label={`${percent}%`}
+          css={buttonStyles}
+          color="white"
+          disabled={!balance || balance === 0n}
+          onClick={() => {
+            if (balance && balance > 0n) {
+              const percentageBuffer = (balance * BigInt(percent)) / 100n
+              onPercentageClick(percentageBuffer, `${percent}%`)
+            }
+          }}
+        >
+          {percent}%
+        </Button>
+      ))}
 
       <Button
         aria-label="MAX"
         css={buttonStyles}
         color="white"
+        disabled={!balance || balance === 0n}
         onMouseEnter={handleMaxMouseEnter}
         onClick={handleMaxClick}
       >
