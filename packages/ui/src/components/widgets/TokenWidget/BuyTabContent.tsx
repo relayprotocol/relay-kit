@@ -262,8 +262,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
     <TabsContent value="buy">
       <SectionContainer
         css={{
-          backgroundColor: 'widget-background',
-          mb: 'widget-card-section-gutter'
+          backgroundColor: 'widget-background'
         }}
         id={'buy-token-section'}
       >
@@ -274,11 +273,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           onSlippageToleranceChange={onSlippageToleranceChange}
           onAnalyticEvent={onAnalyticEvent}
         />
-        <Flex
-          align="center"
-          justify="between"
-          css={{ gap: '4', width: '100%' }}
-        >
+        <Flex align="center" justify="between" css={{ width: '100%' }}>
           <AmountInput
             prefixSymbol={isUsdInputMode ? '$' : undefined}
             value={
@@ -315,6 +310,8 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             css={{
               fontWeight: '700',
               fontSize: 32,
+              lineHeight: '32px',
+              py: 0,
               color:
                 isFetchingQuote && tradeType === 'EXACT_INPUT'
                   ? 'text-subtle'
