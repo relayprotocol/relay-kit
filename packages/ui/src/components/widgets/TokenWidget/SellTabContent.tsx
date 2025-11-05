@@ -339,11 +339,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
           onSlippageToleranceChange={onSlippageToleranceChange}
           onAnalyticEvent={onAnalyticEvent}
         />
-        <Flex
-          align="center"
-          justify="between"
-          css={{ gap: '2', width: '100%' }}
-        >
+        <Flex align="center" justify="between" css={{ width: '100%' }}>
           <AmountInput
             autoFocus={!disableInputAutoFocus}
             prefixSymbol={isUsdInputMode ? '$' : undefined}
@@ -381,7 +377,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
             css={{
               fontWeight: '700',
               fontSize: 32,
-              lineHeight: '36px',
+              lineHeight: '32px',
               py: 0,
               color:
                 isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
