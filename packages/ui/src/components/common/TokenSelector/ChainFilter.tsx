@@ -7,13 +7,12 @@ import {
   useCallback
 } from 'react'
 import { Dropdown, DropdownMenuItem } from '../../primitives/Dropdown.js'
-import { Button, Flex, Text, Input, Box } from '../../primitives/index.js'
+import { Button, Flex, Text, Box } from '../../primitives/index.js'
 import ChainIcon from '../../primitives/ChainIcon.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronDown,
   faInfoCircle,
-  faMagnifyingGlass,
   faStar
 } from '@fortawesome/free-solid-svg-icons'
 import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
@@ -27,6 +26,7 @@ import {
 } from '../../../utils/localStorage.js'
 import Tooltip from '../../../components/primitives/Tooltip.js'
 import { EventNames } from '../../../constants/events.js'
+import { ChainSearchInput } from './ChainFilterRow.js'
 
 export type ChainFilterValue =
   | RelayChain
@@ -147,36 +147,9 @@ const ChainFilter: FC<Props> = ({
       }}
     >
       <Flex direction="column" css={{ p: '2' }}>
-        <Input
-          placeholder="Search for a chain"
-          icon={
-            <Box css={{ color: 'gray9' }}>
-              <FontAwesomeIcon
-                icon={faMagnifyingGlass}
-                width={16}
-                height={16}
-              />
-            </Box>
-          }
-          containerCss={{
-            width: '100%',
-            height: 40,
-            mb: '2'
-          }}
-          css={{
-            width: '100%',
-            _placeholder_parent: {
-              textOverflow: 'ellipsis'
-            },
-            '--borderColor': 'colors.subtle-border-color',
-            border: '1px solid var(--borderColor)',
-            backgroundColor: 'modal-background'
-          }}
+        <ChainSearchInput
           value={chainSearchInput}
-          onChange={(e) =>
-            setChainSearchInput((e.target as HTMLInputElement).value)
-          }
-          onKeyDown={(e) => e.stopPropagation()}
+          onChange={setChainSearchInput}
         />
         <Flex
           direction="column"

@@ -9,7 +9,6 @@ import {
 import {
   Flex,
   Box,
-  Input,
   ChainIcon,
   Text,
   Button,
@@ -17,11 +16,7 @@ import {
   AccessibleListItem
 } from '../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faInfoCircle,
-  faMagnifyingGlass,
-  faStar
-} from '@fortawesome/free-solid-svg-icons'
+import { faInfoCircle, faStar } from '@fortawesome/free-solid-svg-icons'
 import Fuse from 'fuse.js'
 import type { ChainFilterValue } from './ChainFilter.js'
 import { EventNames } from '../../../constants/events.js'
@@ -34,6 +29,7 @@ import {
   toggleStarredChain
 } from '../../../utils/localStorage.js'
 import Tooltip from '../../../components/primitives/Tooltip.js'
+import { ChainSearchInput } from './ChainFilterRow.js'
 
 type ChainFilterSidebarProps = {
   options: (RelayChain | { id: undefined; name: string })[]
@@ -154,37 +150,11 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
         }}
       >
         <AccessibleListItem value="input" asChild>
-          <Input
+          <ChainSearchInput
             ref={onInputRef}
-            data-testid="chain-search-input"
             placeholder="Search chains"
-            icon={
-              <Box css={{ color: 'gray9' }}>
-                <FontAwesomeIcon
-                  icon={faMagnifyingGlass}
-                  width={16}
-                  height={16}
-                />
-              </Box>
-            }
-            containerCss={{
-              width: '100%',
-              height: 40,
-              mb: '2'
-            }}
-            css={{
-              width: '100%',
-              _placeholder_parent: {
-                textOverflow: 'ellipsis'
-              },
-              '--borderColor': 'colors.subtle-border-color',
-              border: '1px solid var(--borderColor)',
-              backgroundColor: 'modal-background'
-            }}
             value={chainSearchInput}
-            onChange={(e) =>
-              setChainSearchInput((e.target as HTMLInputElement).value)
-            }
+            onChange={setChainSearchInput}
           />
         </AccessibleListItem>
 
