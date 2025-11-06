@@ -544,10 +544,15 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 size="none"
                 onClick={() => onOpenChange(false)}
                 css={{
-                  p: '0',
+                  p: '1',
                   minWidth: 'auto',
                   color: 'gray9',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  borderRadius: 8,
+                  '--focusColor': 'colors.focus-color',
+                  _focusVisible: {
+                    boxShadow: 'inset 0 0 0 2px var(--focusColor)'
+                  }
                 }}
               >
                 <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
