@@ -114,6 +114,7 @@ web_modules/
 
 .next
 out
+demo/next-env.d.ts
 
 # Nuxt.js build / generate output
 
