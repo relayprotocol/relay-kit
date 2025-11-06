@@ -27,6 +27,7 @@ const AmountSectionHeader: FC<AmountSectionHeaderProps> = ({
       setSlippageTolerance={onSlippageToleranceChange ?? (() => {})}
       onAnalyticEvent={onAnalyticEvent}
       onOpenSlippageConfig={onOpenSlippageConfig}
+      widgetType="token"
     />
   </Flex>
 )
