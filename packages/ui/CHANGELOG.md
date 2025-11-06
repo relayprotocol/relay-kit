@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 5.1.2
+
+### Patch Changes
+
+- 9a0dc7c: New mobile token selector
+
 ## 5.1.1
 
 ### Patch Changes
