@@ -51,6 +51,14 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
 
   const fillGasLabel = destinationGas?.name ?? 'Fill Gas'
 
+  // App fee
+  const appFee = feeBreakdown?.breakdown?.find((fee) => fee.id === 'app-fee')
+  const appFeeUsd =
+    appFee?.usd.value ??
+    (quote?.fees?.app?.amountUsd !== undefined
+      ? Number(quote.fees.app.amountUsd)
+      : undefined)
+
   const tokenAmountFormatted = formatDollar(
     currencyInAmount !== undefined ? Number(currencyInAmount) : undefined
   )
@@ -62,6 +70,9 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
   )
   const fillGasFormatted = formatDollar(
     fillGasUsd !== undefined ? Math.abs(fillGasUsd) : undefined
+  )
+  const appFeeFormatted = formatDollar(
+    appFeeUsd !== undefined ? Math.abs(appFeeUsd) : undefined
   )
 
   return (
@@ -106,7 +117,7 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
 
           {/* Fill Gas Row */}
           {fillGasUsd !== undefined && fillGasFormatted !== '-' && (
-            <Flex align="center" css={{ width: '100%' }}>
+            <Flex align="center" css={{ width: '100%', mb: '2' }}>
               <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
                 {fillGasLabel}
               </Text>
@@ -116,6 +127,22 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
                 </Text>
               ) : (
                 <Text style="subtitle2">{fillGasFormatted}</Text>
+              )}
+            </Flex>
+          )}
+
+          {/* App Fee Row */}
+          {appFeeUsd !== undefined && appFeeFormatted !== '-' && (
+            <Flex align="center" css={{ width: '100%' }}>
+              <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
+                {appFee?.name ?? 'App Fee'}
+              </Text>
+              {feeBreakdown?.isGasSponsored && appFeeUsd === 0 ? (
+                <Text style="subtitle2" color="success">
+                  Free
+                </Text>
+              ) : (
+                <Text style="subtitle2">{appFeeFormatted}</Text>
               )}
             </Flex>
           )}
