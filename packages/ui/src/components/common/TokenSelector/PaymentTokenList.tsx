@@ -72,25 +72,17 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
 
   if (tokens.length > 0)
     return (
-      <Flex direction="column" css={{ gap: '0', width: '100%' }}>
-        <Text 
-          style="subtitle2" 
-          color="subtle" 
-          css={{ 
-            mb: '1'
-          }}
-        >
+      <Flex direction="column" css={{ gap: '1', width: '100%' }}>
+        <Text style="subtitle2" color="subtle">
           {title}
         </Text>
-        {tokens.map((token, index) => {
+        {tokens.map((token) => {
           const value = `${token.chainId}:${token.address}`
           const compactBalance = Boolean(
             token.balance &&
               token.decimals &&
               token.balance.toString().length - token.decimals > 4
           )
-
-          const isLastItem = index === tokens.length - 1
 
           return (
             <AccessibleListItem value={value} key={value} asChild>
@@ -99,7 +91,6 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                 css={{
                   gap: '2',
                   cursor: 'pointer',
-                  borderRadius: '0',
                   px: '2',
                   py: '2',
                   transition: 'backdrop-filter 250ms linear',
@@ -124,8 +115,6 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                     boxShadow: 'inset 0 0 0 2px var(--focusColor)'
                   },
                   scrollSnapAlign: 'start',
-                  borderBottom: isLastItem ? 'none' : '1px solid',
-                  borderColor: 'gray4',
                   opacity
                 }}
               >
