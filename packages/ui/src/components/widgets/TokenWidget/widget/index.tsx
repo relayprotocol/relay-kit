@@ -1206,18 +1206,26 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           maxWidth: 408
                         }}
                       >
-                        <TabsList css={{ backgroundColor: 'transparent' }}>
+                        <TabsList
+                          css={{
+                            backgroundColor: 'transparent',
+                            p: '0',
+                            mb: '2'
+                          }}
+                        >
                           <TabsTrigger
                             value="buy"
                             css={{
                               padding: '12px',
                               background: 'none',
                               outline: '1px solid transparent',
+                              color: 'gray11',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
                                 '--outlineColor': 'colors.gray.4',
-                                outline: '1px solid var(--outlineColor)'
+                                outline: '1px solid var(--outlineColor)',
+                                color: 'gray12'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
@@ -1244,11 +1252,13 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               padding: '12px',
                               background: 'none',
                               outline: '1px solid transparent',
+                              color: 'gray11',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
                                 '--outlineColor': 'colors.gray.4',
-                                outline: '1px solid var(--outlineColor)'
+                                outline: '1px solid var(--outlineColor)',
+                                color: 'gray12'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
