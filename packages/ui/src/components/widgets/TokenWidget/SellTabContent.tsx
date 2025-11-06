@@ -345,7 +345,11 @@ const SellTabContent: FC<SellTabContentProps> = ({
   return (
     <TabsContent value="sell">
       <SectionContainer
-        css={{ backgroundColor: 'widget-background' }}
+        css={{
+          backgroundColor: 'widget-background',
+          border: '1px solid',
+          borderColor: 'slate.4'
+        }}
         id={'sell-token-section'}
       >
         <AmountSectionHeader

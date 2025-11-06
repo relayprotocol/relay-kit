@@ -262,7 +262,9 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
     <TabsContent value="buy">
       <SectionContainer
         css={{
-          backgroundColor: 'widget-background'
+          backgroundColor: 'widget-background',
+          border: '1px solid',
+          borderColor: 'slate.4'
         }}
         id={'buy-token-section'}
       >
