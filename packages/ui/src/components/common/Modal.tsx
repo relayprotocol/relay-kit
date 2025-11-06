@@ -17,6 +17,7 @@ type ModalProps = {
   css?: SystemStyleObject
   overlayZIndex?: number
   showCloseButton?: boolean
+  disableAnimation?: boolean
   onCloseButtonClicked?: (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => void
@@ -28,13 +29,14 @@ export const Modal: FC<
     ModalProps &
     Pick<
       ComponentPropsWithoutRef<typeof AnimatedContent>,
-      'onPointerDownOutside'
+      'onPointerDownOutside' | 'onOpenAutoFocus'
     >
 > = ({
   trigger,
   css,
   overlayZIndex = 9999,
   showCloseButton = true,
+  disableAnimation = false,
   children,
   ...props
 }) => {
@@ -64,7 +66,9 @@ export const Modal: FC<
                   padding: '4',
                   ...css
                 }}
+                disableAnimation={disableAnimation}
                 onPointerDownOutside={props.onPointerDownOutside}
+                onOpenAutoFocus={props.onOpenAutoFocus}
               >
                 {showCloseButton ? (
                   <DialogClose

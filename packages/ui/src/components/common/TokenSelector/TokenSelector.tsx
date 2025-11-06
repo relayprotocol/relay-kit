@@ -6,12 +6,20 @@ import {
   useMemo,
   useState
 } from 'react'
-import { Flex, Text, Input, Box } from '../../primitives/index.js'
+import {
+  Flex,
+  Text,
+  Input,
+  Box,
+  Button,
+  ChainIcon
+} from '../../primitives/index.js'
 import { Modal } from '../Modal.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faMagnifyingGlass,
-  faFolderOpen
+  faFolderOpen,
+  faXmark
 } from '@fortawesome/free-solid-svg-icons'
 import type { Token } from '../../../types/index.js'
 import { type ChainFilterValue } from './ChainFilter.js'
@@ -36,6 +44,8 @@ import { eclipse, solana } from '../../../utils/solana.js'
 import { bitcoin } from '../../../utils/bitcoin.js'
 import { ChainFilterSidebar } from './ChainFilterSidebar.js'
 import { SuggestedTokens } from './SuggestedTokens.js'
+import { MobileChainSelector } from './MobileChainSelector.js'
+import { ChainShortcuts } from './ChainShortcuts.js'
 import { mergeTokenLists } from '../../../utils/tokens.js'
 import {
   bitcoinDeadAddress,
@@ -88,6 +98,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   const isDesktop = useMediaQuery('(min-width: 660px)')
 
   const [open, setOpen] = useState(false)
+  const [mobileView, setMobileView] = useState<'tokens' | 'chains'>('tokens')
 
   const [unverifiedTokenModalOpen, setUnverifiedTokenModalOpen] =
     useState(false)
@@ -349,6 +360,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     setTokenSearchInput('')
     setChainSearchInputElement(null)
     setTokenSearchInputElement(null)
+    setMobileView('tokens')
   }, [])
 
   const onOpenChange = useCallback(
@@ -502,13 +514,26 @@ const TokenSelector: FC<TokenSelectorProps> = ({
         <Modal
           open={open}
           onOpenChange={onOpenChange}
-          showCloseButton={true}
+          showCloseButton={isDesktop}
+          disableAnimation={!isDesktop}
+          onOpenAutoFocus={(e) => {
+            if (!isDesktop) {
+              e.preventDefault()
+            }
+          }}
           trigger={trigger}
           css={{
             p: '4',
             display: 'flex',
             flexDirection: 'column',
-            height: 'min(85vh, 600px)',
+            height: isDesktop ? 'min(85vh, 600px)' : '100%',
+            maxHeight: isDesktop ? 'min(85vh, 600px)' : '100%',
+            borderRadius: isDesktop ? 'modal-border-radius' : '0px',
+            width: '100%',
+            maxWidth: '100%',
+            sm: {
+              maxWidth: '100%'
+            },
             '@media(min-width: 660px)': {
               minWidth: isDesktop
                 ? hasMultipleConfiguredChainIds
@@ -519,250 +544,322 @@ const TokenSelector: FC<TokenSelectorProps> = ({
             }
           }}
         >
-          <Flex
-            direction="column"
-            css={{
-              width: '100%',
-              height: '100%',
-              gap: '3',
-              overflowY: 'hidden'
-            }}
-          >
-            <Text style="h6">Select Token</Text>
+          {!isDesktop && mobileView === 'chains' ? (
+            <MobileChainSelector
+              options={allChains}
+              value={chainFilter}
+              onSelect={(chain) => {
+                setChainFilter(chain)
+                setMobileView('tokens')
+              }}
+              onBack={() => setMobileView('tokens')}
+              onClose={() => onOpenChange(false)}
+              onAnalyticEvent={onAnalyticEvent}
+              popularChainIds={popularChainIds}
+              context={context}
+              onChainStarToggle={handleChainStarToggle}
+              starredChainIds={starredChainIds}
+            />
+          ) : (
+            <Flex
+              direction="column"
+              css={{
+                width: '100%',
+                height: '100%',
+                gap: '3',
+                overflowY: 'hidden'
+              }}
+            >
+              {isDesktop && <Text style="h6">Select Token</Text>}
 
-            <Flex css={{ flex: 1, gap: '3', overflow: 'hidden' }}>
-              {/* Desktop Chain Filter Sidebar */}
-              {isDesktop &&
-              (!configuredChainIds || hasMultipleConfiguredChainIds) ? (
-                <ChainFilterSidebar
-                  options={allChains}
-                  value={chainFilter}
-                  isOpen={open}
-                  onSelect={setChainFilter}
-                  onAnalyticEvent={onAnalyticEvent}
-                  onInputRef={setChainSearchInputElement}
-                  tokenSearchInputRef={tokenSearchInputElement}
-                  popularChainIds={popularChainIds}
-                  context={context}
-                  onChainStarToggle={handleChainStarToggle}
-                  starredChainIds={starredChainIds}
-                />
-              ) : null}
+              <Flex css={{ flex: 1, gap: '3', overflow: 'hidden' }}>
+                {/* Desktop Chain Filter Sidebar */}
+                {isDesktop &&
+                (!configuredChainIds || hasMultipleConfiguredChainIds) ? (
+                  <ChainFilterSidebar
+                    options={allChains}
+                    value={chainFilter}
+                    isOpen={open}
+                    onSelect={setChainFilter}
+                    onAnalyticEvent={onAnalyticEvent}
+                    onInputRef={setChainSearchInputElement}
+                    tokenSearchInputRef={tokenSearchInputElement}
+                    popularChainIds={popularChainIds}
+                    context={context}
+                    onChainStarToggle={handleChainStarToggle}
+                    starredChainIds={starredChainIds}
+                  />
+                ) : null}
 
-              {/* Main Token Content */}
-              <AccessibleList
-                onSelect={(value) => {
-                  if (value === 'input') return
-                  const [chainId, ...addressParts] = value.split(':')
-                  const address = addressParts.join(':')
-                  const allTokens = [
-                    ...sortedUserTokens,
-                    ...sortedCombinedTokens,
-                    ...sortedTrendingTokens
-                  ]
+                {/* Main Token Content */}
+                <AccessibleList
+                  onSelect={(value) => {
+                    if (value === 'input') return
+                    const [chainId, ...addressParts] = value.split(':')
+                    const address = addressParts.join(':')
+                    const allTokens = [
+                      ...sortedUserTokens,
+                      ...sortedCombinedTokens,
+                      ...sortedTrendingTokens
+                    ]
 
-                  const selectedToken = allTokens.find(
-                    (token) =>
-                      token.chainId === Number(chainId) &&
-                      token.address?.toLowerCase() === address?.toLowerCase()
-                  )
-                  if (selectedToken) {
-                    handleTokenSelection(selectedToken)
-                  }
-                }}
-                css={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  width: '100%',
-                  minWidth: 0,
-                  height: '100%'
-                }}
-              >
-                {/* Search Input Section - Fixed */}
-                <Flex
-                  direction="column"
-                  align="start"
+                    const selectedToken = allTokens.find(
+                      (token) =>
+                        token.chainId === Number(chainId) &&
+                        token.address?.toLowerCase() === address?.toLowerCase()
+                    )
+                    if (selectedToken) {
+                      handleTokenSelection(selectedToken)
+                    }
+                  }}
                   css={{
+                    display: 'flex',
+                    flexDirection: 'column',
                     width: '100%',
-                    gap: '2',
-                    background: 'modal-background'
+                    minWidth: 0,
+                    height: '100%'
                   }}
                 >
-                  <AccessibleListItem value="input" asChild>
-                    <Input
-                      ref={setTokenSearchInputElement}
-                      placeholder="Search for a token or paste address"
-                      icon={
-                        <Box css={{ color: 'gray9' }}>
+                  {/* Search Input Section - Fixed */}
+                  <Flex
+                    direction="column"
+                    align="start"
+                    css={{
+                      width: '100%',
+                      gap: '2',
+                      background: 'modal-background'
+                    }}
+                  >
+                    <Flex
+                      align="center"
+                      css={{
+                        width: '100%',
+                        gap: '2'
+                      }}
+                    >
+                      <AccessibleListItem value="input" asChild>
+                        <Input
+                          ref={setTokenSearchInputElement}
+                          placeholder="Search for a token or paste address"
+                          icon={
+                            <Box css={{ color: 'gray9' }}>
+                              <FontAwesomeIcon
+                                icon={faMagnifyingGlass}
+                                width={16}
+                                height={16}
+                              />
+                            </Box>
+                          }
+                          containerCss={{
+                            width: '100%',
+                            height: 40,
+                            mb: isDesktop ? '1' : '0'
+                          }}
+                          css={{
+                            width: '100%',
+                            _placeholder_parent: {
+                              textOverflow: 'ellipsis'
+                            }
+                          }}
+                          value={tokenSearchInput}
+                          onChange={(e) => {
+                            const value = (e.target as HTMLInputElement).value
+
+                            setTokenSearchInput(value)
+
+                            if (isValidAddressUtil(chainFilter.vmType, value)) {
+                              onAnalyticEvent?.(
+                                EventNames.TOKEN_SELECTOR_CONTRACT_SEARCH,
+                                {
+                                  search_term: value,
+                                  chain_filter: chainFilter.id
+                                }
+                              )
+                            }
+                          }}
+                        />
+                      </AccessibleListItem>
+
+                      {!isDesktop && (
+                        <Button
+                          color="ghost"
+                          size="none"
+                          onClick={() => onOpenChange(false)}
+                          css={{
+                            p: '2',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minWidth: '40px',
+                            height: '40px',
+                            color: 'gray9'
+                          }}
+                        >
                           <FontAwesomeIcon
-                            icon={faMagnifyingGlass}
+                            icon={faXmark}
                             width={16}
                             height={16}
                           />
-                        </Box>
-                      }
-                      containerCss={{
-                        width: '100%',
-                        height: 40,
-                        mb: isDesktop ? '1' : '0'
-                      }}
-                      css={{
-                        width: '100%',
-                        _placeholder_parent: {
-                          textOverflow: 'ellipsis'
-                        }
-                      }}
-                      value={tokenSearchInput}
-                      onChange={(e) => {
-                        const value = (e.target as HTMLInputElement).value
-
-                        setTokenSearchInput(value)
-
-                        if (isValidAddressUtil(chainFilter.vmType, value)) {
-                          onAnalyticEvent?.(
-                            EventNames.TOKEN_SELECTOR_CONTRACT_SEARCH,
-                            {
-                              search_term: value,
-                              chain_filter: chainFilter.id
-                            }
-                          )
-                        }
-                      }}
-                    />
-                  </AccessibleListItem>
-                  {!isDesktop &&
-                  (!configuredChainIds || hasMultipleConfiguredChainIds) ? (
-                    <ChainFilter
-                      options={allChains}
-                      value={chainFilter}
-                      onSelect={setChainFilter}
-                      popularChainIds={popularChainIds}
-                      onChainStarToggle={handleChainStarToggle}
-                      starredChainIds={starredChainIds}
-                    />
-                  ) : null}
-                </Flex>
-
-                {/* Token Lists Section  */}
-                <Flex
-                  key={chainFilter.id ?? 'all'}
-                  direction="column"
-                  css={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    gap: '3',
-                    pt: '2',
-                    scrollbarColor: 'var(--relay-colors-gray5) transparent'
-                  }}
-                >
-                  {/* Suggested Tokens */}
-                  {chainFilter.id &&
-                  tokenSearchInput.length === 0 &&
-                  !depositAddressOnly ? (
-                    <SuggestedTokens
-                      chainId={chainFilter.id}
-                      depositAddressOnly={depositAddressOnly}
-                      onSelect={(token) => {
-                        handleTokenSelection(token)
-                      }}
-                    />
-                  ) : null}
-
-                  {/* Token Lists */}
-                  {tokenSearchInput.length > 0 ? (
-                    <TokenList
-                      title="Results"
-                      tokens={sortedCombinedTokens}
-                      isLoading={
-                        isLoadingTokenList ||
-                        tokenSearchInput !== debouncedTokenSearchValue
-                      }
-                      isLoadingBalances={isLoadingBalances}
-                      chainFilterId={chainFilter.id}
-                    />
-                  ) : (
-                    <Flex direction="column" css={{ gap: '3' }}>
-                      {[
-                        {
-                          title: 'Your Tokens',
-                          tokens: sortedUserTokens,
-                          isLoading: isLoadingUserTokens,
-                          show: sortedUserTokens.length > 0
-                        },
-                        {
-                          title: 'Global 24H Volume',
-                          tokens: sortedCombinedTokens,
-                          isLoading: isLoadingTokenList,
-                          show: true
-                        },
-                        {
-                          title: 'Relay 24H Volume',
-                          tokens: sortedTrendingTokens,
-                          isLoading: isLoadingTrendingTokens,
-                          show:
-                            context === 'to' && chainFilter.id === undefined,
-                          showMoreButton: true
-                        }
-                      ]
-                        .sort((a, b) => (context === 'to' ? -1 : 1)) // Reverse order depending on context
-                        .map(
-                          ({
-                            title,
-                            tokens,
-                            isLoading,
-                            show,
-                            showMoreButton
-                          }) =>
-                            show && (
-                              <TokenList
-                                key={title}
-                                title={title}
-                                tokens={tokens}
-                                isLoading={isLoading}
-                                isLoadingBalances={isLoadingBalances}
-                                chainFilterId={chainFilter.id}
-                                showMoreButton={showMoreButton}
-                              />
-                            )
-                        )}
-                    </Flex>
-                  )}
-
-                  {/* Empty State */}
-                  {!isLoadingTokenList &&
-                  !isLoadingExternalList &&
-                  tokenList?.length === 0 &&
-                  externalTokenList?.length === 0 ? (
-                    <Flex
-                      direction="column"
-                      align="center"
-                      css={{ py: '5', maxWidth: 312, alignSelf: 'center' }}
-                    >
-                      {!chainFilter?.id && isSearchTermValidAddress && (
-                        <Box css={{ color: 'gray8', mb: '2' }}>
-                          <FontAwesomeIcon
-                            icon={faFolderOpen}
-                            size="xl"
-                            width={27}
-                            height={24}
-                          />
-                        </Box>
+                        </Button>
                       )}
-                      <Text
-                        color="subtle"
-                        style="body2"
-                        css={{ textAlign: 'center' }}
-                      >
-                        {!chainFilter?.id && isSearchTermValidAddress
-                          ? 'No results. Switch to the desired chain to search by contract.'
-                          : 'No results.'}
-                      </Text>
                     </Flex>
-                  ) : null}
-                </Flex>
-              </AccessibleList>
+                    {!isDesktop &&
+                    (!configuredChainIds || hasMultipleConfiguredChainIds) ? (
+                      <ChainShortcuts
+                        options={allChains}
+                        value={chainFilter}
+                        onSelect={setChainFilter}
+                        onMoreClick={() => setMobileView('chains')}
+                        popularChainIds={popularChainIds}
+                        starredChainIds={starredChainIds}
+                        onAnalyticEvent={onAnalyticEvent}
+                        context={context}
+                      />
+                    ) : null}
+
+                    {/* Selected Chain Header - Only show on mobile when specific chain is selected */}
+                    {!isDesktop && chainFilter.id !== undefined ? (
+                      <Flex
+                        align="center"
+                        css={{
+                          gap: '2',
+                          pb: '1',
+                          width: '100%'
+                        }}
+                      >
+                        <Text style="subtitle2" color="subtle">
+                          Tokens on{' '}
+                          {('displayName' in chainFilter &&
+                            chainFilter.displayName) ||
+                            chainFilter.name}
+                        </Text>
+                      </Flex>
+                    ) : null}
+                  </Flex>
+
+                  {/* Token Lists Section  */}
+                  <Flex
+                    key={chainFilter.id ?? 'all'}
+                    direction="column"
+                    css={{
+                      flex: 1,
+                      overflowY: 'auto',
+                      gap: '3',
+                      pt:
+                        !isDesktop && chainFilter.id !== undefined ? '0' : '2',
+                      scrollbarColor: 'var(--relay-colors-gray5) transparent'
+                    }}
+                  >
+                    {/* Suggested Tokens */}
+                    {chainFilter.id &&
+                    tokenSearchInput.length === 0 &&
+                    !depositAddressOnly ? (
+                      <SuggestedTokens
+                        chainId={chainFilter.id}
+                        depositAddressOnly={depositAddressOnly}
+                        onSelect={(token) => {
+                          handleTokenSelection(token)
+                        }}
+                      />
+                    ) : null}
+
+                    {/* Token Lists */}
+                    {tokenSearchInput.length > 0 ? (
+                      <TokenList
+                        title="Results"
+                        tokens={sortedCombinedTokens}
+                        isLoading={
+                          isLoadingTokenList ||
+                          tokenSearchInput !== debouncedTokenSearchValue
+                        }
+                        isLoadingBalances={isLoadingBalances}
+                        chainFilterId={chainFilter.id}
+                      />
+                    ) : (
+                      <Flex direction="column" css={{ gap: '3' }}>
+                        {[
+                          {
+                            title: 'Your Tokens',
+                            tokens: sortedUserTokens,
+                            isLoading: isLoadingUserTokens,
+                            show: sortedUserTokens.length > 0
+                          },
+                          {
+                            title: 'Global 24H Volume',
+                            tokens: sortedCombinedTokens,
+                            isLoading: isLoadingTokenList,
+                            show: true
+                          },
+                          {
+                            title: 'Relay 24H Volume',
+                            tokens: sortedTrendingTokens,
+                            isLoading: isLoadingTrendingTokens,
+                            show:
+                              context === 'to' && chainFilter.id === undefined,
+                            showMoreButton: true
+                          }
+                        ]
+                          .sort((a, b) => (context === 'to' ? -1 : 1)) // Reverse order depending on context
+                          .map(
+                            ({
+                              title,
+                              tokens,
+                              isLoading,
+                              show,
+                              showMoreButton
+                            }) =>
+                              show && (
+                                <TokenList
+                                  key={title}
+                                  title={title}
+                                  tokens={tokens}
+                                  isLoading={isLoading}
+                                  isLoadingBalances={isLoadingBalances}
+                                  chainFilterId={chainFilter.id}
+                                  showMoreButton={showMoreButton}
+                                />
+                              )
+                          )}
+                      </Flex>
+                    )}
+
+                    {/* Empty State */}
+                    {!isLoadingTokenList &&
+                    !isLoadingExternalList &&
+                    tokenList?.length === 0 &&
+                    externalTokenList?.length === 0 ? (
+                      <Flex
+                        direction="column"
+                        align="center"
+                        css={{ py: '5', maxWidth: 312, alignSelf: 'center' }}
+                      >
+                        {!chainFilter?.id && isSearchTermValidAddress && (
+                          <Box css={{ color: 'gray8', mb: '2' }}>
+                            <FontAwesomeIcon
+                              icon={faFolderOpen}
+                              size="xl"
+                              width={27}
+                              height={24}
+                            />
+                          </Box>
+                        )}
+                        <Text
+                          color="subtle"
+                          style="body2"
+                          css={{ textAlign: 'center' }}
+                        >
+                          {!chainFilter?.id && isSearchTermValidAddress
+                            ? 'No results. Switch to the desired chain to search by contract.'
+                            : 'No results.'}
+                        </Text>
+                      </Flex>
+                    ) : null}
+                  </Flex>
+                </AccessibleList>
+              </Flex>
             </Flex>
-          </Flex>
+          )}
         </Modal>
       </div>
 
