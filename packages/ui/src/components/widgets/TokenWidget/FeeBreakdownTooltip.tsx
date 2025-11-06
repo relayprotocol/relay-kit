@@ -71,9 +71,9 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
   const fillGasFormatted = formatDollar(
     fillGasUsd !== undefined ? Math.abs(fillGasUsd) : undefined
   )
-  const appFeeFormatted = formatDollar(
-    appFeeUsd !== undefined ? Math.abs(appFeeUsd) : undefined
-  )
+  const appFeeFormatted =
+    appFee?.usd.formatted ??
+    formatDollar(appFeeUsd !== undefined ? Math.abs(appFeeUsd) : undefined)
 
   return (
     <Tooltip
@@ -132,10 +132,10 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
           )}
 
           {/* App Fee Row */}
-          {appFeeUsd !== undefined && appFeeFormatted !== '-' && (
+          {appFee && appFeeUsd !== undefined && appFeeFormatted !== '-' && (
             <Flex align="center" css={{ width: '100%' }}>
               <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
-                {appFee?.name ?? 'App Fee'}
+                {appFee.name}
               </Text>
               {feeBreakdown?.isGasSponsored && appFeeUsd === 0 ? (
                 <Text style="subtitle2" color="success">
