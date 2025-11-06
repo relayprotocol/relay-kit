@@ -1,4 +1,12 @@
-import { type FC, useState, useMemo, forwardRef } from 'react'
+import {
+  type FC,
+  useState,
+  useMemo,
+  forwardRef,
+  useRef,
+  useEffect,
+  useCallback
+} from 'react'
 import { Flex, Text, Box, Button, ChainIcon } from '../../primitives/index.js'
 import { Dropdown, DropdownMenuItem } from '../../primitives/Dropdown.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -33,7 +41,11 @@ const ChainFilterTrigger = forwardRef<
       cursor: 'pointer',
       backgroundColor: 'dropdown-background',
       borderRadius: 'dropdown-border-radius',
-      flexShrink: 0
+      flexShrink: 0,
+      '--focusColor': 'colors.focus-color',
+      _focusVisible: {
+        boxShadow: 'inset 0 0 0 2px var(--focusColor)'
+      }
     }}
   >
     {value.id ? (
@@ -81,6 +93,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
 }) => {
   const [open, setOpen] = useState(false)
   const [chainSearchInput, setChainSearchInput] = useState('')
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
   const chainFuse = new Fuse(options, {
     includeScore: true,
     includeMatches: true,
@@ -107,6 +120,44 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
     return Array.from(uniqueChains.values())
   }, [chainSearchInput, chainFuse])
 
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus()
+      })
+    } else {
+      setChainSearchInput('')
+    }
+  }, [open])
+
+  const focusDropdownItem = useCallback((position: 'first' | 'last') => {
+    const container = searchInputRef.current?.closest(
+      '[data-chain-dropdown]'
+    ) as HTMLElement | null
+    if (!container) return
+
+    const items = Array.from(
+      container.querySelectorAll<HTMLElement>('[data-chain-dropdown-item]')
+    )
+    if (items.length === 0) return
+
+    const target = position === 'first' ? items[0] : items[items.length - 1]
+    target.focus()
+  }, [])
+
+  const handleSearchKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        focusDropdownItem('first')
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        focusDropdownItem('last')
+      }
+    },
+    [focusDropdownItem]
+  )
+
   return (
     <Dropdown
       open={open}
@@ -123,11 +174,15 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
         }
       }}
     >
-      <Flex direction="column" css={{ p: '2' }}>
+      <Flex direction="column" css={{ p: '2' }} data-chain-dropdown="true">
         <ChainSearchInput
+          ref={searchInputRef}
           value={chainSearchInput}
           onChange={setChainSearchInput}
-          onKeyDown={(event) => event.stopPropagation()}
+          onKeyDown={(event) => {
+            event.stopPropagation()
+            handleSearchKeyDown(event)
+          }}
         />
         <Flex
           direction="column"
@@ -143,11 +198,12 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
               filteredChains.map((chain) => {
                 const tag = 'tags' in chain ? chain.tags?.[0] : undefined
                 return (
-                  <Flex
+                  <DropdownMenuItem
                     key={chain.id?.toString() ?? 'all-chains'}
-                    onClick={() => {
-                      setOpen(false)
+                    data-chain-dropdown-item
+                    onSelect={() => {
                       onSelect(chain)
+                      setOpen(false)
                       setChainSearchInput('')
                     }}
                     css={{
@@ -155,7 +211,11 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                       borderRadius: 4,
                       cursor: 'pointer',
                       backgroundColor: 'modal-background',
+                      outline: 'none',
                       _hover: {
+                        backgroundColor: 'gray3'
+                      },
+                      _focus: {
                         backgroundColor: 'gray3'
                       }
                     }}
@@ -166,7 +226,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                       onToggleStar={onChainStarToggle}
                       onAnalyticEvent={onAnalyticEvent}
                     />
-                  </Flex>
+                  </DropdownMenuItem>
                 )
               })
             ) : (
@@ -178,12 +238,25 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
             <>
               {allChainsOption && (
                 <DropdownMenuItem
-                  onClick={() => {
+                  data-chain-dropdown-item
+                  onSelect={() => {
                     setOpen(false)
                     onSelect(allChainsOption)
                     setChainSearchInput('')
                   }}
-                  css={{ p: '2' }}
+                  css={{
+                    padding: '8px',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    backgroundColor: 'modal-background',
+                    outline: 'none',
+                    _hover: {
+                      backgroundColor: 'gray3'
+                    },
+                    _focus: {
+                      backgroundColor: 'gray3'
+                    }
+                  }}
                 >
                   <ChainFilterRow
                     chain={allChainsOption}
@@ -205,11 +278,12 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                   {starredChains.map((chain: ChainFilterValue) => {
                     const tag = 'tags' in chain ? chain.tags?.[0] : undefined
                     return (
-                      <Flex
+                      <DropdownMenuItem
                         key={chain.id?.toString() ?? 'all-chains'}
-                        onClick={() => {
-                          setOpen(false)
+                        data-chain-dropdown-item
+                        onSelect={() => {
                           onSelect(chain)
+                          setOpen(false)
                           setChainSearchInput('')
                         }}
                         css={{
@@ -217,7 +291,11 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                           borderRadius: 4,
                           cursor: 'pointer',
                           backgroundColor: 'modal-background',
+                          outline: 'none',
                           _hover: {
+                            backgroundColor: 'gray3'
+                          },
+                          _focus: {
                             backgroundColor: 'gray3'
                           }
                         }}
@@ -229,7 +307,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                           showStar={false}
                           onAnalyticEvent={onAnalyticEvent}
                         />
-                      </Flex>
+                      </DropdownMenuItem>
                     )
                   })}
                 </>
@@ -241,11 +319,12 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
               {alphabeticalChains.map((chain: ChainFilterValue) => {
                 const tag = 'tags' in chain ? chain.tags?.[0] : undefined
                 return (
-                  <Flex
+                  <DropdownMenuItem
                     key={chain.id?.toString() ?? 'all-chains'}
-                    onClick={() => {
-                      setOpen(false)
+                    data-chain-dropdown-item
+                    onSelect={() => {
                       onSelect(chain)
+                      setOpen(false)
                       setChainSearchInput('')
                     }}
                     css={{
@@ -253,7 +332,11 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                       borderRadius: 4,
                       cursor: 'pointer',
                       backgroundColor: 'modal-background',
+                      outline: 'none',
                       _hover: {
+                        backgroundColor: 'gray3'
+                      },
+                      _focus: {
                         backgroundColor: 'gray3'
                       }
                     }}
@@ -264,7 +347,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                       onToggleStar={onChainStarToggle}
                       onAnalyticEvent={onAnalyticEvent}
                     />
-                  </Flex>
+                  </DropdownMenuItem>
                 )
               })}
             </>

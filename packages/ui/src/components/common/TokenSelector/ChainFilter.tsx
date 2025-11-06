@@ -6,7 +6,7 @@ import {
   useRef,
   useCallback
 } from 'react'
-import { Dropdown, DropdownMenuItem } from '../../primitives/Dropdown.js'
+import { Dropdown } from '../../primitives/Dropdown.js'
 import { Button, Flex, Text, Box } from '../../primitives/index.js'
 import ChainIcon from '../../primitives/ChainIcon.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -163,7 +163,7 @@ const ChainFilter: FC<Props> = ({
         >
           {filteredChains ? (
             filteredChains.length > 0 ? (
-              filteredChains.map((chain, idx) => {
+              filteredChains.map((chain) => {
                 const tag = 'tags' in chain ? chain.tags?.[0] : undefined
                 return (
                   <Flex
@@ -200,21 +200,27 @@ const ChainFilter: FC<Props> = ({
           ) : (
             <>
               {allChainsOption && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setOpen(false)
-                      onSelect(allChainsOption)
-                      setChainSearchInput('')
-                    }}
-                    css={{ p: '2' }}
-                  >
-                    <ChainFilterRow
-                      chain={allChainsOption}
-                      onAnalyticEvent={onAnalyticEvent}
-                    />
-                  </DropdownMenuItem>
-                </>
+                <Flex
+                  onClick={() => {
+                    setOpen(false)
+                    onSelect(allChainsOption)
+                    setChainSearchInput('')
+                  }}
+                  css={{
+                    padding: '8px',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    backgroundColor: 'modal-background',
+                    _hover: {
+                      backgroundColor: 'gray3'
+                    }
+                  }}
+                >
+                  <ChainFilterRow
+                    chain={allChainsOption}
+                    onAnalyticEvent={onAnalyticEvent}
+                  />
+                </Flex>
               )}
 
               {starredChains.length > 0 && (
@@ -387,7 +393,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   }
 
   // Long press handlers for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     if (!chain.id) return
     const timer = setTimeout(() => {
       // Provide haptic feedback on long press
