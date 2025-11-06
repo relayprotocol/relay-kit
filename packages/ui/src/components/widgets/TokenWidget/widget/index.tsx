@@ -1223,7 +1223,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
-                                '--outlineColor': 'colors.gray.4',
+                                '--outlineColor': 'colors.slate.4',
                                 outline: '1px solid var(--outlineColor)',
                                 color: 'gray12'
                               },
@@ -1256,7 +1256,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
-                                '--outlineColor': 'colors.gray.4',
+                                '--outlineColor': 'colors.slate.4',
                                 outline: '1px solid var(--outlineColor)',
                                 color: 'gray12'
                               },
