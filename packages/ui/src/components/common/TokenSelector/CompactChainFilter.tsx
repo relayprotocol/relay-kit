@@ -127,6 +127,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
         <ChainSearchInput
           value={chainSearchInput}
           onChange={setChainSearchInput}
+          onKeyDown={(event) => event.stopPropagation()}
         />
         <Flex
           direction="column"

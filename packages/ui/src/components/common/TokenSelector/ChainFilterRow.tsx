@@ -190,12 +190,13 @@ export type ChainSearchInputProps = {
   value: string
   onChange: (value: string) => void
   placeholder?: string
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 export const ChainSearchInput = forwardRef<
   HTMLInputElement,
   ChainSearchInputProps
->(({ value, onChange, placeholder = 'Search for a chain' }, ref) => (
+>(({ value, onChange, placeholder = 'Search for a chain', onKeyDown }, ref) => (
   <Input
     ref={ref}
     placeholder={placeholder}
@@ -220,6 +221,6 @@ export const ChainSearchInput = forwardRef<
     }}
     value={value}
     onChange={(e) => onChange((e.target as HTMLInputElement).value)}
-    onKeyDown={(e) => e.stopPropagation()}
+    onKeyDown={onKeyDown}
   />
 ))
