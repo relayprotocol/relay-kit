@@ -150,6 +150,7 @@ const ChainFilter: FC<Props> = ({
         <ChainSearchInput
           value={chainSearchInput}
           onChange={setChainSearchInput}
+          onKeyDown={(event) => event.stopPropagation()}
         />
         <Flex
           direction="column"

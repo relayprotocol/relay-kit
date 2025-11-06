@@ -5,7 +5,7 @@ import type {
   SetStateAction,
   KeyboardEvent
 } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Dropdown } from '../primitives/Dropdown.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGear, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
@@ -39,6 +39,7 @@ type SlippageToleranceConfigProps = {
   onOpenSlippageConfig?: () => void
   showGearIcon?: boolean
   showLabel?: boolean
+  widgetType?: 'token' | 'swap'
 }
 
 type SlippageTabsProps = {
@@ -52,6 +53,7 @@ type SlippageTabsProps = {
   slippageRating: string | undefined
   slippageRatingColor: string | undefined
   inputRef: React.RefObject<HTMLInputElement | null>
+  widgetType?: 'token' | 'swap'
 }
 
 const SlippageTabs: FC<SlippageTabsProps> = ({
@@ -64,9 +66,11 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
   handleClose,
   slippageRating,
   slippageRatingColor,
-  inputRef
+  inputRef,
+  widgetType
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
+  const isTokenWidget = widgetType === 'token'
   return (
     <TabsRoot
       value={mode}
@@ -80,9 +84,9 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        gap: '3',
+        gap: isTokenWidget ? '4px' : '3',
         sm: {
-          gap: '2'
+          gap: isTokenWidget ? '4px' : '2'
         }
       }}
     >
@@ -97,9 +101,13 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
 
       <TabsContent value="Auto" css={{ width: '100%' }}>
         <Text
-          style="body2"
+          style={isTokenWidget ? 'body3' : 'body2'}
           color="subtle"
-          css={{ lineHeight: '14px', sm: { fontSize: '12px' } }}
+          css={
+            isTokenWidget
+              ? { lineHeight: 'normal', fontSize: '12px' }
+              : { lineHeight: '14px', sm: { fontSize: '12px' } }
+          }
         >
           We'll set the slippage automatically to minimize the failure rate.
         </Text>
@@ -266,11 +274,14 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   label = 'Slippage',
   onOpenSlippageConfig,
   showGearIcon = true,
-  showLabel = false
+  showLabel = false,
+  widgetType
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
   const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
-    currentSlippageTolerance ? convertBpsToPercent(currentSlippageTolerance) : undefined
+    currentSlippageTolerance
+      ? convertBpsToPercent(currentSlippageTolerance)
+      : undefined
   )
   const [debouncedDisplayValue] = useDebounceValue(displayValue, 500)
 
@@ -413,7 +424,8 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     handleClose,
     slippageRating,
     slippageRatingColor,
-    inputRef
+    inputRef,
+    widgetType
   }
 
   return (
