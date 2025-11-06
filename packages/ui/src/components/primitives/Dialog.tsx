@@ -86,11 +86,12 @@ const Content = forwardRef<
 const AnimatedContent = forwardRef<
   ElementRef<typeof DialogPrimitive.DialogContent>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.DialogContent> &
-    PropsWithChildren & { css?: Styles }
->(({ children, css, ...props }, forwardedRef) => {
+    PropsWithChildren & { css?: Styles; disableAnimation?: boolean }
+>(({ children, css, disableAnimation = false, ...props }, forwardedRef) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
+  const isMobileSlideUpEnabled = isMobile && !disableAnimation
 
-  const animation = isMobile
+  const animation = isMobileSlideUpEnabled
     ? {
         initial: {
           opacity: 0,
@@ -104,7 +105,6 @@ const AnimatedContent = forwardRef<
           top: 'auto',
           left: 0
         },
-
         exit: {
           opacity: 0,
           bottom: '-100%',
@@ -140,9 +140,9 @@ const AnimatedContent = forwardRef<
         key={isMobile + 'modal'}
         ref={forwardedRef}
         transition={{
-          type: isMobile ? 'tween' : undefined,
-          duration: isMobile ? 0.2 : 0.1,
-          ease: isMobile ? undefined : 'linear'
+          type: isMobileSlideUpEnabled ? 'tween' : undefined,
+          duration: isMobileSlideUpEnabled ? 0.2 : 0.1,
+          ease: isMobileSlideUpEnabled ? undefined : 'linear'
         }}
         {...animation}
       >
