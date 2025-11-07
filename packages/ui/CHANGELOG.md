@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.0
+
+### Major Changes
+
+- dbb99e3: Add TokenWidget
+
 ## 5.1.2
 
 ### Patch Changes
