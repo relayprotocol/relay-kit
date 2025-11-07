@@ -1218,13 +1218,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             css={{
                               padding: '12px',
                               background: 'none',
-                              outline: '1px solid transparent',
+                              border: '1px solid transparent',
                               color: 'gray11',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
-                                '--outlineColor': 'colors.slate.4',
-                                outline: '1px solid var(--outlineColor)',
+                                borderColor: 'slate.4',
                                 color: 'gray12'
                               },
                               '&:not([data-state="active"])': {
@@ -1234,7 +1233,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               },
                               _dark: {
                                 '&[data-state="active"]': {
-                                  background: 'gray1'
+                                  background: 'gray1',
+                                  borderColor: 'gray.4'
                                 },
                                 '&:not([data-state="active"])': {
                                   _hover: {
@@ -1251,13 +1251,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             css={{
                               padding: '12px',
                               background: 'none',
-                              outline: '1px solid transparent',
+                              border: '1px solid transparent',
                               color: 'gray11',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
-                                '--outlineColor': 'colors.slate.4',
-                                outline: '1px solid var(--outlineColor)',
+                                borderColor: 'slate.4',
                                 color: 'gray12'
                               },
                               '&:not([data-state="active"])': {
@@ -1267,7 +1266,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               },
                               _dark: {
                                 '&[data-state="active"]': {
-                                  background: 'gray1'
+                                  background: 'gray1',
+                                  borderColor: 'gray.4'
                                 },
                                 '&:not([data-state="active"])': {
                                   _hover: {
