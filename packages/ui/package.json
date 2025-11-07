@@ -19,6 +19,11 @@
       "import": "./_esm/src/components/widgets/OnrampWidget/index.js",
       "require": "./_cjs/src/components/widgets/OnrampWidget/index.js"
     },
+    "./TokenWidget": {
+      "types": "./_types/src/components/widgets/TokenWidget/index.d.ts",
+      "import": "./_esm/src/components/widgets/TokenWidget/index.js",
+      "require": "./_cjs/src/components/widgets/TokenWidget/index.js"
+    },
     ".": {
       "types": "./_types/src/index.d.ts",
       "import": "./_esm/src/index.js",

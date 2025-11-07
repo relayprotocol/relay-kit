@@ -21,6 +21,7 @@ const Index: NextPage = () => {
         </h2>
         <nav style={{ display: 'flex', gap: 15 }}>
           <Link href="/ui/swap">SwapWidget</Link>
+          <Link href="/ui/token">TokenWidget</Link>
           <Link href="/ui/chain">ChainWidget</Link>
           <Link href="/ui/onramp">OnrampWidget</Link>
           <Link href="/ui/depositAddresses">Deposit Addresses</Link>

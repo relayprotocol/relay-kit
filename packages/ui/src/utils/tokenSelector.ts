@@ -113,7 +113,8 @@ export const getInitialChainFilter = (
   chainFilterOptions: RelayChain[],
   context: 'from' | 'to',
   depositAddressOnly: boolean,
-  token?: Token
+  token?: Token,
+  alwaysShowAllChains?: boolean
 ) => {
   const defaultFilter = { id: undefined, name: 'All Chains' }
 
@@ -130,6 +131,10 @@ export const getInitialChainFilter = (
       )
     }
     return chainFilterOptions[0]
+  }
+
+  if (alwaysShowAllChains) {
+    return defaultFilter
   }
 
   if (token === undefined || context === 'from') {

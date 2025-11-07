@@ -24,6 +24,38 @@ function formatDollar(price?: number | null) {
   return formatted
 }
 
+function formatDollarCompact(price?: number | null) {
+  if (price === undefined || price === null || price === 0) {
+    return '-'
+  }
+
+  // For values >= $1B, show ">$1B"
+  if (Math.abs(price) >= 1000000000) {
+    return '>$1B'
+  }
+
+  // Use compact notation for values >= $1000
+  if (Math.abs(price) >= 1000) {
+    const { format } = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      notation: 'compact',
+      compactDisplay: 'short',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    })
+    return format(price)
+  }
+
+  const formatted = formatUsdCurrency(price)
+
+  if (formatted === '$0.00' && price && price > 0) {
+    return '< $0.01'
+  }
+
+  return formatted
+}
+
 function formatNumber(
   amount: number | null | undefined | string,
   maximumFractionDigits: number = 2,
@@ -298,11 +330,30 @@ function formatSignificantDigits(
   return isNegative ? '-' + result : result
 }
 
+/**
+ * Converts basis points to percentage string
+ * @param bps Basis points as string (e.g. "250" for 2.5%)
+ * @returns Formatted percentage string or undefined
+ */
+function convertBpsToPercent(bps?: string) {
+  if (bps === undefined) return undefined
+  const numeric = Number(bps)
+  if (!Number.isFinite(numeric)) return undefined
+
+  const percent = numeric / 100
+  if (!Number.isFinite(percent)) return undefined
+
+  const formatted = percent.toFixed(percent % 1 === 0 ? 0 : 2)
+  return formatted.replace(/\.0+$/, '').replace(/\.00$/, '')
+}
+
 export {
   formatDollar,
+  formatDollarCompact,
   formatBN,
   formatFixedLength,
   formatNumber,
   formatSignificantDigits,
-  truncateBalance
+  truncateBalance,
+  convertBpsToPercent
 }

@@ -23,6 +23,7 @@ type MultiWalletDropdownProps = {
   onLinkNewWallet: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   setAddressModalOpen?: React.Dispatch<React.SetStateAction<boolean>>
+  disableWalletFiltering?: boolean
 }
 
 export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
@@ -35,13 +36,14 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
   onSelect,
   onAnalyticEvent,
   onLinkNewWallet,
-  setAddressModalOpen
+  setAddressModalOpen,
+  disableWalletFiltering = false
 }) => {
   const [open, setOpen] = useState(false)
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
   const filteredWallets = useMemo(() => {
-    if (!chain) return wallets
+    if (!chain || disableWalletFiltering) return wallets
 
     let eclipseConnectorKeys: string[] | undefined = undefined
     if (connectorKeyOverrides && connectorKeyOverrides[eclipse.id]) {
@@ -67,7 +69,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
       }
       return true
     })
-  }, [wallets, chain])
+  }, [wallets, chain, disableWalletFiltering])
 
   const selectedWallet = useMemo(
     () =>
@@ -137,7 +139,8 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
           corners="pill"
           css={{
             gap: '2',
-            px: '2 !important',
+            pl: '0 !important',
+            pr: '2 !important',
             py: '1',
             cursor: 'pointer',
             display: 'flex',
@@ -279,3 +282,5 @@ const DropdownItemBaseStyle = {
   alignContent: 'center',
   width: '100%'
 }
+
+export type { MultiWalletDropdownProps }

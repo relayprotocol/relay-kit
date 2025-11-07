@@ -6,14 +6,13 @@ import {
   useRef,
   useCallback
 } from 'react'
-import { Dropdown, DropdownMenuItem } from '../../primitives/Dropdown.js'
-import { Button, Flex, Text, Input, Box } from '../../primitives/index.js'
+import { Dropdown } from '../../primitives/Dropdown.js'
+import { Button, Flex, Text, Box } from '../../primitives/index.js'
 import ChainIcon from '../../primitives/ChainIcon.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronDown,
   faInfoCircle,
-  faMagnifyingGlass,
   faStar
 } from '@fortawesome/free-solid-svg-icons'
 import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
@@ -27,6 +26,7 @@ import {
 } from '../../../utils/localStorage.js'
 import Tooltip from '../../../components/primitives/Tooltip.js'
 import { EventNames } from '../../../constants/events.js'
+import { ChainSearchInput } from './ChainFilterRow.js'
 
 export type ChainFilterValue =
   | RelayChain
@@ -147,44 +147,23 @@ const ChainFilter: FC<Props> = ({
       }}
     >
       <Flex direction="column" css={{ p: '2' }}>
-        <Input
-          placeholder="Search for a chain"
-          icon={
-            <Box css={{ color: 'gray9' }}>
-              <FontAwesomeIcon
-                icon={faMagnifyingGlass}
-                width={16}
-                height={16}
-              />
-            </Box>
-          }
-          containerCss={{
-            width: '100%',
-            height: 40,
-            mb: '2'
-          }}
-          css={{
-            width: '100%',
-            _placeholder_parent: {
-              textOverflow: 'ellipsis'
-            },
-            '--borderColor': 'colors.subtle-border-color',
-            border: '1px solid var(--borderColor)',
-            backgroundColor: 'modal-background'
-          }}
+        <ChainSearchInput
           value={chainSearchInput}
-          onChange={(e) =>
-            setChainSearchInput((e.target as HTMLInputElement).value)
-          }
-          onKeyDown={(e) => e.stopPropagation()}
+          onChange={setChainSearchInput}
+          onKeyDown={(event) => event.stopPropagation()}
         />
         <Flex
           direction="column"
-          css={{ overflowY: 'scroll', borderRadius: 8, maxHeight: 290 }}
+          css={{
+            overflowY: 'auto',
+            borderRadius: 8,
+            maxHeight: 290,
+            scrollbarColor: 'var(--relay-colors-gray5) transparent'
+          }}
         >
           {filteredChains ? (
             filteredChains.length > 0 ? (
-              filteredChains.map((chain, idx) => {
+              filteredChains.map((chain) => {
                 const tag = 'tags' in chain ? chain.tags?.[0] : undefined
                 return (
                   <Flex
@@ -221,21 +200,27 @@ const ChainFilter: FC<Props> = ({
           ) : (
             <>
               {allChainsOption && (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      setOpen(false)
-                      onSelect(allChainsOption)
-                      setChainSearchInput('')
-                    }}
-                    css={{ p: '2' }}
-                  >
-                    <ChainFilterRow
-                      chain={allChainsOption}
-                      onAnalyticEvent={onAnalyticEvent}
-                    />
-                  </DropdownMenuItem>
-                </>
+                <Flex
+                  onClick={() => {
+                    setOpen(false)
+                    onSelect(allChainsOption)
+                    setChainSearchInput('')
+                  }}
+                  css={{
+                    padding: '8px',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    backgroundColor: 'modal-background',
+                    _hover: {
+                      backgroundColor: 'gray3'
+                    }
+                  }}
+                >
+                  <ChainFilterRow
+                    chain={allChainsOption}
+                    onAnalyticEvent={onAnalyticEvent}
+                  />
+                </Flex>
               )}
 
               {starredChains.length > 0 && (
@@ -408,7 +393,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   }
 
   // Long press handlers for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     if (!chain.id) return
     const timer = setTimeout(() => {
       // Provide haptic feedback on long press

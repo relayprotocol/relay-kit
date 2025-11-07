@@ -1,5 +1,4 @@
 import {
-  createClient,
   LogLevel,
   MAINNET_RELAY_WS,
   RelayChain
@@ -41,7 +40,6 @@ export const RelayKitProviderWrapper: FC<{
         source: 'relay-demo',
         logLevel: LogLevel.Verbose,
         duneConfig: {
-          apiKey: process.env.NEXT_PUBLIC_DUNE_TOKEN,
           apiBaseUrl: process.env.NEXT_PUBLIC_DUNE_API_URL
         },
         chains: dynamicChains,

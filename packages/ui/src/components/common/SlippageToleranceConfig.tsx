@@ -1,5 +1,11 @@
-import type { FC, ChangeEvent, Dispatch, SetStateAction } from 'react'
-import { useState, useEffect, useRef } from 'react'
+import type {
+  FC,
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  KeyboardEvent
+} from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Dropdown } from '../primitives/Dropdown.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGear, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
@@ -20,12 +26,20 @@ import { EventNames } from '../../constants/events.js'
 import { useDebounceValue, useMediaQuery } from 'usehooks-ts'
 import useFallbackState from '../../hooks/useFallbackState.js'
 import { Modal } from './Modal.js'
+import { convertBpsToPercent } from '../../utils/numbers.js'
 
 type SlippageToleranceConfigProps = {
   open?: boolean
   setOpen?: (open: boolean) => void
   setSlippageTolerance: (value: string | undefined) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
+  currentSlippageTolerance?: string | undefined
+  variant?: 'dropdown' | 'inline'
+  label?: string
+  onOpenSlippageConfig?: () => void
+  showGearIcon?: boolean
+  showLabel?: boolean
+  widgetType?: 'token' | 'swap'
 }
 
 type SlippageTabsProps = {
@@ -39,6 +53,7 @@ type SlippageTabsProps = {
   slippageRating: string | undefined
   slippageRatingColor: string | undefined
   inputRef: React.RefObject<HTMLInputElement | null>
+  widgetType?: 'token' | 'swap'
 }
 
 const SlippageTabs: FC<SlippageTabsProps> = ({
@@ -51,9 +66,11 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
   handleClose,
   slippageRating,
   slippageRatingColor,
-  inputRef
+  inputRef,
+  widgetType
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
+  const isTokenWidget = widgetType === 'token'
   return (
     <TabsRoot
       value={mode}
@@ -67,9 +84,9 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        gap: '3',
+        gap: isTokenWidget ? '4px' : '3',
         sm: {
-          gap: '2'
+          gap: isTokenWidget ? '4px' : '2'
         }
       }}
     >
@@ -84,9 +101,13 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
 
       <TabsContent value="Auto" css={{ width: '100%' }}>
         <Text
-          style="body2"
+          style={isTokenWidget ? 'body3' : 'body2'}
           color="subtle"
-          css={{ lineHeight: '14px', sm: { fontSize: '12px' } }}
+          css={
+            isTokenWidget
+              ? { lineHeight: 'normal', fontSize: '12px' }
+              : { lineHeight: '14px', sm: { fontSize: '12px' } }
+          }
         >
           We'll set the slippage automatically to minimize the failure rate.
         </Text>
@@ -247,11 +268,20 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   open: _open,
   setOpen: _setOpen,
   setSlippageTolerance: externalSetValue,
-  onAnalyticEvent
+  onAnalyticEvent,
+  currentSlippageTolerance,
+  variant = 'dropdown',
+  label = 'Slippage',
+  onOpenSlippageConfig,
+  showGearIcon = true,
+  showLabel = false,
+  widgetType
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
-  const [displayValue, setDisplayValue] = useState<string | undefined>(
-    undefined
+  const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
+    currentSlippageTolerance
+      ? convertBpsToPercent(currentSlippageTolerance)
+      : undefined
   )
   const [debouncedDisplayValue] = useDebounceValue(displayValue, 500)
 
@@ -263,7 +293,9 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     externalSetValue(bpsValue)
   }, [bpsValue, externalSetValue])
 
-  const [mode, setMode] = useState<SlippageToleranceMode>('Auto')
+  const [mode, setMode] = useState<SlippageToleranceMode>(
+    currentSlippageTolerance ? 'Custom' : 'Auto'
+  )
   const [open, setOpen] = useFallbackState(
     _open !== undefined ? _open : false,
     _setOpen
@@ -271,6 +303,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
       : undefined
   )
 
+  const isInlineVariant = variant === 'inline'
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -281,6 +314,13 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     }
   }, [open, mode])
 
+  useEffect(() => {
+    if (!open && currentSlippageTolerance !== undefined) {
+      setDisplayValue(convertBpsToPercent(currentSlippageTolerance))
+      setMode(currentSlippageTolerance ? 'Custom' : 'Auto')
+    }
+  }, [currentSlippageTolerance, open])
+
   const slippageRating = displayValue
     ? getSlippageRating(displayValue)
     : undefined
@@ -289,27 +329,22 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     : undefined
 
   const handleInputChange = (value: string) => {
-    // Remove non-numeric characters except decimal point
     const sanitizedValue = value.replace(/[^0-9.]/g, '')
 
-    // Handle empty input
     if (sanitizedValue === '') {
       setDisplayValue(undefined)
       return
     }
 
-    // Handle single decimal point input
     if (sanitizedValue === '.') {
       setDisplayValue('0.')
       return
     }
 
-    // Validate format (numbers with up to 2 decimal places)
     if (!/^[0-9]*\.?[0-9]{0,2}$/.test(sanitizedValue)) {
       return
     }
 
-    // Prevent multiple leading zeros unless followed by a decimal
     if (
       sanitizedValue.startsWith('0') &&
       sanitizedValue.length > 1 &&
@@ -319,7 +354,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     }
 
     const numValue = parseFloat(sanitizedValue)
-    if (!isNaN(numValue)) {
+    if (!Number.isNaN(numValue)) {
       if (numValue > 100) {
         setDisplayValue('100')
         return
@@ -329,26 +364,26 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     setDisplayValue(sanitizedValue)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
     }
   }
 
   const handleClose = () => {
     const value = parseFloat(displayValue ?? '0')
-    const isAuto =
+    const isAutoMode =
       mode === 'Auto' ||
       displayValue === undefined ||
-      isNaN(value) ||
+      Number.isNaN(value) ||
       value < 0.01
 
-    if (isAuto) {
+    if (isAutoMode) {
       setDisplayValue(undefined)
     }
 
     onAnalyticEvent?.(EventNames.SWAP_SLIPPAGE_TOLERANCE_SET, {
-      value: isAuto ? 'auto' : displayValue
+      value: isAutoMode ? 'auto' : displayValue
     })
   }
 
@@ -358,7 +393,6 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
       color="ghost"
       size="none"
       css={{
-        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '1',
@@ -390,7 +424,8 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     handleClose,
     slippageRating,
     slippageRatingColor,
-    inputRef
+    inputRef,
+    widgetType
   }
 
   return (
