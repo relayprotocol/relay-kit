@@ -258,6 +258,14 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   const isLoadingPayWith =
     hasValidOutputAmount && isFetchingQuote && fromToken && !currencyInAmountUsd
 
+  const isSameTokenSameRecipient =
+    fromToken?.address === toToken?.address &&
+    fromToken?.chainId === toToken?.chainId &&
+    address === recipient
+
+  const isInputDisabled =
+    !toToken || !fromChainWalletVMSupported || isSameTokenSameRecipient
+
   return (
     <TabsContent value="buy">
       <SectionContainer
@@ -305,7 +313,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 }
               }
             }}
-            disabled={!toToken || !fromChainWalletVMSupported}
+            disabled={isInputDisabled}
             onClick={() => {
               onAnalyticEvent?.(EventNames.SWAP_OUTPUT_FOCUSED)
             }}
@@ -459,17 +467,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             context="from"
             autoSelectToken={false}
             setToken={(token) => {
-              if (
-                token?.address === toToken?.address &&
-                token?.chainId === toToken?.chainId &&
-                address === recipient &&
-                (!lockToToken || !fromToken)
-              ) {
-                handleSetFromToken(toToken)
-                handleSetToToken(fromToken)
-              } else {
-                handleSetFromToken(token)
-              }
+              handleSetFromToken(token)
             }}
             lockedChainIds={lockedChainIds}
             chainIdsFilter={
