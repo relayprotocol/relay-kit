@@ -387,32 +387,56 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     })
   }
 
-  const triggerButton = (
-    <Button
-      aria-label="Slippage Tolerance Configuration"
-      color="ghost"
-      size="none"
-      css={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '1',
-        bg: 'subtle-background-color',
-        color: slippageRatingColor ?? 'gray9',
-        p: '2',
-        borderRadius: 12,
-        border: 'widget-card-border',
-        height: '36px',
-        px: '10px'
-      }}
-    >
-      {open === false && displayValue && (
-        <Text style="subtitle2" css={{ color: slippageRatingColor }}>
-          {displayValue}%
+  const triggerButton =
+    widgetType === 'token' ? (
+      <Button
+        aria-label="Slippage Tolerance Configuration"
+        color="ghost"
+        size="none"
+        css={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '4px',
+          borderRadius: '8px',
+          padding: '4px 6px',
+          backgroundColor: 'gray3'
+        }}
+      >
+        <Text style="subtitle3" color="subtle">
+          Slippage
         </Text>
-      )}
-      <FontAwesomeIcon icon={faGear} />
-    </Button>
-  )
+        <Text style="subtitle3">
+          {displayValue ? `${displayValue}%` : 'Auto'}
+        </Text>
+      </Button>
+    ) : (
+      <Button
+        aria-label="Slippage Tolerance Configuration"
+        color="ghost"
+        size="none"
+        css={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1',
+          bg: 'subtle-background-color',
+          color: slippageRatingColor ?? 'gray9',
+          p: '2',
+          borderRadius: 12,
+          border: '1px solid',
+          borderColor: 'gray5',
+          height: '36px',
+          px: '10px'
+        }}
+      >
+        {open === false && displayValue && (
+          <Text style="subtitle2" css={{ color: slippageRatingColor }}>
+            {displayValue}%
+          </Text>
+        )}
+        <FontAwesomeIcon icon={faGear} />
+      </Button>
+    )
 
   const slippageTabsProps = {
     mode,
