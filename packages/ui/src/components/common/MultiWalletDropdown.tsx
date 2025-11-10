@@ -148,14 +148,14 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
           }}
           data-testid={testId}
         >
-          <Flex align="center" css={{ gap: '1' }}>
+          <Flex align="center" css={{ gap: '1', flexShrink: 1, minWidth: 0 }}>
             {isSupportedSelectedWallet && selectedWallet?.walletLogoUrl ? (
               <img
                 src={selectedWallet.walletLogoUrl}
-                style={{ width: 16, height: 16, borderRadius: 4 }}
+                style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0 }}
               />
             ) : selectedWalletAddress && !selectedWallet ? (
-              <Box css={{ color: 'amber11' }}>
+              <Box css={{ color: 'amber11', flexShrink: 0 }}>
                 <FontAwesomeIcon icon={faClipboard} width={16} height={16} />
               </Box>
             ) : null}
@@ -165,7 +165,10 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
                 color:
                   !selectedWallet && selectedWalletAddress
                     ? 'amber11'
-                    : 'anchor-color'
+                    : 'anchor-color',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
               }}
             >
               {isSupportedSelectedWallet &&
@@ -184,7 +187,8 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
                 color:
                   !selectedWallet && selectedWalletAddress
                     ? 'amber11'
-                    : 'anchor-color'
+                    : 'anchor-color',
+                flexShrink: 0
               }}
             >
               <FontAwesomeIcon icon={faChevronDown} width={14} height={14} />
