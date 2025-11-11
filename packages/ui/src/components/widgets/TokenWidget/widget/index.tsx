@@ -149,6 +149,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [unverifiedTokens, setUnverifiedTokens] = useState<
     { token: Token; context: 'to' | 'from' }[]
   >([])
+  const declinedTokensRef = useRef<Set<string>>(new Set())
   const [isUsdInputMode, setIsUsdInputMode] = useState(false)
   const [usdInputValue, setUsdInputValue] = useState('')
   const [usdOutputValue, setUsdOutputValue] = useState('')
@@ -235,6 +236,20 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         verified: apiToken.metadata?.verified ?? false
       }
 
+      // Check if this token is already in the unverified queue or was declined
+      const tokenKey = `${resolved.chainId}:${resolved.address.toLowerCase()}`
+      const isInUnverifiedQueue = unverifiedTokens.some(
+        (ut) =>
+          ut.token.address.toLowerCase() === resolved.address.toLowerCase() &&
+          ut.token.chainId === resolved.chainId
+      )
+      const wasDeclined = declinedTokensRef.current.has(tokenKey)
+
+      // Don't auto-set tokens that are already in the unverified queue or were declined
+      if (isInUnverifiedQueue || wasDeclined) {
+        return
+      }
+
       // In buy mode, the token from URL should be the token to buy (toToken)
       // In sell mode, it should be the token to sell (fromToken)
       if (activeTab === 'buy' && !toToken && !resolvedToToken) {
@@ -252,7 +267,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     activeTab,
     toToken,
     resolvedToToken,
-    setToToken
+    setToToken,
+    unverifiedTokens
   ])
 
   // Resolve toToken from API response
@@ -271,10 +287,23 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         logoURI: generateTokenImageUrl(apiToken),
         verified: apiToken.metadata?.verified ?? false
       }
-      setResolvedToToken(resolved)
-      setToToken?.(resolved)
+
+      // Check if this token is already in the unverified queue or was declined
+      const tokenKey = `${resolved.chainId}:${resolved.address.toLowerCase()}`
+      const isInUnverifiedQueue = unverifiedTokens.some(
+        (ut) =>
+          ut.token.address.toLowerCase() === resolved.address.toLowerCase() &&
+          ut.token.chainId === resolved.chainId
+      )
+      const wasDeclined = declinedTokensRef.current.has(tokenKey)
+
+      // Don't auto-set tokens that are already in the unverified queue or were declined
+      if (!isInUnverifiedQueue && !wasDeclined) {
+        setResolvedToToken(resolved)
+        setToToken?.(resolved)
+      }
     }
-  }, [toToken, toTokenList, setToToken, activeTab])
+  }, [toToken, toTokenList, setToToken, activeTab, unverifiedTokens])
 
   useEffect(() => {
     setLocalSlippageTolerance(slippageTolerance)
@@ -1537,6 +1566,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                 unverifiedTokens.length > 0 ? unverifiedTokens[0] : undefined
               }
               onDecline={(token, context) => {
+                if (token) {
+                  const tokenKey = `${token.chainId}:${token.address.toLowerCase()}`
+                  declinedTokensRef.current.add(tokenKey)
+                }
                 const tokens = unverifiedTokens.filter(
                   (unverifiedToken) =>
                     !(
