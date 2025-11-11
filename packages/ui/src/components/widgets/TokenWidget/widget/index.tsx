@@ -7,9 +7,12 @@ import {
   useMemo,
   useRef,
   useState,
-  type FC
+  type FC,
+  type Dispatch,
+  type SetStateAction
 } from 'react'
 import { useRelayClient } from '../../../../hooks/index.js'
+import useFallbackState from '../../../../hooks/useFallbackState.js'
 import type { Address } from 'viem'
 import { formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
@@ -40,6 +43,8 @@ type BaseTokenWidgetProps = {
   setFromToken?: (token?: Token) => void
   toToken?: Token
   setToToken?: (token?: Token) => void
+  activeTab?: 'buy' | 'sell'
+  setActiveTab?: (tab: 'buy' | 'sell') => void
   defaultToAddress?: Address
   defaultAmount?: string
   defaultTradeType?: 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
@@ -90,6 +95,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   setFromToken: setExternalFromToken,
   toToken: externalToToken,
   setToToken: setExternalToToken,
+  activeTab: externalActiveTab,
+  setActiveTab: setExternalActiveTab,
   defaultToAddress,
   defaultAmount,
   defaultTradeType,
@@ -172,7 +179,15 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [usdInputValue, setUsdInputValue] = useState('')
   const [usdOutputValue, setUsdOutputValue] = useState('')
   const [tokenInputCache, setTokenInputCache] = useState('')
-  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
+  const [activeTab, setActiveTab] = useFallbackState<'buy' | 'sell'>(
+    setExternalActiveTab && externalActiveTab ? externalActiveTab : 'buy',
+    setExternalActiveTab && externalActiveTab
+      ? [
+          externalActiveTab,
+          setExternalActiveTab as Dispatch<SetStateAction<'buy' | 'sell'>>
+        ]
+      : undefined
+  )
   const tabTokenStateRef = useRef<{
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
