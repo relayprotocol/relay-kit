@@ -489,29 +489,23 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       ? linkedWallets?.find((wallet) => wallet.address === recipient)
       : undefined) !== undefined
 
-  const isValidFromAddress = useMemo(() => {
-    // When multi-wallet is enabled, validate against the linked wallet's VM type
-    const vmTypeToValidate =
-      multiWalletSupportEnabled && linkedWallet?.vmType
-        ? linkedWallet.vmType
-        : fromChain?.vmType
-
-    return isValidAddress(
-      vmTypeToValidate,
-      address ?? '',
+  const isValidFromAddress = useMemo(
+    () =>
+      isValidAddress(
+        fromChain?.vmType,
+        address ?? '',
+        fromChain?.id,
+        linkedWallet?.connector,
+        connectorKeyOverrides
+      ),
+    [
+      fromChain?.vmType,
+      address,
       fromChain?.id,
       linkedWallet?.connector,
       connectorKeyOverrides
-    )
-  }, [
-    multiWalletSupportEnabled,
-    linkedWallet?.vmType,
-    fromChain?.vmType,
-    address,
-    fromChain?.id,
-    linkedWallet?.connector,
-    connectorKeyOverrides
-  ])
+    ]
+  )
   const fromAddressWithFallback = addressWithFallback(
     fromChain?.vmType,
     address,
