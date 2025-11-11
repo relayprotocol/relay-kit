@@ -78,6 +78,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   fromChainWalletVMSupported,
   supportedWalletVMs,
   popularChainIds,
+  linkedWallets,
   setToken,
   onAnalyticEvent,
   autoSelectToken = false
@@ -191,9 +192,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     data: duneTokens,
     isLoading: isLoadingBalances
   } = useMultiWalletBalances(
-    undefined,
+    linkedWallets,
     address,
-    isValidAddress,
     relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet'
   )
 
@@ -739,13 +739,10 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                   ) : (
                     <Flex direction="column" css={{ gap: '3' }}>
                       {(() => {
-                        const hasValidAddress = Boolean(
-                          address && isValidAddress
-                        )
                         const hasLoadedBalanceData = Boolean(duneTokens)
                         const userTokensReady = !isLoadingUserTokens
                         const isWaitingForBalanceData =
-                          hasValidAddress &&
+                          address &&
                           (isLoadingBalances || isLoadingUserTokens) &&
                           (!hasLoadedBalanceData || !userTokensReady)
 
@@ -762,33 +759,14 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                           )
                         }
 
-                        if (
-                          hasValidAddress &&
-                          hasLoadedBalanceData &&
-                          userTokensReady
-                        ) {
-                          const tokensWithValue = sortedUserTokens.filter(
-                            (token) =>
-                              token.balance?.value_usd &&
-                              token.balance.value_usd > 0
-                          )
-
-                          if (tokensWithValue.length > 0) {
-                            const shouldShowBalanceLoading =
-                              isLoadingBalances && hasValidAddress
-
-                            return (
-                              <PaymentTokenList
-                                title="Recommended"
-                                tokens={tokensWithValue}
-                                isLoading={false}
-                                isLoadingBalances={shouldShowBalanceLoading}
-                                chainFilterId={chainFilter.id}
-                                limit={tokensWithValue.length}
-                              />
-                            )
-                          }
-                        }
+                        const tokensWithValue =
+                          address && hasLoadedBalanceData && userTokensReady
+                            ? sortedUserTokens.filter(
+                                (token) =>
+                                  token.balance?.value_usd &&
+                                  token.balance.value_usd > 0
+                              )
+                            : []
 
                         const fallbackTokens =
                           context === 'to' && sortedTrendingTokens.length > 0
@@ -798,21 +776,35 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                         const isTrendingTokens =
                           context === 'to' && sortedTrendingTokens.length > 0
                         const shouldShowBalanceLoading =
-                          isLoadingBalances && hasValidAddress
+                          isLoadingBalances && Boolean(address)
 
                         return (
-                          <PaymentTokenList
-                            title={isTrendingTokens ? 'Global 24h' : 'Tokens'}
-                            tokens={fallbackTokens.slice(0, 10)}
-                            isLoading={
-                              context === 'to'
-                                ? isLoadingTrendingTokens
-                                : isLoadingTokenList
-                            }
-                            isLoadingBalances={shouldShowBalanceLoading}
-                            chainFilterId={chainFilter.id}
-                            limit={10}
-                          />
+                          <>
+                            {tokensWithValue.length > 0 && (
+                              <PaymentTokenList
+                                title="Recommended"
+                                tokens={tokensWithValue}
+                                isLoading={false}
+                                isLoadingBalances={shouldShowBalanceLoading}
+                                chainFilterId={chainFilter.id}
+                                limit={tokensWithValue.length}
+                              />
+                            )}
+                            <PaymentTokenList
+                              title={
+                                isTrendingTokens ? 'Global 24h' : 'Other Tokens'
+                              }
+                              tokens={fallbackTokens.slice(0, 10)}
+                              isLoading={
+                                context === 'to'
+                                  ? isLoadingTrendingTokens
+                                  : isLoadingTokenList
+                              }
+                              isLoadingBalances={shouldShowBalanceLoading}
+                              chainFilterId={chainFilter.id}
+                              limit={10}
+                            />
+                          </>
                         )
                       })()}
                     </Flex>
