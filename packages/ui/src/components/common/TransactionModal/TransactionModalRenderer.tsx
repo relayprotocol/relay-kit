@@ -109,9 +109,6 @@ export const TransactionModalRenderer: FC<Props> = ({
   const [allTxHashes, setAllTxHashes] = useState<TxHashes>([])
   const [waitingForSteps, setWaitingForSteps] = useState(false)
   const [hasStartedValidation, setHasStartedValidation] = useState(false)
-  const [lastCheckStatus, setLastCheckStatus] = useState<
-    ExecuteStepItem['checkStatus'] | undefined
-  >()
 
   useEffect(() => {
     if (!open) {
@@ -177,10 +174,6 @@ export const TransactionModalRenderer: FC<Props> = ({
 
     const isBitcoinDestination =
       quote?.details?.currencyOut?.currency?.chainId === 8253038
-
-    if (isBitcoinDestination && currentStepItem?.checkStatus) {
-      setLastCheckStatus(currentStepItem.checkStatus)
-    }
 
     const allStepsComplete = steps.every(
       (step) =>
@@ -275,24 +268,6 @@ export const TransactionModalRenderer: FC<Props> = ({
   const timeEstimate = calculatePriceTimeEstimate(quote?.details)
   const _isGasSponsored = isGasSponsored(quote as Execute)
 
-  const isBitcoinDestination =
-    quote?.details?.currencyOut?.currency?.chainId === 8253038
-
-  let effectiveCheckStatus = currentStepItem?.checkStatus
-  if (
-    !effectiveCheckStatus &&
-    isBitcoinDestination &&
-    progressStep === TransactionProgressStep.Success
-  ) {
-    const lastCompletedStep = steps?.find((step) =>
-      step.items?.some((item) => item.status === 'complete' && item.checkStatus)
-    )
-    const lastCompletedItem = lastCompletedStep?.items?.find(
-      (item) => item.status === 'complete' && item.checkStatus
-    )
-    effectiveCheckStatus = lastCompletedItem?.checkStatus || lastCheckStatus
-  }
-
   return (
     <>
       {children({
@@ -318,7 +293,7 @@ export const TransactionModalRenderer: FC<Props> = ({
         isAutoSlippage,
         timeEstimate,
         isGasSponsored: _isGasSponsored,
-        currentCheckStatus: effectiveCheckStatus
+        currentCheckStatus: currentStepItem?.checkStatus
       })}
     </>
   )
