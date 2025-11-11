@@ -150,6 +150,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     { token: Token; context: 'to' | 'from' }[]
   >([])
   const declinedTokensRef = useRef<Set<string>>(new Set())
+
+  const getTokenKey = useCallback(
+    (token: { chainId: number; address: string }) =>
+      `${token.chainId}:${token.address.toLowerCase()}`,
+    []
+  )
   const [isUsdInputMode, setIsUsdInputMode] = useState(false)
   const [usdInputValue, setUsdInputValue] = useState('')
   const [usdOutputValue, setUsdOutputValue] = useState('')
@@ -236,17 +242,17 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         verified: apiToken.metadata?.verified ?? false
       }
 
-      // Check if this token is already in the unverified queue or was declined
-      const tokenKey = `${resolved.chainId}:${resolved.address.toLowerCase()}`
-      const isInUnverifiedQueue = unverifiedTokens.some(
-        (ut) =>
-          ut.token.address.toLowerCase() === resolved.address.toLowerCase() &&
-          ut.token.chainId === resolved.chainId
-      )
-      const wasDeclined = declinedTokensRef.current.has(tokenKey)
+      // Check if this token should be auto-set
+      const tokenKey = getTokenKey(resolved)
+      const shouldSkipToken =
+        declinedTokensRef.current.has(tokenKey) ||
+        unverifiedTokens.some(
+          (ut) =>
+            ut.token.address.toLowerCase() === resolved.address.toLowerCase() &&
+            ut.token.chainId === resolved.chainId
+        )
 
-      // Don't auto-set tokens that are already in the unverified queue or were declined
-      if (isInUnverifiedQueue || wasDeclined) {
+      if (shouldSkipToken) {
         return
       }
 
@@ -268,7 +274,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     toToken,
     resolvedToToken,
     setToToken,
-    unverifiedTokens
+    unverifiedTokens,
+    getTokenKey
   ])
 
   // Resolve toToken from API response
@@ -288,22 +295,29 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         verified: apiToken.metadata?.verified ?? false
       }
 
-      // Check if this token is already in the unverified queue or was declined
-      const tokenKey = `${resolved.chainId}:${resolved.address.toLowerCase()}`
-      const isInUnverifiedQueue = unverifiedTokens.some(
-        (ut) =>
-          ut.token.address.toLowerCase() === resolved.address.toLowerCase() &&
-          ut.token.chainId === resolved.chainId
-      )
-      const wasDeclined = declinedTokensRef.current.has(tokenKey)
+      // Check if this token should be auto-set
+      const tokenKey = getTokenKey(resolved)
+      const shouldSkipToken =
+        declinedTokensRef.current.has(tokenKey) ||
+        unverifiedTokens.some(
+          (ut) =>
+            ut.token.address.toLowerCase() === resolved.address.toLowerCase() &&
+            ut.token.chainId === resolved.chainId
+        )
 
-      // Don't auto-set tokens that are already in the unverified queue or were declined
-      if (!isInUnverifiedQueue && !wasDeclined) {
+      if (!shouldSkipToken) {
         setResolvedToToken(resolved)
         setToToken?.(resolved)
       }
     }
-  }, [toToken, toTokenList, setToToken, activeTab, unverifiedTokens])
+  }, [
+    toToken,
+    toTokenList,
+    setToToken,
+    activeTab,
+    unverifiedTokens,
+    getTokenKey
+  ])
 
   useEffect(() => {
     setLocalSlippageTolerance(slippageTolerance)
@@ -332,31 +346,41 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
   //Handle external unverified tokens
   useEffect(() => {
+    const tokensToVerify: { token: Token; context: 'to' | 'from' }[] = []
+
     if (
       resolvedFromToken &&
       'verified' in resolvedFromToken &&
-      !resolvedFromToken.verified
+      !resolvedFromToken.verified &&
+      !alreadyAcceptedToken(resolvedFromToken)
     ) {
-      const isAlreadyAccepted = alreadyAcceptedToken(resolvedFromToken)
-      if (!isAlreadyAccepted) {
-        unverifiedTokens.push({ token: resolvedFromToken, context: 'from' })
-        setResolvedFromToken(undefined)
-        setFromToken?.(undefined)
-      }
+      tokensToVerify.push({ token: resolvedFromToken, context: 'from' })
     }
+
     if (
       resolvedToToken &&
       'verified' in resolvedToToken &&
-      !resolvedToToken.verified
+      !resolvedToToken.verified &&
+      !alreadyAcceptedToken(resolvedToToken)
     ) {
-      const isAlreadyAccepted = alreadyAcceptedToken(resolvedToToken)
-      if (!isAlreadyAccepted) {
-        unverifiedTokens.push({ token: resolvedToToken, context: 'to' })
-        setResolvedToToken(undefined)
-        setToToken?.(undefined)
-      }
+      tokensToVerify.push({ token: resolvedToToken, context: 'to' })
     }
-  }, [resolvedFromToken, resolvedToToken])
+
+    if (tokensToVerify.length > 0) {
+      setUnverifiedTokens((prev) => [...prev, ...tokensToVerify])
+
+      // Clear the tokens that need verification
+      tokensToVerify.forEach(({ context }) => {
+        if (context === 'from') {
+          setResolvedFromToken(undefined)
+          setFromToken?.(undefined)
+        } else {
+          setResolvedToToken(undefined)
+          setToToken?.(undefined)
+        }
+      })
+    }
+  }, [resolvedFromToken, resolvedToToken, setFromToken, setToToken])
 
   return (
     <TokenWidgetRenderer
@@ -1567,18 +1591,18 @@ const TokenWidget: FC<TokenWidgetProps> = ({
               }
               onDecline={(token, context) => {
                 if (token) {
-                  const tokenKey = `${token.chainId}:${token.address.toLowerCase()}`
-                  declinedTokensRef.current.add(tokenKey)
+                  declinedTokensRef.current.add(getTokenKey(token))
                 }
-                const tokens = unverifiedTokens.filter(
-                  (unverifiedToken) =>
-                    !(
-                      unverifiedToken.context === context &&
-                      unverifiedToken.token.address === token?.address &&
-                      unverifiedToken.token.chainId === token?.chainId
-                    )
+                setUnverifiedTokens((prev) =>
+                  prev.filter(
+                    (unverifiedToken) =>
+                      !(
+                        unverifiedToken.context === context &&
+                        unverifiedToken.token.address === token?.address &&
+                        unverifiedToken.token.chainId === token?.chainId
+                      )
+                  )
                 )
-                setUnverifiedTokens(tokens)
               }}
               onAcceptToken={(token, context) => {
                 if (token) {
@@ -1616,14 +1640,15 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                     }
                   }
                 }
-                const tokens = unverifiedTokens.filter(
-                  (unverifiedToken) =>
-                    !(
-                      unverifiedToken.token.address === token?.address &&
-                      unverifiedToken.token.chainId === token?.chainId
-                    )
+                setUnverifiedTokens((prev) =>
+                  prev.filter(
+                    (unverifiedToken) =>
+                      !(
+                        unverifiedToken.token.address === token?.address &&
+                        unverifiedToken.token.chainId === token?.chainId
+                      )
+                  )
                 )
-                setUnverifiedTokens(tokens)
               }}
             />
           </>
