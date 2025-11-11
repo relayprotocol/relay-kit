@@ -24,11 +24,12 @@ export default (
     address !== undefined &&
     chain !== undefined &&
     chain?.currency?.address !== undefined &&
-    chain?.currency?.supportsBridging &&
-    chain?.vmType === 'evm' &&
     chain.id !== fromChain?.id &&
     chain.id !== 169 &&
-    isErc20Currency
+    chain?.vmType === 'evm' &&
+    isErc20Currency &&
+    (chain?.currency?.supportsBridging || chain?.tokenSupport === 'All')
+
   const { value: gasBalance } = useCurrencyBalance({
     chain,
     address,
