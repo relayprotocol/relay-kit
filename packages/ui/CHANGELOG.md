@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.1
+
+### Patch Changes
+
+- 6fc5b9b: Enable broader support for gas top up
+
 ## 6.0.0
 
 ### Major Changes
