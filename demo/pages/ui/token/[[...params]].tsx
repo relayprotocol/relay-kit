@@ -95,6 +95,7 @@ const TokenWidgetPage: NextPage = () => {
   const [chainInput, setChainInput] = useState('')
   const [inputError, setInputError] = useState<string | null>(null)
   const [tokenNotFound, setTokenNotFound] = useState(false)
+  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
 
   const queryEnabled = !!(urlTokenAddress && urlTokenChainId && relayClient)
 
@@ -439,6 +440,68 @@ const TokenWidgetPage: NextPage = () => {
             gap: 20
           }}
         >
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              padding: '12px 16px',
+              background:
+                theme === 'light'
+                  ? 'rgba(255, 255, 255, 0.8)'
+                  : 'rgba(28, 23, 43, 0.8)',
+              borderRadius: 16,
+              border: `1px solid ${
+                theme === 'light'
+                  ? 'rgba(148, 163, 184, 0.2)'
+                  : 'rgba(148, 163, 184, 0.1)'
+              }`
+            }}
+          >
+            <button
+              onClick={() => setActiveTab('buy')}
+              style={{
+                padding: '10px 20px',
+                borderRadius: 12,
+                border: 'none',
+                background: activeTab === 'buy' ? '#4f46e5' : '#94a3b8',
+                color: 'white',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                opacity: activeTab === 'buy' ? 1 : 0.6
+              }}
+            >
+              Open Buy Tab
+            </button>
+            <button
+              onClick={() => setActiveTab('sell')}
+              style={{
+                padding: '10px 20px',
+                borderRadius: 12,
+                border: 'none',
+                background: activeTab === 'sell' ? '#4f46e5' : '#94a3b8',
+                color: 'white',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                opacity: activeTab === 'sell' ? 1 : 0.6
+              }}
+            >
+              Open Sell Tab
+            </button>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 12px',
+                color: theme === 'light' ? '#475569' : '#94a3b8',
+                fontSize: 14,
+                fontWeight: 500
+              }}
+            >
+              Current: {activeTab === 'buy' ? 'Buy' : 'Sell'}
+            </div>
+          </div>
           <TokenWidget
             key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
             lockChainId={singleChainMode ? 8453 : undefined}
@@ -449,6 +512,8 @@ const TokenWidgetPage: NextPage = () => {
             fromToken={fromToken}
             setFromToken={setFromToken}
             lockToToken={!!urlToken}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
             wallet={wallet}
             multiWalletSupportEnabled={true}
             linkedWallets={linkedWallets}
@@ -532,6 +597,19 @@ const TokenWidgetPage: NextPage = () => {
             }}
             onSwapSuccess={(data) => {
               console.log('onSwapSuccess Triggered', data)
+            }}
+            onUnverifiedTokenDecline={(
+              token: Token,
+              context: 'from' | 'to'
+            ) => {
+              console.log('User declined unverified token:', {
+                symbol: token.symbol,
+                address: token.address,
+                chainId: token.chainId,
+                context: context
+              })
+              // Redirect to swap page
+              router.push('/ui/swap')
             }}
             slippageTolerance={undefined}
             onOpenSlippageConfig={() => {

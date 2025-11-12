@@ -67,6 +67,7 @@ type BaseTokenWidgetProps = {
   onSwapValidating?: (data: Execute) => void
   onSwapSuccess?: (data: Execute) => void
   onSwapError?: (error: string, data?: Execute) => void
+  onUnverifiedTokenDecline?: (token: Token, context: 'from' | 'to') => void
 }
 
 type MultiWalletDisabledProps = BaseTokenWidgetProps & {
@@ -122,7 +123,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   onAnalyticEvent: _onAnalyticEvent,
   onSwapSuccess,
   onSwapValidating,
-  onSwapError
+  onSwapError,
+  onUnverifiedTokenDecline
 }) => {
   const onAnalyticEvent = useCallback(
     (eventName: string, data?: any) => {
@@ -1481,6 +1483,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                   // Track declined tokens to prevent re-prompting
                   const tokenKey = `${token.chainId}:${token.address.toLowerCase()}`
                   declinedTokensRef.current.add(tokenKey)
+
+                  onUnverifiedTokenDecline?.(token, context as 'from' | 'to')
                 }
                 setUnverifiedTokens((prev) =>
                   prev.filter(

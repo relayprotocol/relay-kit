@@ -64,47 +64,55 @@ const SwapButton: FC<SwapButtonProps> = ({
       !quote ||
       Number(debouncedInputAmountValue) === 0 ||
       Number(debouncedOutputAmountValue) === 0
-    
+
     const isWalletSelectionPrompt =
-      tokenWidgetMode && (ctaCopy.includes('Select') || ctaCopy.includes('Enter'))
+      tokenWidgetMode &&
+      (ctaCopy.includes('Select') || ctaCopy.includes('Enter'))
     const isSelectTokenPrompt = tokenWidgetMode && ctaCopy === 'Select a token'
-    
+
     const buttonDisabled = tokenWidgetMode
-      ? (disableSwapButton ||
-         isFetchingQuote ||
-         isSelectTokenPrompt ||
-         (!isWalletSelectionPrompt && !hasValidAmount))
-      : (isFetchingQuote ||
-         (isValidToAddress &&
-           (isValidFromAddress || !fromChainWalletVMSupported) &&
-           (invalidAmount ||
-             hasInsufficientBalance ||
-             isInsufficientLiquidityError ||
-             transactionModalOpen ||
-             depositAddressModalOpen ||
-             isSameCurrencySameRecipientSwap ||
-             !recipientWalletSupportsChain ||
-             disableSwapButton)))
-    
-    const buttonLabel = tokenWidgetMode && isFetchingQuote && hasValidAmount
-      ? 'Fetching quote'
-      : ctaCopy
+      ? disableSwapButton ||
+        isFetchingQuote ||
+        isSelectTokenPrompt ||
+        hasInsufficientBalance ||
+        (!isWalletSelectionPrompt && !hasValidAmount)
+      : isFetchingQuote ||
+        (isValidToAddress &&
+          (isValidFromAddress || !fromChainWalletVMSupported) &&
+          (invalidAmount ||
+            hasInsufficientBalance ||
+            isInsufficientLiquidityError ||
+            transactionModalOpen ||
+            depositAddressModalOpen ||
+            isSameCurrencySameRecipientSwap ||
+            !recipientWalletSupportsChain ||
+            disableSwapButton))
+
+    const buttonLabel =
+      tokenWidgetMode && isFetchingQuote && hasValidAmount
+        ? 'Fetching quote'
+        : ctaCopy
 
     return (
       <Button
         css={{
           justifyContent: 'center',
           width: tokenWidgetMode ? '100%' : undefined,
-          textTransform: tokenWidgetMode ? 'uppercase' : undefined,
+          textTransform:
+            tokenWidgetMode && (context === 'Buy' || context === 'Sell')
+              ? 'uppercase'
+              : 'none',
           fontFamily: tokenWidgetMode ? 'heading' : undefined,
           fontWeight: tokenWidgetMode ? 700 : undefined,
-          fontStyle: tokenWidgetMode ? 'var(--relay-fonts-button-cta-font-style, italic)' : undefined
+          fontStyle: tokenWidgetMode
+            ? 'var(--relay-fonts-button-cta-font-style, italic)'
+            : undefined
         }}
         color={showHighPriceImpactWarning ? 'error' : 'primary'}
         aria-label={context}
         cta={true}
         disabled={buttonDisabled}
-        data-testid={tokenWidgetMode ? "token-action-button" : "swap-button"}
+        data-testid={tokenWidgetMode ? 'token-action-button' : 'swap-button'}
         onClick={() => {
           if (!buttonDisabled) {
             onClick()
@@ -122,10 +130,15 @@ const SwapButton: FC<SwapButtonProps> = ({
       css={{
         justifyContent: 'center',
         width: tokenWidgetMode ? '100%' : undefined,
-        textTransform: tokenWidgetMode ? 'uppercase' : undefined,
+        textTransform:
+          tokenWidgetMode && (context === 'Buy' || context === 'Sell')
+            ? 'uppercase'
+            : 'none',
         fontFamily: tokenWidgetMode ? 'heading' : undefined,
         fontWeight: tokenWidgetMode ? 700 : undefined,
-        fontStyle: tokenWidgetMode ? 'var(--relay-fonts-button-cta-font-style, italic)' : undefined
+        fontStyle: tokenWidgetMode
+          ? 'var(--relay-fonts-button-cta-font-style, italic)'
+          : undefined
       }}
       aria-label="Connect wallet"
       onClick={() => {
@@ -138,7 +151,11 @@ const SwapButton: FC<SwapButtonProps> = ({
           context
         })
       }}
-      data-testid={tokenWidgetMode ? "token-widget-connect-wallet-button" : "widget-connect-wallet-button"}
+      data-testid={
+        tokenWidgetMode
+          ? 'token-widget-connect-wallet-button'
+          : 'widget-connect-wallet-button'
+      }
     >
       Connect Wallet
     </Button>
