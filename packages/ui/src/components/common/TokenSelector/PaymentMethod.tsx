@@ -780,7 +780,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 
                         return (
                           <>
-                            {tokensWithValue.length > 0 && (
+                            {tokensWithValue.length > 0 ? (
                               <PaymentTokenList
                                 title="Recommended"
                                 tokens={tokensWithValue}
@@ -789,7 +789,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                                 chainFilterId={chainFilter.id}
                                 limit={tokensWithValue.length}
                               />
-                            )}
+                            ) : null}
                             <PaymentTokenList
                               title={
                                 isTrendingTokens ? 'Global 24h' : 'Other Tokens'
