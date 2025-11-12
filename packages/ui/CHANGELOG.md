@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.2
+
+### Patch Changes
+
+- 9e1f80a: Improve token widget
+
 ## 6.0.1
 
 ### Patch Changes
