@@ -7,9 +7,12 @@ import {
   useMemo,
   useRef,
   useState,
-  type FC
+  type FC,
+  type Dispatch,
+  type SetStateAction
 } from 'react'
 import { useRelayClient } from '../../../../hooks/index.js'
+import useFallbackState from '../../../../hooks/useFallbackState.js'
 import type { Address } from 'viem'
 import { formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
@@ -24,10 +27,7 @@ import { EventNames } from '../../../../constants/events.js'
 import WidgetContainer from '../../WidgetContainer.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
-import {
-  findBridgableToken,
-  generateTokenImageUrl
-} from '../../../../utils/tokens.js'
+import { findBridgableToken } from '../../../../utils/tokens.js'
 import { UnverifiedTokenModal } from '../../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../../utils/localStorage.js'
 import { calculateUsdValue, getSwapEventData } from '../../../../utils/quote.js'
@@ -35,7 +35,7 @@ import { getFeeBufferAmount } from '../../../../utils/nativeMaxAmount.js'
 import TokenWidgetRenderer, { type TradeType } from './TokenWidgetRenderer.js'
 import BuyTabContent from '../BuyTabContent.js'
 import SellTabContent from '../SellTabContent.js'
-import { useTokenList, useQuote } from '@relayprotocol/relay-kit-hooks'
+import { useQuote } from '@relayprotocol/relay-kit-hooks'
 import { useWalletGuards } from '../hooks/useWalletGuards.js'
 
 type BaseTokenWidgetProps = {
@@ -43,11 +43,8 @@ type BaseTokenWidgetProps = {
   setFromToken?: (token?: Token) => void
   toToken?: Token
   setToToken?: (token?: Token) => void
-  // New props for automatic token resolution
-  defaultFromTokenAddress?: string
-  defaultFromTokenChainId?: number
-  defaultToTokenAddress?: string
-  defaultToTokenChainId?: number
+  activeTab?: 'buy' | 'sell'
+  setActiveTab?: (tab: 'buy' | 'sell') => void
   defaultToAddress?: Address
   defaultAmount?: string
   defaultTradeType?: 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
@@ -70,6 +67,7 @@ type BaseTokenWidgetProps = {
   onSwapValidating?: (data: Execute) => void
   onSwapSuccess?: (data: Execute) => void
   onSwapError?: (error: string, data?: Execute) => void
+  onUnverifiedTokenDecline?: (token: Token, context: 'from' | 'to') => void
 }
 
 type MultiWalletDisabledProps = BaseTokenWidgetProps & {
@@ -94,14 +92,12 @@ export type TokenWidgetProps =
   | MultiWalletEnabledProps
 
 const TokenWidget: FC<TokenWidgetProps> = ({
-  fromToken,
-  setFromToken,
-  toToken,
-  setToToken,
-  defaultFromTokenAddress,
-  defaultFromTokenChainId,
-  defaultToTokenAddress,
-  defaultToTokenChainId,
+  fromToken: externalFromToken,
+  setFromToken: setExternalFromToken,
+  toToken: externalToToken,
+  setToToken: setExternalToToken,
+  activeTab: externalActiveTab,
+  setActiveTab: setExternalActiveTab,
   defaultToAddress,
   defaultAmount,
   defaultTradeType,
@@ -127,7 +123,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   onAnalyticEvent: _onAnalyticEvent,
   onSwapSuccess,
   onSwapValidating,
-  onSwapError
+  onSwapError,
+  onUnverifiedTokenDecline
 }) => {
   const onAnalyticEvent = useCallback(
     (eventName: string, data?: any) => {
@@ -149,11 +146,50 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const [unverifiedTokens, setUnverifiedTokens] = useState<
     { token: Token; context: 'to' | 'from' }[]
   >([])
+  const declinedTokensRef = useRef<Set<string>>(new Set())
+
+  const [fromToken, setFromToken] = useState<Token | undefined>(
+    externalFromToken
+  )
+  const [toToken, setToToken] = useState<Token | undefined>(externalToToken)
+
+  useEffect(() => {
+    setFromToken(externalFromToken)
+  }, [externalFromToken])
+
+  useEffect(() => {
+    setToToken(externalToToken)
+  }, [externalToToken])
+
+  const updateFromToken = useCallback(
+    (token: Token | undefined) => {
+      setFromToken(token)
+      setExternalFromToken?.(token)
+    },
+    [setExternalFromToken]
+  )
+
+  const updateToToken = useCallback(
+    (token: Token | undefined) => {
+      setToToken(token)
+      setExternalToToken?.(token)
+    },
+    [setExternalToToken]
+  )
+
   const [isUsdInputMode, setIsUsdInputMode] = useState(false)
   const [usdInputValue, setUsdInputValue] = useState('')
   const [usdOutputValue, setUsdOutputValue] = useState('')
   const [tokenInputCache, setTokenInputCache] = useState('')
-  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
+  const [activeTab, setActiveTab] = useFallbackState<'buy' | 'sell'>(
+    setExternalActiveTab && externalActiveTab ? externalActiveTab : 'buy',
+    setExternalActiveTab && externalActiveTab
+      ? [
+          externalActiveTab,
+          setExternalActiveTab as Dispatch<SetStateAction<'buy' | 'sell'>>
+        ]
+      : undefined
+  )
   const tabTokenStateRef = useRef<{
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
@@ -165,116 +201,11 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   const setTradeTypeRef = useRef<((tradeType: TradeType) => void) | null>(null)
   const tradeTypeRef = useRef<TradeType>(defaultTradeType ?? 'EXPECTED_OUTPUT')
 
-  // Token resolution from address/chainId
-  const [resolvedFromToken, setResolvedFromToken] = useState<Token | undefined>(
-    fromToken
-  )
-  const [resolvedToToken, setResolvedToToken] = useState<Token | undefined>(
-    toToken
-  )
-
   const hasLockedToken = lockFromToken || lockToToken
   const isSingleChainLocked = singleChainMode && lockChainId !== undefined
   const [localSlippageTolerance, setLocalSlippageTolerance] = useState<
     string | undefined
   >(slippageTolerance)
-
-  // Query for fromToken if address/chainId provided but no token object
-  const { data: fromTokenList } = useTokenList(
-    relayClient?.baseApiUrl,
-    defaultFromTokenAddress && defaultFromTokenChainId && !fromToken
-      ? {
-          chainIds: [defaultFromTokenChainId],
-          address: defaultFromTokenAddress,
-          limit: 1
-        }
-      : undefined,
-    {
-      enabled: !!(
-        defaultFromTokenAddress &&
-        defaultFromTokenChainId &&
-        !fromToken &&
-        relayClient
-      )
-    }
-  )
-
-  // Query for toToken if address/chainId provided but no token object
-  const { data: toTokenList } = useTokenList(
-    relayClient?.baseApiUrl,
-    defaultToTokenAddress && defaultToTokenChainId && !toToken
-      ? {
-          chainIds: [defaultToTokenChainId],
-          address: defaultToTokenAddress,
-          limit: 1
-        }
-      : undefined,
-    {
-      enabled: !!(
-        defaultToTokenAddress &&
-        defaultToTokenChainId &&
-        !toToken &&
-        relayClient
-      )
-    }
-  )
-
-  // Resolve fromToken from API response
-  useEffect(() => {
-    if (fromToken) {
-      setResolvedFromToken(fromToken)
-    } else if (fromTokenList?.[0]) {
-      const apiToken = fromTokenList[0]
-      const resolved: Token = {
-        chainId: apiToken.chainId!,
-        address: apiToken.address!,
-        name: apiToken.name!,
-        symbol: apiToken.symbol!,
-        decimals: apiToken.decimals!,
-        logoURI: generateTokenImageUrl(apiToken),
-        verified: apiToken.metadata?.verified ?? false
-      }
-
-      // In buy mode, the token from URL should be the token to buy (toToken)
-      // In sell mode, it should be the token to sell (fromToken)
-      if (activeTab === 'buy' && !toToken && !resolvedToToken) {
-        setResolvedToToken(resolved)
-        setToToken?.(resolved)
-      } else if (activeTab === 'sell') {
-        setResolvedFromToken(resolved)
-        setFromToken?.(resolved)
-      }
-    }
-  }, [
-    fromToken,
-    fromTokenList,
-    setFromToken,
-    activeTab,
-    toToken,
-    resolvedToToken,
-    setToToken
-  ])
-
-  // Resolve toToken from API response
-  useEffect(() => {
-    if (toToken) {
-      setResolvedToToken(toToken)
-    } else if (toTokenList?.[0] && activeTab !== 'sell') {
-      // Don't auto-select tokens in sell tab - let user explicitly choose
-      const apiToken = toTokenList[0]
-      const resolved: Token = {
-        chainId: apiToken.chainId!,
-        address: apiToken.address!,
-        name: apiToken.name!,
-        symbol: apiToken.symbol!,
-        decimals: apiToken.decimals!,
-        logoURI: generateTokenImageUrl(apiToken),
-        verified: apiToken.metadata?.verified ?? false
-      }
-      setResolvedToToken(resolved)
-      setToToken?.(resolved)
-    }
-  }, [toToken, toTokenList, setToToken, activeTab])
 
   useEffect(() => {
     setLocalSlippageTolerance(slippageTolerance)
@@ -301,33 +232,41 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     defaultTradeType ??
     (activeTab === 'buy' ? 'EXPECTED_OUTPUT' : 'EXACT_INPUT')
 
-  //Handle external unverified tokens
+  //Handle unverified tokens
   useEffect(() => {
-    if (
-      resolvedFromToken &&
-      'verified' in resolvedFromToken &&
-      !resolvedFromToken.verified
-    ) {
-      const isAlreadyAccepted = alreadyAcceptedToken(resolvedFromToken)
-      if (!isAlreadyAccepted) {
-        unverifiedTokens.push({ token: resolvedFromToken, context: 'from' })
-        setResolvedFromToken(undefined)
-        setFromToken?.(undefined)
+    const tokensToVerify: { token: Token; context: 'to' | 'from' }[] = []
+
+    const getTokenKey = (token: Token) =>
+      `${token.chainId}:${token.address.toLowerCase()}`
+
+    if (fromToken && 'verified' in fromToken && !fromToken.verified) {
+      if (alreadyAcceptedToken(fromToken)) {
+        setFromToken({ ...fromToken, verified: true })
+      } else if (!declinedTokensRef.current.has(getTokenKey(fromToken))) {
+        tokensToVerify.push({ token: fromToken, context: 'from' })
       }
     }
-    if (
-      resolvedToToken &&
-      'verified' in resolvedToToken &&
-      !resolvedToToken.verified
-    ) {
-      const isAlreadyAccepted = alreadyAcceptedToken(resolvedToToken)
-      if (!isAlreadyAccepted) {
-        unverifiedTokens.push({ token: resolvedToToken, context: 'to' })
-        setResolvedToToken(undefined)
-        setToToken?.(undefined)
+
+    if (toToken && 'verified' in toToken && !toToken.verified) {
+      if (alreadyAcceptedToken(toToken)) {
+        setToToken({ ...toToken, verified: true })
+      } else if (!declinedTokensRef.current.has(getTokenKey(toToken))) {
+        tokensToVerify.push({ token: toToken, context: 'to' })
       }
     }
-  }, [resolvedFromToken, resolvedToToken])
+
+    if (tokensToVerify.length > 0) {
+      setUnverifiedTokens((prev) => [...prev, ...tokensToVerify])
+
+      tokensToVerify.forEach(({ context }) => {
+        if (context === 'from') {
+          setFromToken(undefined)
+        } else {
+          setToToken(undefined)
+        }
+      })
+    }
+  }, [fromToken, toToken])
 
   return (
     <TokenWidgetRenderer
@@ -338,10 +277,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
       defaultAmount={defaultAmount}
       defaultToAddress={defaultToAddress}
       defaultTradeType={computedDefaultTradeType}
-      toToken={resolvedToToken}
-      setToToken={setResolvedToToken}
-      fromToken={resolvedFromToken}
-      setFromToken={setResolvedFromToken}
+      toToken={toToken}
+      setToToken={updateToToken}
+      fromToken={fromToken}
+      setFromToken={updateFromToken}
       slippageTolerance={localSlippageTolerance}
       wallet={wallet}
       linkedWallets={linkedWallets}
@@ -557,7 +496,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         const handleSetToToken = useCallback(
           (token?: Token) => {
             if (!token) {
-              setToToken(undefined)
+              updateToToken(undefined)
               onToTokenChange?.(undefined)
               return
             }
@@ -574,16 +513,21 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                 }
               }
             }
-            setToToken(_token)
+            updateToToken(_token)
             onToTokenChange?.(_token)
           },
-          [fromChainWalletVMSupported, onToTokenChange, relayClient, setToToken]
+          [
+            fromChainWalletVMSupported,
+            onToTokenChange,
+            relayClient,
+            updateToToken
+          ]
         )
 
         const handleSetFromToken = useCallback(
           (token?: Token) => {
             if (!token) {
-              setFromToken(undefined)
+              updateFromToken(undefined)
               onFromTokenChange?.(undefined)
               return
             }
@@ -592,6 +536,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             const newFromChain = relayClient?.chains.find(
               (chain) => token?.chainId == chain.id
             )
+
             if (
               newFromChain?.vmType &&
               !supportedWalletVMs.includes(newFromChain?.vmType)
@@ -609,14 +554,15 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                 _token = _fromToken
               }
             }
-            setFromToken(_token)
+
+            updateFromToken(_token)
             onFromTokenChange?.(_token)
           },
           [
             handleSetToToken,
             onFromTokenChange,
             relayClient,
-            setFromToken,
+            updateFromToken,
             setTradeType,
             supportedWalletVMs,
             toChain,
@@ -959,8 +905,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             !address &&
             !linkedWallets?.length &&
             !fromToken &&
-            !defaultFromTokenAddress &&
-            !defaultFromTokenChainId &&
             relayClient
           ) {
             const baseUSDC: Token = {
@@ -980,8 +924,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           address,
           linkedWallets?.length,
           fromToken,
-          defaultFromTokenAddress,
-          defaultFromTokenChainId,
           relayClient,
           handleSetFromToken
         ])
@@ -1537,15 +1479,23 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                 unverifiedTokens.length > 0 ? unverifiedTokens[0] : undefined
               }
               onDecline={(token, context) => {
-                const tokens = unverifiedTokens.filter(
-                  (unverifiedToken) =>
-                    !(
-                      unverifiedToken.context === context &&
-                      unverifiedToken.token.address === token?.address &&
-                      unverifiedToken.token.chainId === token?.chainId
-                    )
+                if (token) {
+                  // Track declined tokens to prevent re-prompting
+                  const tokenKey = `${token.chainId}:${token.address.toLowerCase()}`
+                  declinedTokensRef.current.add(tokenKey)
+
+                  onUnverifiedTokenDecline?.(token, context as 'from' | 'to')
+                }
+                setUnverifiedTokens((prev) =>
+                  prev.filter(
+                    (unverifiedToken) =>
+                      !(
+                        unverifiedToken.context === context &&
+                        unverifiedToken.token.address === token?.address &&
+                        unverifiedToken.token.chainId === token?.chainId
+                      )
+                  )
                 )
-                setUnverifiedTokens(tokens)
               }}
               onAcceptToken={(token, context) => {
                 if (token) {
@@ -1583,14 +1533,15 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                     }
                   }
                 }
-                const tokens = unverifiedTokens.filter(
-                  (unverifiedToken) =>
-                    !(
-                      unverifiedToken.token.address === token?.address &&
-                      unverifiedToken.token.chainId === token?.chainId
-                    )
+                setUnverifiedTokens((prev) =>
+                  prev.filter(
+                    (unverifiedToken) =>
+                      !(
+                        unverifiedToken.token.address === token?.address &&
+                        unverifiedToken.token.chainId === token?.chainId
+                      )
+                  )
                 )
-                setUnverifiedTokens(tokens)
               }}
             />
           </>

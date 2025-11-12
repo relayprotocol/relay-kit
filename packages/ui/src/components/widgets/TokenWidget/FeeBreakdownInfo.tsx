@@ -42,7 +42,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
           <Skeleton css={{ width: 90, height: 20 }} />
         ) : amountUsd && Number(amountUsd) > 0 ? (
           <>
-            <Text style="h6">
+            <Text style="h6" css={{ textAlign: 'right' }}>
               {formatDollarCompact(Number(amountUsd))} total
             </Text>
             <FeeBreakdownTooltip
@@ -58,7 +58,8 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  flexShrink: 0
                 }}
               >
                 <FontAwesomeIcon icon={faInfoCircle} />

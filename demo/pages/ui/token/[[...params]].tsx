@@ -25,6 +25,7 @@ import { isSolanaWallet } from '@dynamic-labs/solana'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
 import {
   adaptViemWallet,
+  ASSETS_RELAY_API,
   type AdaptedWallet,
   type ChainVM
 } from '@relayprotocol/relay-sdk'
@@ -37,6 +38,7 @@ import { isEclipseWallet } from '@dynamic-labs/eclipse'
 import type { LinkedWallet, Token } from '@relayprotocol/relay-kit-ui'
 import { isSuiWallet, type SuiWallet } from '@dynamic-labs/sui'
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
+import { useTokenList } from '@relayprotocol/relay-kit-hooks'
 import Head from 'next/head'
 
 const WALLET_VM_TYPES: Exclude<ChainVM, 'hypevm'>[] = [
@@ -57,17 +59,10 @@ const TokenWidgetPage: NextPage = () => {
     }
   })
 
-  // Default tokens
   const [fromToken, setFromToken] = useState<Token | undefined>()
   const [toToken, setToToken] = useState<Token | undefined>()
 
-  const getTokenKey = useCallback((token?: Token) => {
-    if (!token) {
-      return undefined
-    }
-
-    return `${token.chainId}:${token.address.toLowerCase()}`
-  }, [])
+  const [hasInitialized, setHasInitialized] = useState(false)
 
   const { setWalletFilter } = useWalletFilter()
   const { setShowAuthFlow, primaryWallet } = useDynamicContext()
@@ -96,11 +91,99 @@ const TokenWidgetPage: NextPage = () => {
   const [urlTokenAddress, setUrlTokenAddress] = useState<string | undefined>()
   const [urlTokenChainId, setUrlTokenChainId] = useState<number | undefined>()
 
-  // State for manual token input
   const [addressInput, setAddressInput] = useState('')
   const [chainInput, setChainInput] = useState('')
   const [inputError, setInputError] = useState<string | null>(null)
   const [tokenNotFound, setTokenNotFound] = useState(false)
+  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
+
+  const queryEnabled = !!(urlTokenAddress && urlTokenChainId && relayClient)
+
+  const isChainSupported = relayClient?.chains?.some(
+    (chain) => chain.id === urlTokenChainId
+  )
+
+  const { data: tokenListFromUrl } = useTokenList(
+    relayClient?.baseApiUrl,
+    urlTokenAddress && urlTokenChainId && isChainSupported
+      ? {
+          chainIds: [urlTokenChainId],
+          address: urlTokenAddress,
+          limit: 1,
+          referrer: relayClient?.source
+        }
+      : undefined,
+    {
+      enabled: queryEnabled && isChainSupported,
+      retry: 1,
+      retryDelay: 1000,
+      staleTime: 0
+    }
+  )
+
+  const { data: externalTokenListFromUrl } = useTokenList(
+    relayClient?.baseApiUrl,
+    urlTokenAddress && urlTokenChainId && isChainSupported
+      ? {
+          chainIds: [urlTokenChainId],
+          address: urlTokenAddress,
+          limit: 1,
+          useExternalSearch: true,
+          referrer: relayClient?.source
+        }
+      : undefined,
+    {
+      enabled: queryEnabled && isChainSupported,
+      retry: 1,
+      retryDelay: 1000,
+      staleTime: 0
+    }
+  )
+
+  // Resolve URL params to Token object
+  const urlToken = useMemo(() => {
+    const apiToken = tokenListFromUrl?.[0] || externalTokenListFromUrl?.[0]
+
+    if (!apiToken && urlTokenAddress && urlTokenChainId) {
+      const isTargetUSDC =
+        urlTokenAddress.toLowerCase() ===
+          '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase() &&
+        urlTokenChainId === 8453
+
+      if (isTargetUSDC) {
+        return {
+          chainId: 8453,
+          address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+          name: 'USD Coin',
+          symbol: 'USDC',
+          decimals: 6,
+          logoURI: `${ASSETS_RELAY_API}/icons/currencies/usdc.png`,
+          verified: true
+        } as Token
+      }
+
+      return undefined
+    }
+
+    if (!apiToken) {
+      return undefined
+    }
+
+    return {
+      chainId: apiToken.chainId!,
+      address: apiToken.address!,
+      name: apiToken.name!,
+      symbol: apiToken.symbol!,
+      decimals: apiToken.decimals!,
+      logoURI: apiToken.metadata?.logoURI ?? '',
+      verified: apiToken.metadata?.verified ?? false
+    } as Token
+  }, [
+    tokenListFromUrl,
+    externalTokenListFromUrl,
+    urlTokenAddress,
+    urlTokenChainId
+  ])
 
   const linkedWallets = useMemo(() => {
     const _wallets = userWallets.reduce((linkedWallets, wallet) => {
@@ -111,7 +194,6 @@ const TokenWidgetPage: NextPage = () => {
     return _wallets
   }, [userWallets])
 
-  // Parse URL params
   useEffect(() => {
     if (!router.isReady) {
       return
@@ -139,41 +221,11 @@ const TokenWidgetPage: NextPage = () => {
     if (!Number.isNaN(chainId)) {
       setUrlTokenAddress(decodedAddress)
       setUrlTokenChainId(chainId)
-      // Auto-populate form inputs with URL params
       setAddressInput(decodedAddress)
       setChainInput(chainId.toString())
       setTokenNotFound(false)
     }
   }, [router.isReady, router.query.params])
-
-  const updateDemoUrl = useCallback(
-    (token?: Token) => {
-      if (!router.isReady) {
-        return
-      }
-
-      const basePath = '/ui/token'
-
-      if (!token) {
-        router.replace(basePath, undefined, { shallow: true })
-        return
-      }
-
-      const encodedAddress = encodeURIComponent(token.address)
-      const chainParam = token.chainId.toString()
-      const nextPath = `${basePath}/${encodedAddress}/${chainParam}`
-
-      router.replace(
-        {
-          pathname: '/ui/token/[[...params]]',
-          query: { params: [token.address, chainParam] }
-        },
-        nextPath,
-        { shallow: true }
-      )
-    },
-    [router]
-  )
 
   const updateDemoUrlWithRawParams = useCallback(
     (address: string, chainId: number) => {
@@ -224,7 +276,6 @@ const TokenWidgetPage: NextPage = () => {
       setToToken(undefined)
       setTokenNotFound(false)
 
-      // Update the URL with the new token params
       setUrlTokenAddress(normalizedAddress)
       setUrlTokenChainId(parsedChainId)
       updateDemoUrlWithRawParams(normalizedAddress, parsedChainId)
@@ -236,19 +287,45 @@ const TokenWidgetPage: NextPage = () => {
     switchWallet.current = _switchWallet
   }, [_switchWallet])
 
-  // Check if token should have loaded but didn't (token not found)
   useEffect(() => {
-    if (urlTokenAddress && urlTokenChainId && !fromToken && relayClient) {
-      // Wait a bit for the query to complete, then check if token was not found
+    if (!hasInitialized && router.isReady && relayClient) {
+      const params = router.query.params
+      const hasParams = Array.isArray(params) && params.length >= 2
+
+      if (!hasParams) {
+        const targetAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+        const targetChainId = 8453
+
+        setUrlTokenAddress(targetAddress)
+        setUrlTokenChainId(targetChainId)
+        setAddressInput(targetAddress)
+        setChainInput(targetChainId.toString())
+        updateDemoUrlWithRawParams(targetAddress, targetChainId)
+      }
+
+      setHasInitialized(true)
+    }
+  }, [
+    hasInitialized,
+    router.isReady,
+    relayClient,
+    router.query.params,
+    updateDemoUrlWithRawParams
+  ])
+
+  useEffect(() => {
+    if (urlTokenAddress && urlTokenChainId && !urlToken && relayClient) {
       const timer = setTimeout(() => {
-        if (!fromToken) {
+        if (!urlToken) {
           setTokenNotFound(true)
         }
-      }, 2000) // Wait 2 seconds for token query to complete
+      }, 2000)
 
       return () => clearTimeout(timer)
+    } else if (urlToken) {
+      setTokenNotFound(false)
     }
-  }, [urlTokenAddress, urlTokenChainId, fromToken, relayClient])
+  }, [urlTokenAddress, urlTokenChainId, urlToken, relayClient])
 
   useEffect(() => {
     const adaptWallet = async () => {
@@ -363,17 +440,80 @@ const TokenWidgetPage: NextPage = () => {
             gap: 20
           }}
         >
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              padding: '12px 16px',
+              background:
+                theme === 'light'
+                  ? 'rgba(255, 255, 255, 0.8)'
+                  : 'rgba(28, 23, 43, 0.8)',
+              borderRadius: 16,
+              border: `1px solid ${
+                theme === 'light'
+                  ? 'rgba(148, 163, 184, 0.2)'
+                  : 'rgba(148, 163, 184, 0.1)'
+              }`
+            }}
+          >
+            <button
+              onClick={() => setActiveTab('buy')}
+              style={{
+                padding: '10px 20px',
+                borderRadius: 12,
+                border: 'none',
+                background: activeTab === 'buy' ? '#4f46e5' : '#94a3b8',
+                color: 'white',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                opacity: activeTab === 'buy' ? 1 : 0.6
+              }}
+            >
+              Open Buy Tab
+            </button>
+            <button
+              onClick={() => setActiveTab('sell')}
+              style={{
+                padding: '10px 20px',
+                borderRadius: 12,
+                border: 'none',
+                background: activeTab === 'sell' ? '#4f46e5' : '#94a3b8',
+                color: 'white',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                opacity: activeTab === 'sell' ? 1 : 0.6
+              }}
+            >
+              Open Sell Tab
+            </button>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 12px',
+                color: theme === 'light' ? '#475569' : '#94a3b8',
+                fontSize: 14,
+                fontWeight: 500
+              }}
+            >
+              Current: {activeTab === 'buy' ? 'Buy' : 'Sell'}
+            </div>
+          </div>
           <TokenWidget
             key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
             lockChainId={singleChainMode ? 8453 : undefined}
             singleChainMode={singleChainMode}
             supportedWalletVMs={supportedWalletVMs}
-            toToken={toToken}
+            toToken={urlToken || toToken}
             setToToken={setToToken}
             fromToken={fromToken}
             setFromToken={setFromToken}
-            defaultFromTokenAddress={urlTokenAddress}
-            defaultFromTokenChainId={urlTokenChainId}
+            lockToToken={!!urlToken}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
             wallet={wallet}
             multiWalletSupportEnabled={true}
             linkedWallets={linkedWallets}
@@ -444,7 +584,6 @@ const TokenWidgetPage: NextPage = () => {
               setFromToken(token)
               if (token) {
                 setTokenNotFound(false)
-                updateDemoUrl(token)
               }
             }}
             onToTokenChange={(token) => {
@@ -458,6 +597,19 @@ const TokenWidgetPage: NextPage = () => {
             }}
             onSwapSuccess={(data) => {
               console.log('onSwapSuccess Triggered', data)
+            }}
+            onUnverifiedTokenDecline={(
+              token: Token,
+              context: 'from' | 'to'
+            ) => {
+              console.log('User declined unverified token:', {
+                symbol: token.symbol,
+                address: token.address,
+                chainId: token.chainId,
+                context: context
+              })
+              // Redirect to swap page
+              router.push('/ui/swap')
             }}
             slippageTolerance={undefined}
             onOpenSlippageConfig={() => {
@@ -548,8 +700,9 @@ const TokenWidgetPage: NextPage = () => {
                   textAlign: 'center'
                 }}
               >
-                Token from URL was not found on the specified chain. Please
-                select a token manually to continue.
+                {!isChainSupported && urlTokenChainId
+                  ? `Chain ${urlTokenChainId} is not supported by Relay. Please select a token from a supported chain.`
+                  : 'Token from URL was not found on the specified chain. Please select a token manually to continue.'}
               </p>
             ) : null}
           </div>
