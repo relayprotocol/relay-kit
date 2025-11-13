@@ -532,7 +532,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                       address !== undefined
                     }
                     pending={displayBalancePending}
-                    size="md"
+                    size="sm"
                   />
                 ) : (
                   <Flex css={{ height: 18 }} />

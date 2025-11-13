@@ -402,7 +402,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                   recipient !== undefined
                 }
                 pending={toBalancePending}
-                size="md"
+                size="sm"
               />
             ) : (
               <Flex css={{ height: 18 }} />
