@@ -477,14 +477,12 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             }
             popularChainIds={popularChainIds}
             trigger={
-              <div style={{ width: 'max-content' }}>
-                <PaymentMethodTrigger
-                  token={fromToken}
-                  address={address}
-                  testId="origin-token-select-button"
-                  balanceLabel="available"
-                />
-              </div>
+              <PaymentMethodTrigger
+                token={fromToken}
+                address={address}
+                testId="origin-token-select-button"
+                balanceLabel="available"
+              />
             }
           />
           <Flex css={{ marginLeft: 'auto' }}>

@@ -640,14 +640,12 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 handleSetToToken(token)
               }}
               trigger={
-                <div style={{ width: 'max-content' }}>
-                  <PaymentMethodTrigger
-                    token={toToken}
-                    address={recipient}
-                    testId="payment-method-select-button"
-                    balanceLabel="balance"
-                  />
-                </div>
+                <PaymentMethodTrigger
+                  token={toToken}
+                  address={recipient}
+                  testId="payment-method-select-button"
+                  balanceLabel="balance"
+                />
               }
             />
             <Flex css={{ marginLeft: 'auto' }}>
