@@ -1161,12 +1161,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               padding: '12px',
                               background: 'none',
                               border: '1px solid transparent',
-                              color: 'gray11',
+                              color: 'text-subtle',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
-                                color: 'gray12'
+                                color: 'text-default'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
@@ -1186,7 +1186,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               }
                             }}
                           >
-                            <Text style="subtitle1">Buy</Text>
+                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                              Buy
+                            </Text>
                           </TabsTrigger>
                           <TabsTrigger
                             value="sell"
@@ -1194,12 +1196,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               padding: '12px',
                               background: 'none',
                               border: '1px solid transparent',
-                              color: 'gray11',
+                              color: 'text-subtle',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
-                                color: 'gray12'
+                                color: 'text-default'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
@@ -1219,7 +1221,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               }
                             }}
                           >
-                            Sell
+                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                              Sell
+                            </Text>
                           </TabsTrigger>
                         </TabsList>
 
