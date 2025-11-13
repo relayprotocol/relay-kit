@@ -519,8 +519,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
 
                 return displayToken ? (
                   <BalanceDisplay
-                    hideBalanceLabel={true}
-                    displaySymbol={true}
+                    hideBalanceLabel={false}
+                    displaySymbol={false}
                     isLoading={isLoadingDisplayBalance}
                     balance={displayBalance}
                     decimals={displayToken?.decimals}
@@ -532,7 +532,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                       address !== undefined
                     }
                     pending={displayBalancePending}
-                    size="md"
+                    size="sm"
                   />
                 ) : (
                   <Flex css={{ height: 18 }} />
@@ -655,7 +655,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 <div style={{ width: 'max-content' }}>
                   <PaymentMethodTrigger
                     token={toToken}
-                    locked={lockToToken}
                     address={recipient}
                     testId="payment-method-select-button"
                     balanceLabel="available"

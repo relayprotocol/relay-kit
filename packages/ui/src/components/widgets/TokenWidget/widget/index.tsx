@@ -7,9 +7,12 @@ import {
   useMemo,
   useRef,
   useState,
-  type FC
+  type FC,
+  type Dispatch,
+  type SetStateAction
 } from 'react'
 import { useRelayClient } from '../../../../hooks/index.js'
+import useFallbackState from '../../../../hooks/useFallbackState.js'
 import type { Address } from 'viem'
 import { formatUnits } from 'viem'
 import { usePublicClient } from 'wagmi'
@@ -40,6 +43,8 @@ type BaseTokenWidgetProps = {
   setFromToken?: (token?: Token) => void
   toToken?: Token
   setToToken?: (token?: Token) => void
+  activeTab?: 'buy' | 'sell'
+  setActiveTab?: (tab: 'buy' | 'sell') => void
   defaultToAddress?: Address
   defaultAmount?: string
   defaultTradeType?: 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
@@ -62,6 +67,7 @@ type BaseTokenWidgetProps = {
   onSwapValidating?: (data: Execute) => void
   onSwapSuccess?: (data: Execute) => void
   onSwapError?: (error: string, data?: Execute) => void
+  onUnverifiedTokenDecline?: (token: Token, context: 'from' | 'to') => void
 }
 
 type MultiWalletDisabledProps = BaseTokenWidgetProps & {
@@ -90,6 +96,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   setFromToken: setExternalFromToken,
   toToken: externalToToken,
   setToToken: setExternalToToken,
+  activeTab: externalActiveTab,
+  setActiveTab: setExternalActiveTab,
   defaultToAddress,
   defaultAmount,
   defaultTradeType,
@@ -115,7 +123,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   onAnalyticEvent: _onAnalyticEvent,
   onSwapSuccess,
   onSwapValidating,
-  onSwapError
+  onSwapError,
+  onUnverifiedTokenDecline
 }) => {
   const onAnalyticEvent = useCallback(
     (eventName: string, data?: any) => {
@@ -168,11 +177,19 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     [setExternalToToken]
   )
 
-  const [isUsdInputMode, setIsUsdInputMode] = useState(false)
+  const [activeTab, setActiveTab] = useFallbackState<'buy' | 'sell'>(
+    setExternalActiveTab && externalActiveTab ? externalActiveTab : 'buy',
+    setExternalActiveTab && externalActiveTab
+      ? [
+          externalActiveTab,
+          setExternalActiveTab as Dispatch<SetStateAction<'buy' | 'sell'>>
+        ]
+      : undefined
+  )
+  const [isUsdInputMode, setIsUsdInputMode] = useState(activeTab === 'buy')
   const [usdInputValue, setUsdInputValue] = useState('')
   const [usdOutputValue, setUsdOutputValue] = useState('')
   const [tokenInputCache, setTokenInputCache] = useState('')
-  const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
   const tabTokenStateRef = useRef<{
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
@@ -1101,7 +1118,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           setUsdInputValue('')
                           setUsdOutputValue('')
                           setTokenInputCache('')
-                          setIsUsdInputMode(false)
+                          setIsUsdInputMode(nextTab === 'buy')
                           debouncedAmountInputControls.cancel()
                           debouncedAmountOutputControls.cancel()
                           setOriginAddressOverride(undefined)
@@ -1144,12 +1161,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               padding: '12px',
                               background: 'none',
                               border: '1px solid transparent',
-                              color: 'gray11',
+                              color: 'text-subtle',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
-                                color: 'gray12'
+                                color: 'text-default'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
@@ -1169,7 +1186,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               }
                             }}
                           >
-                            <Text style="subtitle1">Buy</Text>
+                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                              Buy
+                            </Text>
                           </TabsTrigger>
                           <TabsTrigger
                             value="sell"
@@ -1177,12 +1196,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               padding: '12px',
                               background: 'none',
                               border: '1px solid transparent',
-                              color: 'gray11',
+                              color: 'text-subtle',
                               '&[data-state="active"]': {
                                 background: 'white',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
-                                color: 'gray12'
+                                color: 'text-default'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
@@ -1202,7 +1221,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               }
                             }}
                           >
-                            Sell
+                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                              Sell
+                            </Text>
                           </TabsTrigger>
                         </TabsList>
 
@@ -1466,6 +1487,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                   // Track declined tokens to prevent re-prompting
                   const tokenKey = `${token.chainId}:${token.address.toLowerCase()}`
                   declinedTokensRef.current.add(tokenKey)
+
+                  onUnverifiedTokenDecline?.(token, context as 'from' | 'to')
                 }
                 setUnverifiedTokens((prev) =>
                   prev.filter(

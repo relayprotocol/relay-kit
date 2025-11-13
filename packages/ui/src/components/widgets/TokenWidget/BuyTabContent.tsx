@@ -390,8 +390,8 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           <Flex css={{ marginLeft: 'auto' }}>
             {toToken ? (
               <BalanceDisplay
-                hideBalanceLabel={true}
-                displaySymbol={true}
+                hideBalanceLabel={false}
+                displaySymbol={false}
                 isLoading={isLoadingToBalance}
                 balance={toBalance}
                 decimals={toToken?.decimals}
@@ -402,7 +402,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                   recipient !== undefined
                 }
                 pending={toBalancePending}
-                size="md"
+                size="sm"
               />
             ) : (
               <Flex css={{ height: 18 }} />
@@ -480,7 +480,6 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               <div style={{ width: 'max-content' }}>
                 <PaymentMethodTrigger
                   token={fromToken}
-                  locked={lockFromToken}
                   address={address}
                   testId="origin-token-select-button"
                   balanceLabel="available"

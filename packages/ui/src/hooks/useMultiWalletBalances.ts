@@ -5,11 +5,8 @@ import { isDeadAddress } from '@relayprotocol/relay-sdk'
 import { ProviderOptionsContext } from '../providers/RelayKitProvider.js'
 import { isAddress } from 'viem'
 import { isSolanaAddress } from '../utils/solana.js'
-
-type LinkedWallet = {
-  address: string
-  [key: string]: any
-}
+import { isValidAddress as validateAddress } from '../utils/address.js'
+import type { LinkedWallet } from '../types/index.js'
 
 /**
  * Fetches and merges balances for linked wallets
@@ -17,26 +14,35 @@ type LinkedWallet = {
 export const useMultiWalletBalances = (
   linkedWallets?: LinkedWallet[],
   primaryAddress?: string,
-  isValidAddress?: boolean,
   evmChainIds: 'mainnet' | 'testnet' = 'mainnet'
 ) => {
   const walletAddresses = useMemo(() => {
     const addresses = new Set<string>()
 
-    if (primaryAddress && !isDeadAddress(primaryAddress) && isValidAddress) {
-      addresses.add(primaryAddress)
-    }
+    if (primaryAddress && !isDeadAddress(primaryAddress)) {
+      const matchingWallet = linkedWallets?.find(
+        (wallet) =>
+          wallet.address === primaryAddress ||
+          (wallet.vmType === 'evm' &&
+            wallet.address.toLowerCase() === primaryAddress.toLowerCase())
+      )
 
-    if (linkedWallets) {
-      linkedWallets.forEach((wallet) => {
-        if (wallet.address && !isDeadAddress(wallet.address)) {
-          addresses.add(wallet.address)
+      if (matchingWallet) {
+        const isValid = validateAddress(
+          matchingWallet.vmType,
+          primaryAddress,
+          undefined,
+          matchingWallet.connector
+        )
+
+        if (isValid) {
+          addresses.add(primaryAddress)
         }
-      })
+      }
     }
 
     return Array.from(addresses)
-  }, [primaryAddress, isValidAddress, linkedWallets])
+  }, [primaryAddress, linkedWallets])
 
   const providerOptions = useContext(ProviderOptionsContext)
 
