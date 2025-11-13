@@ -1163,7 +1163,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               border: '1px solid transparent',
                               color: 'text-subtle',
                               '&[data-state="active"]': {
-                                background: 'white',
+                                background: 'widget-background',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
                                 color: 'text-default'
@@ -1175,7 +1175,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               },
                               _dark: {
                                 '&[data-state="active"]': {
-                                  background: 'gray1',
+                                  background: 'widget-background',
                                   borderColor: 'gray.4'
                                 },
                                 '&:not([data-state="active"])': {
@@ -1198,7 +1198,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               border: '1px solid transparent',
                               color: 'text-subtle',
                               '&[data-state="active"]': {
-                                background: 'white',
+                                background: 'widget-background',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
                                 color: 'text-default'
@@ -1210,7 +1210,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               },
                               _dark: {
                                 '&[data-state="active"]': {
-                                  background: 'gray1',
+                                  background: 'widget-background',
                                   borderColor: 'gray.4'
                                 },
                                 '&:not([data-state="active"])': {
