@@ -519,8 +519,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
 
                 return displayToken ? (
                   <BalanceDisplay
-                    hideBalanceLabel={true}
-                    displaySymbol={true}
+                    hideBalanceLabel={false}
+                    displaySymbol={false}
                     isLoading={isLoadingDisplayBalance}
                     balance={displayBalance}
                     decimals={displayToken?.decimals}

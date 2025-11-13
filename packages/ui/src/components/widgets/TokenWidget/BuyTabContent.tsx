@@ -390,8 +390,8 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           <Flex css={{ marginLeft: 'auto' }}>
             {toToken ? (
               <BalanceDisplay
-                hideBalanceLabel={true}
-                displaySymbol={true}
+                hideBalanceLabel={false}
+                displaySymbol={false}
                 isLoading={isLoadingToBalance}
                 balance={toBalance}
                 decimals={toToken?.decimals}
