@@ -27,7 +27,6 @@ import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
 import TransactionDetailsFooter from './TransactionDetailsFooter.js'
 import SectionContainer from './SectionContainer.js'
-import { isChainLocked } from '../../../utils/tokenSelector.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { FeeBreakdownInfo } from './FeeBreakdownInfo.js'
 import { DestinationWalletSelector } from './DestinationWalletSelector.js'
@@ -317,16 +316,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
     Number(debouncedInputAmountValue) === 0 ||
     Number(debouncedOutputAmountValue) === 0 ||
     !hasSelectedTokens
-
-  const toChainId = toToken?.chainId
-  const lockedToChainIds = isSingleChainLocked
-    ? lockChainId !== undefined
-      ? [lockChainId]
-      : undefined
-    : isChainLocked(toChainId, lockChainId, fromToken?.chainId, lockToToken) &&
-        toChainId !== undefined
-      ? [toChainId]
-      : undefined
 
   const chainIdsFilterForDestination =
     !toChainWalletVMSupported && fromToken ? [fromToken.chainId] : undefined
@@ -636,7 +625,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
               fromChainWalletVMSupported={toChainWalletVMSupported}
               supportedWalletVMs={supportedWalletVMs}
               popularChainIds={popularChainIds}
-              lockedChainIds={lockedToChainIds}
               chainIdsFilter={chainIdsFilterForDestination}
               linkedWallets={linkedWallets}
               context="to"
