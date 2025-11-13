@@ -454,7 +454,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           ) : null}
         </Flex>
 
-        <Flex justify="between" css={{ width: '100%' }}>
+        <Flex align="center" css={{ width: '100%', gap: '32px' }}>
           <PaymentMethod
             address={address}
             isValidAddress={isValidFromAddress}
@@ -487,15 +487,17 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               </div>
             }
           />
-          <FeeBreakdownInfo
-            isLoading={Boolean(isLoadingPayWith)}
-            amountUsd={currencyInAmountUsd}
-            tokenAmountFormatted={currencyInAmountFormatted}
-            fallbackTokenAmount={amountInputValue}
-            quote={quote}
-            feeBreakdown={feeBreakdown}
-            token={fromToken}
-          />
+          <Flex css={{ marginLeft: 'auto' }}>
+            <FeeBreakdownInfo
+              isLoading={Boolean(isLoadingPayWith)}
+              amountUsd={currencyInAmountUsd}
+              tokenAmountFormatted={currencyInAmountFormatted}
+              fallbackTokenAmount={amountInputValue}
+              quote={quote}
+              feeBreakdown={feeBreakdown}
+              token={fromToken}
+            />
+          </Flex>
         </Flex>
 
         <Divider color="gray4" />
@@ -569,7 +571,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             toChainWalletVMSupported={toChainWalletVMSupported}
             recipientLinkedWallet={recipientLinkedWallet}
             toChainVmType={toChainVmType}
-            containerCss={{ width: '100%' }}
+            containerCss={{ width: '100%', marginBottom: 0 }}
           />
         </Flex>
 
@@ -607,11 +609,13 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           />
         </Flex>
 
-        <TransactionDetailsFooter
-          timeEstimate={timeEstimate}
-          feeBreakdown={feeBreakdown}
-          quote={quote}
-        />
+        <Flex css={{ width: '100%', marginTop: '-8px' }}>
+          <TransactionDetailsFooter
+            timeEstimate={timeEstimate}
+            feeBreakdown={feeBreakdown}
+            quote={quote}
+          />
+        </Flex>
       </SectionContainer>
     </TabsContent>
   )
