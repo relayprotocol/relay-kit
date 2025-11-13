@@ -177,10 +177,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     [setExternalToToken]
   )
 
-  const [isUsdInputMode, setIsUsdInputMode] = useState(false)
-  const [usdInputValue, setUsdInputValue] = useState('')
-  const [usdOutputValue, setUsdOutputValue] = useState('')
-  const [tokenInputCache, setTokenInputCache] = useState('')
   const [activeTab, setActiveTab] = useFallbackState<'buy' | 'sell'>(
     setExternalActiveTab && externalActiveTab ? externalActiveTab : 'buy',
     setExternalActiveTab && externalActiveTab
@@ -190,6 +186,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         ]
       : undefined
   )
+  const [isUsdInputMode, setIsUsdInputMode] = useState(activeTab === 'buy')
+  const [usdInputValue, setUsdInputValue] = useState('')
+  const [usdOutputValue, setUsdOutputValue] = useState('')
+  const [tokenInputCache, setTokenInputCache] = useState('')
   const tabTokenStateRef = useRef<{
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
@@ -1118,7 +1118,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           setUsdInputValue('')
                           setUsdOutputValue('')
                           setTokenInputCache('')
-                          setIsUsdInputMode(false)
+                          setIsUsdInputMode(nextTab === 'buy')
                           debouncedAmountInputControls.cancel()
                           debouncedAmountOutputControls.cancel()
                           setOriginAddressOverride(undefined)
