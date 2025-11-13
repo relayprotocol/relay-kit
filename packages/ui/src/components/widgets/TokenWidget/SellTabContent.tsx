@@ -655,7 +655,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 <div style={{ width: 'max-content' }}>
                   <PaymentMethodTrigger
                     token={toToken}
-                    locked={lockToToken}
                     address={recipient}
                     testId="payment-method-select-button"
                     balanceLabel="available"

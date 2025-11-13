@@ -480,7 +480,6 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               <div style={{ width: 'max-content' }}>
                 <PaymentMethodTrigger
                   token={fromToken}
-                  locked={lockFromToken}
                   address={address}
                   testId="origin-token-select-button"
                   balanceLabel="available"

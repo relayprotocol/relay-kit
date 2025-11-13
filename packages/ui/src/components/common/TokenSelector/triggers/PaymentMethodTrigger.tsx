@@ -21,7 +21,6 @@ import {
 
 type PaymentMethodTriggerProps = {
   token?: Token
-  locked?: boolean
   address?: string
   testId?: string
   balanceLabel?: string
@@ -43,7 +42,6 @@ const normalizeAddress = (address?: string) => {
 
 export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   token,
-  locked,
   address,
   testId,
   balanceLabel = 'available',
@@ -80,7 +78,6 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
     <Button
       color="white"
       corners="pill"
-      disabled={locked}
       css={{
         height: 50,
         minHeight: 50,
@@ -93,9 +90,6 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
         border: 'none',
         _hover: {
           backgroundColor: 'widget-selector-hover-background'
-        },
-        _disabled: {
-          backgroundColor: 'widget-selector-background'
         }
       }}
       data-testid={testId}
@@ -142,11 +136,9 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
             )}
           </Flex>
         </Flex>
-        {locked ? null : (
-          <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
-            <FontAwesomeIcon icon={faChevronRight} width={14} />
-          </Box>
-        )}
+        <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
+          <FontAwesomeIcon icon={faChevronRight} width={14} />
+        </Box>
       </Flex>
     </Button>
   ) : (
