@@ -71,7 +71,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
       token.decimals,
       false
     )
-    balanceText = `${formattedBalance} ${token.symbol} ${balanceLabel}`
+    balanceText = `${formattedBalance} ${balanceLabel}`
   }
 
   return token ? (
@@ -81,7 +81,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
       css={{
         height: 50,
         minHeight: 50,
-        width: '248px',
+        width: '220px',
         flexShrink: 0,
         overflow: 'hidden',
         borderRadius: '12px',
@@ -123,12 +123,10 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
               <Text
                 style="subtitle3"
                 color="subtle"
+                ellipsify
                 css={{
                   lineHeight: '15px',
-                  maxWidth: '100%',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  maxWidth: '100%'
                 }}
               >
                 {balanceText}
@@ -149,7 +147,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
       css={{
         height: 50,
         minHeight: 50,
-        width: 'max-content',
+        width: '220px',
         flexShrink: 0,
         overflow: 'hidden',
         px: '3',

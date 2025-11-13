@@ -615,7 +615,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
         />
 
         <Flex direction="column" css={{ gap: '2', width: '100%' }}>
-          <Flex justify="between" css={{ width: '100%' }}>
+          <Flex align="center" css={{ width: '100%', gap: '32px' }}>
             <PaymentMethod
               address={recipient}
               isValidAddress={isValidToAddress}
@@ -640,25 +640,25 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 handleSetToToken(token)
               }}
               trigger={
-                <div style={{ width: 'max-content' }}>
-                  <PaymentMethodTrigger
-                    token={toToken}
-                    address={recipient}
-                    testId="payment-method-select-button"
-                    balanceLabel="available"
-                  />
-                </div>
+                <PaymentMethodTrigger
+                  token={toToken}
+                  address={recipient}
+                  testId="payment-method-select-button"
+                  balanceLabel="balance"
+                />
               }
             />
-            <FeeBreakdownInfo
-              isLoading={Boolean(isLoadingOutput)}
-              amountUsd={currencyOutAmountUsd}
-              tokenAmountFormatted={currencyOutAmountFormatted}
-              fallbackTokenAmount={amountOutputValue}
-              quote={quote}
-              feeBreakdown={feeBreakdown}
-              token={toToken}
-            />
+            <Flex css={{ marginLeft: 'auto' }}>
+              <FeeBreakdownInfo
+                isLoading={Boolean(isLoadingOutput)}
+                amountUsd={currencyOutAmountUsd}
+                tokenAmountFormatted={currencyOutAmountFormatted}
+                fallbackTokenAmount={amountOutputValue}
+                quote={quote}
+                feeBreakdown={feeBreakdown}
+                token={toToken}
+              />
+            </Flex>
           </Flex>
           <WidgetErrorWell
             hasInsufficientBalance={hasInsufficientBalance}
@@ -675,7 +675,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
             toChainWalletVMSupported={toChainWalletVMSupported}
             recipientLinkedWallet={recipientLinkedWallet}
             toChainVmType={toChainVmType}
-            containerCss={{ width: '100%' }}
+            containerCss={{ width: '100%', marginBottom: 0 }}
           />
         </Flex>
 
@@ -713,11 +713,13 @@ const SellTabContent: FC<SellTabContentProps> = ({
           />
         </Flex>
 
-        <TransactionDetailsFooter
-          timeEstimate={timeEstimate}
-          feeBreakdown={feeBreakdown}
-          quote={quote}
-        />
+        <Flex css={{ width: '100%', marginTop: '-8px' }}>
+          <TransactionDetailsFooter
+            timeEstimate={timeEstimate}
+            feeBreakdown={feeBreakdown}
+            quote={quote}
+          />
+        </Flex>
       </SectionContainer>
     </TabsContent>
   )

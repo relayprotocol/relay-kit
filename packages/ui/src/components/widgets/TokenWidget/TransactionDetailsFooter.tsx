@@ -52,7 +52,7 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
             <Box css={{ color: clockColor, width: 14, height: 14 }}>
               <FontAwesomeIcon icon={faClock} />
             </Box>
-            <Text style="subtitle2">{timeLabel}</Text>
+            <Text style="subtitle3">{timeLabel}</Text>
           </Flex>
           {showDivider ? (
             <Flex
@@ -70,7 +70,7 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
           <Box css={{ color: 'gray9', width: 14, height: 14 }}>
             <FontAwesomeIcon icon={faGasPump} />
           </Box>
-          <Text style="subtitle2">{networkCostLabel}</Text>
+          <Text style="subtitle3">{networkCostLabel}</Text>
         </Flex>
       ) : null}
     </Flex>
