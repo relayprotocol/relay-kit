@@ -335,9 +335,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
     <TabsContent value="sell">
       <SectionContainer
         css={{
-          backgroundColor: 'widget-background',
           border: { base: 'none', md: '1px solid' },
-          borderColor: 'slate.4'
+          borderColor: { base: 'transparent', md: 'slate.4' },
+          minWidth: { base: '350px', md: '400px' },
+          maxWidth: '400px'
         }}
         id={'sell-token-section'}
       >
@@ -527,32 +528,44 @@ const SellTabContent: FC<SellTabContentProps> = ({
                   <Flex css={{ height: 18 }} />
                 )
               })()}
+              {/* Desktop Percentage Buttons - Hidden on Mobile */}
               {fromBalance && fromBalance > 0n && onMaxAmountClicked ? (
-                <PercentageButtons
-                  balance={fromBalance}
-                  onPercentageClick={onMaxAmountClicked}
-                  getFeeBufferAmount={getFeeBufferAmount}
-                  fromChain={fromChain}
-                  publicClient={publicClient}
-                  isFromNative={isFromNative}
-                  percentages={percentOptions}
-                  buttonStyles={{
-                    fontSize: 12,
-                    fontWeight: '500',
-                    px: '1',
-                    py: '1',
-                    minHeight: '23px',
-                    lineHeight: '100%',
-                    backgroundColor: 'widget-selector-background',
-                    border: 'none',
-                    _hover: {
-                      backgroundColor: 'widget-selector-hover-background'
-                    }
+                <Box
+                  css={{
+                    display: 'none',
+                    sm: { display: 'block' }
                   }}
-                />
+                >
+                  <PercentageButtons
+                    balance={fromBalance}
+                    onPercentageClick={onMaxAmountClicked}
+                    getFeeBufferAmount={getFeeBufferAmount}
+                    fromChain={fromChain}
+                    publicClient={publicClient}
+                    isFromNative={isFromNative}
+                    percentages={percentOptions}
+                    variant="desktop"
+                  />
+                </Box>
               ) : null}
             </Flex>
           </Flex>
+
+          {/* Mobile Percentage Buttons - Hidden on Desktop */}
+          {fromBalance && fromBalance > 0n && onMaxAmountClicked ? (
+            <Box css={{ display: 'block', sm: { display: 'none' } }}>
+              <PercentageButtons
+                balance={fromBalance}
+                onPercentageClick={onMaxAmountClicked}
+                getFeeBufferAmount={getFeeBufferAmount}
+                fromChain={fromChain}
+                publicClient={publicClient}
+                isFromNative={isFromNative}
+                percentages={percentOptions}
+                variant="mobile"
+              />
+            </Box>
+          ) : null}
         </Flex>
 
         <Divider color="gray4" />

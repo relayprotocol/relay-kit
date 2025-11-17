@@ -106,9 +106,13 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
           <Flex
             direction="column"
             align="start"
-            css={{ maxWidth: 150, minWidth: 60, flex: 1 }}
+            css={{ maxWidth: 150, minWidth: 60, flex: 1, gap: '4px' }}
           >
-            <Text style="h6" ellipsify css={{ maxWidth: '100%' }}>
+            <Text
+              style="h6"
+              ellipsify
+              css={{ maxWidth: '100%', lineHeight: 'normal' }}
+            >
               {token.symbol}
             </Text>
             {showSkeleton ? (
@@ -125,7 +129,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
                 color="subtle"
                 ellipsify
                 css={{
-                  lineHeight: '15px',
+                  lineHeight: 'normal',
                   maxWidth: '100%'
                 }}
               >
@@ -141,25 +145,30 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
     </Button>
   ) : (
     <Button
-      color={address ? 'primary' : 'secondary'}
+      color="white"
       corners="pill"
-      cta={true}
       css={{
         height: 50,
         minHeight: 50,
         width: '220px',
         flexShrink: 0,
         overflow: 'hidden',
-        px: '3',
-        py: '2',
-        fontWeight: 700,
-        fontSize: '16px'
+        borderRadius: '12px',
+        padding: '12px',
+        backgroundColor: 'widget-selector-background',
+        border: 'none',
+        _hover: {
+          backgroundColor: 'widget-selector-hover-background'
+        }
       }}
+      data-testid={testId}
     >
-      {placeholderText}
-      <Box css={{ width: 14 }}>
-        <FontAwesomeIcon icon={faChevronRight} width={14} />
-      </Box>
+      <Flex align="center" justify="between" css={{ width: '100%' }}>
+        <Text style="h6">Select a token</Text>
+        <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
+          <FontAwesomeIcon icon={faChevronRight} width={14} />
+        </Box>
+      </Flex>
     </Button>
   )
 }

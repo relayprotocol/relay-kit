@@ -32,6 +32,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
     <Flex
       direction="column"
       align="end"
+      justify={!token ? 'center' : 'start'}
       css={{
         gap: '1',
         minHeight: 42
@@ -66,9 +67,20 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
               </Box>
             </FeeBreakdownTooltip>
           </>
+        ) : token ? (
+          <Text
+            style="h6"
+            css={{
+              textAlign: 'right',
+              whiteSpace: 'nowrap',
+              lineHeight: 'normal'
+            }}
+          >
+            $0 total
+          </Text>
         ) : (
           <Text style="h6" css={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-            $0 total
+            - total
           </Text>
         )}
       </Flex>
