@@ -12,14 +12,7 @@ import {
   useUserWallets,
   type Wallet
 } from '@dynamic-labs/sdk-react-core'
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FormEvent
-} from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { isEthereumWallet } from '@dynamic-labs/ethereum'
 import { isSolanaWallet } from '@dynamic-labs/solana'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
@@ -91,9 +84,6 @@ const TokenWidgetPage: NextPage = () => {
   const [urlTokenAddress, setUrlTokenAddress] = useState<string | undefined>()
   const [urlTokenChainId, setUrlTokenChainId] = useState<number | undefined>()
 
-  const [addressInput, setAddressInput] = useState('')
-  const [chainInput, setChainInput] = useState('')
-  const [inputError, setInputError] = useState<string | null>(null)
   const [tokenNotFound, setTokenNotFound] = useState(false)
   const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy')
 
@@ -205,8 +195,6 @@ const TokenWidgetPage: NextPage = () => {
     if (!addressParam || !chainParam) {
       setUrlTokenAddress(undefined)
       setUrlTokenChainId(undefined)
-      setAddressInput('')
-      setChainInput('')
       return
     }
 
@@ -221,8 +209,6 @@ const TokenWidgetPage: NextPage = () => {
     if (!Number.isNaN(chainId)) {
       setUrlTokenAddress(decodedAddress)
       setUrlTokenChainId(chainId)
-      setAddressInput(decodedAddress)
-      setChainInput(chainId.toString())
       setTokenNotFound(false)
     }
   }, [router.isReady, router.query.params])
@@ -253,36 +239,6 @@ const TokenWidgetPage: NextPage = () => {
     console.log('Analytic Event', eventName, data)
   }, [])
 
-  const handleApplyCustomToken = useCallback(
-    (event?: FormEvent<HTMLFormElement>) => {
-      event?.preventDefault()
-      setInputError(null)
-
-      const normalizedAddress = addressInput.trim()
-      const normalizedChain = chainInput.trim()
-
-      if (!normalizedAddress) {
-        setInputError('Enter a token address (or symbol) to load.')
-        return
-      }
-
-      const parsedChainId = Number(normalizedChain)
-      if (Number.isNaN(parsedChainId)) {
-        setInputError('Enter a valid chain id.')
-        return
-      }
-
-      setFromToken(undefined)
-      setToToken(undefined)
-      setTokenNotFound(false)
-
-      setUrlTokenAddress(normalizedAddress)
-      setUrlTokenChainId(parsedChainId)
-      updateDemoUrlWithRawParams(normalizedAddress, parsedChainId)
-    },
-    [addressInput, chainInput, updateDemoUrlWithRawParams]
-  )
-
   useEffect(() => {
     switchWallet.current = _switchWallet
   }, [_switchWallet])
@@ -298,8 +254,6 @@ const TokenWidgetPage: NextPage = () => {
 
         setUrlTokenAddress(targetAddress)
         setUrlTokenChainId(targetChainId)
-        setAddressInput(targetAddress)
-        setChainInput(targetChainId.toString())
         updateDemoUrlWithRawParams(targetAddress, targetChainId)
       }
 
@@ -489,18 +443,6 @@ const TokenWidgetPage: NextPage = () => {
             >
               Open Sell Tab
             </button>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0 12px',
-                color: theme === 'light' ? '#475569' : '#94a3b8',
-                fontSize: 14,
-                fontWeight: 500
-              }}
-            >
-              Current: {activeTab === 'buy' ? 'Buy' : 'Sell'}
-            </div>
           </div>
           <TokenWidget
             key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
@@ -616,79 +558,16 @@ const TokenWidgetPage: NextPage = () => {
               // setSlippageToleranceConfigOpen(true)
             }}
           />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-              width: '100%',
-              maxWidth: 400
-            }}
-          >
-            <form onSubmit={handleApplyCustomToken} style={{ width: '100%' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 8,
-                  alignItems: 'center'
-                }}
-              >
-                <input
-                  value={addressInput}
-                  onChange={(event) => setAddressInput(event.target.value)}
-                  placeholder="Token address"
-                  style={{
-                    flex: '2',
-                    padding: '10px 12px',
-                    borderRadius: 12,
-                    border: '1px solid rgba(148, 163, 184, 0.4)'
-                  }}
-                  autoComplete="off"
-                />
-                <input
-                  value={chainInput}
-                  onChange={(event) => setChainInput(event.target.value)}
-                  placeholder="Chain ID"
-                  style={{
-                    flex: '1',
-                    minWidth: 100,
-                    padding: '10px 12px',
-                    borderRadius: 12,
-                    border: '1px solid rgba(148, 163, 184, 0.4)'
-                  }}
-                  inputMode="numeric"
-                  autoComplete="off"
-                />
-                <button
-                  type="submit"
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: 12,
-                    border: 'none',
-                    background: '#4f46e5',
-                    color: 'white',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  Load token
-                </button>
-              </div>
-            </form>
-            {inputError ? (
-              <p
-                style={{
-                  margin: 0,
-                  color: '#b91c1c',
-                  fontSize: 12,
-                  textAlign: 'center'
-                }}
-              >
-                {inputError}
-              </p>
-            ) : null}
-            {tokenNotFound ? (
+          {tokenNotFound ? (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                width: '100%',
+                maxWidth: 400
+              }}
+            >
               <p
                 style={{
                   margin: 0,
@@ -704,8 +583,8 @@ const TokenWidgetPage: NextPage = () => {
                   ? `Chain ${urlTokenChainId} is not supported by Relay. Please select a token from a supported chain.`
                   : 'Token from URL was not found on the specified chain. Please select a token manually to continue.'}
               </p>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </Layout>
