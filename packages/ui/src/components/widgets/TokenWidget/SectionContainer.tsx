@@ -17,11 +17,12 @@ const SectionContainer: FC<
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'start',
-        backgroundColor: 'widget-card-background',
+        backgroundColor: { base: 'transparent', md: 'widget-card-background' },
         border: 'widget-card-border',
         gap: '4',
-        p: '16px',
-        borderRadius: 'widget-card-border-radius',
+        paddingY: '16px',
+        paddingX: { base: '0', md: '16px' },
+        borderRadius: { base: '0', md: 'widget-card-border-radius' },
         ...css
       }}
     >

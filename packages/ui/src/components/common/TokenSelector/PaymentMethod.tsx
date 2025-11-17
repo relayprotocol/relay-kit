@@ -507,9 +507,356 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     }
   }, [open, inputElement])
 
+  const paymentMethodContent = (
+    <Flex
+      direction="column"
+      css={{
+        width: '100%',
+        height: '100%',
+        gap: '3',
+        overflowY: 'hidden',
+        minWidth: 0,
+        maxWidth: '100%'
+      }}
+    >
+      {/* Header with back button */}
+      <Flex align="center" css={{ gap: '1' }}>
+        <Button
+          color="ghost"
+          size="none"
+          onClick={() => onOpenChange(false)}
+          css={{
+            p: '1',
+            minWidth: 'auto',
+            color: 'gray9',
+            cursor: 'pointer',
+            borderRadius: 8,
+            '--focusColor': 'colors.focus-color',
+            _focusVisible: {
+              boxShadow: 'inset 0 0 0 2px var(--focusColor)'
+            }
+          }}
+        >
+          <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
+        </Button>
+        <Text style="subtitle2">
+          {context === 'from' ? 'Pay with' : 'Sell to'}
+        </Text>
+      </Flex>
+
+      <Flex
+        css={{
+          flex: 1,
+          gap: '3',
+          overflow: 'hidden',
+          minWidth: 0,
+          maxWidth: '100%'
+        }}
+      >
+        {/* Main Token Content */}
+        <AccessibleList
+          onSelect={(value) => {
+            if (value === 'input') return
+            const [chainId, ...addressParts] = value.split(':')
+            const address = addressParts.join(':')
+            const allTokens = [
+              ...sortedUserTokens,
+              ...sortedCombinedTokens,
+              ...sortedTrendingTokens
+            ]
+
+            const selectedToken = allTokens.find(
+              (token) =>
+                token.chainId === Number(chainId) &&
+                token.address?.toLowerCase() === address?.toLowerCase()
+            )
+            if (selectedToken) {
+              handleTokenSelection(selectedToken)
+            }
+          }}
+          css={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            minWidth: 0,
+            maxWidth: '100%',
+            height: '100%'
+          }}
+        >
+          {/* Search Input Section - Fixed */}
+          <Flex
+            direction="column"
+            align="start"
+            css={{
+              width: '100%',
+              gap: '2',
+              background: 'modal-background',
+              minWidth: 0,
+              maxWidth: '100%'
+            }}
+          >
+            {/* Search input and Chain Filter Button Row */}
+            <Flex
+              align="center"
+              css={{
+                width: '100%',
+                gap: '2',
+                minWidth: 0,
+                alignItems: 'center',
+                height: 40
+              }}
+            >
+              <AccessibleListItem
+                value="input"
+                asChild
+                css={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <Input
+                  ref={setTokenSearchInputElement}
+                  placeholder="Search for a token"
+                  icon={
+                    <Box css={{ color: 'gray9' }}>
+                      <FontAwesomeIcon
+                        icon={faMagnifyingGlass}
+                        width={16}
+                        height={16}
+                      />
+                    </Box>
+                  }
+                  containerCss={{
+                    width: '100%',
+                    height: 40
+                  }}
+                  css={{
+                    width: '100%',
+                    _placeholder_parent: {
+                      textOverflow: 'ellipsis'
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = (e.target as HTMLInputElement).value
+
+                    setTokenSearchInput(value)
+
+                    if (isValidAddressUtil(chainFilter.vmType, value)) {
+                      onAnalyticEvent?.(
+                        EventNames.TOKEN_SELECTOR_CONTRACT_SEARCH,
+                        {
+                          search_term: value,
+                          chain_filter: chainFilter.id
+                        }
+                      )
+                    }
+                  }}
+                />
+              </AccessibleListItem>
+
+              {/* Chain Filter - Compact button with dropdown */}
+              {(!configuredChainIds || hasMultipleConfiguredChainIds) && (
+                <CompactChainFilter
+                  options={allChains}
+                  value={chainFilter}
+                  onSelect={setChainFilter}
+                  popularChainIds={popularChainIds}
+                  onChainStarToggle={handleChainStarToggle}
+                  starredChainIds={starredChainIds}
+                  onAnalyticEvent={onAnalyticEvent}
+                />
+              )}
+            </Flex>
+          </Flex>
+
+          {/* Token Lists Section  */}
+          <Flex
+            key={chainFilter.id ?? 'all'}
+            direction="column"
+            css={{
+              flex: 1,
+              overflowY: 'auto',
+              gap: '3',
+              pt: '2',
+              scrollbarColor: 'var(--relay-colors-gray5) transparent',
+              minWidth: 0,
+              maxWidth: '100%'
+            }}
+          >
+            {/* Suggested Tokens */}
+            {chainFilter.id &&
+            tokenSearchInput.length === 0 &&
+            !depositAddressOnly ? (
+              <SuggestedTokens
+                chainId={chainFilter.id}
+                depositAddressOnly={depositAddressOnly}
+                onSelect={(token) => {
+                  handleTokenSelection(token)
+                }}
+              />
+            ) : null}
+
+            {/* Token Lists */}
+            {tokenSearchInput.length > 0 ? (
+              <TokenList
+                title="Results"
+                tokens={sortedCombinedTokens}
+                isLoading={
+                  isLoadingTokenList ||
+                  tokenSearchInput !== debouncedTokenSearchValue
+                }
+                isLoadingBalances={isLoadingBalances}
+                chainFilterId={chainFilter.id}
+              />
+            ) : chainFilter.id ? (
+              <TokenList
+                title="Tokens"
+                tokens={sortedCombinedTokens}
+                isLoading={isLoadingTokenList}
+                isLoadingBalances={isLoadingBalances}
+                chainFilterId={chainFilter.id}
+              />
+            ) : (
+              <Flex direction="column" css={{ gap: '3' }}>
+                {(() => {
+                  const hasLoadedBalanceData = Boolean(duneTokens)
+                  const userTokensReady = !isLoadingUserTokens
+                  const isWaitingForBalanceData =
+                    address &&
+                    (isLoadingBalances || isLoadingUserTokens) &&
+                    (!hasLoadedBalanceData || !userTokensReady)
+
+                  if (isWaitingForBalanceData) {
+                    return (
+                      <PaymentTokenList
+                        title="Recommended"
+                        tokens={[]}
+                        isLoading={true}
+                        isLoadingBalances={false}
+                        chainFilterId={chainFilter.id}
+                        limit={10}
+                      />
+                    )
+                  }
+
+                  const tokensWithValue =
+                    address && hasLoadedBalanceData && userTokensReady
+                      ? sortedUserTokens.filter(
+                          (token) =>
+                            token.balance?.value_usd &&
+                            token.balance.value_usd > 0
+                        )
+                      : []
+
+                  const fallbackTokens =
+                    context === 'to' && sortedTrendingTokens.length > 0
+                      ? sortedTrendingTokens
+                      : sortedCombinedTokens
+
+                  const isTrendingTokens =
+                    context === 'to' && sortedTrendingTokens.length > 0
+                  const shouldShowBalanceLoading =
+                    isLoadingBalances && Boolean(address)
+
+                  return (
+                    <>
+                      {tokensWithValue.length > 0 ? (
+                        <PaymentTokenList
+                          title="Recommended"
+                          tokens={tokensWithValue}
+                          isLoading={false}
+                          isLoadingBalances={shouldShowBalanceLoading}
+                          chainFilterId={chainFilter.id}
+                          limit={tokensWithValue.length}
+                        />
+                      ) : null}
+                      <PaymentTokenList
+                        title={isTrendingTokens ? 'Global 24h' : 'Other Tokens'}
+                        tokens={fallbackTokens.slice(0, 10)}
+                        isLoading={
+                          context === 'to'
+                            ? isLoadingTrendingTokens
+                            : isLoadingTokenList
+                        }
+                        isLoadingBalances={shouldShowBalanceLoading}
+                        chainFilterId={chainFilter.id}
+                        limit={10}
+                      />
+                    </>
+                  )
+                })()}
+              </Flex>
+            )}
+
+            {/* Empty State */}
+            {!isLoadingTokenList &&
+            !isLoadingExternalList &&
+            tokenList?.length === 0 &&
+            externalTokenList?.length === 0 ? (
+              <Flex
+                direction="column"
+                align="center"
+                css={{ py: '5', maxWidth: 312, alignSelf: 'center' }}
+              >
+                {!chainFilter?.id && isSearchTermValidAddress && (
+                  <Box css={{ color: 'gray8', mb: '2' }}>
+                    <FontAwesomeIcon
+                      icon={faFolderOpen}
+                      size="xl"
+                      width={27}
+                      height={24}
+                    />
+                  </Box>
+                )}
+                <Text
+                  color="subtle"
+                  style="body2"
+                  css={{ textAlign: 'center' }}
+                >
+                  {!chainFilter?.id && isSearchTermValidAddress
+                    ? 'No results. Switch to the desired chain to search by contract.'
+                    : 'No results.'}
+                </Text>
+              </Flex>
+            ) : null}
+          </Flex>
+        </AccessibleList>
+      </Flex>
+    </Flex>
+  )
+
   return (
     <>
-      <div style={{ position: 'relative' }}>
+      {/* Mobile: Overlay */}
+      {!isDesktop && (
+        <>
+          <div onClick={() => onOpenChange(true)}>{trigger}</div>
+          {open && (
+            <Box
+              css={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 100,
+                background: 'widget-background',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                p: '4'
+              }}
+            >
+              {paymentMethodContent}
+            </Box>
+          )}
+        </>
+      )}
+
+      {/* Desktop: Modal */}
+      {isDesktop && (
         <Modal
           open={open}
           onOpenChange={onOpenChange}
@@ -526,327 +873,9 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
             boxSizing: 'border-box'
           }}
         >
-          <Flex
-            direction="column"
-            css={{
-              width: '100%',
-              height: '100%',
-              gap: '3',
-              overflowY: 'hidden',
-              minWidth: 0,
-              maxWidth: '100%'
-            }}
-          >
-            {/* Header with back button */}
-            <Flex align="center" css={{ gap: '1' }}>
-              <Button
-                color="ghost"
-                size="none"
-                onClick={() => onOpenChange(false)}
-                css={{
-                  p: '1',
-                  minWidth: 'auto',
-                  color: 'gray9',
-                  cursor: 'pointer',
-                  borderRadius: 8,
-                  '--focusColor': 'colors.focus-color',
-                  _focusVisible: {
-                    boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-                  }
-                }}
-              >
-                <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
-              </Button>
-              <Text style="subtitle2">
-                {context === 'from' ? 'Pay with' : 'Sell to'}
-              </Text>
-            </Flex>
-
-            <Flex
-              css={{
-                flex: 1,
-                gap: '3',
-                overflow: 'hidden',
-                minWidth: 0,
-                maxWidth: '100%'
-              }}
-            >
-              {/* Main Token Content */}
-              <AccessibleList
-                onSelect={(value) => {
-                  if (value === 'input') return
-                  const [chainId, ...addressParts] = value.split(':')
-                  const address = addressParts.join(':')
-                  const allTokens = [
-                    ...sortedUserTokens,
-                    ...sortedCombinedTokens,
-                    ...sortedTrendingTokens
-                  ]
-
-                  const selectedToken = allTokens.find(
-                    (token) =>
-                      token.chainId === Number(chainId) &&
-                      token.address?.toLowerCase() === address?.toLowerCase()
-                  )
-                  if (selectedToken) {
-                    handleTokenSelection(selectedToken)
-                  }
-                }}
-                css={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  width: '100%',
-                  minWidth: 0,
-                  maxWidth: '100%',
-                  height: '100%'
-                }}
-              >
-                {/* Search Input Section - Fixed */}
-                <Flex
-                  direction="column"
-                  align="start"
-                  css={{
-                    width: '100%',
-                    gap: '2',
-                    background: 'modal-background',
-                    minWidth: 0,
-                    maxWidth: '100%'
-                  }}
-                >
-                  {/* Search input and Chain Filter Button Row */}
-                  <Flex
-                    align="center"
-                    css={{
-                      width: '100%',
-                      gap: '2',
-                      minWidth: 0,
-                      alignItems: 'center',
-                      height: 40
-                    }}
-                  >
-                    <AccessibleListItem
-                      value="input"
-                      asChild
-                      css={{
-                        flex: 1,
-                        minWidth: 0,
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <Input
-                        ref={setTokenSearchInputElement}
-                        placeholder="Search for a token"
-                        icon={
-                          <Box css={{ color: 'gray9' }}>
-                            <FontAwesomeIcon
-                              icon={faMagnifyingGlass}
-                              width={16}
-                              height={16}
-                            />
-                          </Box>
-                        }
-                        containerCss={{
-                          width: '100%',
-                          height: 40
-                        }}
-                        css={{
-                          width: '100%',
-                          _placeholder_parent: {
-                            textOverflow: 'ellipsis'
-                          }
-                        }}
-                        onChange={(e) => {
-                          const value = (e.target as HTMLInputElement).value
-
-                          setTokenSearchInput(value)
-
-                          if (isValidAddressUtil(chainFilter.vmType, value)) {
-                            onAnalyticEvent?.(
-                              EventNames.TOKEN_SELECTOR_CONTRACT_SEARCH,
-                              {
-                                search_term: value,
-                                chain_filter: chainFilter.id
-                              }
-                            )
-                          }
-                        }}
-                      />
-                    </AccessibleListItem>
-
-                    {/* Chain Filter - Compact button with dropdown */}
-                    {(!configuredChainIds || hasMultipleConfiguredChainIds) && (
-                      <CompactChainFilter
-                        options={allChains}
-                        value={chainFilter}
-                        onSelect={setChainFilter}
-                        popularChainIds={popularChainIds}
-                        onChainStarToggle={handleChainStarToggle}
-                        starredChainIds={starredChainIds}
-                        onAnalyticEvent={onAnalyticEvent}
-                      />
-                    )}
-                  </Flex>
-                </Flex>
-
-                {/* Token Lists Section  */}
-                <Flex
-                  key={chainFilter.id ?? 'all'}
-                  direction="column"
-                  css={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    gap: '3',
-                    pt: '2',
-                    scrollbarColor: 'var(--relay-colors-gray5) transparent',
-                    minWidth: 0,
-                    maxWidth: '100%'
-                  }}
-                >
-                  {/* Suggested Tokens */}
-                  {chainFilter.id &&
-                  tokenSearchInput.length === 0 &&
-                  !depositAddressOnly ? (
-                    <SuggestedTokens
-                      chainId={chainFilter.id}
-                      depositAddressOnly={depositAddressOnly}
-                      onSelect={(token) => {
-                        handleTokenSelection(token)
-                      }}
-                    />
-                  ) : null}
-
-                  {/* Token Lists */}
-                  {tokenSearchInput.length > 0 ? (
-                    <TokenList
-                      title="Results"
-                      tokens={sortedCombinedTokens}
-                      isLoading={
-                        isLoadingTokenList ||
-                        tokenSearchInput !== debouncedTokenSearchValue
-                      }
-                      isLoadingBalances={isLoadingBalances}
-                      chainFilterId={chainFilter.id}
-                    />
-                  ) : chainFilter.id ? (
-                    <TokenList
-                      title="Tokens"
-                      tokens={sortedCombinedTokens}
-                      isLoading={isLoadingTokenList}
-                      isLoadingBalances={isLoadingBalances}
-                      chainFilterId={chainFilter.id}
-                    />
-                  ) : (
-                    <Flex direction="column" css={{ gap: '3' }}>
-                      {(() => {
-                        const hasLoadedBalanceData = Boolean(duneTokens)
-                        const userTokensReady = !isLoadingUserTokens
-                        const isWaitingForBalanceData =
-                          address &&
-                          (isLoadingBalances || isLoadingUserTokens) &&
-                          (!hasLoadedBalanceData || !userTokensReady)
-
-                        if (isWaitingForBalanceData) {
-                          return (
-                            <PaymentTokenList
-                              title="Recommended"
-                              tokens={[]}
-                              isLoading={true}
-                              isLoadingBalances={false}
-                              chainFilterId={chainFilter.id}
-                              limit={10}
-                            />
-                          )
-                        }
-
-                        const tokensWithValue =
-                          address && hasLoadedBalanceData && userTokensReady
-                            ? sortedUserTokens.filter(
-                                (token) =>
-                                  token.balance?.value_usd &&
-                                  token.balance.value_usd > 0
-                              )
-                            : []
-
-                        const fallbackTokens =
-                          context === 'to' && sortedTrendingTokens.length > 0
-                            ? sortedTrendingTokens
-                            : sortedCombinedTokens
-
-                        const isTrendingTokens =
-                          context === 'to' && sortedTrendingTokens.length > 0
-                        const shouldShowBalanceLoading =
-                          isLoadingBalances && Boolean(address)
-
-                        return (
-                          <>
-                            {tokensWithValue.length > 0 ? (
-                              <PaymentTokenList
-                                title="Recommended"
-                                tokens={tokensWithValue}
-                                isLoading={false}
-                                isLoadingBalances={shouldShowBalanceLoading}
-                                chainFilterId={chainFilter.id}
-                                limit={tokensWithValue.length}
-                              />
-                            ) : null}
-                            <PaymentTokenList
-                              title={
-                                isTrendingTokens ? 'Global 24h' : 'Other Tokens'
-                              }
-                              tokens={fallbackTokens.slice(0, 10)}
-                              isLoading={
-                                context === 'to'
-                                  ? isLoadingTrendingTokens
-                                  : isLoadingTokenList
-                              }
-                              isLoadingBalances={shouldShowBalanceLoading}
-                              chainFilterId={chainFilter.id}
-                              limit={10}
-                            />
-                          </>
-                        )
-                      })()}
-                    </Flex>
-                  )}
-
-                  {/* Empty State */}
-                  {!isLoadingTokenList &&
-                  !isLoadingExternalList &&
-                  tokenList?.length === 0 &&
-                  externalTokenList?.length === 0 ? (
-                    <Flex
-                      direction="column"
-                      align="center"
-                      css={{ py: '5', maxWidth: 312, alignSelf: 'center' }}
-                    >
-                      {!chainFilter?.id && isSearchTermValidAddress && (
-                        <Box css={{ color: 'gray8', mb: '2' }}>
-                          <FontAwesomeIcon
-                            icon={faFolderOpen}
-                            size="xl"
-                            width={27}
-                            height={24}
-                          />
-                        </Box>
-                      )}
-                      <Text
-                        color="subtle"
-                        style="body2"
-                        css={{ textAlign: 'center' }}
-                      >
-                        {!chainFilter?.id && isSearchTermValidAddress
-                          ? 'No results. Switch to the desired chain to search by contract.'
-                          : 'No results.'}
-                      </Text>
-                    </Flex>
-                  ) : null}
-                </Flex>
-              </AccessibleList>
-            </Flex>
-          </Flex>
+          {paymentMethodContent}
         </Modal>
-      </div>
+      )}
 
       {unverifiedTokenModalOpen && (
         <UnverifiedTokenModal

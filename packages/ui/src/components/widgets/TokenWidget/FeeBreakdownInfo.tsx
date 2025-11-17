@@ -32,6 +32,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
     <Flex
       direction="column"
       align="end"
+      justify={!token ? 'center' : 'start'}
       css={{
         gap: '1',
         minHeight: 42
@@ -42,7 +43,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
           <Skeleton css={{ width: 90, height: 20 }} />
         ) : amountUsd && Number(amountUsd) > 0 ? (
           <>
-            <Text style="h6" css={{ textAlign: 'right' }}>
+            <Text style="h6" css={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
               {formatDollarCompact(Number(amountUsd))} total
             </Text>
             <FeeBreakdownTooltip
@@ -66,8 +67,21 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
               </Box>
             </FeeBreakdownTooltip>
           </>
+        ) : token ? (
+          <Text
+            style="h6"
+            css={{
+              textAlign: 'right',
+              whiteSpace: 'nowrap',
+              lineHeight: 'normal'
+            }}
+          >
+            $0 total
+          </Text>
         ) : (
-          <Text style="h6">$0 total</Text>
+          <Text style="h6" css={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+            - total
+          </Text>
         )}
       </Flex>
       {isLoading ? (

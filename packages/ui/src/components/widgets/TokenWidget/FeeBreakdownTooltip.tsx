@@ -3,7 +3,7 @@ import { Flex, Text } from '../../primitives/index.js'
 import Tooltip from '../../primitives/Tooltip.js'
 import type { QuoteResponse } from '@relayprotocol/relay-kit-hooks'
 import type { FeeBreakdown } from '../../../types/FeeBreakdown.js'
-import { formatDollar } from '../../../utils/numbers.js'
+import { formatDollar, formatNumber } from '../../../utils/numbers.js'
 
 type FeeBreakdownTooltipProps = {
   quote?: QuoteResponse
@@ -21,6 +21,7 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
   tooltipProps
 }) => {
   const currencyInAmount = quote?.details?.currencyIn?.amountUsd
+  const currencyInAmountFormatted = quote?.details?.currencyIn?.amountFormatted
 
   // Relay fee
   const relayFee = feeBreakdown?.breakdown?.find(
@@ -83,7 +84,9 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
           {fromToken && currencyInAmount && tokenAmountFormatted !== '-' && (
             <Flex align="center" css={{ width: '100%', mb: '2' }}>
               <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
-                {fromToken.symbol}
+                {currencyInAmountFormatted && currencyInAmountFormatted !== '-'
+                  ? `${formatNumber(currencyInAmountFormatted, 4, true)} ${fromToken.symbol}`
+                  : fromToken.symbol}
               </Text>
               <Text style="subtitle2">{tokenAmountFormatted}</Text>
             </Flex>

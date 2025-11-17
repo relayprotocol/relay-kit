@@ -270,9 +270,10 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
     <TabsContent value="buy">
       <SectionContainer
         css={{
-          backgroundColor: 'widget-background',
-          border: '1px solid',
-          borderColor: 'slate.4'
+          border: { base: 'none', md: '1px solid' },
+          borderColor: { base: 'transparent', md: 'slate.4' },
+          minWidth: { base: '350px', md: '400px' },
+          maxWidth: '400px'
         }}
         id={'buy-token-section'}
       >
@@ -390,8 +391,8 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           <Flex css={{ marginLeft: 'auto' }}>
             {toToken ? (
               <BalanceDisplay
-                hideBalanceLabel={true}
-                displaySymbol={true}
+                hideBalanceLabel={false}
+                displaySymbol={false}
                 isLoading={isLoadingToBalance}
                 balance={toBalance}
                 decimals={toToken?.decimals}
@@ -402,7 +403,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                   recipient !== undefined
                 }
                 pending={toBalancePending}
-                size="md"
+                size="sm"
               />
             ) : (
               <Flex css={{ height: 18 }} />
@@ -454,7 +455,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           ) : null}
         </Flex>
 
-        <Flex justify="between" css={{ width: '100%' }}>
+        <Flex align="center" css={{ width: '100%', gap: '32px' }}>
           <PaymentMethod
             address={address}
             isValidAddress={isValidFromAddress}
@@ -477,10 +478,9 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             }
             popularChainIds={popularChainIds}
             trigger={
-              <div style={{ width: 'max-content' }}>
+              <div>
                 <PaymentMethodTrigger
                   token={fromToken}
-                  locked={lockFromToken}
                   address={address}
                   testId="origin-token-select-button"
                   balanceLabel="available"
@@ -488,15 +488,17 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               </div>
             }
           />
-          <FeeBreakdownInfo
-            isLoading={Boolean(isLoadingPayWith)}
-            amountUsd={currencyInAmountUsd}
-            tokenAmountFormatted={currencyInAmountFormatted}
-            fallbackTokenAmount={amountInputValue}
-            quote={quote}
-            feeBreakdown={feeBreakdown}
-            token={fromToken}
-          />
+          <Flex css={{ marginLeft: 'auto' }}>
+            <FeeBreakdownInfo
+              isLoading={Boolean(isLoadingPayWith)}
+              amountUsd={currencyInAmountUsd}
+              tokenAmountFormatted={currencyInAmountFormatted}
+              fallbackTokenAmount={amountInputValue}
+              quote={quote}
+              feeBreakdown={feeBreakdown}
+              token={fromToken}
+            />
+          </Flex>
         </Flex>
 
         <Divider color="gray4" />
@@ -570,7 +572,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             toChainWalletVMSupported={toChainWalletVMSupported}
             recipientLinkedWallet={recipientLinkedWallet}
             toChainVmType={toChainVmType}
-            containerCss={{ width: '100%' }}
+            containerCss={{ width: '100%', marginBottom: 0 }}
           />
         </Flex>
 
@@ -608,11 +610,13 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           />
         </Flex>
 
-        <TransactionDetailsFooter
-          timeEstimate={timeEstimate}
-          feeBreakdown={feeBreakdown}
-          quote={quote}
-        />
+        <Flex css={{ width: '100%', marginTop: '-8px' }}>
+          <TransactionDetailsFooter
+            timeEstimate={timeEstimate}
+            feeBreakdown={feeBreakdown}
+            quote={quote}
+          />
+        </Flex>
       </SectionContainer>
     </TabsContent>
   )

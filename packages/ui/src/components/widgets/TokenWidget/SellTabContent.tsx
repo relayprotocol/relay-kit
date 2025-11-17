@@ -27,7 +27,6 @@ import AmountSectionHeader from './AmountSectionHeader.js'
 import AmountModeToggle from './AmountModeToggle.js'
 import TransactionDetailsFooter from './TransactionDetailsFooter.js'
 import SectionContainer from './SectionContainer.js'
-import { isChainLocked } from '../../../utils/tokenSelector.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { FeeBreakdownInfo } from './FeeBreakdownInfo.js'
 import { DestinationWalletSelector } from './DestinationWalletSelector.js'
@@ -318,16 +317,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
     Number(debouncedOutputAmountValue) === 0 ||
     !hasSelectedTokens
 
-  const toChainId = toToken?.chainId
-  const lockedToChainIds = isSingleChainLocked
-    ? lockChainId !== undefined
-      ? [lockChainId]
-      : undefined
-    : isChainLocked(toChainId, lockChainId, fromToken?.chainId, lockToToken) &&
-        toChainId !== undefined
-      ? [toChainId]
-      : undefined
-
   const chainIdsFilterForDestination =
     !toChainWalletVMSupported && fromToken ? [fromToken.chainId] : undefined
 
@@ -346,9 +335,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
     <TabsContent value="sell">
       <SectionContainer
         css={{
-          backgroundColor: 'widget-background',
-          border: '1px solid',
-          borderColor: 'slate.4'
+          border: { base: 'none', md: '1px solid' },
+          borderColor: { base: 'transparent', md: 'slate.4' },
+          minWidth: { base: '350px', md: '400px' },
+          maxWidth: '400px'
         }}
         id={'sell-token-section'}
       >
@@ -519,8 +509,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
 
                 return displayToken ? (
                   <BalanceDisplay
-                    hideBalanceLabel={true}
-                    displaySymbol={true}
+                    hideBalanceLabel={false}
+                    displaySymbol={false}
                     isLoading={isLoadingDisplayBalance}
                     balance={displayBalance}
                     decimals={displayToken?.decimals}
@@ -532,38 +522,50 @@ const SellTabContent: FC<SellTabContentProps> = ({
                       address !== undefined
                     }
                     pending={displayBalancePending}
-                    size="md"
+                    size="sm"
                   />
                 ) : (
                   <Flex css={{ height: 18 }} />
                 )
               })()}
+              {/* Desktop Percentage Buttons - Hidden on Mobile */}
               {fromBalance && fromBalance > 0n && onMaxAmountClicked ? (
-                <PercentageButtons
-                  balance={fromBalance}
-                  onPercentageClick={onMaxAmountClicked}
-                  getFeeBufferAmount={getFeeBufferAmount}
-                  fromChain={fromChain}
-                  publicClient={publicClient}
-                  isFromNative={isFromNative}
-                  percentages={percentOptions}
-                  buttonStyles={{
-                    fontSize: 12,
-                    fontWeight: '500',
-                    px: '1',
-                    py: '1',
-                    minHeight: '23px',
-                    lineHeight: '100%',
-                    backgroundColor: 'widget-selector-background',
-                    border: 'none',
-                    _hover: {
-                      backgroundColor: 'widget-selector-hover-background'
-                    }
+                <Box
+                  css={{
+                    display: 'none',
+                    sm: { display: 'block' }
                   }}
-                />
+                >
+                  <PercentageButtons
+                    balance={fromBalance}
+                    onPercentageClick={onMaxAmountClicked}
+                    getFeeBufferAmount={getFeeBufferAmount}
+                    fromChain={fromChain}
+                    publicClient={publicClient}
+                    isFromNative={isFromNative}
+                    percentages={percentOptions}
+                    variant="desktop"
+                  />
+                </Box>
               ) : null}
             </Flex>
           </Flex>
+
+          {/* Mobile Percentage Buttons - Hidden on Desktop */}
+          {fromBalance && fromBalance > 0n && onMaxAmountClicked ? (
+            <Box css={{ display: 'block', sm: { display: 'none' } }}>
+              <PercentageButtons
+                balance={fromBalance}
+                onPercentageClick={onMaxAmountClicked}
+                getFeeBufferAmount={getFeeBufferAmount}
+                fromChain={fromChain}
+                publicClient={publicClient}
+                isFromNative={isFromNative}
+                percentages={percentOptions}
+                variant="mobile"
+              />
+            </Box>
+          ) : null}
         </Flex>
 
         <Divider color="gray4" />
@@ -626,7 +628,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
         />
 
         <Flex direction="column" css={{ gap: '2', width: '100%' }}>
-          <Flex justify="between" css={{ width: '100%' }}>
+          <Flex align="center" css={{ width: '100%', gap: '32px' }}>
             <PaymentMethod
               address={recipient}
               isValidAddress={isValidToAddress}
@@ -636,7 +638,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
               fromChainWalletVMSupported={toChainWalletVMSupported}
               supportedWalletVMs={supportedWalletVMs}
               popularChainIds={popularChainIds}
-              lockedChainIds={lockedToChainIds}
               chainIdsFilter={chainIdsFilterForDestination}
               linkedWallets={linkedWallets}
               context="to"
@@ -652,26 +653,27 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 handleSetToToken(token)
               }}
               trigger={
-                <div style={{ width: 'max-content' }}>
+                <div>
                   <PaymentMethodTrigger
                     token={toToken}
-                    locked={lockToToken}
                     address={recipient}
                     testId="payment-method-select-button"
-                    balanceLabel="available"
+                    balanceLabel="balance"
                   />
                 </div>
               }
             />
-            <FeeBreakdownInfo
-              isLoading={Boolean(isLoadingOutput)}
-              amountUsd={currencyOutAmountUsd}
-              tokenAmountFormatted={currencyOutAmountFormatted}
-              fallbackTokenAmount={amountOutputValue}
-              quote={quote}
-              feeBreakdown={feeBreakdown}
-              token={toToken}
-            />
+            <Flex css={{ marginLeft: 'auto' }}>
+              <FeeBreakdownInfo
+                isLoading={Boolean(isLoadingOutput)}
+                amountUsd={currencyOutAmountUsd}
+                tokenAmountFormatted={currencyOutAmountFormatted}
+                fallbackTokenAmount={amountOutputValue}
+                quote={quote}
+                feeBreakdown={feeBreakdown}
+                token={toToken}
+              />
+            </Flex>
           </Flex>
           <WidgetErrorWell
             hasInsufficientBalance={hasInsufficientBalance}
@@ -688,7 +690,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
             toChainWalletVMSupported={toChainWalletVMSupported}
             recipientLinkedWallet={recipientLinkedWallet}
             toChainVmType={toChainVmType}
-            containerCss={{ width: '100%' }}
+            containerCss={{ width: '100%', marginBottom: 0 }}
           />
         </Flex>
 
@@ -726,11 +728,13 @@ const SellTabContent: FC<SellTabContentProps> = ({
           />
         </Flex>
 
-        <TransactionDetailsFooter
-          timeEstimate={timeEstimate}
-          feeBreakdown={feeBreakdown}
-          quote={quote}
-        />
+        <Flex css={{ width: '100%', marginTop: '-8px' }}>
+          <TransactionDetailsFooter
+            timeEstimate={timeEstimate}
+            feeBreakdown={feeBreakdown}
+            quote={quote}
+          />
+        </Flex>
       </SectionContainer>
     </TabsContent>
   )

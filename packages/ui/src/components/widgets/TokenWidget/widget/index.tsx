@@ -177,10 +177,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     [setExternalToToken]
   )
 
-  const [isUsdInputMode, setIsUsdInputMode] = useState(false)
-  const [usdInputValue, setUsdInputValue] = useState('')
-  const [usdOutputValue, setUsdOutputValue] = useState('')
-  const [tokenInputCache, setTokenInputCache] = useState('')
   const [activeTab, setActiveTab] = useFallbackState<'buy' | 'sell'>(
     setExternalActiveTab && externalActiveTab ? externalActiveTab : 'buy',
     setExternalActiveTab && externalActiveTab
@@ -190,6 +186,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         ]
       : undefined
   )
+  const [isUsdInputMode, setIsUsdInputMode] = useState(activeTab === 'buy')
+  const [usdInputValue, setUsdInputValue] = useState('')
+  const [usdOutputValue, setUsdOutputValue] = useState('')
+  const [tokenInputCache, setTokenInputCache] = useState('')
   const tabTokenStateRef = useRef<{
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
@@ -1005,7 +1005,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             >
               {() => {
                 return (
-                  <Flex direction="column" css={{ gap: '3', width: '100%' }}>
+                  <Flex
+                    direction="column"
+                    css={{ gap: '3', width: '100%', position: 'relative' }}
+                  >
                     <TabsRoot
                       value={activeTab}
                       onValueChange={(value) => {
@@ -1118,7 +1121,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           setUsdInputValue('')
                           setUsdOutputValue('')
                           setTokenInputCache('')
-                          setIsUsdInputMode(false)
+                          setIsUsdInputMode(nextTab === 'buy')
                           debouncedAmountInputControls.cancel()
                           debouncedAmountOutputControls.cancel()
                           setOriginAddressOverride(undefined)
@@ -1161,12 +1164,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               padding: '12px',
                               background: 'none',
                               border: '1px solid transparent',
-                              color: 'gray11',
+                              color: 'text-subtle',
                               '&[data-state="active"]': {
-                                background: 'white',
+                                background: 'widget-background',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
-                                color: 'gray12'
+                                color: 'text-default'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
@@ -1175,7 +1178,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               },
                               _dark: {
                                 '&[data-state="active"]': {
-                                  background: 'gray1',
+                                  background: 'widget-background',
                                   borderColor: 'gray.4'
                                 },
                                 '&:not([data-state="active"])': {
@@ -1186,7 +1189,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               }
                             }}
                           >
-                            <Text style="subtitle1">Buy</Text>
+                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                              Buy
+                            </Text>
                           </TabsTrigger>
                           <TabsTrigger
                             value="sell"
@@ -1194,12 +1199,12 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               padding: '12px',
                               background: 'none',
                               border: '1px solid transparent',
-                              color: 'gray11',
+                              color: 'text-subtle',
                               '&[data-state="active"]': {
-                                background: 'white',
+                                background: 'widget-background',
                                 borderRadius: '12px',
                                 borderColor: 'slate.4',
-                                color: 'gray12'
+                                color: 'text-default'
                               },
                               '&:not([data-state="active"])': {
                                 _hover: {
@@ -1208,7 +1213,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               },
                               _dark: {
                                 '&[data-state="active"]': {
-                                  background: 'gray1',
+                                  background: 'widget-background',
                                   borderColor: 'gray.4'
                                 },
                                 '&:not([data-state="active"])': {
@@ -1219,7 +1224,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               }
                             }}
                           >
-                            Sell
+                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                              Sell
+                            </Text>
                           </TabsTrigger>
                         </TabsList>
 

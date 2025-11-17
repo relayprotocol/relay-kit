@@ -21,7 +21,6 @@ import {
 
 type PaymentMethodTriggerProps = {
   token?: Token
-  locked?: boolean
   address?: string
   testId?: string
   balanceLabel?: string
@@ -43,7 +42,6 @@ const normalizeAddress = (address?: string) => {
 
 export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
   token,
-  locked,
   address,
   testId,
   balanceLabel = 'available',
@@ -73,18 +71,17 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
       token.decimals,
       false
     )
-    balanceText = `${formattedBalance} ${token.symbol} ${balanceLabel}`
+    balanceText = `${formattedBalance} ${balanceLabel}`
   }
 
   return token ? (
     <Button
       color="white"
       corners="pill"
-      disabled={locked}
       css={{
         height: 50,
         minHeight: 50,
-        width: '248px',
+        width: '220px',
         flexShrink: 0,
         overflow: 'hidden',
         borderRadius: '12px',
@@ -93,9 +90,6 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
         border: 'none',
         _hover: {
           backgroundColor: 'widget-selector-hover-background'
-        },
-        _disabled: {
-          backgroundColor: 'widget-selector-background'
         }
       }}
       data-testid={testId}
@@ -112,9 +106,13 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
           <Flex
             direction="column"
             align="start"
-            css={{ maxWidth: 150, minWidth: 60, flex: 1 }}
+            css={{ maxWidth: 150, minWidth: 60, flex: 1, gap: '4px' }}
           >
-            <Text style="h6" ellipsify css={{ maxWidth: '100%' }}>
+            <Text
+              style="h6"
+              ellipsify
+              css={{ maxWidth: '100%', lineHeight: 'normal' }}
+            >
               {token.symbol}
             </Text>
             {showSkeleton ? (
@@ -129,12 +127,10 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
               <Text
                 style="subtitle3"
                 color="subtle"
+                ellipsify
                 css={{
-                  lineHeight: '15px',
-                  maxWidth: '100%',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  lineHeight: 'normal',
+                  maxWidth: '100%'
                 }}
               >
                 {balanceText}
@@ -142,34 +138,37 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
             )}
           </Flex>
         </Flex>
-        {locked ? null : (
-          <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
-            <FontAwesomeIcon icon={faChevronRight} width={14} />
-          </Box>
-        )}
+        <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
+          <FontAwesomeIcon icon={faChevronRight} width={14} />
+        </Box>
       </Flex>
     </Button>
   ) : (
     <Button
-      color={address ? 'primary' : 'secondary'}
+      color="white"
       corners="pill"
-      cta={true}
       css={{
         height: 50,
         minHeight: 50,
-        width: 'max-content',
+        width: '220px',
         flexShrink: 0,
         overflow: 'hidden',
-        px: '3',
-        py: '2',
-        fontWeight: 700,
-        fontSize: '16px'
+        borderRadius: '12px',
+        padding: '12px',
+        backgroundColor: 'widget-selector-background',
+        border: 'none',
+        _hover: {
+          backgroundColor: 'widget-selector-hover-background'
+        }
       }}
+      data-testid={testId}
     >
-      {placeholderText}
-      <Box css={{ width: 14 }}>
-        <FontAwesomeIcon icon={faChevronRight} width={14} />
-      </Box>
+      <Flex align="center" justify="between" css={{ width: '100%' }}>
+        <Text style="h6">Select a token</Text>
+        <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
+          <FontAwesomeIcon icon={faChevronRight} width={14} />
+        </Box>
+      </Flex>
     </Button>
   )
 }
