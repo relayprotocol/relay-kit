@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.3
+
+### Patch Changes
+
+- 68788cf: Improved mobile actions
+
 ## 6.0.2
 
 ### Patch Changes
