@@ -1005,7 +1005,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             >
               {() => {
                 return (
-                  <Flex direction="column" css={{ gap: '3', width: '100%' }}>
+                  <Flex
+                    direction="column"
+                    css={{ gap: '3', width: '100%', position: 'relative' }}
+                  >
                     <TabsRoot
                       value={activeTab}
                       onValueChange={(value) => {
