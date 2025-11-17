@@ -271,7 +271,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
       <SectionContainer
         css={{
           backgroundColor: 'widget-background',
-          border: '1px solid',
+          border: { base: 'none', md: '1px solid' },
           borderColor: 'slate.4'
         }}
         id={'buy-token-section'}
@@ -477,12 +477,14 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             }
             popularChainIds={popularChainIds}
             trigger={
-              <PaymentMethodTrigger
-                token={fromToken}
-                address={address}
-                testId="origin-token-select-button"
-                balanceLabel="available"
-              />
+              <div>
+                <PaymentMethodTrigger
+                  token={fromToken}
+                  address={address}
+                  testId="origin-token-select-button"
+                  balanceLabel="available"
+                />
+              </div>
             }
           />
           <Flex css={{ marginLeft: 'auto' }}>

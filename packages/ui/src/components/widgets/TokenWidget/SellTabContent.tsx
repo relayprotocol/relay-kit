@@ -336,7 +336,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
       <SectionContainer
         css={{
           backgroundColor: 'widget-background',
-          border: '1px solid',
+          border: { base: 'none', md: '1px solid' },
           borderColor: 'slate.4'
         }}
         id={'sell-token-section'}
@@ -640,12 +640,14 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 handleSetToToken(token)
               }}
               trigger={
-                <PaymentMethodTrigger
-                  token={toToken}
-                  address={recipient}
-                  testId="payment-method-select-button"
-                  balanceLabel="balance"
-                />
+                <div>
+                  <PaymentMethodTrigger
+                    token={toToken}
+                    address={recipient}
+                    testId="payment-method-select-button"
+                    balanceLabel="balance"
+                  />
+                </div>
               }
             />
             <Flex css={{ marginLeft: 'auto' }}>
