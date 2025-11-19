@@ -60,6 +60,7 @@ type BaseTokenWidgetProps = {
   disablePasteWalletAddressOption?: boolean
   useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
   onOpenSlippageConfig?: () => void
+  walletsLoading?: boolean
   onFromTokenChange?: (token?: Token) => void
   onToTokenChange?: (token?: Token) => void
   onConnectWallet?: () => void
@@ -79,7 +80,7 @@ type MultiWalletDisabledProps = BaseTokenWidgetProps & {
 
 type MultiWalletEnabledProps = BaseTokenWidgetProps & {
   multiWalletSupportEnabled: true
-  linkedWallets: LinkedWallet[]
+  linkedWallets?: LinkedWallet[]
   onSetPrimaryWallet?: (address: string) => void
   onLinkNewWallet: (params: {
     chain?: RelayChain
@@ -90,6 +91,31 @@ type MultiWalletEnabledProps = BaseTokenWidgetProps & {
 export type TokenWidgetProps =
   | MultiWalletDisabledProps
   | MultiWalletEnabledProps
+
+const BASE_USDC_ADDRESS = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+
+const BASE_USDC_TOKEN: Token = {
+  chainId: 8453,
+  address: BASE_USDC_ADDRESS,
+  name: 'USD Coin',
+  symbol: 'USDC',
+  decimals: 6,
+  logoURI: `${ASSETS_RELAY_API}/icons/currencies/usdc.png`,
+  verified: true
+}
+
+const isBaseUsdcToken = (token?: Token) =>
+  token?.chainId === BASE_USDC_TOKEN.chainId &&
+  token?.address?.toLowerCase() === BASE_USDC_ADDRESS
+
+const COMPATIBLE_WALLET_VMS: ChainVM[] = [
+  'evm',
+  'suivm',
+  'tvm',
+  'hypevm',
+  'svm',
+  'bvm'
+]
 
 const TokenWidget: FC<TokenWidgetProps> = ({
   fromToken: externalFromToken,
@@ -124,7 +150,8 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   onSwapSuccess,
   onSwapValidating,
   onSwapError,
-  onUnverifiedTokenDecline
+  onUnverifiedTokenDecline,
+  walletsLoading = false
 }) => {
   const onAnalyticEvent = useCallback(
     (eventName: string, data?: any) => {
@@ -194,6 +221,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
   }>({ buy: {}, sell: {} })
+  const autoSelectedFromTokenRef = useRef(false)
   const tabRecipientRef = useRef<{
     buy: { override?: string; custom?: string }
     sell: { override?: string; custom?: string }
@@ -899,33 +927,54 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           }
         }
 
-        useEffect(() => {
-          if (
-            activeTab === 'buy' &&
-            !address &&
-            !linkedWallets?.length &&
-            !fromToken &&
-            relayClient
-          ) {
-            const baseUSDC: Token = {
-              chainId: 8453,
-              address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-              name: 'USD Coin',
-              symbol: 'USDC',
-              decimals: 6,
-              logoURI: `${ASSETS_RELAY_API}/icons/currencies/usdc.png`,
-              verified: true
-            }
+        const linkedWalletsLoading =
+          multiWalletSupportEnabled && linkedWallets === undefined
+        const walletAddressLoading = Boolean(wallet && !address)
 
-            handleSetFromToken(baseUSDC)
+        useEffect(() => {
+          if (walletsLoading || linkedWalletsLoading || walletAddressLoading) {
+            return
+          }
+
+          const hasLinkedCompatibleWallet =
+            linkedWallets?.some(
+              (wallet) =>
+                wallet?.vmType && COMPATIBLE_WALLET_VMS.includes(wallet.vmType)
+            ) ?? false
+          const hasCompatibleWallet =
+            Boolean(address && isValidFromAddress) || hasLinkedCompatibleWallet
+          const baseSelected = isBaseUsdcToken(fromToken)
+
+          if (activeTab === 'buy' && !fromToken && !hasCompatibleWallet) {
+            handleSetFromToken(BASE_USDC_TOKEN)
+            autoSelectedFromTokenRef.current = true
+            return
+          }
+
+          if (autoSelectedFromTokenRef.current && !baseSelected) {
+            autoSelectedFromTokenRef.current = false
+          }
+
+          if (
+            autoSelectedFromTokenRef.current &&
+            (activeTab !== 'buy' || hasCompatibleWallet)
+          ) {
+            if (baseSelected) {
+              handleSetFromToken(undefined)
+            }
+            autoSelectedFromTokenRef.current = false
           }
         }, [
           activeTab,
           address,
-          linkedWallets?.length,
+          handleSetFromToken,
+          linkedWallets,
           fromToken,
-          relayClient,
-          handleSetFromToken
+          isValidFromAddress,
+          linkedWalletsLoading,
+          multiWalletSupportEnabled,
+          walletAddressLoading,
+          walletsLoading
         ])
 
         return (
@@ -1040,33 +1089,31 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           const storedNextRecipient =
                             tabRecipientRef.current[nextTab] ?? {}
 
-                          let nextFromToken: Token | undefined =
-                            storedNextState.fromToken
-                          let nextToToken: Token | undefined =
-                            storedNextState.toToken
+                          const hasStoredNextFromToken =
+                            'fromToken' in storedNextState
+                          const hasStoredNextToToken =
+                            'toToken' in storedNextState
+
+                          let nextFromToken: Token | undefined
+                          let nextToToken: Token | undefined
 
                           if (nextTab === 'sell') {
-                            const sellToken =
-                              nextFromToken ??
-                              currentState.toToken ??
-                              toToken ??
-                              fromToken
-                            const receiveToken =
-                              nextToToken ?? currentState.fromToken ?? fromToken
+                            const sellToken = hasStoredNextFromToken
+                              ? storedNextState.fromToken
+                              : (currentState.toToken ?? toToken ?? fromToken)
+                            const receiveToken = hasStoredNextToToken
+                              ? storedNextState.toToken
+                              : (currentState.fromToken ?? fromToken)
 
                             nextFromToken = sellToken ?? undefined
                             nextToToken = receiveToken ?? undefined
                           } else {
-                            const buyToken =
-                              nextToToken ??
-                              currentState.toToken ??
-                              toToken ??
-                              fromToken
-                            const payToken =
-                              nextFromToken ??
-                              currentState.fromToken ??
-                              fromToken ??
-                              currentState.toToken
+                            const buyToken = hasStoredNextToToken
+                              ? storedNextState.toToken
+                              : (currentState.toToken ?? toToken ?? fromToken)
+                            const payToken = hasStoredNextFromToken
+                              ? storedNextState.fromToken
+                              : (currentState.fromToken ?? fromToken)
 
                             nextFromToken = payToken ?? undefined
                             nextToToken = buyToken ?? undefined
@@ -1349,7 +1396,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               handleSlippageToleranceChange,
 
                             // Input/output state
-                            disableInputAutoFocus,
                             isUsdInputMode,
                             usdInputValue,
                             tradeType,

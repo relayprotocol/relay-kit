@@ -466,7 +466,6 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             linkedWallets={linkedWallets}
             multiWalletSupportEnabled={multiWalletSupportEnabled}
             context="from"
-            autoSelectToken={false}
             setToken={(token) => {
               handleSetFromToken(token)
             }}

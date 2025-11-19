@@ -17,7 +17,7 @@ const DropdownMenuContentCss = cva({
     mx: '4',
     p: '3',
     borderRadius: 8,
-    zIndex: 5,
+    zIndex: 10000002,
     background: 'modal-background',
     boxShadow: '0px 0px 50px 0px #0000001F',
     border: 'dropdown-border'
@@ -51,13 +51,11 @@ const DropdownMenuItemCss = cva({
     p: '3',
     outline: 'none',
     cursor: 'pointer',
-    transition: 'backdrop-filter 250ms linear',
+    transition: 'background-color 150ms linear',
     _hover: {
-      backdropFilter: 'brightness(95%)',
       backgroundColor: 'gray/10'
     },
     '&:focus': {
-      backdropFilter: 'brightness(95%)',
       backgroundColor: 'gray/10'
     }
   }
