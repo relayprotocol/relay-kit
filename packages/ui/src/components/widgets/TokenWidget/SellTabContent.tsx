@@ -78,7 +78,6 @@ type SellChildrenPropsSubset = Pick<
   | 'highRelayerServiceFee'
   | 'isCapacityExceededError'
   | 'isCouldNotExecuteError'
-  | 'supportsExternalLiquidity'
   | 'supportedWalletVMs'
   | 'ctaCopy'
 >
@@ -232,7 +231,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
   highRelayerServiceFee,
   isCapacityExceededError,
   isCouldNotExecuteError,
-  supportsExternalLiquidity,
   recipientLinkedWallet,
   toChainVmType,
   supportedWalletVMs,
@@ -631,18 +629,18 @@ const SellTabContent: FC<SellTabContentProps> = ({
               isValidAddress={isValidToAddress}
               token={toToken}
               onAnalyticEvent={onAnalyticEvent}
-            multiWalletSupportEnabled={multiWalletSupportEnabled}
-            fromChainWalletVMSupported={toChainWalletVMSupported}
-            supportedWalletVMs={supportedWalletVMs}
-            popularChainIds={popularChainIds}
-            chainIdsFilter={chainIdsFilterForDestination}
-            linkedWallets={linkedWallets}
-            context="to"
-            setToken={(token) => {
-              if (
-                token?.address === fromToken?.address &&
-                token?.chainId === fromToken?.chainId &&
-                recipient === address
+              multiWalletSupportEnabled={multiWalletSupportEnabled}
+              fromChainWalletVMSupported={toChainWalletVMSupported}
+              supportedWalletVMs={supportedWalletVMs}
+              popularChainIds={popularChainIds}
+              chainIdsFilter={chainIdsFilterForDestination}
+              linkedWallets={linkedWallets}
+              context="to"
+              setToken={(token) => {
+                if (
+                  token?.address === fromToken?.address &&
+                  token?.chainId === fromToken?.chainId &&
+                  recipient === address
                 ) {
                   return
                 }
@@ -680,7 +678,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
             isHighRelayerServiceFee={highRelayerServiceFee}
             isCapacityExceededError={isCapacityExceededError}
             isCouldNotExecuteError={isCouldNotExecuteError}
-            supportsExternalLiquidity={supportsExternalLiquidity}
             recipientWalletSupportsChain={recipientWalletSupportsChain}
             recipient={recipient}
             toChainWalletVMSupported={toChainWalletVMSupported}

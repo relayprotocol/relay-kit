@@ -373,10 +373,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         isBvmSwap,
         isValidFromAddress,
         isValidToAddress,
-        supportsExternalLiquidity,
-        useExternalLiquidity,
         slippageTolerance,
-        canonicalTimeEstimate,
         fromChainWalletVMSupported,
         toChainWalletVMSupported,
         isRecipientLinked,
@@ -385,7 +382,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         linkedWallet,
         quoteParameters,
         setSwapError,
-        setUseExternalLiquidity,
         invalidateBalanceQueries,
         invalidateQuoteQuery,
         quoteInProgress,
@@ -624,11 +620,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             | undefined,
           setDestinationAddressOverride
         })
-
-        const promptSwitchRoute =
-          (isCapacityExceededError || isCouldNotExecuteError) &&
-          supportsExternalLiquidity &&
-          !isSingleChainLocked
 
         const isAutoSlippage = slippageTolerance === undefined
 
@@ -1031,7 +1022,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                   setPendingSuccessFlush(false)
                 }
               }}
-              useExternalLiquidity={useExternalLiquidity}
               slippageTolerance={localSlippageTolerance}
               swapError={swapError}
               setSwapError={setSwapError}
@@ -1366,11 +1356,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isSameCurrencySameRecipientSwap,
                             isCapacityExceededError,
                             isCouldNotExecuteError,
-                            supportsExternalLiquidity,
 
                             // UI state and interactions
                             showHighPriceImpactWarning,
-                            disableSwapButton: promptSwitchRoute,
                             onPrimaryAction: handlePrimaryAction,
                             debouncedInputAmountValue,
                             debouncedOutputAmountValue,
@@ -1478,11 +1466,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             isSameCurrencySameRecipientSwap,
                             isCapacityExceededError,
                             isCouldNotExecuteError,
-                            supportsExternalLiquidity,
 
                             // UI state and interactions
                             showHighPriceImpactWarning,
-                            disableSwapButton: promptSwitchRoute,
                             onPrimaryAction: handlePrimaryAction,
                             debouncedInputAmountValue,
                             debouncedOutputAmountValue,
@@ -1503,22 +1489,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             ctaCopy
                           }}
                         />
-
-                        {promptSwitchRoute ? (
-                          <Button
-                            color="primary"
-                            cta={true}
-                            css={{ flexGrow: '1', justifyContent: 'center' }}
-                            onClick={() => {
-                              setUseExternalLiquidity(true)
-                              onAnalyticEvent?.(
-                                EventNames.CTA_SWITCH_ROUTE_CLICKED
-                              )
-                            }}
-                          >
-                            Switch Route
-                          </Button>
-                        ) : null}
                       </Flex>
                     </TabsRoot>
                   </Flex>

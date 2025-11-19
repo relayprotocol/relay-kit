@@ -120,12 +120,8 @@ export type ChildrenProps = {
   isCouldNotExecuteError?: boolean
   ctaCopy: string
   isFromNative: boolean
-  useExternalLiquidity: boolean
   slippageTolerance?: string
-  supportsExternalLiquidity: boolean
   timeEstimate?: { time: number; formattedTime: string }
-  canonicalTimeEstimate?: { time: number; formattedTime: string }
-  fetchingExternalLiquiditySupport: boolean
   isSvmSwap: boolean
   isBvmSwap: boolean
   isValidFromAddress: boolean
@@ -147,7 +143,6 @@ export type ChildrenProps = {
   quoteParameters?: Parameters<typeof useQuote>['2']
   invalidateBalanceQueries: () => void
   invalidateQuoteQuery: () => void
-  setUseExternalLiquidity: Dispatch<React.SetStateAction<boolean>>
   setDetails: Dispatch<React.SetStateAction<Execute['details'] | null>>
   setSwapError: Dispatch<React.SetStateAction<Error | null>>
   abortController: AbortController | null
@@ -210,8 +205,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const [customToAddress, setCustomToAddress] = useState<
     Address | string | undefined
   >(defaultToAddress)
-  const [useExternalLiquidity, setUseExternalLiquidity] =
-    useState<boolean>(false)
   const address = useWalletAddress(wallet, linkedWallets)
 
   const [tradeType, setTradeType] = useState<'EXACT_INPUT' | 'EXPECTED_OUTPUT'>(
@@ -248,10 +241,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   )
 
   const [swapError, setSwapError] = useState<Error | null>(null)
-  const tokenPairIsCanonical =
-    fromToken?.chainId !== undefined &&
-    toToken?.chainId !== undefined &&
-    fromToken.symbol === toToken.symbol
 
   const toChain = relayClient?.chains.find(
     (chain) => chain.id === toToken?.chainId
@@ -436,44 +425,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     toChain?.id
   )
 
-  const externalLiquiditySupport = useQuote(
-    relayClient ? relayClient : undefined,
-    wallet,
-    fromToken && toToken
-      ? {
-          user: getDeadAddress(fromChain?.vmType, fromChain?.id),
-          originChainId: fromToken.chainId,
-          destinationChainId: toToken.chainId,
-          originCurrency: fromToken.address,
-          destinationCurrency: toToken.address,
-          recipient: getDeadAddress(toChain?.vmType, toChain?.id),
-          tradeType,
-          appFees: providerOptionsContext.appFees,
-          amount: '10000000000000000000000', //Hardcode an extremely high number
-          referrer: relayClient?.source ?? undefined,
-          useExternalLiquidity: true
-        }
-      : undefined,
-    undefined,
-    undefined,
-    {
-      refetchOnWindowFocus: false,
-      enabled:
-        fromToken !== undefined &&
-        toToken !== undefined &&
-        fromChain &&
-        toChain &&
-        (fromChain.id === toChain.baseChainId ||
-          toChain.id === fromChain.baseChainId)
-    }
-  )
-  const supportsExternalLiquidity =
-    tokenPairIsCanonical &&
-    externalLiquiditySupport.status === 'success' &&
-    fromChainWalletVMSupported
-      ? true
-      : false
-
   const { displayName: toDisplayName } = useENSResolver(recipient, {
     enabled: toChain?.vmType === 'evm' && isValidToAddress
   })
@@ -572,7 +523,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
                   toToken.decimals
                 ).toString(),
           referrer: relayClient?.source ?? undefined,
-          useExternalLiquidity,
           useDepositAddress:
             !fromChainWalletVMSupported || fromToken?.chainId === 1337,
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
@@ -737,20 +687,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     debouncedAmountOutputControls.flush()
   }, [quote, tradeType])
 
-  useEffect(() => {
-    if (
-      useExternalLiquidity &&
-      !externalLiquiditySupport.isFetching &&
-      !supportsExternalLiquidity
-    ) {
-      setUseExternalLiquidity(false)
-    }
-  }, [
-    supportsExternalLiquidity,
-    useExternalLiquidity,
-    externalLiquiditySupport.isFetching
-  ])
-
   const feeBreakdown = useMemo(() => {
     const chains = relayClient?.chains
     const fromChain = chains?.find((chain) => chain.id === fromToken?.chainId)
@@ -793,9 +729,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const highRelayerServiceFee = isHighRelayerServiceFeeUsd(quote)
   const relayerFeeProportion = calculateRelayerFeeProportionUsd(quote)
   const timeEstimate = calculatePriceTimeEstimate(quote?.details)
-  const canonicalTimeEstimate = calculatePriceTimeEstimate(
-    externalLiquiditySupport.data?.details
-  )
 
   const recipientWalletSupportsChain = useIsWalletCompatible(
     toChain?.id,
@@ -829,8 +762,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   })
 
   usePreviousValueChange(
-    isCapacityExceededError && supportsExternalLiquidity,
-    !isFetchingQuote && !externalLiquiditySupport.isFetching,
+    isCapacityExceededError,
+    !isFetchingQuote,
     (capacityExceeded) => {
       if (capacityExceeded) {
         onAnalyticEvent?.(EventNames.CTA_MAX_CAPACITY_PROMPTED, {
@@ -1119,7 +1052,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     debouncedInputAmountValue,
     debouncedOutputAmountValue,
     tradeType,
-    useExternalLiquidity,
     waitingForSteps,
     executeSwap,
     setSteps,
@@ -1176,12 +1108,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         isCouldNotExecuteError,
         ctaCopy,
         isFromNative,
-        useExternalLiquidity,
         slippageTolerance: currentSlippageTolerance,
-        supportsExternalLiquidity,
         timeEstimate,
-        canonicalTimeEstimate,
-        fetchingExternalLiquiditySupport: externalLiquiditySupport.isFetching,
         isSvmSwap,
         isBvmSwap,
         isValidFromAddress,
@@ -1199,7 +1127,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         gasTopUpAmountUsd,
         invalidateBalanceQueries,
         invalidateQuoteQuery,
-        setUseExternalLiquidity,
         setDetails,
         setSwapError,
         quoteInProgress,

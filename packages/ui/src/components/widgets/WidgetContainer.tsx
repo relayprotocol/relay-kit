@@ -46,7 +46,6 @@ export type WidgetContainerProps = {
   | 'tradeType'
   | 'address'
   | 'setCustomToAddress'
-  | 'useExternalLiquidity'
   | 'timeEstimate'
   | 'slippageTolerance'
   | 'setSteps'
@@ -75,7 +74,6 @@ const WidgetContainer: FC<WidgetContainerProps> = ({
   debouncedOutputAmountValue,
   customToAddress,
   address,
-  useExternalLiquidity,
   slippageTolerance,
   timeEstimate,
   recipient,
@@ -118,10 +116,8 @@ const WidgetContainer: FC<WidgetContainerProps> = ({
             toChain={toChain}
             fromToken={fromToken}
             toToken={toToken}
-            useExternalLiquidity={useExternalLiquidity}
             slippageTolerance={slippageTolerance}
             address={address}
-            isCanonical={useExternalLiquidity}
             onAnalyticEvent={onAnalyticEvent}
             onSuccess={onSwapSuccess}
             onSwapValidating={onSwapValidating}

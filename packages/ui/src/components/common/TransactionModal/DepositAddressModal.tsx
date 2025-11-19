@@ -226,7 +226,6 @@ const InnerDepositAddressModal: FC<InnerDepositAddressModalProps> = ({
             seconds={seconds ?? 0}
             onOpenChange={onOpenChange}
             timeEstimate={timeEstimate?.formattedTime}
-            isCanonical={false}
             details={details}
             isLoadingTransaction={isLoadingTransaction}
             requestId={requestId}

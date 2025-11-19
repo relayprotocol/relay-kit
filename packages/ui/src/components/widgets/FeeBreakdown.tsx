@@ -1,23 +1,18 @@
 import { useState, type FC } from 'react'
-import { Box, Button, Flex, Pill, Text } from '../primitives/index.js'
+import { Box, Button, Flex, Text } from '../primitives/index.js'
 import type { ChildrenProps } from './SwapWidgetRenderer.js'
 import { formatBN, formatDollar } from '../../utils/numbers.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGasPump } from '@fortawesome/free-solid-svg-icons/faGasPump'
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
 import FetchingQuoteLoader from '../widgets/FetchingQuoteLoader.js'
-import SwapRouteSelector from '../widgets/SwapRouteSelector.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import {
   CollapsibleContent,
   CollapsibleRoot,
   CollapsibleTrigger
 } from '../primitives/Collapsible.js'
-import {
-  faChevronRight,
-  faClock,
-  faInfoCircle
-} from '@fortawesome/free-solid-svg-icons'
+import { faClock, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import { PriceImpactTooltip } from './PriceImpactTooltip.js'
 import { getSlippageRating, ratingToColor } from '../../utils/slippage.js'
 import Tooltip from '../primitives/Tooltip.js'
@@ -31,10 +26,6 @@ type Props = Pick<
   | 'toToken'
   | 'fromToken'
   | 'timeEstimate'
-  | 'supportsExternalLiquidity'
-  | 'useExternalLiquidity'
-  | 'setUseExternalLiquidity'
-  | 'canonicalTimeEstimate'
 > & {
   toChain?: RelayChain
   isSingleChainLocked?: boolean
@@ -56,11 +47,7 @@ const FeeBreakdown: FC<Props> = ({
   toToken,
   fromToken,
   toChain,
-  supportsExternalLiquidity,
-  useExternalLiquidity,
-  setUseExternalLiquidity,
   timeEstimate,
-  canonicalTimeEstimate,
   isSingleChainLocked,
   fromChainWalletVMSupported,
   isAutoSlippage,
@@ -175,38 +162,6 @@ const FeeBreakdown: FC<Props> = ({
       )
     }
   ]
-
-  if (!isSingleChainLocked && fromChainWalletVMSupported) {
-    breakdown.unshift({
-      title: 'Route',
-      value: (
-        <SwapRouteSelector
-          chain={toChain}
-          supportsExternalLiquidity={supportsExternalLiquidity}
-          externalLiquidtySelected={useExternalLiquidity}
-          onExternalLiquidityChange={(selected) => {
-            setUseExternalLiquidity(selected)
-          }}
-          canonicalTimeEstimate={canonicalTimeEstimate?.formattedTime}
-          error={error}
-          trigger={
-            <Button color="ghost" size="none">
-              <Flex css={{ gap: '2', alignItems: 'center' }}>
-                <Text style="subtitle2">
-                  {useExternalLiquidity ? 'Native' : 'Relay'}
-                </Text>
-                {supportsExternalLiquidity || useExternalLiquidity ? (
-                  <Box css={{ color: 'gray11', width: 14, flexShrink: 0 }}>
-                    <FontAwesomeIcon icon={faChevronRight} width={14} />
-                  </Box>
-                ) : null}
-              </Flex>
-            </Button>
-          }
-        />
-      )
-    })
-  }
 
   if (!feeBreakdown) {
     if (isFetchingQuote) {
@@ -405,11 +360,6 @@ const FeeBreakdown: FC<Props> = ({
             }}
           >
             {breakdown.map((item) => {
-              const showNativeBridgeWarning =
-                item.title === 'Estimated time' &&
-                useExternalLiquidity &&
-                timeEstimate?.time &&
-                timeEstimate?.time > 86400
               return (
                 <React.Fragment key={item.title}>
                   <Flex
@@ -419,33 +369,13 @@ const FeeBreakdown: FC<Props> = ({
                   >
                     <Text
                       style="subtitle2"
-                      color={
-                        showNativeBridgeWarning ? 'warningSecondary' : 'subtle'
-                      }
+                      color={'subtle'}
                       css={{ alignSelf: 'flex-start' }}
                     >
                       {item.title}
                     </Text>
                     {item.value}
                   </Flex>
-                  {showNativeBridgeWarning ? (
-                    <Flex
-                      align="center"
-                      css={{
-                        gap: '2',
-                        py: '2',
-                        px: '3',
-                        backgroundColor: 'amber2',
-                        borderRadius: 12
-                      }}
-                    >
-                      <Text style="subtitle3" css={{ color: 'amber12' }}>
-                        Native bridge routes are expected to take{' '}
-                        {timeEstimate.formattedTime} but could be longer due to
-                        unexpected delays
-                      </Text>
-                    </Flex>
-                  ) : null}
                 </React.Fragment>
               )
             })}
