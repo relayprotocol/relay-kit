@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.4
+
+### Patch Changes
+
+- 09031d5: Fix mobile ux
+
 ## 6.0.3
 
 ### Patch Changes
