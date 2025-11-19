@@ -53,9 +53,9 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
       }}
       css={{
         overflow: 'hidden',
-        zIndex: 1000
+        zIndex: 10000001
       }}
-      overlayZIndex={10001}
+      overlayZIndex={10000001}
     >
       <Flex
         direction="column"

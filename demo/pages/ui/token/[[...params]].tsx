@@ -368,7 +368,7 @@ const TokenWidgetPage: NextPage = () => {
   return (
     <Layout
       styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
+        background: theme === 'light' ? 'white' : '#111113'
       }}
     >
       <Head>
