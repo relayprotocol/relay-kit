@@ -15,6 +15,7 @@ import type { LinkedWallet } from '../types/index.js'
 import type { RelayKitProviderProps } from '../providers/RelayKitProvider.js'
 import { isSuiAddress } from '../utils/sui.js'
 import { isTronAddress } from './tron.js'
+import { isLighterAddress } from './lighter.js'
 
 export const isValidAddress = (
   vmType?: ChainVM,
@@ -56,6 +57,8 @@ export const isValidAddress = (
       return isSuiAddress(address)
     } else if (vmType === 'tvm') {
       return isTronAddress(address)
+    } else if (vmType === 'lvm') {
+      return isLighterAddress(address)
     }
   }
   return false
