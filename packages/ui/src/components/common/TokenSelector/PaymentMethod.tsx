@@ -63,7 +63,6 @@ export type PaymentMethodProps = {
   linkedWallets?: any[]
   setToken: (token: Token) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
-  autoSelectToken?: boolean
 }
 
 const PaymentMethod: FC<PaymentMethodProps> = ({
@@ -80,8 +79,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   popularChainIds,
   linkedWallets,
   setToken,
-  onAnalyticEvent,
-  autoSelectToken = false
+  onAnalyticEvent
 }) => {
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
@@ -327,30 +325,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   }, [])
 
   useEffect(() => {
-    if (!autoSelectToken) {
-      return
-    }
-
-    if (
-      address &&
-      isValidAddress &&
-      !token &&
-      sortedUserTokens &&
-      sortedUserTokens.length > 0
-    ) {
-      const topToken = sortedUserTokens[0]
-      setToken(topToken)
-    }
-  }, [
-    address,
-    isValidAddress,
-    token,
-    sortedUserTokens,
-    setToken,
-    autoSelectToken
-  ])
-
-  useEffect(() => {
     if (open) {
       setStarredChainIds(getStarredChainIds())
     }
@@ -526,7 +500,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           size="none"
           onClick={() => onOpenChange(false)}
           css={{
-            p: '1',
+            py: '1',
+            px: '0',
             minWidth: 'auto',
             color: 'gray9',
             cursor: 'pointer',
@@ -534,12 +509,25 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
             '--focusColor': 'colors.focus-color',
             _focusVisible: {
               boxShadow: 'inset 0 0 0 2px var(--focusColor)'
+            },
+            '@media(min-width: 660px)': {
+              p: '0'
             }
           }}
         >
           <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
         </Button>
-        <Text style="subtitle2">
+        <Text
+          style="subtitle1"
+          css={{
+            color: 'text-subtle',
+            '@media(min-width: 660px)': {
+              fontSize: '14px',
+              color: 'text-default',
+              lineHeight: '20px'
+            }
+          }}
+        >
           {context === 'from' ? 'Pay with' : 'Sell to'}
         </Text>
       </Flex>
@@ -846,7 +834,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                p: '4'
+                py: '4'
               }}
             >
               {paymentMethodContent}

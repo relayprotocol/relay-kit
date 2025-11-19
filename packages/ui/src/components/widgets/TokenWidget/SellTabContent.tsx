@@ -90,7 +90,6 @@ type SellTabContentProps = SellChildrenPropsSubset & {
   onSlippageToleranceChange?: (value: string | undefined) => void
 
   // Input/output state
-  disableInputAutoFocus: boolean
   isUsdInputMode: boolean
   usdInputValue: string
   tradeType: TradeType
@@ -162,7 +161,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
   slippageTolerance,
   onOpenSlippageConfig,
   onSlippageToleranceChange,
-  disableInputAutoFocus,
   isUsdInputMode,
   usdInputValue,
   tradeType,
@@ -351,7 +349,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
         />
         <Flex align="center" justify="between" css={{ width: '100%' }}>
           <AmountInput
-            autoFocus={!disableInputAutoFocus}
             prefixSymbol={isUsdInputMode ? '$' : undefined}
             value={
               isUsdInputMode
@@ -634,19 +631,18 @@ const SellTabContent: FC<SellTabContentProps> = ({
               isValidAddress={isValidToAddress}
               token={toToken}
               onAnalyticEvent={onAnalyticEvent}
-              multiWalletSupportEnabled={multiWalletSupportEnabled}
-              fromChainWalletVMSupported={toChainWalletVMSupported}
-              supportedWalletVMs={supportedWalletVMs}
-              popularChainIds={popularChainIds}
-              chainIdsFilter={chainIdsFilterForDestination}
-              linkedWallets={linkedWallets}
-              context="to"
-              autoSelectToken={true}
-              setToken={(token) => {
-                if (
-                  token?.address === fromToken?.address &&
-                  token?.chainId === fromToken?.chainId &&
-                  recipient === address
+            multiWalletSupportEnabled={multiWalletSupportEnabled}
+            fromChainWalletVMSupported={toChainWalletVMSupported}
+            supportedWalletVMs={supportedWalletVMs}
+            popularChainIds={popularChainIds}
+            chainIdsFilter={chainIdsFilterForDestination}
+            linkedWallets={linkedWallets}
+            context="to"
+            setToken={(token) => {
+              if (
+                token?.address === fromToken?.address &&
+                token?.chainId === fromToken?.chainId &&
+                recipient === address
                 ) {
                   return
                 }

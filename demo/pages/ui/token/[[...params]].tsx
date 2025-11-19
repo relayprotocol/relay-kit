@@ -58,7 +58,7 @@ const TokenWidgetPage: NextPage = () => {
   const [hasInitialized, setHasInitialized] = useState(false)
 
   const { setWalletFilter } = useWalletFilter()
-  const { setShowAuthFlow, primaryWallet } = useDynamicContext()
+  const { setShowAuthFlow, primaryWallet, sdkHasLoaded } = useDynamicContext()
   const { theme } = useTheme()
   const [singleChainMode, setSingleChainMode] = useState(false)
   const [supportedWalletVMs, setSupportedWalletVMs] = useState<
@@ -79,6 +79,7 @@ const TokenWidgetPage: NextPage = () => {
       }
     | undefined
   >()
+  const walletsLoading = !sdkHasLoaded
 
   // Parse URL params for token
   const [urlTokenAddress, setUrlTokenAddress] = useState<string | undefined>()
@@ -368,7 +369,7 @@ const TokenWidgetPage: NextPage = () => {
   return (
     <Layout
       styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
+        background: theme === 'light' ? 'white' : '#111113'
       }}
     >
       <Head>
@@ -459,6 +460,7 @@ const TokenWidgetPage: NextPage = () => {
             wallet={wallet}
             multiWalletSupportEnabled={true}
             linkedWallets={linkedWallets}
+            walletsLoading={walletsLoading}
             onLinkNewWallet={({ chain, direction }) => {
               if (linkWalletPromise) {
                 linkWalletPromise.reject()

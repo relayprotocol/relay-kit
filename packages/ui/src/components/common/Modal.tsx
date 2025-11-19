@@ -34,7 +34,7 @@ export const Modal: FC<
 > = ({
   trigger,
   css,
-  overlayZIndex = 9999,
+  overlayZIndex = 10000000,
   showCloseButton = true,
   disableAnimation = false,
   children,

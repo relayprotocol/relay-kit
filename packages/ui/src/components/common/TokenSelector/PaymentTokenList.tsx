@@ -50,7 +50,15 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
           <Flex
             key={index}
             align="center"
-            css={{ gap: '2', p: '2', width: '100%' }}
+            css={{
+              gap: '2',
+              py: '2',
+              px: '0',
+              width: '100%',
+              '@media(min-width: 660px)': {
+                px: '2'
+              }
+            }}
           >
             <Skeleton
               css={{
@@ -91,9 +99,12 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                 css={{
                   gap: '2',
                   cursor: 'pointer',
-                  px: '2',
+                  px: '0',
                   py: '2',
                   transition: 'backdrop-filter 250ms linear',
+                  '@media(min-width: 660px)': {
+                    px: '2'
+                  },
                   _hover: {
                     backgroundColor: 'gray/10'
                   },
