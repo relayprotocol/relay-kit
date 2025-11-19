@@ -631,19 +631,18 @@ const SellTabContent: FC<SellTabContentProps> = ({
               isValidAddress={isValidToAddress}
               token={toToken}
               onAnalyticEvent={onAnalyticEvent}
-              multiWalletSupportEnabled={multiWalletSupportEnabled}
-              fromChainWalletVMSupported={toChainWalletVMSupported}
-              supportedWalletVMs={supportedWalletVMs}
-              popularChainIds={popularChainIds}
-              chainIdsFilter={chainIdsFilterForDestination}
-              linkedWallets={linkedWallets}
-              context="to"
-              autoSelectToken={true}
-              setToken={(token) => {
-                if (
-                  token?.address === fromToken?.address &&
-                  token?.chainId === fromToken?.chainId &&
-                  recipient === address
+            multiWalletSupportEnabled={multiWalletSupportEnabled}
+            fromChainWalletVMSupported={toChainWalletVMSupported}
+            supportedWalletVMs={supportedWalletVMs}
+            popularChainIds={popularChainIds}
+            chainIdsFilter={chainIdsFilterForDestination}
+            linkedWallets={linkedWallets}
+            context="to"
+            setToken={(token) => {
+              if (
+                token?.address === fromToken?.address &&
+                token?.chainId === fromToken?.chainId &&
+                recipient === address
                 ) {
                   return
                 }
