@@ -39,13 +39,13 @@ const Tooltip = ({
           sideOffset={2}
           side="bottom"
           align="center"
-          style={{ zIndex: 100, outline: 'none', maxWidth: '100vw' }}
+          style={{ zIndex: 10000003, outline: 'none', maxWidth: '100vw' }}
           {...props}
         >
           <Popover.Arrow className={PopoverArrow()} />
           <Box
             css={{
-              zIndex: 9999,
+              zIndex: 10000004,
               boxShadow: '0px 1px 5px rgba(0,0,0,0.2)',
               borderRadius: 8,
               overflow: 'hidden'
@@ -79,13 +79,13 @@ const Tooltip = ({
           sideOffset={2}
           side="bottom"
           align="center"
-          style={{ zIndex: 100 }}
+          style={{ zIndex: 10000003 }}
           {...props}
         >
           <div className={TooltipArrowStyle()}></div>
           <Box
             css={{
-              zIndex: 9999,
+              zIndex: 10000004,
               boxShadow: '0px 1px 5px rgba(0,0,0,0.2)',
               borderRadius: 8,
               overflow: 'hidden'
