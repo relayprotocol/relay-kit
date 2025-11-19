@@ -846,7 +846,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 background: 'widget-background',
                 display: 'flex',
                 flexDirection: 'column',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                py: '4'
               }}
             >
               {paymentMethodContent}
