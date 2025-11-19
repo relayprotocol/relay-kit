@@ -1349,7 +1349,6 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                               handleSlippageToleranceChange,
 
                             // Input/output state
-                            disableInputAutoFocus,
                             isUsdInputMode,
                             usdInputValue,
                             tradeType,

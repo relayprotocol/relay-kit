@@ -90,7 +90,6 @@ type SellTabContentProps = SellChildrenPropsSubset & {
   onSlippageToleranceChange?: (value: string | undefined) => void
 
   // Input/output state
-  disableInputAutoFocus: boolean
   isUsdInputMode: boolean
   usdInputValue: string
   tradeType: TradeType
@@ -162,7 +161,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
   slippageTolerance,
   onOpenSlippageConfig,
   onSlippageToleranceChange,
-  disableInputAutoFocus,
   isUsdInputMode,
   usdInputValue,
   tradeType,
@@ -351,7 +349,6 @@ const SellTabContent: FC<SellTabContentProps> = ({
         />
         <Flex align="center" justify="between" css={{ width: '100%' }}>
           <AmountInput
-            autoFocus={!disableInputAutoFocus}
             prefixSymbol={isUsdInputMode ? '$' : undefined}
             value={
               isUsdInputMode
