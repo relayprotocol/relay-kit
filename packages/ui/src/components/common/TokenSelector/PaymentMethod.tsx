@@ -63,7 +63,6 @@ export type PaymentMethodProps = {
   linkedWallets?: any[]
   setToken: (token: Token) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
-  autoSelectToken?: boolean
 }
 
 const PaymentMethod: FC<PaymentMethodProps> = ({
@@ -80,8 +79,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   popularChainIds,
   linkedWallets,
   setToken,
-  onAnalyticEvent,
-  autoSelectToken = false
+  onAnalyticEvent
 }) => {
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
@@ -325,30 +323,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   const handleChainStarToggle = useCallback(() => {
     setStarredChainIds(getStarredChainIds())
   }, [])
-
-  useEffect(() => {
-    if (!autoSelectToken) {
-      return
-    }
-
-    if (
-      address &&
-      isValidAddress &&
-      !token &&
-      sortedUserTokens &&
-      sortedUserTokens.length > 0
-    ) {
-      const topToken = sortedUserTokens[0]
-      setToken(topToken)
-    }
-  }, [
-    address,
-    isValidAddress,
-    token,
-    sortedUserTokens,
-    setToken,
-    autoSelectToken
-  ])
 
   useEffect(() => {
     if (open) {
