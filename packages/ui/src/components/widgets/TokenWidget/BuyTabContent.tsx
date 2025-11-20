@@ -277,9 +277,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
       <SectionContainer
         css={{
           border: { base: 'none', md: '1px solid' },
-          borderColor: { base: 'transparent', md: 'slate.4' },
-          minWidth: { base: '350px', md: '400px' },
-          maxWidth: '400px'
+          borderColor: { base: 'transparent', md: 'slate.4' }
         }}
         id={'buy-token-section'}
         isPaymentMethodOpen={isPaymentMethodOpen}
