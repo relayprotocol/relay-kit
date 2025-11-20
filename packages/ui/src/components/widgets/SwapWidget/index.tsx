@@ -748,7 +748,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       width: '100%',
                       overflow: 'hidden',
                       border: 'widget-border',
-                      minWidth: 300,
+                      minWidth: 320,
                       maxWidth: 408
                     }}
                   >

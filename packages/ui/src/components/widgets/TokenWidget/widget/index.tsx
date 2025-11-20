@@ -1196,7 +1196,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                           width: '100%',
                           overflow: 'hidden',
                           border: 'widget-border',
-                          minWidth: 300,
+                          minWidth: { base: 320, md: 400 },
                           maxWidth: 408
                         }}
                       >

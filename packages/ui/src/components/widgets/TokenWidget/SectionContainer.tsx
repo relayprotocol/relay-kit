@@ -23,15 +23,13 @@ const SectionContainer: FC<SectionContainerProps> = ({
       id={id}
       css={{
         width: '100%',
-        minWidth: '400px',
-        maxWidth: '400px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'start',
         backgroundColor: { base: 'transparent', md: 'widget-card-background' },
         border: 'widget-card-border',
         gap: '4',
-        paddingY: '16px',
+        paddingY: { base: '12px', md: '16px' },
         paddingX: { base: '0', md: '16px' },
         borderRadius: { base: '0', md: 'widget-card-border-radius' },
         minHeight: {
