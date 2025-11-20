@@ -38,12 +38,21 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
         minHeight: 42
       }}
     >
-      <Flex align="center" css={{ gap: '1' }}>
+      <Flex align="center" css={{ gap: '1', minWidth: 0 }}>
         {isLoading ? (
           <Skeleton css={{ width: 90, height: 20 }} />
         ) : amountUsd && Number(amountUsd) > 0 ? (
           <>
-            <Text style="h6" css={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+            <Text
+              style="h6"
+              css={{
+                textAlign: 'right',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0
+              }}
+            >
               {formatDollarCompact(Number(amountUsd))} total
             </Text>
             <FeeBreakdownTooltip
@@ -72,14 +81,26 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
             style="h6"
             css={{
               textAlign: 'right',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              lineHeight: 'normal'
+              lineHeight: 'normal',
+              minWidth: 0
             }}
           >
             $0 total
           </Text>
         ) : (
-          <Text style="h6" css={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+          <Text
+            style="h6"
+            css={{
+              textAlign: 'right',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0
+            }}
+          >
             - total
           </Text>
         )}
@@ -88,16 +109,46 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
         <Skeleton css={{ width: 70, height: 14 }} />
       ) : amountUsd && Number(amountUsd) > 0 ? (
         token && tokenAmountFormatted && Number(tokenAmountFormatted) > 0 ? (
-          <Text style="subtitle3" color="subtleSecondary">
+          <Text
+            style="subtitle3"
+            color="subtleSecondary"
+            css={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+              maxWidth: '100%'
+            }}
+          >
             {formatNumber(tokenAmountFormatted, 4, true)} {token.symbol}
           </Text>
         ) : token && fallbackTokenAmount && Number(fallbackTokenAmount) > 0 ? (
-          <Text style="subtitle3" color="subtleSecondary">
+          <Text
+            style="subtitle3"
+            color="subtleSecondary"
+            css={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+              maxWidth: '100%'
+            }}
+          >
             {formatNumber(fallbackTokenAmount, 4, true)} {token.symbol}
           </Text>
         ) : null
       ) : token ? (
-        <Text style="subtitle3" color="subtleSecondary">
+        <Text
+          style="subtitle3"
+          color="subtleSecondary"
+          css={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            minWidth: 0,
+            maxWidth: '100%'
+          }}
+        >
           0.00 {token.symbol}
         </Text>
       ) : null}

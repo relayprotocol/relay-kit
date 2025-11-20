@@ -63,6 +63,8 @@ export const useEnhancedTokensList = (
 
         // Construct the enhanced token with all required fields
         const chain = chains?.find((c) => c.id === currency.chainId)
+        const balanceKey = `${currency.chainId}:${currency.address.toLowerCase()}`
+        const balance = balanceMap?.[balanceKey]
 
         const enhancedToken: EnhancedToken = {
           chainId: currency.chainId,
@@ -73,7 +75,7 @@ export const useEnhancedTokensList = (
           logoURI: currency.metadata?.logoURI ?? '',
           verified: currency.metadata?.verified ?? false,
           vmType: currency.vmType,
-          balance: balanceMap?.[`${currency.chainId}:${currency.address}`],
+          balance,
           isGasCurrency:
             currency.chainId !== 1337 &&
             chainCurrencyMap.has(

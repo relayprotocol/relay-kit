@@ -13,6 +13,7 @@ import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { EventNames } from '../../../constants/events.js'
 import { isChainLocked } from '../../../utils/tokenSelector.js'
+import { useState } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './widget/TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -134,6 +135,9 @@ type BuyTabContentProps = ChildrenPropsSubset & {
   // Additional props not covered by ChildrenProps
   recipientLinkedWallet?: LinkedWallet
   toChainVmType?: string
+
+  // Payment method configuration
+  paymentMethodMinHeight?: string
 }
 
 const BuyTabContent: FC<BuyTabContentProps> = ({
@@ -215,8 +219,10 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   supportsExternalLiquidity,
   recipientLinkedWallet,
   toChainVmType,
-  ctaCopy
+  ctaCopy,
+  paymentMethodMinHeight = '85vh'
 }) => {
+  const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false)
   const displayCta = [
     'Swap',
     'Confirm',
@@ -271,11 +277,11 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
       <SectionContainer
         css={{
           border: { base: 'none', md: '1px solid' },
-          borderColor: { base: 'transparent', md: 'slate.4' },
-          minWidth: { base: '350px', md: '400px' },
-          maxWidth: '400px'
+          borderColor: { base: 'transparent', md: 'slate.4' }
         }}
         id={'buy-token-section'}
+        isPaymentMethodOpen={isPaymentMethodOpen}
+        paymentMethodMinHeight={paymentMethodMinHeight}
       >
         <AmountSectionHeader
           label="Amount"
@@ -476,6 +482,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 : undefined
             }
             popularChainIds={popularChainIds}
+            onPaymentMethodOpenChange={setIsPaymentMethodOpen}
             trigger={
               <div>
                 <PaymentMethodTrigger
