@@ -11,7 +11,7 @@ import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
-import { useMemo, useRef, useEffect } from 'react'
+import { useMemo, useRef, useEffect, useState } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './widget/TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -155,6 +155,9 @@ type SellTabContentProps = SellChildrenPropsSubset & {
   // Additional props not covered by ChildrenProps
   recipientLinkedWallet?: LinkedWallet
   toChainVmType?: string
+
+  // Payment method configuration
+  paymentMethodMinHeight?: string
 }
 
 const SellTabContent: FC<SellTabContentProps> = ({
@@ -243,8 +246,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
   popularChainIds,
   handleSetFromToken,
   handleSetToToken,
-  ctaCopy
+  ctaCopy,
+  paymentMethodMinHeight = '85vh'
 }) => {
+  const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false)
   const selectedPaymentVmType = useMemo(
     () => toChain?.vmType ?? toChainVmType,
     [toChain, toChainVmType]
@@ -339,6 +344,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
           maxWidth: '400px'
         }}
         id={'sell-token-section'}
+        isPaymentMethodOpen={isPaymentMethodOpen}
+        paymentMethodMinHeight={paymentMethodMinHeight}
       >
         <AmountSectionHeader
           label="Amount"
@@ -631,18 +638,19 @@ const SellTabContent: FC<SellTabContentProps> = ({
               isValidAddress={isValidToAddress}
               token={toToken}
               onAnalyticEvent={onAnalyticEvent}
-            multiWalletSupportEnabled={multiWalletSupportEnabled}
-            fromChainWalletVMSupported={toChainWalletVMSupported}
-            supportedWalletVMs={supportedWalletVMs}
-            popularChainIds={popularChainIds}
-            chainIdsFilter={chainIdsFilterForDestination}
-            linkedWallets={linkedWallets}
-            context="to"
-            setToken={(token) => {
-              if (
-                token?.address === fromToken?.address &&
-                token?.chainId === fromToken?.chainId &&
-                recipient === address
+              multiWalletSupportEnabled={multiWalletSupportEnabled}
+              fromChainWalletVMSupported={toChainWalletVMSupported}
+              supportedWalletVMs={supportedWalletVMs}
+              popularChainIds={popularChainIds}
+              chainIdsFilter={chainIdsFilterForDestination}
+              linkedWallets={linkedWallets}
+              context="to"
+              onPaymentMethodOpenChange={setIsPaymentMethodOpen}
+              setToken={(token) => {
+                if (
+                  token?.address === fromToken?.address &&
+                  token?.chainId === fromToken?.chainId &&
+                  recipient === address
                 ) {
                   return
                 }

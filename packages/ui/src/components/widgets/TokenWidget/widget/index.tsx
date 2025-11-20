@@ -61,6 +61,7 @@ type BaseTokenWidgetProps = {
   useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
   onOpenSlippageConfig?: () => void
   walletsLoading?: boolean
+  paymentMethodMinHeight?: string
   onFromTokenChange?: (token?: Token) => void
   onToTokenChange?: (token?: Token) => void
   onConnectWallet?: () => void
@@ -141,6 +142,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
   popularChainIds,
   disablePasteWalletAddressOption,
   useSecureBaseUrl,
+  paymentMethodMinHeight = '85vh',
   onSetPrimaryWallet,
   onLinkNewWallet,
   onFromTokenChange,
@@ -1383,7 +1385,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             // Event handling and misc
                             onAnalyticEvent,
                             toChainVmType: toChain?.vmType,
-                            ctaCopy
+                            ctaCopy,
+
+                            // Payment method configuration
+                            paymentMethodMinHeight
                           }}
                         />
 
@@ -1500,7 +1505,10 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                             // Event handling and misc
                             onAnalyticEvent,
                             toChainVmType: toChain?.vmType,
-                            ctaCopy
+                            ctaCopy,
+
+                            // Payment method configuration
+                            paymentMethodMinHeight
                           }}
                         />
 
