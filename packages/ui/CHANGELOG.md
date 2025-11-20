@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.5
+
+### Patch Changes
+
+- b59d911: Mobile payment selector improvments
+
 ## 6.0.4
 
 ### Patch Changes
