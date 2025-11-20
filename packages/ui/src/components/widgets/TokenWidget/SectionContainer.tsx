@@ -2,9 +2,20 @@ import { type FC, type PropsWithChildren } from 'react'
 import { Flex } from '../../primitives/index.js'
 import { type Styles } from '@relayprotocol/relay-design-system/css'
 
-const SectionContainer: FC<
-  PropsWithChildren & { css?: Styles; id?: string }
-> = ({ children, css, id }) => {
+type SectionContainerProps = PropsWithChildren & {
+  css?: Styles
+  id?: string
+  isPaymentMethodOpen?: boolean
+  paymentMethodMinHeight?: string
+}
+
+const SectionContainer: FC<SectionContainerProps> = ({
+  children,
+  css,
+  id,
+  isPaymentMethodOpen = false,
+  paymentMethodMinHeight = '85vh'
+}) => {
   return (
     <Flex
       align="center"
@@ -23,6 +34,10 @@ const SectionContainer: FC<
         paddingY: '16px',
         paddingX: { base: '0', md: '16px' },
         borderRadius: { base: '0', md: 'widget-card-border-radius' },
+        minHeight: {
+          base: isPaymentMethodOpen ? paymentMethodMinHeight : 'auto',
+          md: 'auto'
+        },
         ...css
       }}
     >

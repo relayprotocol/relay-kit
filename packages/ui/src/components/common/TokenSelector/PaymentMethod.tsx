@@ -63,6 +63,7 @@ export type PaymentMethodProps = {
   linkedWallets?: any[]
   setToken: (token: Token) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
+  onPaymentMethodOpenChange?: (open: boolean) => void
 }
 
 const PaymentMethod: FC<PaymentMethodProps> = ({
@@ -79,7 +80,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   popularChainIds,
   linkedWallets,
   setToken,
-  onAnalyticEvent
+  onAnalyticEvent,
+  onPaymentMethodOpenChange
 }) => {
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
@@ -392,6 +394,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       }
 
       setOpen(openChange)
+      onPaymentMethodOpenChange?.(openChange)
     },
     [
       tokenBalances,
@@ -402,7 +405,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       setOpen,
       chainFilterOptions,
       depositAddressOnly,
-      token
+      token,
+      onPaymentMethodOpenChange
     ]
   )
 
