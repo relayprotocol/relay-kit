@@ -1,5 +1,16 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.6
+
+### Patch Changes
+
+- a95b32d: Remove extra border on fee breakdown ui
+- 69fcdb7: Remove canonical logic and ui
+- 1ed92a5: Add lighter vm and enable destination txs
+- Updated dependencies [1ed92a5]
+  - @relayprotocol/relay-sdk@3.1.1
+  - @relayprotocol/relay-kit-hooks@2.0.9
+
 ## 6.0.5
 
 ### Patch Changes
