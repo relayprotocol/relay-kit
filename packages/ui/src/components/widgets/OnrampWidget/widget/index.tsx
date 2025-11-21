@@ -1,4 +1,4 @@
-import type { Dispatch, FC } from 'react'
+import type { FC } from 'react'
 import OnrampWidgetRenderer from './OnrampWidgetRenderer.js'
 import { Box, Button, Flex, Text } from '../../../primitives/index.js'
 import AmountInput from '../../../common/AmountInput.js'
@@ -25,7 +25,7 @@ import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.j
 
 type BaseOnrampWidgetProps = {
   defaultWalletAddress?: string
-  supportedWalletVMs: Omit<ChainVM, 'hypevm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   moonPayApiKey: string
   moonPayThemeId?: string
   moonPayThemeMode?: 'dark' | 'light'
@@ -200,7 +200,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
         return (
           <div
             className="relay-kit-reset"
-            style={{ maxWidth: 408, minWidth: 308, width: '100%' }}
+            style={{ maxWidth: 408, minWidth: 320, width: '100%' }}
           >
             <Flex
               direction="column"

@@ -62,7 +62,7 @@ type BaseSwapWidgetProps = {
   lockChainId?: number
   singleChainMode?: boolean
   wallet?: AdaptedWallet
-  supportedWalletVMs: Omit<ChainVM, 'hypevm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   disableInputAutoFocus?: boolean
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean
@@ -741,7 +741,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       width: '100%',
                       overflow: 'hidden',
                       border: 'widget-border',
-                      minWidth: 300,
+                      minWidth: 320,
                       maxWidth: 408
                     }}
                   >

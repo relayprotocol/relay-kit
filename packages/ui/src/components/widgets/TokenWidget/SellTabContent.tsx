@@ -11,7 +11,7 @@ import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
-import { useMemo, useRef, useEffect } from 'react'
+import { useMemo, useRef, useEffect, useState } from 'react'
 import type { Dispatch, FC, SetStateAction } from 'react'
 import type { TradeType, ChildrenProps } from './widget/TokenWidgetRenderer.js'
 import type { Token, LinkedWallet } from '../../../types/index.js'
@@ -154,6 +154,9 @@ type SellTabContentProps = SellChildrenPropsSubset & {
   // Additional props not covered by ChildrenProps
   recipientLinkedWallet?: LinkedWallet
   toChainVmType?: string
+
+  // Payment method configuration
+  paymentMethodMinHeight?: string
 }
 
 const SellTabContent: FC<SellTabContentProps> = ({
@@ -241,8 +244,10 @@ const SellTabContent: FC<SellTabContentProps> = ({
   popularChainIds,
   handleSetFromToken,
   handleSetToToken,
-  ctaCopy
+  ctaCopy,
+  paymentMethodMinHeight = '85vh'
 }) => {
+  const [isPaymentMethodOpen, setIsPaymentMethodOpen] = useState(false)
   const selectedPaymentVmType = useMemo(
     () => toChain?.vmType ?? toChainVmType,
     [toChain, toChainVmType]
@@ -332,11 +337,11 @@ const SellTabContent: FC<SellTabContentProps> = ({
       <SectionContainer
         css={{
           border: { base: 'none', md: '1px solid' },
-          borderColor: { base: 'transparent', md: 'slate.4' },
-          minWidth: { base: '350px', md: '400px' },
-          maxWidth: '400px'
+          borderColor: { base: 'transparent', md: 'slate.4' }
         }}
         id={'sell-token-section'}
+        isPaymentMethodOpen={isPaymentMethodOpen}
+        paymentMethodMinHeight={paymentMethodMinHeight}
       >
         <AmountSectionHeader
           label="Amount"
@@ -636,6 +641,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
               chainIdsFilter={chainIdsFilterForDestination}
               linkedWallets={linkedWallets}
               context="to"
+              onPaymentMethodOpenChange={setIsPaymentMethodOpen}
               setToken={(token) => {
                 if (
                   token?.address === fromToken?.address &&

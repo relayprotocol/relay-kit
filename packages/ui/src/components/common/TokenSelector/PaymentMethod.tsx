@@ -58,11 +58,12 @@ export type PaymentMethodProps = {
   isValidAddress?: boolean
   multiWalletSupportEnabled?: boolean
   fromChainWalletVMSupported?: boolean
-  supportedWalletVMs?: Omit<ChainVM, 'hypevm'>[]
+  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   popularChainIds?: number[]
   linkedWallets?: any[]
   setToken: (token: Token) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
+  onPaymentMethodOpenChange?: (open: boolean) => void
 }
 
 const PaymentMethod: FC<PaymentMethodProps> = ({
@@ -79,7 +80,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   popularChainIds,
   linkedWallets,
   setToken,
-  onAnalyticEvent
+  onAnalyticEvent,
+  onPaymentMethodOpenChange
 }) => {
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
@@ -196,14 +198,20 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   )
 
   const filteredDuneTokenBalances = useMemo(() => {
-    return duneTokens?.balances?.filter((balance) =>
-      configuredChainIds.includes(balance.chain_id)
-    )
-  }, [duneTokens?.balances, configuredChainIds])
+    return duneTokens?.balances
+  }, [duneTokens?.balances])
 
   const userTokensQuery = useMemo(() => {
     if (filteredDuneTokenBalances && filteredDuneTokenBalances.length > 0) {
-      return filteredDuneTokenBalances.map(
+      const sortedBalances = [...filteredDuneTokenBalances]
+        .sort((a, b) => {
+          const aValue = a.value_usd || 0
+          const bValue = b.value_usd || 0
+          return bValue - aValue
+        })
+        .slice(0, 50)
+
+      return sortedBalances.map(
         (balance) => `${balance.chain_id}:${balance.address}`
       )
     }
@@ -392,6 +400,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       }
 
       setOpen(openChange)
+      onPaymentMethodOpenChange?.(openChange)
     },
     [
       tokenBalances,
@@ -402,7 +411,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       setOpen,
       chainFilterOptions,
       depositAddressOnly,
-      token
+      token,
+      onPaymentMethodOpenChange
     ]
   )
 
@@ -506,6 +516,9 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
             color: 'gray9',
             cursor: 'pointer',
             borderRadius: 8,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1',
             '--focusColor': 'colors.focus-color',
             _focusVisible: {
               boxShadow: 'inset 0 0 0 2px var(--focusColor)'
@@ -516,20 +529,20 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           }}
         >
           <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
+          <Text
+            style="subtitle1"
+            css={{
+              color: 'text-subtle',
+              '@media(min-width: 660px)': {
+                fontSize: '14px',
+                color: 'text-default',
+                lineHeight: '20px'
+              }
+            }}
+          >
+            {context === 'from' ? 'Pay with' : 'Sell to'}
+          </Text>
         </Button>
-        <Text
-          style="subtitle1"
-          css={{
-            color: 'text-subtle',
-            '@media(min-width: 660px)': {
-              fontSize: '14px',
-              color: 'text-default',
-              lineHeight: '20px'
-            }
-          }}
-        >
-          {context === 'from' ? 'Pay with' : 'Sell to'}
-        </Text>
       </Flex>
 
       <Flex
@@ -833,8 +846,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 background: 'widget-background',
                 display: 'flex',
                 flexDirection: 'column',
-                overflow: 'hidden',
-                py: '4'
+                overflow: 'hidden'
               }}
             >
               {paymentMethodContent}

@@ -344,9 +344,7 @@ const FeeBreakdown: FC<Props> = ({
         </CollapsibleTrigger>
         <CollapsibleContent
           css={{
-            borderRadius: '0 0 12px 12px',
-            border: 'widget-card-border',
-            borderTop: 'none'
+            borderRadius: '0 0 12px 12px'
           }}
         >
           <Flex
