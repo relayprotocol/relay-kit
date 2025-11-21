@@ -6,14 +6,7 @@ import {
   useMemo,
   useState
 } from 'react'
-import {
-  Flex,
-  Text,
-  Input,
-  Box,
-  Button,
-  ChainIcon
-} from '../../primitives/index.js'
+import { Flex, Text, Input, Box, Button } from '../../primitives/index.js'
 import { Modal } from '../Modal.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -24,14 +17,13 @@ import {
 import type { Token } from '../../../types/index.js'
 import { type ChainFilterValue } from './ChainFilter.js'
 import useRelayClient from '../../../hooks/useRelayClient.js'
-import { isAddress, type Address } from 'viem'
+import { type Address } from 'viem'
 import { useDebounceState, useDuneBalances } from '../../../hooks/index.js'
 import { useMediaQuery } from 'usehooks-ts'
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../../constants/events.js'
 import { UnverifiedTokenModal } from '../UnverifiedTokenModal.js'
 import { useEnhancedTokensList } from '../../../hooks/useEnhancedTokensList.js'
-import ChainFilter from './ChainFilter.js'
 import { TokenList } from './TokenList.js'
 import { UnsupportedDepositAddressChainIds } from '../../../constants/depositAddresses.js'
 import { getRelayUiKitData } from '../../../utils/localStorage.js'
