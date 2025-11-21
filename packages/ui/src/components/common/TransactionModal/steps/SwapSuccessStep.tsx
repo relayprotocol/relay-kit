@@ -40,7 +40,6 @@ type SwapSuccessStepProps = {
   seconds: number
   fillTime: string
   timeEstimate?: string
-  isCanonical?: boolean
   details?: Execute['details'] | null
   isLoadingTransaction?: boolean
   onOpenChange: (open: boolean) => void
@@ -59,7 +58,6 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   fillTime,
   seconds,
   timeEstimate,
-  isCanonical,
   details,
   isLoadingTransaction,
   onOpenChange,
@@ -122,16 +120,11 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   // Show delayed screen when:
   // 1. Bitcoin as origin: Immediately (no status check needed, tx takes 10+ mins)
   // 2. Bitcoin as destination: When status reaches 'submitted'
-  // 3. Canonical routes: When time estimate exceeds polling timeout
+
   const isDelayedTx =
     isBitcoinOrigin ||
     (isBitcoinDestination &&
-      (currentCheckStatus === 'submitted' ||
-        currentCheckStatus === 'success')) ||
-    (isCanonical &&
-      timeEstimateMs >
-        (relayClient?.maxPollingAttemptsBeforeTimeout ?? 30) *
-          (relayClient?.pollingInterval ?? 5000))
+      (currentCheckStatus === 'submitted' || currentCheckStatus === 'success'))
 
   // Bitcoin transactions typically take 10+ minutes for confirmation
   const estimatedMinutes =

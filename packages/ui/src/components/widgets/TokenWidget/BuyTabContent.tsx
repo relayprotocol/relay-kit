@@ -75,7 +75,6 @@ type ChildrenPropsSubset = Pick<
   | 'highRelayerServiceFee'
   | 'isCapacityExceededError'
   | 'isCouldNotExecuteError'
-  | 'supportsExternalLiquidity'
   | 'ctaCopy'
 >
 
@@ -216,7 +215,6 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   highRelayerServiceFee,
   isCapacityExceededError,
   isCouldNotExecuteError,
-  supportsExternalLiquidity,
   recipientLinkedWallet,
   toChainVmType,
   ctaCopy,
@@ -572,7 +570,6 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             isHighRelayerServiceFee={highRelayerServiceFee}
             isCapacityExceededError={isCapacityExceededError}
             isCouldNotExecuteError={isCouldNotExecuteError}
-            supportsExternalLiquidity={supportsExternalLiquidity}
             recipientWalletSupportsChain={recipientWalletSupportsChain}
             recipient={recipient}
             toChainWalletVMSupported={toChainWalletVMSupported}

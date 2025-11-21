@@ -20,7 +20,6 @@ type Props = {
   isHighRelayerServiceFee?: boolean
   isCapacityExceededError?: boolean
   isCouldNotExecuteError?: boolean
-  supportsExternalLiquidity?: boolean
   containerCss?: Styles
   recipientWalletSupportsChain?: boolean | null
   recipient?: string
@@ -38,7 +37,6 @@ export const WidgetErrorWell: FC<Props> = ({
   isHighRelayerServiceFee,
   isCapacityExceededError,
   isCouldNotExecuteError,
-  supportsExternalLiquidity,
   containerCss,
   recipientWalletSupportsChain,
   recipient,
@@ -114,85 +112,29 @@ export const WidgetErrorWell: FC<Props> = ({
   }
 
   if (fetchQuoteErrorMessage && !quote) {
-    if (isCapacityExceededError && supportsExternalLiquidity && currency) {
-      return (
-        <Flex
-          align="center"
-          css={{
-            gap: '2',
-            p: '3',
-            backgroundColor: 'amber2',
-            '--borderColor': 'colors.amber4',
-            border: '1px solid var(--borderColor)',
-            borderRadius: 12,
-            mb: '3',
-            ...containerCss
-          }}
-          id={'widget-error-well-section'}
-        >
-          <Box css={{ color: 'amber9' }}>
-            <FontAwesomeIcon icon={faExclamationCircle} width={16} />
-          </Box>
-          <Text style="subtitle3" css={{ color: 'amber12' }}>
-            Due to high demand the input amount can only be bridged natively.
-            Reduce the amount to bridge instantly or switch to the native route
-            for unlimited capacity.
-          </Text>
-        </Flex>
-      )
-    } else if (
-      supportsExternalLiquidity &&
-      isCouldNotExecuteError &&
-      currency
-    ) {
-      return (
-        <Flex
-          align="center"
-          css={{
-            gap: '2',
-            p: '3',
-            backgroundColor: 'red2',
-            '--borderColor': 'colors.red4',
-            border: '1px solid var(--borderColor)',
-            borderRadius: 12,
-            mb: '3',
-            ...containerCss
-          }}
-          id={'widget-error-well-section'}
-        >
-          <Box css={{ color: 'red10' }}>
-            <FontAwesomeIcon icon={faExclamationCircle} width={16} />
-          </Box>
-          <Text style="subtitle3" css={{ color: 'red12' }}>
-            {fetchQuoteErrorMessage} Please switch to the native route.
-          </Text>
-        </Flex>
-      )
-    } else {
-      return (
-        <Flex
-          align="center"
-          css={{
-            gap: '2',
-            p: '3',
-            backgroundColor: 'red2',
-            '--borderColor': 'colors.red4',
-            border: '1px solid var(--borderColor)',
-            borderRadius: 12,
-            mb: '3',
-            ...containerCss
-          }}
-          id={'widget-error-well-section'}
-        >
-          <Box css={{ color: 'red10' }}>
-            <FontAwesomeIcon icon={faExclamationCircle} width={16} />
-          </Box>
-          <Text style="subtitle3" css={{ color: 'red12' }}>
-            {fetchQuoteErrorMessage}
-          </Text>
-        </Flex>
-      )
-    }
+    return (
+      <Flex
+        align="center"
+        css={{
+          gap: '2',
+          p: '3',
+          backgroundColor: 'red2',
+          '--borderColor': 'colors.red4',
+          border: '1px solid var(--borderColor)',
+          borderRadius: 12,
+          mb: '3',
+          ...containerCss
+        }}
+        id={'widget-error-well-section'}
+      >
+        <Box css={{ color: 'red10' }}>
+          <FontAwesomeIcon icon={faExclamationCircle} width={16} />
+        </Box>
+        <Text style="subtitle3" css={{ color: 'red12' }}>
+          {fetchQuoteErrorMessage}
+        </Text>
+      </Flex>
+    )
   }
 
   if (hasInsufficientBalance) {

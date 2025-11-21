@@ -38,7 +38,7 @@ import {
   addressWithFallback,
   isValidAddress
 } from '../../../../utils/address.js'
-import { adaptViemWallet, getDeadAddress } from '@relayprotocol/relay-sdk'
+import { adaptViemWallet } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../../../utils/errors.js'
 import { useSwapButtonCta } from '../../../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../../../utils/hashing.js'
@@ -130,12 +130,8 @@ export type ChildrenProps = {
   isCouldNotExecuteError?: boolean
   ctaCopy: string
   isFromNative: boolean
-  useExternalLiquidity: boolean
   slippageTolerance?: string
-  supportsExternalLiquidity: boolean
   timeEstimate?: { time: number; formattedTime: string }
-  canonicalTimeEstimate?: { time: number; formattedTime: string }
-  fetchingExternalLiquiditySupport: boolean
   isSvmSwap: boolean
   isBvmSwap: boolean
   isValidFromAddress: boolean
@@ -151,7 +147,6 @@ export type ChildrenProps = {
   quoteParameters?: Parameters<typeof useQuote>['2']
   invalidateBalanceQueries: () => void
   invalidateQuoteQuery: () => void
-  setUseExternalLiquidity: Dispatch<React.SetStateAction<boolean>>
   setDetails: Dispatch<React.SetStateAction<Execute['details'] | null>>
   setSwapError: Dispatch<React.SetStateAction<Error | null>>
   abortController: AbortController | null
@@ -223,8 +218,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     useState<boolean>(false)
   const [allowUnsupportedRecipient, setAllowUnsupportedRecipient] =
     useState<boolean>(false)
-  const [useExternalLiquidity, setUseExternalLiquidity] =
-    useState<boolean>(false)
   const defaultAddress = useWalletAddress(wallet, linkedWallets)
 
   const [tradeType, setTradeType] = useState<'EXACT_INPUT' | 'EXPECTED_OUTPUT'>(
@@ -260,10 +253,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   )
 
   const [swapError, setSwapError] = useState<Error | null>(null)
-  const tokenPairIsCanonical =
-    fromToken?.chainId !== undefined &&
-    toToken?.chainId !== undefined &&
-    fromToken.symbol === toToken.symbol
 
   const toChain = useMemo(
     () => relayClient?.chains?.find((chain) => chain.id === toToken?.chainId),
@@ -525,44 +514,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     toChain?.id
   )
 
-  const externalLiquiditySupport = useQuote(
-    relayClient ? relayClient : undefined,
-    wallet,
-    fromToken && toToken
-      ? {
-          user: getDeadAddress(fromChain?.vmType, fromChain?.id),
-          originChainId: fromToken.chainId,
-          destinationChainId: toToken.chainId,
-          originCurrency: fromToken.address,
-          destinationCurrency: toToken.address,
-          recipient: getDeadAddress(toChain?.vmType, toChain?.id),
-          tradeType,
-          appFees: providerOptionsContext.appFees,
-          amount: '10000000000000000000000', //Hardcode an extremely high number
-          referrer: relayClient?.source ?? undefined,
-          useExternalLiquidity: true
-        }
-      : undefined,
-    undefined,
-    undefined,
-    {
-      refetchOnWindowFocus: false,
-      enabled:
-        fromToken !== undefined &&
-        toToken !== undefined &&
-        fromChain &&
-        toChain &&
-        (fromChain.id === toChain.baseChainId ||
-          toChain.id === fromChain.baseChainId)
-    }
-  )
-  const supportsExternalLiquidity =
-    tokenPairIsCanonical &&
-    externalLiquiditySupport.status === 'success' &&
-    fromChainWalletVMSupported
-      ? true
-      : false
-
   const { displayName: toDisplayName } = useENSResolver(recipient, {
     enabled: toChain?.vmType === 'evm' && isValidToAddress
   })
@@ -654,7 +605,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
                   toToken.decimals
                 ).toString(),
           referrer: relayClient?.source ?? undefined,
-          useExternalLiquidity,
           useDepositAddress:
             !fromChainWalletVMSupported || fromToken?.chainId === 1337,
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
@@ -824,20 +774,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     debouncedAmountOutputControls.flush()
   }, [quote, tradeType])
 
-  useEffect(() => {
-    if (
-      useExternalLiquidity &&
-      !externalLiquiditySupport.isFetching &&
-      !supportsExternalLiquidity
-    ) {
-      setUseExternalLiquidity(false)
-    }
-  }, [
-    supportsExternalLiquidity,
-    useExternalLiquidity,
-    externalLiquiditySupport.isFetching
-  ])
-
   const feeBreakdown = useMemo(() => {
     const chains = relayClient?.chains
     const fromChain = chains?.find((chain) => chain.id === fromToken?.chainId)
@@ -880,9 +816,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   const highRelayerServiceFee = isHighRelayerServiceFeeUsd(quote)
   const relayerFeeProportion = calculateRelayerFeeProportionUsd(quote)
   const timeEstimate = calculatePriceTimeEstimate(quote?.details)
-  const canonicalTimeEstimate = calculatePriceTimeEstimate(
-    externalLiquiditySupport.data?.details
-  )
 
   const recipientWalletSupportsChain = useIsWalletCompatible(
     toChain?.id,
@@ -916,8 +849,8 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   })
 
   usePreviousValueChange(
-    isCapacityExceededError && supportsExternalLiquidity,
-    !isFetchingQuote && !externalLiquiditySupport.isFetching,
+    isCapacityExceededError,
+    !isFetchingQuote,
     (capacityExceeded) => {
       if (capacityExceeded) {
         onAnalyticEvent?.(EventNames.CTA_MAX_CAPACITY_PROMPTED, {
@@ -1206,7 +1139,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     debouncedInputAmountValue,
     debouncedOutputAmountValue,
     tradeType,
-    useExternalLiquidity,
     waitingForSteps,
     executeSwap,
     setSteps,
@@ -1271,12 +1203,8 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
         isCouldNotExecuteError,
         ctaCopy,
         isFromNative,
-        useExternalLiquidity,
         slippageTolerance: currentSlippageTolerance,
-        supportsExternalLiquidity,
         timeEstimate,
-        canonicalTimeEstimate,
-        fetchingExternalLiquiditySupport: externalLiquiditySupport.isFetching,
         isSvmSwap,
         isBvmSwap,
         isValidFromAddress,
@@ -1288,7 +1216,6 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
         recipientWalletSupportsChain,
         invalidateBalanceQueries,
         invalidateQuoteQuery,
-        setUseExternalLiquidity,
         setDetails,
         setSwapError,
         quoteInProgress,
