@@ -28,8 +28,6 @@ type TransactionModalProps = {
   fromToken?: Token
   toToken?: Token
   address?: Address | string
-  isCanonical?: boolean
-  useExternalLiquidity: boolean
   slippageTolerance?: string
   wallet?: AdaptedWallet
   linkedWallets?: LinkedWallet[]
@@ -59,9 +57,7 @@ export const TransactionModal: FC<TransactionModalProps> = (
     address,
     fromToken,
     toToken,
-    useExternalLiquidity,
     slippageTolerance,
-    isCanonical,
     wallet,
     onOpenChange,
     onAnalyticEvent,
@@ -131,7 +127,6 @@ export const TransactionModal: FC<TransactionModalProps> = (
           currency_out_address: details?.currencyOut?.currency?.address,
           currency_out_decimals: toToken?.decimals,
           currency_out_usd: details?.currencyOut?.amountUsd,
-          is_canonical: useExternalLiquidity,
           quote_id: quoteId,
           txHashes: steps
             ?.map((step) => {
@@ -165,7 +160,6 @@ export const TransactionModal: FC<TransactionModalProps> = (
           <InnerTransactionModal
             address={address}
             onAnalyticEvent={onAnalyticEvent}
-            isCanonical={isCanonical}
             {...transactionModalProps}
             {...rendererProps}
           />
@@ -200,7 +194,6 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
   seconds,
   onAnalyticEvent,
   timeEstimate,
-  isCanonical,
   fromChain,
   toChain,
   isLoadingTransaction,
@@ -302,7 +295,6 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
             seconds={seconds ?? 0}
             onOpenChange={onOpenChange}
             timeEstimate={timeEstimate?.formattedTime}
-            isCanonical={isCanonical}
             details={details}
             isLoadingTransaction={isLoadingTransaction}
             requestId={requestId}

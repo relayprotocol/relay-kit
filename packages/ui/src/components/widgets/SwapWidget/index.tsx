@@ -33,7 +33,6 @@ import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import { findSupportedWallet } from '../../../utils/address.js'
 import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
-import SwapRouteSelector from '../SwapRouteSelector.js'
 import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
 import { findBridgableToken } from '../../../utils/tokens.js'
 import { isChainLocked } from '../../../utils/tokenSelector.js'
@@ -239,10 +238,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         isBvmSwap,
         isValidFromAddress,
         isValidToAddress,
-        supportsExternalLiquidity,
-        useExternalLiquidity,
         slippageTolerance,
-        canonicalTimeEstimate,
         fromChainWalletVMSupported,
         toChainWalletVMSupported,
         isRecipientLinked,
@@ -257,7 +253,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         linkedWallet,
         quoteParameters,
         setSwapError,
-        setUseExternalLiquidity,
         invalidateBalanceQueries,
         invalidateQuoteQuery,
         quoteInProgress,
@@ -426,11 +421,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
             setCustomToAddress(undefined)
           }
         }, [disablePasteWalletAddressOption])
-
-        const promptSwitchRoute =
-          (isCapacityExceededError || isCouldNotExecuteError) &&
-          supportsExternalLiquidity &&
-          !isSingleChainLocked
 
         const isAutoSlippage = slippageTolerance === undefined
 
@@ -719,7 +709,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                   setPendingSuccessFlush(false)
                 }
               }}
-              useExternalLiquidity={useExternalLiquidity}
               slippageTolerance={slippageTolerance}
               swapError={swapError}
               setSwapError={setSwapError}
@@ -1467,34 +1456,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                         </Flex>
                       </Flex>
                     </TokenSelectorContainer>
-                    {error &&
-                    !isFetchingQuote &&
-                    !isSingleChainLocked &&
-                    fromChainWalletVMSupported ? (
-                      <Box
-                        css={{
-                          borderRadius: 'widget-card-border-radius',
-                          backgroundColor: 'widget-background',
-                          border: 'widget-card-border',
-                          overflow: 'hidden',
-                          mb: 'widget-card-section-gutter'
-                        }}
-                        id={'swap-route-selection-section'}
-                      >
-                        <SwapRouteSelector
-                          chain={toChain}
-                          supportsExternalLiquidity={supportsExternalLiquidity}
-                          externalLiquidtySelected={useExternalLiquidity}
-                          canonicalTimeEstimate={
-                            canonicalTimeEstimate?.formattedTime
-                          }
-                          onExternalLiquidityChange={(selected) => {
-                            setUseExternalLiquidity(selected)
-                          }}
-                          error={error}
-                        />
-                      </Box>
-                    ) : null}
                     <FeeBreakdown
                       feeBreakdown={feeBreakdown}
                       isFetchingQuote={isFetchingQuote}
@@ -1502,18 +1463,9 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       fromToken={fromToken}
                       quote={quote}
                       timeEstimate={timeEstimate}
-                      supportsExternalLiquidity={supportsExternalLiquidity}
-                      useExternalLiquidity={useExternalLiquidity}
                       isAutoSlippage={isAutoSlippage}
                       slippageInputBps={slippageTolerance}
                       toChain={toChain}
-                      setUseExternalLiquidity={(enabled) => {
-                        setUseExternalLiquidity(enabled)
-                        onAnalyticEvent?.(EventNames.SWAP_ROUTE_SELECTED, {
-                          route: enabled ? 'canonical' : 'relay'
-                        })
-                      }}
-                      canonicalTimeEstimate={canonicalTimeEstimate}
                       isSingleChainLocked={isSingleChainLocked}
                       fromChainWalletVMSupported={fromChainWalletVMSupported}
                       error={error}
@@ -1530,7 +1482,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       isCapacityExceededError={isCapacityExceededError}
                       isCouldNotExecuteError={isCouldNotExecuteError}
                       relayerFeeProportion={relayerFeeProportion}
-                      supportsExternalLiquidity={supportsExternalLiquidity}
                       containerCss={{
                         mb: 'widget-card-section-gutter'
                       }}
@@ -1542,118 +1493,102 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       recipientLinkedWallet={recipientLinkedWallet}
                       toChainVmType={toChain?.vmType}
                     />
-                    {promptSwitchRoute ? (
-                      <Button
-                        color="primary"
-                        cta={true}
-                        css={{ flexGrow: '1', justifyContent: 'center' }}
-                        onClick={() => {
-                          setUseExternalLiquidity(true)
-                          onAnalyticEvent?.(EventNames.CTA_SWITCH_ROUTE_CLICKED)
-                        }}
-                      >
-                        Switch Route
-                      </Button>
-                    ) : (
-                      <SwapButton
-                        isFetchingQuote={isFetchingQuote}
-                        transactionModalOpen={transactionModalOpen}
-                        depositAddressModalOpen={depositAddressModalOpen}
-                        isValidFromAddress={isValidFromAddress}
-                        isValidToAddress={isValidToAddress}
-                        fromChainWalletVMSupported={fromChainWalletVMSupported}
-                        context={'Swap'}
-                        showHighPriceImpactWarning={showHighPriceImpactWarning}
-                        onConnectWallet={onConnectWallet}
-                        onAnalyticEvent={onAnalyticEvent}
-                        quote={quote}
-                        address={address}
-                        hasInsufficientBalance={hasInsufficientBalance}
-                        isInsufficientLiquidityError={
-                          isInsufficientLiquidityError
-                        }
-                        recipientWalletSupportsChain={
-                          recipientWalletSupportsChain
-                        }
-                        debouncedInputAmountValue={debouncedInputAmountValue}
-                        debouncedOutputAmountValue={debouncedOutputAmountValue}
-                        isSameCurrencySameRecipientSwap={
-                          isSameCurrencySameRecipientSwap
-                        }
-                        onClick={() => {
-                          if (fromChainWalletVMSupported) {
-                            if (!isValidToAddress || !isValidFromAddress) {
-                              if (
-                                multiWalletSupportEnabled &&
-                                (isValidToAddress ||
-                                  (!isValidToAddress &&
-                                    toChainWalletVMSupported))
-                              ) {
-                                const chain = !isValidFromAddress
-                                  ? fromChain
-                                  : toChain
-                                if (!address) {
-                                  onConnectWallet?.()
-                                } else {
-                                  onLinkNewWallet?.({
-                                    chain: chain,
-                                    direction: !isValidFromAddress
-                                      ? 'from'
-                                      : 'to'
-                                  })?.then((wallet) => {
-                                    if (!isValidFromAddress) {
-                                      onSetPrimaryWallet?.(wallet.address)
-                                    } else {
-                                      setCustomToAddress(wallet.address)
-                                    }
-                                  })
-                                }
+
+                    <SwapButton
+                      isFetchingQuote={isFetchingQuote}
+                      transactionModalOpen={transactionModalOpen}
+                      depositAddressModalOpen={depositAddressModalOpen}
+                      isValidFromAddress={isValidFromAddress}
+                      isValidToAddress={isValidToAddress}
+                      fromChainWalletVMSupported={fromChainWalletVMSupported}
+                      context={'Swap'}
+                      showHighPriceImpactWarning={showHighPriceImpactWarning}
+                      onConnectWallet={onConnectWallet}
+                      onAnalyticEvent={onAnalyticEvent}
+                      quote={quote}
+                      address={address}
+                      hasInsufficientBalance={hasInsufficientBalance}
+                      isInsufficientLiquidityError={
+                        isInsufficientLiquidityError
+                      }
+                      recipientWalletSupportsChain={
+                        recipientWalletSupportsChain
+                      }
+                      debouncedInputAmountValue={debouncedInputAmountValue}
+                      debouncedOutputAmountValue={debouncedOutputAmountValue}
+                      isSameCurrencySameRecipientSwap={
+                        isSameCurrencySameRecipientSwap
+                      }
+                      onClick={() => {
+                        if (fromChainWalletVMSupported) {
+                          if (!isValidToAddress || !isValidFromAddress) {
+                            if (
+                              multiWalletSupportEnabled &&
+                              (isValidToAddress ||
+                                (!isValidToAddress && toChainWalletVMSupported))
+                            ) {
+                              const chain = !isValidFromAddress
+                                ? fromChain
+                                : toChain
+                              if (!address) {
+                                onConnectWallet?.()
                               } else {
-                                setAddressModalOpen(true)
+                                onLinkNewWallet?.({
+                                  chain: chain,
+                                  direction: !isValidFromAddress ? 'from' : 'to'
+                                })?.then((wallet) => {
+                                  if (!isValidFromAddress) {
+                                    onSetPrimaryWallet?.(wallet.address)
+                                  } else {
+                                    setCustomToAddress(wallet.address)
+                                  }
+                                })
                               }
                             } else {
-                              swap()
+                              setAddressModalOpen(true)
                             }
                           } else {
-                            if (!isValidToAddress) {
-                              if (
-                                multiWalletSupportEnabled &&
-                                toChainWalletVMSupported
-                              ) {
-                                if (!address) {
-                                  onConnectWallet?.()
-                                } else {
-                                  onLinkNewWallet?.({
-                                    chain: toChain,
-                                    direction: 'to'
-                                  })?.then((wallet) => {
-                                    setCustomToAddress(wallet.address)
-                                  })
-                                }
+                            swap()
+                          }
+                        } else {
+                          if (!isValidToAddress) {
+                            if (
+                              multiWalletSupportEnabled &&
+                              toChainWalletVMSupported
+                            ) {
+                              if (!address) {
+                                onConnectWallet?.()
                               } else {
-                                setAddressModalOpen(true)
+                                onLinkNewWallet?.({
+                                  chain: toChain,
+                                  direction: 'to'
+                                })?.then((wallet) => {
+                                  setCustomToAddress(wallet.address)
+                                })
                               }
                             } else {
-                              const swapEventData = getSwapEventData(
-                                quote?.details,
-                                quote?.fees,
-                                quote?.steps
-                                  ? (quote?.steps as Execute['steps'])
-                                  : null,
-                                linkedWallet?.connector,
-                                quoteParameters
-                              )
-                              onAnalyticEvent?.(
-                                EventNames.SWAP_CTA_CLICKED,
-                                swapEventData
-                              )
-                              setDepositAddressModalOpen(true)
+                              setAddressModalOpen(true)
                             }
+                          } else {
+                            const swapEventData = getSwapEventData(
+                              quote?.details,
+                              quote?.fees,
+                              quote?.steps
+                                ? (quote?.steps as Execute['steps'])
+                                : null,
+                              linkedWallet?.connector,
+                              quoteParameters
+                            )
+                            onAnalyticEvent?.(
+                              EventNames.SWAP_CTA_CLICKED,
+                              swapEventData
+                            )
+                            setDepositAddressModalOpen(true)
                           }
-                        }}
-                        ctaCopy={ctaCopy}
-                      />
-                    )}
+                        }
+                      }}
+                      ctaCopy={ctaCopy}
+                    />
                   </Flex>
                 )
               }}
