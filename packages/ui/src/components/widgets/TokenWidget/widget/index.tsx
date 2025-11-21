@@ -223,6 +223,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
     buy: { fromToken?: Token; toToken?: Token }
     sell: { fromToken?: Token; toToken?: Token }
   }>({ buy: {}, sell: {} })
+  const prevActiveTabRef = useRef<'buy' | 'sell'>(activeTab)
   const autoSelectedFromTokenRef = useRef(false)
   const tabRecipientRef = useRef<{
     buy: { override?: string; custom?: string }
@@ -398,6 +399,9 @@ const TokenWidget: FC<TokenWidgetProps> = ({
         tradeTypeRef.current = tradeType
 
         useEffect(() => {
+          if (prevActiveTabRef.current !== activeTab) {
+            return
+          }
           tabTokenStateRef.current[activeTab] = {
             fromToken,
             toToken
@@ -970,6 +974,153 @@ const TokenWidget: FC<TokenWidgetProps> = ({
           walletsLoading
         ])
 
+        const handleTabChange = useCallback(
+          (nextTab: 'buy' | 'sell', updateActiveTab: boolean) => {
+            const prevTab = prevActiveTabRef.current ?? activeTab
+
+            if (nextTab === prevTab && !updateActiveTab) {
+              return
+            }
+
+            setAllowUnsupportedOrigin(nextTab === 'buy')
+            setAllowUnsupportedRecipient(nextTab === 'sell')
+
+            if (nextTab !== prevTab) {
+              const storedNextState = tabTokenStateRef.current[nextTab] ?? {}
+              const storedNextRecipient = tabRecipientRef.current[nextTab] ?? {}
+
+              const prevFromToken = fromToken
+              const prevToToken = toToken
+
+              tabTokenStateRef.current[prevTab] = {
+                fromToken: prevFromToken,
+                toToken: prevToToken
+              }
+              tabRecipientRef.current[prevTab] = {
+                override:
+                  typeof destinationAddressOverride === 'string'
+                    ? destinationAddressOverride
+                    : undefined,
+                custom:
+                  typeof customToAddress === 'string'
+                    ? customToAddress
+                    : undefined
+              }
+
+              let nextFromToken: Token | undefined
+              let nextToToken: Token | undefined
+
+              if (nextTab === 'sell') {
+                // Selling the page token: default to previously viewed token (prevToToken)
+                nextFromToken =
+                  storedNextState.fromToken ??
+                  prevToToken ??
+                  prevFromToken ??
+                  undefined
+                // Payout token should remain empty unless user explicitly selected it on sell
+                nextToToken = storedNextState.toToken ?? undefined
+              } else {
+                // Buying the page token: default output token is prev page token
+                nextToToken =
+                  storedNextState.toToken ??
+                  prevFromToken ??
+                  prevToToken ??
+                  undefined
+                // Payment method stays empty unless explicitly chosen on buy
+                nextFromToken = storedNextState.fromToken ?? undefined
+              }
+
+              handleSetFromToken(nextFromToken)
+              handleSetToToken(nextToToken)
+              setDestinationAddressOverride(storedNextRecipient.override)
+              setCustomToAddress(storedNextRecipient.custom)
+
+              // Auto-select first compatible wallet in buy tab if no destination is set
+              if (
+                nextTab === 'buy' &&
+                multiWalletSupportEnabled &&
+                linkedWallets &&
+                linkedWallets.length > 0 &&
+                !storedNextRecipient.override &&
+                !storedNextRecipient.custom
+              ) {
+                const toChainForRecipient = relayClient?.chains?.find(
+                  (c) => c.id === nextToToken?.chainId
+                )
+
+                if (toChainForRecipient) {
+                  const compatibleWallets = linkedWallets.filter(
+                    (wallet) => wallet.vmType === toChainForRecipient.vmType
+                  )
+
+                  if (compatibleWallets.length > 0) {
+                    setDestinationAddressOverride(compatibleWallets[0].address)
+                  }
+                }
+              }
+
+              setAmountInputValue('')
+              setAmountOutputValue('')
+              setUsdInputValue('')
+              setUsdOutputValue('')
+              setTokenInputCache('')
+              setIsUsdInputMode(nextTab === 'buy')
+              debouncedAmountInputControls.cancel()
+              debouncedAmountOutputControls.cancel()
+              setOriginAddressOverride(undefined)
+            }
+
+            if (updateActiveTab) {
+              setActiveTab(nextTab)
+            }
+
+            const desiredTradeType: TradeType =
+              nextTab === 'buy' ? 'EXPECTED_OUTPUT' : 'EXACT_INPUT'
+
+            if (tradeType !== desiredTradeType) {
+              setTradeType(desiredTradeType)
+            }
+
+            prevActiveTabRef.current = nextTab
+          },
+          [
+            activeTab,
+            customToAddress,
+            debouncedAmountInputControls,
+            debouncedAmountOutputControls,
+            destinationAddressOverride,
+            fromToken,
+            handleSetFromToken,
+            handleSetToToken,
+            linkedWallets,
+            multiWalletSupportEnabled,
+            relayClient?.chains,
+            setActiveTab,
+            setAllowUnsupportedOrigin,
+            setAllowUnsupportedRecipient,
+            setAmountInputValue,
+            setAmountOutputValue,
+            setCustomToAddress,
+            setDestinationAddressOverride,
+            setIsUsdInputMode,
+            setOriginAddressOverride,
+            setTokenInputCache,
+            setTradeType,
+            setUsdInputValue,
+            setUsdOutputValue,
+            toToken,
+            tradeType
+          ]
+        )
+
+        useEffect(() => {
+          if (prevActiveTabRef.current === activeTab) {
+            return
+          }
+
+          handleTabChange(activeTab, false)
+        }, [activeTab, handleTabChange])
+
         return (
           <>
             <WidgetContainer
@@ -1054,126 +1205,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                       value={activeTab}
                       onValueChange={(value) => {
                         const nextTab = value as 'buy' | 'sell'
-
-                        setAllowUnsupportedOrigin(nextTab === 'buy')
-                        setAllowUnsupportedRecipient(nextTab === 'sell')
-
-                        if (nextTab !== activeTab) {
-                          tabTokenStateRef.current[activeTab] = {
-                            fromToken,
-                            toToken
-                          }
-                          tabRecipientRef.current[activeTab] = {
-                            override:
-                              typeof destinationAddressOverride === 'string'
-                                ? destinationAddressOverride
-                                : undefined,
-                            custom:
-                              typeof customToAddress === 'string'
-                                ? customToAddress
-                                : undefined
-                          }
-
-                          const currentState =
-                            tabTokenStateRef.current[activeTab] ?? {}
-                          const storedNextState =
-                            tabTokenStateRef.current[nextTab] ?? {}
-                          const storedNextRecipient =
-                            tabRecipientRef.current[nextTab] ?? {}
-
-                          const hasStoredNextFromToken =
-                            'fromToken' in storedNextState
-                          const hasStoredNextToToken =
-                            'toToken' in storedNextState
-
-                          let nextFromToken: Token | undefined
-                          let nextToToken: Token | undefined
-
-                          if (nextTab === 'sell') {
-                            const sellToken = hasStoredNextFromToken
-                              ? storedNextState.fromToken
-                              : (currentState.toToken ?? toToken ?? fromToken)
-                            const receiveToken = hasStoredNextToToken
-                              ? storedNextState.toToken
-                              : (currentState.fromToken ?? fromToken)
-
-                            nextFromToken = sellToken ?? undefined
-                            nextToToken = receiveToken ?? undefined
-                          } else {
-                            const buyToken = hasStoredNextToToken
-                              ? storedNextState.toToken
-                              : (currentState.toToken ?? toToken ?? fromToken)
-                            const payToken = hasStoredNextFromToken
-                              ? storedNextState.fromToken
-                              : (currentState.fromToken ?? fromToken)
-
-                            nextFromToken = payToken ?? undefined
-                            nextToToken = buyToken ?? undefined
-                          }
-
-                          tabTokenStateRef.current[nextTab] = {
-                            fromToken: nextFromToken,
-                            toToken: nextToToken
-                          }
-                          tabRecipientRef.current[nextTab] = storedNextRecipient
-
-                          handleSetFromToken(nextFromToken)
-                          handleSetToToken(nextToToken)
-                          setDestinationAddressOverride(
-                            storedNextRecipient.override
-                          )
-                          setCustomToAddress(storedNextRecipient.custom)
-
-                          // Auto-select first compatible wallet in buy tab if no destination is set
-                          if (
-                            nextTab === 'buy' &&
-                            multiWalletSupportEnabled &&
-                            linkedWallets &&
-                            linkedWallets.length > 0 &&
-                            !storedNextRecipient.override &&
-                            !storedNextRecipient.custom
-                          ) {
-                            // Find the destination chain for filtering compatible wallets
-                            const toChain = relayClient?.chains?.find(
-                              (c) => c.id === nextToToken?.chainId
-                            )
-
-                            if (toChain) {
-                              // Filter wallets compatible with the destination chain VM type
-                              const compatibleWallets = linkedWallets.filter(
-                                (wallet) => {
-                                  return wallet.vmType === toChain.vmType
-                                }
-                              )
-
-                              // Auto-select the first compatible wallet
-                              if (compatibleWallets.length > 0) {
-                                setDestinationAddressOverride(
-                                  compatibleWallets[0].address
-                                )
-                              }
-                            }
-                          }
-
-                          setAmountInputValue('')
-                          setAmountOutputValue('')
-                          setUsdInputValue('')
-                          setUsdOutputValue('')
-                          setTokenInputCache('')
-                          setIsUsdInputMode(nextTab === 'buy')
-                          debouncedAmountInputControls.cancel()
-                          debouncedAmountOutputControls.cancel()
-                          setOriginAddressOverride(undefined)
-                        }
-
-                        setActiveTab(nextTab)
-
-                        const desiredTradeType: TradeType =
-                          nextTab === 'buy' ? 'EXPECTED_OUTPUT' : 'EXACT_INPUT'
-
-                        if (tradeType !== desiredTradeType) {
-                          setTradeType(desiredTradeType)
-                        }
+                        handleTabChange(nextTab, true)
 
                         onAnalyticEvent?.('TAB_SWITCHED', {
                           tab: value
