@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 3.1.1
+
+### Patch Changes
+
+- 1ed92a5: Add lighter vm and enable destination txs
+
 ## 3.1.0
 
 ### Minor Changes
