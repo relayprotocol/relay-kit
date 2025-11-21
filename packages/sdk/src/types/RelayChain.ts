@@ -5,7 +5,7 @@ type RelayAPIChain = NonNullable<
   paths['/chains']['get']['responses']['200']['content']['application/json']['chains']
 >['0']
 
-export type ChainVM = 'evm' | 'svm' | 'bvm' | 'tvm' | 'suivm' | 'hypevm'
+export type ChainVM = 'evm' | 'svm' | 'bvm' | 'tvm' | 'suivm' | 'hypevm' | 'lvm'
 
 export type RelayChain = {
   id: number

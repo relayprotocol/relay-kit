@@ -54,7 +54,7 @@ type BaseTokenWidgetProps = {
   lockChainId?: number
   singleChainMode?: boolean
   wallet?: AdaptedWallet
-  supportedWalletVMs: Omit<ChainVM, 'hypevm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   disableInputAutoFocus?: boolean
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean

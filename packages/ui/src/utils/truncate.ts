@@ -13,11 +13,20 @@ function truncateAddress(
   firstSectionLength?: number,
   lastSectionLength?: number
 ) {
-  return address
-    ? address.slice(0, firstSectionLength ?? 4) +
-        (shrinkInidicator || '…') +
-        address.slice(-(lastSectionLength ?? 4))
-    : address
+  if (!address) return address
+
+  const firstLength = firstSectionLength ?? 4
+  const lastLength = lastSectionLength ?? 4
+  const minLength = firstLength + lastLength + 1
+
+  // Only truncate if the address is longer than what the truncated version would be
+  if (address.length <= minLength) return address
+
+  return (
+    address.slice(0, firstLength) +
+    (shrinkInidicator || '…') +
+    address.slice(-lastLength)
+  )
 }
 
 function truncateEns(ensName: string, shrinkInidicator?: string) {
