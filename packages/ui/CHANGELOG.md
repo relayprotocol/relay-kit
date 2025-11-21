@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.7
+
+### Patch Changes
+
+- a33c5b0: Stabilised tab switches
+
 ## 6.0.6
 
 ### Patch Changes
