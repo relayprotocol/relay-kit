@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.8
+
+### Patch Changes
+
+- e65cb19: Fix no routes error handling
+
 ## 6.0.7
 
 ### Patch Changes
