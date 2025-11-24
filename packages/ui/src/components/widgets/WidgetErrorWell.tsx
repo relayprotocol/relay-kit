@@ -10,6 +10,7 @@ import { useMediaQuery } from 'usehooks-ts'
 import type { Styles } from '@relayprotocol/relay-design-system/css'
 import type { QuoteResponse } from '@relayprotocol/relay-kit-hooks'
 import type { LinkedWallet } from '../../types/index.js'
+import { faRoute } from '@fortawesome/free-solid-svg-icons'
 
 type Props = {
   error: any
@@ -67,7 +68,32 @@ export const WidgetErrorWell: FC<Props> = ({
     error?.response?.data?.errorCode === 'UNSUPPORTED_ROUTE'
 
   if (isInsufficientLiquidityError || isNoAvailableRoutesError) {
-    return null
+    return (
+      <Flex
+        align="center"
+        justify="between"
+        css={{
+          gap: '2',
+          p: '3',
+          width: '100%',
+          borderRadius: 'widget-card-border-radius',
+          backgroundColor: 'widget-background',
+          border: 'widget-card-border',
+          overflow: 'hidden',
+          mb: 'widget-card-section-gutter'
+        }}
+      >
+        <Text style="subtitle2">Route</Text>
+        <Flex align="center" css={{ gap: '1' }}>
+          <Text style="subtitle2" color="subtle">
+            No available routes
+          </Text>
+          <Box css={{ color: 'gray11', width: 14, flexShrink: 0 }}>
+            <FontAwesomeIcon icon={faRoute} width={14} />
+          </Box>
+        </Flex>
+      </Flex>
+    )
   }
 
   /*
