@@ -1,4 +1,4 @@
-import { Flex, Button, Text } from '../../../primitives/index.js'
+import { Flex, Text } from '../../../primitives/index.js'
 import { TabsRoot, TabsList, TabsTrigger } from '../../../primitives/Tabs.js'
 import {
   useCallback,
@@ -602,6 +602,21 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
         // Get public client for the fromChain to estimate gas
         const publicClient = usePublicClient({ chainId: fromChain?.id })
+
+        // Seed fromToken on sell tab if empty but we have a token available
+        useEffect(() => {
+          if (activeTab !== 'sell') return
+          if (fromToken) return
+
+          const candidateFromToken =
+            tabTokenStateRef.current.sell?.fromToken ??
+            tabTokenStateRef.current.buy?.toToken ??
+            toToken
+
+          if (candidateFromToken) {
+            handleSetFromToken(candidateFromToken)
+          }
+        }, [activeTab, fromToken, toToken, handleSetFromToken])
 
         useWalletGuards({
           multiWalletSupportEnabled,
