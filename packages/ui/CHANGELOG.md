@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.10
+
+### Patch Changes
+
+- d45f6be: Fix some deps that were incorrectly marked as peerDeps
+
 ## 6.0.9
 
 ### Patch Changes
