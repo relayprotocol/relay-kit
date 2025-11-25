@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.9
+
+### Patch Changes
+
+- 7a9777a: Post-launch fixes for `TokenWidget`
+
 ## 6.0.8
 
 ### Patch Changes
