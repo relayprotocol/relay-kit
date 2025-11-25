@@ -61,7 +61,9 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
             >
               <FontAwesomeIcon icon={faClock} />
             </Box>
-            <Text style="subtitle3">{timeLabel}</Text>
+            <Text style="subtitle3" css={{ lineHeight: 'normal' }}>
+              {timeLabel}
+            </Text>
           </Flex>
           {showDivider ? (
             <Flex
