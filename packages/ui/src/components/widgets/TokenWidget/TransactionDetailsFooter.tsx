@@ -49,7 +49,16 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
       {timeEstimate && timeEstimate.time !== 0 ? (
         <>
           <Flex align="center" css={{ gap: '2' }}>
-            <Box css={{ color: clockColor, width: 14, height: 14 }}>
+            <Box
+              css={{
+                color: clockColor,
+                width: 14,
+                height: 14,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               <FontAwesomeIcon icon={faClock} />
             </Box>
             <Text style="subtitle3">{timeLabel}</Text>
@@ -67,10 +76,21 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
       ) : null}
       {hasNetworkCost ? (
         <Flex align="center" css={{ gap: '2' }}>
-          <Box css={{ color: 'gray9', width: 14, height: 14 }}>
+          <Box
+            css={{
+              color: 'gray9',
+              width: 14,
+              height: 14,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             <FontAwesomeIcon icon={faGasPump} />
           </Box>
-          <Text style="subtitle3">{networkCostLabel}</Text>
+          <Text style="subtitle3" css={{ lineHeight: 'normal' }}>
+            {networkCostLabel}
+          </Text>
         </Flex>
       ) : null}
     </Flex>
