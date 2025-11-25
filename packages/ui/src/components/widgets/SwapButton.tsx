@@ -98,15 +98,9 @@ const SwapButton: FC<SwapButtonProps> = ({
         css={{
           justifyContent: 'center',
           width: tokenWidgetMode ? '100%' : undefined,
-          textTransform:
-            tokenWidgetMode && (context === 'Buy' || context === 'Sell')
-              ? 'uppercase'
-              : 'none',
-          fontFamily: tokenWidgetMode ? 'heading' : undefined,
-          fontWeight: tokenWidgetMode ? 700 : undefined,
-          fontStyle: tokenWidgetMode
-            ? 'var(--relay-fonts-button-cta-font-style, italic)'
-            : undefined
+          ...(!tokenWidgetMode && {
+            textTransform: 'none'
+          })
         }}
         color={showHighPriceImpactWarning ? 'error' : 'primary'}
         aria-label={context}
@@ -130,15 +124,9 @@ const SwapButton: FC<SwapButtonProps> = ({
       css={{
         justifyContent: 'center',
         width: tokenWidgetMode ? '100%' : undefined,
-        textTransform:
-          tokenWidgetMode && (context === 'Buy' || context === 'Sell')
-            ? 'uppercase'
-            : 'none',
-        fontFamily: tokenWidgetMode ? 'heading' : undefined,
-        fontWeight: tokenWidgetMode ? 700 : undefined,
-        fontStyle: tokenWidgetMode
-          ? 'var(--relay-fonts-button-cta-font-style, italic)'
-          : undefined
+        ...(!tokenWidgetMode && {
+          textTransform: 'none'
+        })
       }}
       aria-label="Connect wallet"
       onClick={() => {
