@@ -67,14 +67,16 @@ const queryClient = new QueryClient()
 const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   const { walletFilter, setWalletFilter } = useWalletFilter()
   const router = useRouter()
-  const [relayApi, setRelayApi] = useState(MAINNET_RELAY_API)
+  // @TODO: remove
+  // const [relayApi, setRelayApi] = useState(MAINNET_RELAY_API)
+  const [relayApi, setRelayApi] = useState('https://api.dev.relay.link')
 
   useEffect(() => {
-    const isTestnet = router.query.api === 'testnets'
-    const newApi = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
-    if (relayApi !== newApi) {
-      setRelayApi(isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API)
-    }
+    // const isTestnet = router.query.api === 'testnets'
+    // const newApi = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
+    // if (relayApi !== newApi) {
+    //   setRelayApi(isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API)
+    // }
   }, [router.query.api])
 
   const viemChains = dynamicChains.map((chain) => chain.viemChain) as [
@@ -217,7 +219,9 @@ const getInitialProps = async ({
     }
 
     const isTestnet = ctx.query.api === 'testnets'
-    const baseApiUrl = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
+    // @TODO: remove
+    // const baseApiUrl = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
+    const baseApiUrl = 'https://api.dev.relay.link'
 
     const url = new URL(`${baseApiUrl}/chains`)
 
