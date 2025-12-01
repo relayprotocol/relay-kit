@@ -20,6 +20,7 @@ import { SDK_VERSION } from './version.js'
  *
  * @property {string} [baseApiUrl] - The base URL for the Relay API. Defaults to the mainnet API if not provided.
  * @property {string} [source] - The source to associate your onchain activity with, should be a domain.
+ * @property {string} [apiKey] - The API key to use for Relay API requests. Should not be used in the client, we recommend using baseApiUrl with a proxy api.
  * @property {LogLevel} [logLevel] - Log level from 0-4, the higher the more verbose. Defaults to LogLevel.None.
  * @property {number} [pollingInterval] - Interval (in ms) for polling the API for status updates.
  * @property {number} [maxPollingAttemptsBeforeTimeout] - The maximum number of polling attempts before timing out. The API is polled every 5 seconds by default (default is 30 attempts).
@@ -35,6 +36,7 @@ import { SDK_VERSION } from './version.js'
 export type RelayClientOptions = {
   baseApiUrl?: string
   source?: string
+  apiKey?: string
   logLevel?: LogLevel
   pollingInterval?: number
   maxPollingAttemptsBeforeTimeout?: number
