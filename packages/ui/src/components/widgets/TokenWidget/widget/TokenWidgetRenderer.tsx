@@ -35,6 +35,7 @@ import type { DebouncedState } from 'usehooks-ts'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../../../types/index.js'
 import {
+  addressesEqual,
   addressWithFallback,
   isValidAddress
 } from '../../../../utils/address.js'
@@ -293,22 +294,25 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       return defaultAddress
     }
 
-    // Find the first wallet that supports the target chain's VM type
-    const compatibleWallet = linkedWallets.find((wallet) => {
-      // Check if wallet VM matches chain VM
-      if (wallet.vmType !== targetChain.vmType) {
-        return false
-      }
-
-      // Additional validation for specific chains
-      return isValidAddress(
+    const isCompatibleWallet = (wallet: LinkedWallet) =>
+      wallet.vmType === targetChain.vmType &&
+      isValidAddress(
         targetChain.vmType,
         wallet.address,
         targetChain.id,
         wallet.connector,
         connectorKeyOverrides
       )
-    })
+
+    const activeLinkedWallet = linkedWallets.find((wallet) =>
+      addressesEqual(wallet.vmType, wallet.address, defaultAddress)
+    )
+
+    if (activeLinkedWallet && isCompatibleWallet(activeLinkedWallet)) {
+      return activeLinkedWallet.address
+    }
+
+    const compatibleWallet = linkedWallets.find(isCompatibleWallet)
 
     return compatibleWallet?.address || defaultAddress
   }, [
