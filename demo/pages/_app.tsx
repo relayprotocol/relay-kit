@@ -62,18 +62,20 @@ type AppWrapperProps = {
 
 const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_KEY || ''
 
+const DEV_RELAY_API = 'https://api.dev.relay.link'
+
 const queryClient = new QueryClient()
 
 const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   const { walletFilter, setWalletFilter } = useWalletFilter()
   const router = useRouter()
-  const [relayApi, setRelayApi] = useState(MAINNET_RELAY_API)
+  const [relayApi, setRelayApi] = useState(DEV_RELAY_API)
 
   useEffect(() => {
     const isTestnet = router.query.api === 'testnets'
-    const newApi = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
+    const newApi = isTestnet ? TESTNET_RELAY_API : DEV_RELAY_API
     if (relayApi !== newApi) {
-      setRelayApi(isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API)
+      setRelayApi(isTestnet ? TESTNET_RELAY_API : DEV_RELAY_API)
     }
   }, [router.query.api])
 
@@ -217,7 +219,7 @@ const getInitialProps = async ({
     }
 
     const isTestnet = ctx.query.api === 'testnets'
-    const baseApiUrl = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
+    const baseApiUrl = isTestnet ? TESTNET_RELAY_API : DEV_RELAY_API
 
     const url = new URL(`${baseApiUrl}/chains`)
 
