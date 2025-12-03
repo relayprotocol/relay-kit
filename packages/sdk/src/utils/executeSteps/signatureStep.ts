@@ -57,6 +57,7 @@ export async function handleSignatureStepItem({
       breakdown: json?.breakdown,
       details: json?.details
     })
+
     signature = await wallet.handleSignMessageStep(stepItem, step)
 
     if (signature) {
@@ -67,7 +68,7 @@ export async function handleSignatureStepItem({
     }
   }
 
-  if (chain.id === 1337 && signature) {
+  if (chain.id === 1337 && signature && step?.id === ('sign' as any)) {
     await sendUsd(client, signature, stepItem)
   }
 
