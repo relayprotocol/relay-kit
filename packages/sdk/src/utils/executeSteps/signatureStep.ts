@@ -9,7 +9,7 @@ import type { AxiosRequestConfig } from 'axios'
 import { LogLevel } from '../logger.js'
 import type { RelayClient } from '../../client.js'
 import type { SetStateData } from './index.js'
-import { sendUsd } from '../hyperliquid.js'
+import { postHyperliquidSignature } from '../hyperliquid.js'
 
 /**
  * Handles the execution of a signature step item, including signing, posting, and validation.
@@ -68,8 +68,12 @@ export async function handleSignatureStepItem({
     }
   }
 
-  if (chain.id === 1337 && signature && step?.id === ('sign' as any)) {
-    await sendUsd(client, signature, stepItem)
+  if (
+    chain.id === 1337 &&
+    signature &&
+    step?.id === ('hyperliquid-signature' as any)
+  ) {
+    await postHyperliquidSignature(client, signature, stepItem)
   }
 
   if (postData) {
