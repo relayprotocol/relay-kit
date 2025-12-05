@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.11
+
+### Patch Changes
+
+- 84e79a8: Phantom support – add monad and hyperevm
+
 ## 6.0.10
 
 ### Patch Changes
