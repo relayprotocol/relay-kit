@@ -6,7 +6,7 @@ import type {
 import type { AxiosRequestConfig } from 'axios'
 import { getClient, RelayClient } from '../../client.js'
 import { LogLevel } from '../logger.js'
-import { prepareHyperliquidSignatureStep } from '../../utils/index.js'
+import { prepareHyperliquidSteps } from '../../utils/index.js'
 import {
   canBatchTransactions,
   prepareBatchTransaction
@@ -124,18 +124,10 @@ export async function executeSteps(
       }
     }
 
-    // Check if Hyperliquid and if so, rewrite steps to become a signature step
-    if (
-      chainId === 1337 &&
-      json.steps[0] &&
-      (json.steps[0].id as any) !== 'sign'
-    ) {
+    // Check if Hyperliquid and if so, prepare the steps for Hyperliquid signing
+    if (chainId === 1337) {
       const activeWalletChainId = await wallet?.getChainId()
-      const signatureStep = prepareHyperliquidSignatureStep(
-        json.steps,
-        activeWalletChainId
-      )
-      json.steps = [signatureStep]
+      json.steps = prepareHyperliquidSteps(json.steps, activeWalletChainId)
     }
 
     // Update state on first call or recursion

@@ -36,7 +36,7 @@ import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 import Head from 'next/head'
 import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
 
-const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm', 'tvm'] as const
+const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm', 'tvm', 'hypevm'] as const
 
 const SwapWidgetPage: NextPage = () => {
   useDynamicEvents('walletAdded', (newWallet) => {
