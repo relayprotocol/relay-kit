@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   RelayClient,
   configureDynamicChains,
@@ -86,8 +86,7 @@ describe('Should test the client.', () => {
         ]),
         actions: expect.objectContaining({
           execute: expect.anything(),
-          getQuote: expect.anything(),
-          getSolverCapacity: expect.anything()
+          getQuote: expect.anything()
         })
       })
     )
@@ -158,8 +157,7 @@ describe('Should test the client.', () => {
         ]),
         actions: expect.objectContaining({
           execute: expect.anything(),
-          getQuote: expect.anything(),
-          getSolverCapacity: expect.anything()
+          getQuote: expect.anything()
         })
       })
     )

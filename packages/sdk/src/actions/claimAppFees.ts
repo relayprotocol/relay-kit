@@ -4,7 +4,8 @@ import {
   executeSteps,
   adaptViemWallet,
   safeStructuredClone,
-  APIError
+  APIError,
+  getApiKeyHeader
 } from '../utils/index.js'
 import { type WalletClient } from 'viem'
 import { isViemWalletClient } from '../utils/viemWallet.js'
@@ -62,7 +63,8 @@ export async function claimAppFees(
     url: `${client.baseApiUrl}/app-fees/${address}/claim`,
     method: 'post',
     data: { chainId, currency, recipient: recipient || address },
-    signal: abortController.signal
+    signal: abortController.signal,
+    headers: getApiKeyHeader(client)
   }
 
   try {

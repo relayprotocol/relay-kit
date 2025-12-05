@@ -20,6 +20,7 @@ import { SDK_VERSION } from './version.js'
  *
  * @property {string} [baseApiUrl] - The base URL for the Relay API. Defaults to the mainnet API if not provided.
  * @property {string} [source] - The source to associate your onchain activity with, should be a domain.
+ * @property {string} [apiKey] - The API key to use for Relay API requests. Should not be used in the client, we recommend using baseApiUrl with a proxy api.
  * @property {LogLevel} [logLevel] - Log level from 0-4, the higher the more verbose. Defaults to LogLevel.None.
  * @property {number} [pollingInterval] - Interval (in ms) for polling the API for status updates.
  * @property {number} [maxPollingAttemptsBeforeTimeout] - The maximum number of polling attempts before timing out. The API is polled every 5 seconds by default (default is 30 attempts).
@@ -35,6 +36,7 @@ import { SDK_VERSION } from './version.js'
 export type RelayClientOptions = {
   baseApiUrl?: string
   source?: string
+  apiKey?: string
   logLevel?: LogLevel
   pollingInterval?: number
   maxPollingAttemptsBeforeTimeout?: number
@@ -67,6 +69,7 @@ export class RelayClient {
   uiVersion?: string
   baseApiUrl: string
   source?: string
+  apiKey?: string
   logLevel: LogLevel
   pollingInterval?: number
   confirmationPollingInterval?: number
@@ -89,6 +92,7 @@ export class RelayClient {
     this.version = SDK_VERSION
     this.uiVersion = options.uiVersion
     this.baseApiUrl = options.baseApiUrl ?? MAINNET_RELAY_API
+    this.apiKey = options.apiKey
     this.logLevel =
       options.logLevel !== undefined ? options.logLevel : LogLevel.None
     this.pollingInterval = options.pollingInterval
@@ -124,6 +128,7 @@ export class RelayClient {
   configure(options: Partial<RelayClientOptions>) {
     this.baseApiUrl = options.baseApiUrl ? options.baseApiUrl : this.baseApiUrl
     this.source = options.source ? options.source : this.source
+    this.apiKey = options.apiKey !== undefined ? options.apiKey : this.apiKey
     this.logLevel =
       options.logLevel !== undefined ? options.logLevel : LogLevel.None
     this.pollingInterval = options.pollingInterval
@@ -167,7 +172,8 @@ export async function configureDynamicChains() {
   try {
     const chains = await utils.fetchChainConfigs(
       _client.baseApiUrl,
-      _client.source
+      _client.source,
+      _client.apiKey
     )
     _client.chains = chains
     return chains

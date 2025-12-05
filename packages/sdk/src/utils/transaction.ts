@@ -21,6 +21,7 @@ import {
   SolverStatusTimeoutError,
   TransactionConfirmationError
 } from '../errors/index.js'
+import { getApiKeyHeader } from './apiKey.js'
 import { repeatUntilOk } from '../utils/repeatUntilOk.js'
 import {
   getTenderlyDetails,
@@ -305,7 +306,10 @@ export async function sendTransactionSafely(
           res = await axios.request({
             url: `${request.baseURL}${endpoint}`,
             method: check?.method,
-            headers: headers
+            headers: {
+              ...getApiKeyHeader(client, request.baseURL),
+              ...headers
+            }
           })
         } catch (e) {
           getClient()?.log(
@@ -552,7 +556,10 @@ const postSameChainTransactionToSolver = async ({
         .request({
           url: `${request.baseURL}/transactions/single`,
           method: 'POST',
-          headers: headers,
+          headers: {
+            ...getApiKeyHeader(getClient(), request.baseURL),
+            ...headers
+          },
           data: triggerData
         })
         .then(() => {
@@ -603,7 +610,10 @@ const postTransactionToSolver = async ({
         .request({
           url: `${request.baseURL}/transactions/index`,
           method: 'POST',
-          headers: headers,
+          headers: {
+            ...getApiKeyHeader(getClient(), request.baseURL),
+            ...headers
+          },
           data: triggerData
         })
         .then(() => {
