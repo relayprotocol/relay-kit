@@ -9,7 +9,7 @@ export const WalletChainRestricted: Record<string, number[]> = {
   ],
   abstract: [2741],
   ronin: [1, 56, 137, 42161, 8453, 2020],
-  porto: [8453, 42161, 56, 42220, 1, 10, 137]
+  porto: [8453, 42161, 56, 42220, 1, 10, 137, 80094]
 }
 
 export const WalletChainIncompatible: Record<string, number[]> = {
