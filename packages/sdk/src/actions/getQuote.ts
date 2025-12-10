@@ -6,6 +6,7 @@ import {
   isSimulateContractRequest,
   APIError,
   adaptViemWallet,
+  getApiKeyHeader,
   type SimulateContractRequest
 } from '../utils/index.js'
 import { isViemWalletClient } from '../utils/viemWallet.js'
@@ -160,7 +161,10 @@ export async function getQuote(
     url: `${client.baseApiUrl}/quote`,
     method: 'post',
     data: query,
-    headers
+    headers: {
+      ...getApiKeyHeader(client),
+      ...headers
+    }
   }
 
   const res = await axios.request(request)
