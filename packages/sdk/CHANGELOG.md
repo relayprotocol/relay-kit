@@ -1,5 +1,15 @@
 # @reservoir0x/relay-sdk
 
+## 3.2.0
+
+### Minor Changes
+
+- 2519846: Integrate hyperliquid direct deposits
+
+### Patch Changes
+
+- b1dbfb7: Support API key parameter in `createClient` SDK method
+
 ## 3.1.1
 
 ### Patch Changes

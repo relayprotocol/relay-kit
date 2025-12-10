@@ -1,7 +1,7 @@
 import { type AxiosRequestConfig } from 'axios'
 import { axios } from '../utils/axios.js'
 import { getClient } from '../client.js'
-import { APIError } from '../utils/index.js'
+import { APIError, getApiKeyHeader } from '../utils/index.js'
 import type { paths } from '../types/index.js'
 
 export type GetAppFeeBody = NonNullable<
@@ -32,7 +32,8 @@ export async function getAppFees(
 
   const request: AxiosRequestConfig = {
     url: `${client.baseApiUrl}/app-fees/${wallet}/balances`,
-    method: 'get'
+    method: 'get',
+    headers: getApiKeyHeader(client)
   }
 
   const res = await axios.request(request)
