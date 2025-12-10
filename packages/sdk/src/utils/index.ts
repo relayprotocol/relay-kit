@@ -15,5 +15,5 @@ export {
 } from './simulateContract.js'
 export { safeStructuredClone } from './structuredClone.js'
 export { repeatUntilOk } from './repeatUntilOk.js'
-export { prepareHyperliquidSignatureStep } from './hyperliquid.js'
+export { prepareHyperliquidSteps } from './hyperliquid.js'
 export { isRelayApiUrl, getApiKeyHeader } from './apiKey.js'

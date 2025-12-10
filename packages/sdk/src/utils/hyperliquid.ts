@@ -4,15 +4,17 @@ import axios from 'axios'
 import type { RelayClient } from '../client.js'
 import { LogLevel } from './logger.js'
 
-export function prepareHyperliquidSignatureStep(
-  steps: Execute['steps'],
+function prepareHyperliquidSignatureStep(
+  step: Execute['steps'][0],
   chainId: number
 ) {
-  const items = steps[0]?.items
-  const amount = items[0]?.data?.action?.parameters?.amount
-  const destination = items[0]?.data?.action?.parameters?.destination
+  const stepItem = step?.items?.[0]
+  const action = stepItem?.data?.action
+  const eip712Types = stepItem?.data?.eip712Types
+  const eip712PrimaryType = stepItem?.data?.eip712PrimaryType
+
   const signatureStep = {
-    id: 'sign' as any,
+    id: 'hyperliquid-signature' as any,
     action: 'Confirm transaction in your wallet',
     description: `Sign a message to confirm the transaction`,
     kind: 'signature' as const,
@@ -29,12 +31,7 @@ export function prepareHyperliquidSignatureStep(
               verifyingContract: '0x0000000000000000000000000000000000000000'
             },
             types: {
-              'HyperliquidTransaction:UsdSend': [
-                { name: 'hyperliquidChain', type: 'string' },
-                { name: 'destination', type: 'string' },
-                { name: 'amount', type: 'string' },
-                { name: 'time', type: 'uint64' }
-              ],
+              ...eip712Types,
               EIP712Domain: [
                 { name: 'name', type: 'string' },
                 { name: 'version', type: 'string' },
@@ -42,31 +39,28 @@ export function prepareHyperliquidSignatureStep(
                 { name: 'verifyingContract', type: 'address' }
               ]
             },
-            primaryType: 'HyperliquidTransaction:UsdSend',
+            primaryType: eip712PrimaryType,
             value: {
-              type: 'usdSend',
-              signatureChainId: `0x${chainId.toString(16)}`,
-              hyperliquidChain: 'Mainnet',
-              destination: destination?.toLowerCase(),
-              amount,
-              time: new Date().getTime()
+              ...action.parameters,
+              type: action.type,
+              signatureChainId: `0x${chainId.toString(16)}`
             }
           }
         },
         check: {
-          endpoint: `/intents/status?requestId=${steps[0]?.requestId}`,
+          endpoint: `/intents/status?requestId=${step?.requestId}`,
           method: 'GET'
         }
       }
     ],
-    requestId: steps[0]?.requestId,
-    depositAddress: steps[0]?.depositAddress
+    requestId: step?.requestId,
+    depositAddress: step?.depositAddress
   }
 
   return signatureStep
 }
 
-export async function sendUsd(
+export async function postHyperliquidSignature(
   client: RelayClient,
   signature: string,
   stepItem: Execute['steps'][0]['items'][0]
@@ -76,22 +70,18 @@ export async function sendUsd(
     LogLevel.Verbose
   )
   const { r, s, v } = parseSignature(signature as `0x${string}`)
-  const currentTime = stepItem?.data?.sign?.value?.time ?? new Date().getTime()
+
+  const action = stepItem?.data?.sign?.value
+  const nonce = action?.nonce ?? action?.time
+
   const res = await axios.post('https://api.hyperliquid.xyz/exchange', {
     signature: {
       r,
       s,
       v: Number(v ?? 0n)
     },
-    nonce: currentTime,
-    action: {
-      type: stepItem?.data?.sign?.value?.type,
-      signatureChainId: `0x${stepItem?.data?.sign?.domain?.chainId?.toString(16)}`,
-      hyperliquidChain: 'Mainnet',
-      destination: stepItem?.data?.sign?.value?.destination?.toLowerCase(),
-      amount: stepItem?.data?.sign?.value?.amount,
-      time: currentTime
-    }
+    nonce,
+    action
   })
   if (
     !res ||
@@ -106,4 +96,56 @@ export async function sendUsd(
     LogLevel.Verbose
   )
   return res.data
+}
+
+function updateHyperliquidSignatureChainId(
+  step: Execute['steps'][0],
+  activeWalletChainId: number
+): Execute['steps'][0] {
+  return {
+    ...step,
+    items: step.items?.map((item) => ({
+      ...item,
+      data: {
+        ...item.data,
+        sign: {
+          ...item.data.sign,
+          domain: {
+            ...item.data.sign.domain,
+            chainId: activeWalletChainId
+          }
+        },
+        ...(item.data.post && {
+          post: {
+            ...item.data.post,
+            body: {
+              ...item.data.post.body,
+              signatureChainId: activeWalletChainId
+            }
+          }
+        })
+      }
+    }))
+  }
+}
+
+export function prepareHyperliquidSteps(
+  steps: Execute['steps'],
+  activeWalletChainId: number
+): Execute['steps'] {
+  return steps.map((step) => {
+    // Skip steps that have already been converted (id is set to 'sign' by prepareHyperliquidSignatureStep)
+    if ((step.id as string) === 'hyperliquid-signature') {
+      return step
+    }
+    // Update signature steps to use the active wallet chain ID
+    if (step.kind === 'signature') {
+      return updateHyperliquidSignatureChainId(step, activeWalletChainId)
+    }
+    // Convert transaction steps to Hyperliquid signature steps
+    if (step.kind === 'transaction') {
+      return prepareHyperliquidSignatureStep(step, activeWalletChainId)
+    }
+    return step
+  })
 }
