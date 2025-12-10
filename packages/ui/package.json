@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-kit-ui",
-  "version": "6.0.8",
+  "version": "6.0.10",
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
@@ -61,7 +61,9 @@
     "postcss": "^8",
     "rimraf": "^5.0.5",
     "typescript": "5.4.5",
-    "typescript-eslint": "^7.13.1"
+    "typescript-eslint": "^7.13.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
   },
   "peerDependencies": {
     "@moonpay/moonpay-react": "^1.8.3",
@@ -93,8 +95,6 @@
     "@relayprotocol/relay-design-system": "workspace:^",
     "@relayprotocol/relay-kit-hooks": "workspace:*",
     "@relayprotocol/relay-sdk": "workspace:*",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
     "axios": "^1.7.2",
     "dayjs": "^1.11.11",
     "framer-motion": "^11.2.10",

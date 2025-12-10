@@ -101,11 +101,19 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
 
   const showDropdown = context !== 'origin' || filteredWallets.length > 0
 
+  const isEnsCapableVmType =
+    chain?.vmType === 'evm' ||
+    chain?.vmType === 'hypevm' ||
+    selectedWallet?.vmType === 'evm' ||
+    selectedWallet?.vmType === 'hypevm'
+
+  const shouldResolveEns = isEnsCapableVmType && isSupportedSelectedWallet
+
   const { displayName } = useENSResolver(selectedWalletAddress, {
-    enabled:
-      (chain?.vmType === 'evm' || chain?.vmType === 'hypevm') &&
-      isSupportedSelectedWallet
+    enabled: shouldResolveEns
   })
+
+  const shouldShowEns = isEnsCapableVmType && Boolean(displayName)
 
   return (
     <Dropdown
@@ -174,8 +182,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
               {isSupportedSelectedWallet &&
               selectedWalletAddress &&
               selectedWalletAddress != ''
-                ? displayName &&
-                  (chain?.vmType === 'evm' || chain?.vmType === 'hypevm')
+                ? shouldShowEns
                   ? displayName
                   : truncateAddress(selectedWalletAddress)
                 : 'Select wallet'}

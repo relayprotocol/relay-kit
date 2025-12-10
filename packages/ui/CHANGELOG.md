@@ -1,5 +1,18 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.0.10
+
+### Patch Changes
+
+- d45f6be: Fix some deps that were incorrectly marked as peerDeps
+- 65d0b3d: Stabilised ens resolution & wallet selection
+
+## 6.0.9
+
+### Patch Changes
+
+- 7a9777a: Post-launch fixes for `TokenWidget`
+
 ## 6.0.8
 
 ### Patch Changes

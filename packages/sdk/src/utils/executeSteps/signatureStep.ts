@@ -4,7 +4,7 @@ import type {
   AdaptedWallet,
   RelayChain
 } from '../../types/index.js'
-import { axios } from '../index.js'
+import { axios, getApiKeyHeader } from '../index.js'
 import type { AxiosRequestConfig } from 'axios'
 import { LogLevel } from '../logger.js'
 import type { RelayClient } from '../../client.js'
@@ -87,7 +87,8 @@ export async function handleSignatureStepItem({
     })
     const postOrderUrl = new URL(`${request.baseURL}${postData.endpoint}`)
     const headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...getApiKeyHeader(client, request.baseURL)
     }
 
     if (postData.body && !postData.body.referrer) {
@@ -158,7 +159,8 @@ export async function handleSignatureStepItem({
     })
 
     const headers = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...getApiKeyHeader(client, request.baseURL)
     }
 
     // If websocket is enabled, wait for it to fail before falling back to polling
