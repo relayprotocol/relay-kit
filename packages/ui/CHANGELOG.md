@@ -1,5 +1,20 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.1.0
+
+### Minor Changes
+
+- 2519846: Integrate hyperliquid direct deposits
+
+### Patch Changes
+
+- 3910284: Update porto wallet compatibility
+- 84e79a8: Phantom support – add monad and hyperevm
+- Updated dependencies [2519846]
+- Updated dependencies [b1dbfb7]
+  - @relayprotocol/relay-sdk@3.2.0
+  - @relayprotocol/relay-kit-hooks@2.0.10
+
 ## 6.0.10
 
 ### Patch Changes
