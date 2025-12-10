@@ -72,6 +72,7 @@ export async function postHyperliquidSignature(
   const { r, s, v } = parseSignature(signature as `0x${string}`)
 
   const action = stepItem?.data?.sign?.value
+  const nonce = action?.nonce ?? action?.time
 
   const res = await axios.post('https://api.hyperliquid.xyz/exchange', {
     signature: {
@@ -79,7 +80,7 @@ export async function postHyperliquidSignature(
       s,
       v: Number(v ?? 0n)
     },
-    nonce: action?.nonce,
+    nonce,
     action
   })
   if (
