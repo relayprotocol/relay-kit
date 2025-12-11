@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { BalanceMap } from './useDuneBalances'
 import { type Currency } from '@relayprotocol/relay-kit-hooks'
 import { useInternalRelayChains } from '../hooks/index.js'
-import type { RelayChain } from '@relayprotocol/relay-sdk'
+import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
 
 export type EnhancedToken = {
   chainId: number
@@ -12,7 +12,7 @@ export type EnhancedToken = {
   decimals: number
   logoURI: string
   verified?: boolean
-  vmType?: 'bvm' | 'evm' | 'svm' | 'tvm' | 'tonvm' | 'suivm' | 'hypevm'
+  vmType?: ChainVM
   balance?: {
     amount: string
     price_usd?: number
