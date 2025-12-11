@@ -36,7 +36,7 @@ export const queryQuote = function (
   config?: AxiosRequestConfig
 ): Promise<QuoteResponse> {
   return new Promise((resolve, reject) => {
-    const href = `${baseApiUrl}/quote`
+    const href = `${baseApiUrl}/quote/v2`
     axiosPostFetcher(href, options, config)
       .then((response) => {
         const request: AxiosRequestConfig = {
