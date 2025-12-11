@@ -214,7 +214,7 @@ export interface paths {
                    * @description The type of VM the chain runs on
                    * @enum {string}
                    */
-                  vmType?: "bvm" | "evm" | "svm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
                   explorerQueryParams?: {
                     [key: string]: unknown;
                   } | null;
@@ -315,7 +315,7 @@ export interface paths {
           /** @description User address, when supplied returns user balance and max bridge amount */
           user?: string;
           /** @description Restricts the user balance and capacity to a particular currency when supplied with a currency id. Defaults to the native currency of the destination chain. */
-          currency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
+          currency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh";
         };
       };
       responses: {
@@ -368,7 +368,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
+            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -472,7 +472,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "avax" | "bnb" | "dai" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade";
+                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "avax" | "bnb" | "dai" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "gusdt";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -483,10 +483,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
+                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh";
               };
               breakdown?: {
                   /** @description Amount that will be bridged in the estimated time */
@@ -548,7 +548,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
+            currency: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -1029,7 +1029,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "avax" | "bnb" | "dai" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade";
+                gasCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "avax" | "bnb" | "dai" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "gusdt";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -1040,10 +1040,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl";
+                appCurrency?: "anime" | "btc" | "cgt" | "degen" | "eth" | "omi" | "pop" | "power" | "sipher" | "tg7" | "tia" | "topia" | "usdc" | "usdc.e" | "usdt" | "sol" | "xai" | "weth" | "apeeth" | "ape" | "g" | "dmt" | "g7" | "god" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh";
               };
               /**
                * @example {
@@ -2041,6 +2041,8 @@ export interface paths {
             referrer?: string;
             gasLimitForDepositSpecifiedTxs?: number;
             originGasOverhead?: number;
+            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
+            slippageTolerance?: string;
           };
         };
       };
@@ -2501,15 +2503,21 @@ export interface paths {
     post: {
       parameters: {
         query: {
+          /** @description The permit signature. */
           signature: string;
         };
       };
       requestBody: {
         content: {
           "application/json": {
+            /** @description The kind of signature. This value is returned in the quote API steps body field. e.g eip3009 */
             kind: string;
+            /** @description The requestId of the quote this permit signature applies to. Returned in the quote API steps body field. */
             requestId: string;
-            /** @enum {string} */
+            /**
+             * @description The API value returned from the quote API steps body field.
+             * @enum {string}
+             */
             api?: "bridge" | "swap" | "user-swap";
           };
         };
@@ -2558,18 +2566,29 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
-            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
+            /**
+             * @description Address that is depositing funds on the origin chain and submitting transactions or signatures
+             * @default 0x03508bb71268bba25ecacc8f620e01866650532c
+             */
             user: string;
             /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
             recipient?: string;
+            /** @default 8453 */
             originChainId: number;
+            /** @default 10 */
             destinationChainId: number;
+            /** @default 0x0000000000000000000000000000000000000000 */
             originCurrency: string;
+            /** @default 0x0000000000000000000000000000000000000000 */
             destinationCurrency: string;
-            /** @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH) */
+            /**
+             * @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH)
+             * @default 1000000000000000000
+             */
             amount: string;
             /**
              * @description Whether to use the amount as the output or the input for the basis of the swap
+             * @default EXACT_INPUT
              * @enum {string}
              */
             tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
@@ -2577,6 +2596,7 @@ export interface paths {
                 to?: string;
                 value?: string;
                 data?: string;
+                originalTxValue?: string;
               }[];
             /** @description Total gas limit for the destination chain call transactions */
             txsGasLimit?: number;
@@ -2618,11 +2638,6 @@ export interface paths {
              */
             enableTrueExactOutput?: boolean;
             /**
-             * @description The protocol version to use for the quote (currently experimental, do not use in production)
-             * @enum {string}
-             */
-            protocolVersion?: "v1" | "v2" | "preferV2";
-            /**
              * @description Enable this to avoid direct transfers to the depository (only relevant for EVM and v2 protocol flow)
              * @default true
              */
@@ -2633,6 +2648,8 @@ export interface paths {
             useFallbacks?: boolean;
             /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
             usePermit?: boolean;
+            /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
+            permitExpiry?: number;
             /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. */
             useDepositAddress?: boolean;
             /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
@@ -2651,7 +2668,7 @@ export interface paths {
             forceSolverExecution?: boolean;
             /** @description If the sponsor should pay for the fees associated with the request. Includes gas topup amounts. */
             subsidizeFees?: boolean;
-            /** @description The max subsidization amount in USD decimal format, e.g 100000 = $1. subsidizeFees must be enabled. This amount is the threshhold where if its surpassed the entire request will not be subsidized at all. */
+            /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. subsidizeFees must be enabled. This amount is the threshhold where if its surpassed the entire request will not be subsidized at all. */
             maxSubsidizationAmount?: string;
             /** @description Swap sources to include for swap routing. */
             includedSwapSources?: string[];
@@ -2665,6 +2682,17 @@ export interface paths {
             originGasOverhead?: number;
             /** @description The payer to be set for deposit transactions on solana. This account must have enough for fees and rent. */
             depositFeePayer?: string;
+            /** @description Whether to include compute unit limit instruction for solana origin requests. */
+            includeComputeUnitLimit?: boolean;
+            /** @description Whether to ignore price impact errors. */
+            overridePriceImpact?: boolean;
+            /** @description Whether to disable origin swaps. */
+            disableOriginSwaps?: boolean;
+            /**
+             * @description The protocol version to use for the quote (currently experimental, do not use in production)
+             * @enum {string}
+             */
+            protocolVersion?: "v1" | "v2" | "preferV2";
           };
         };
       };
@@ -3351,6 +3379,8 @@ export interface paths {
                 v2?: {
                   /** @description The underlying protocol order id */
                   orderId?: string;
+                  /** @description The underlying protocol order data */
+                  orderData?: unknown;
                   /** @description The details for the depository payment */
                   paymentDetails?: {
                     /** @description The protocol chain id for the payment */
@@ -3375,6 +3405,13 @@ export interface paths {
               errorCode?: string;
               errorData?: string;
               requestId?: string;
+              approxSimulatedBlock?: number;
+              failedCallData?: {
+                from?: string;
+                to?: string;
+                data?: string;
+                value?: string;
+              };
             };
           };
         };
@@ -3485,11 +3522,6 @@ export interface paths {
              */
             enableTrueExactOutput?: boolean;
             /**
-             * @description The protocol version to use for the quote (currently experimental, do not use in production)
-             * @enum {string}
-             */
-            protocolVersion?: "v1" | "v2" | "preferV2";
-            /**
              * @description Enable this to avoid direct transfers to the depository (only relevant for EVM and v2 protocol flow)
              * @default true
              */
@@ -3500,6 +3532,8 @@ export interface paths {
             useFallbacks?: boolean;
             /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
             usePermit?: boolean;
+            /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
+            permitExpiry?: number;
             /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. */
             useDepositAddress?: boolean;
             /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
@@ -4773,12 +4807,30 @@ export interface paths {
                   s: string;
                 }[];
             };
-            /** @description Options related to gas fee sponsorship and app referrer */
+            /** @description Options related to gas fee sponsorship, app referrer and destination calls */
             executionOptions: {
               /** @description The referrer of the app which is executing the gasless transaction */
               referrer: string;
               /** @description If the app should pay for the fees associated with the request */
               subsidizeFees: boolean;
+              /** @description Destination execution data for the gasless transaction */
+              destinationChainExecutionData?: {
+                /** @description Calls to be executed on the destination chain */
+                calls: {
+                    to?: string;
+                    value?: string;
+                    data?: string;
+                  }[];
+                /** @description Authorization list for EIP-7702 transactions to be executed on destination chain */
+                authorizationList?: {
+                    chainId: number;
+                    address: string;
+                    nonce: number;
+                    yParity: number;
+                    r: string;
+                    s: string;
+                  }[];
+              };
             };
             /** @description The request ID of the gasless transaction to execute */
             requestId?: string;
@@ -4857,6 +4909,8 @@ export interface paths {
           "application/json": {
             /** @description The request ID of the request that needs to be fast filled */
             requestId: string;
+            /** @description The input currency amount that the solver receives on origin */
+            solverInputCurrencyAmount?: string;
           };
         };
       };
@@ -4938,12 +4992,39 @@ export interface paths {
   };
   "/lives": {
     get: {
+      parameters: {
+        query?: {
+          withReport?: string | null;
+          skipPostgres?: string | null;
+          skipRedis?: string | null;
+        };
+      };
       responses: {
         /** @description Default Response */
         200: {
           content: {
             "application/json": {
-              message?: string;
+              status?: string;
+              report?: {
+                [key: string]: {
+                  status?: string;
+                  reason?: string | null;
+                };
+              };
+            };
+          };
+        };
+        /** @description Default Response */
+        503: {
+          content: {
+            "application/json": {
+              status?: string;
+              report?: {
+                [key: string]: {
+                  status?: string;
+                  reason?: string | null;
+                };
+              };
             };
           };
         };
@@ -5037,163 +5118,6 @@ export interface paths {
               updatedAt?: number;
               originChainId?: number;
               destinationChainId?: number;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/intents/quote": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            request: Record<string, never>;
-            source?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              txData?: {
-                to?: string;
-                data?: string;
-                value?: string;
-              };
-              requestId?: string;
-              currency?: string;
-              price?: string;
-              relayerFee?: string;
-              depositGasFee?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/intents/quote/v2": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            request: Record<string, never>;
-            source?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              requestId?: string;
-              approvalTxData?: {
-                to?: string;
-                data?: string;
-                value?: string;
-              };
-              depositTxData?: {
-                to?: string;
-                data?: string;
-                value?: string;
-              };
-              /**
-               * @example {
-               *   "currency": {
-               *     "chainId": 8453,
-               *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-               *     "symbol": "USDC",
-               *     "name": "USD Coin",
-               *     "decimals": 6,
-               *     "metadata": {
-               *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-               *       "verified": false,
-               *       "isNative": false
-               *     }
-               *   },
-               *   "amount": "30754920",
-               *   "amountFormatted": "30.75492",
-               *   "amountUsd": "30.901612",
-               *   "minimumAmount": "30454920"
-               * }
-               */
-              currencyIn?: {
-                currency?: {
-                  chainId?: number;
-                  address?: string;
-                  symbol?: string;
-                  name?: string;
-                  decimals?: number;
-                  metadata?: {
-                    logoURI?: string;
-                    verified?: boolean;
-                    isNative?: boolean;
-                  };
-                };
-                amount?: string;
-                amountFormatted?: string;
-                amountUsd?: string;
-                minimumAmount?: string;
-              };
-              /**
-               * @example {
-               *   "currency": {
-               *     "chainId": 8453,
-               *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-               *     "symbol": "USDC",
-               *     "name": "USD Coin",
-               *     "decimals": 6,
-               *     "metadata": {
-               *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-               *       "verified": false,
-               *       "isNative": false
-               *     }
-               *   },
-               *   "amount": "30754920",
-               *   "amountFormatted": "30.75492",
-               *   "amountUsd": "30.901612",
-               *   "minimumAmount": "30454920"
-               * }
-               */
-              currencyOut?: {
-                currency?: {
-                  chainId?: number;
-                  address?: string;
-                  symbol?: string;
-                  name?: string;
-                  decimals?: number;
-                  metadata?: {
-                    logoURI?: string;
-                    verified?: boolean;
-                    isNative?: boolean;
-                  };
-                };
-                amount?: string;
-                amountFormatted?: string;
-                amountUsd?: string;
-                minimumAmount?: string;
-              };
-              relayerFee?: string;
-              depositGasFee?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
             };
           };
         };
@@ -5508,6 +5432,7 @@ export interface paths {
           privateChainsToInclude?: string;
           id?: string;
           orderId?: string;
+          includeOrderData?: boolean;
           startTimestamp?: number;
           endTimestamp?: number;
           startBlock?: number;
@@ -5530,8 +5455,8 @@ export interface paths {
                *   "status": "success",
                *   "user": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
                *   "recipient": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
-               *   "subsidizedRequest": false,
                *   "data": {
+               *     "subsidizedRequest": false,
                *     "fees": {
                *       "gas": "2622672522398",
                *       "fixed": "10000000000000",
@@ -5590,7 +5515,6 @@ export interface paths {
                   status?: "refund" | "waiting" | "failure" | "pending" | "success";
                   user?: string;
                   recipient?: string;
-                  subsidizedRequest?: boolean;
                   data?: {
                     /** @description Slippage tolerance for the swap. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
                     slippageTolerance?: string;
@@ -5599,12 +5523,14 @@ export interface paths {
                     /** @enum {string} */
                     refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND";
                     failedTxHash?: string;
+                    failedTxBlockNumber?: number;
                     failedCallData?: {
                       from?: string;
                       to?: string;
                       data?: string;
                       value?: string;
                     };
+                    subsidizedRequest?: boolean;
                     fees?: {
                       /** @description Estimated gas cost required for execution, in wei */
                       gas?: string;
@@ -5710,6 +5636,13 @@ export interface paths {
                       minimumAmount?: string;
                     };
                     appFees?: {
+                        recipient?: string;
+                        bps?: string;
+                        amount?: string;
+                        amountUsd?: string;
+                        amountUsdCurrent?: string;
+                      }[];
+                    paidAppFees?: {
                         recipient?: string;
                         bps?: string;
                         amount?: string;
@@ -6021,6 +5954,7 @@ export interface paths {
                         timestamp?: number;
                       }[];
                   };
+                  orderData?: unknown;
                   referrer?: string;
                   moonpayId?: string;
                   createdAt?: string;
@@ -6102,12 +6036,12 @@ export interface paths {
       };
     };
   };
-  "/transactions/status": {
+  "/swap-sources": {
     get: {
       parameters: {
         query?: {
-          chainId?: string;
-          hash?: string;
+          /** @description Chain ID to get swap sources for */
+          chainId?: number;
         };
       };
       responses: {
@@ -6115,15 +6049,17 @@ export interface paths {
         200: {
           content: {
             "application/json": {
-              status?: string;
+              /** @description An array of swap sources */
+              sources?: string[];
             };
           };
         };
         /** @description Default Response */
-        404: {
+        400: {
           content: {
             "application/json": {
-              status?: string;
+              /** @description Descriptive error message */
+              message?: string;
             };
           };
         };
@@ -6301,7 +6237,7 @@ export interface paths {
                   name?: string;
                   decimals?: number;
                   /** @enum {string} */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
                   metadata?: {
                     logoURI?: string;
                     verified?: boolean;
@@ -6357,7 +6293,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -6421,7 +6357,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -6452,7 +6388,7 @@ export interface paths {
               name?: string;
               decimals?: number;
               /** @enum {string} */
-              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm";
+              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
               metadata?: {
                 logoURI?: string;
                 verified?: boolean;
@@ -6658,6 +6594,53 @@ export interface paths {
           content: {
             "application/json": {
               sanctioned?: boolean;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/wallets/screen": {
+    post: {
+      parameters: {
+        header: {
+          /** @description Required API key for authentication. Contact the team for getting an API Key */
+          "x-api-key": string;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": {
+            wallets: {
+                address?: string;
+                chainId?: number;
+              }[];
+          };
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              message?: string;
+              wallets?: unknown[];
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        401: {
+          content: {
+            "application/json": {
+              message?: string;
             };
           };
         };
