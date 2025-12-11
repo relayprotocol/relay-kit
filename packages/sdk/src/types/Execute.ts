@@ -9,14 +9,14 @@ export type CallBreakdown =
   paths['/execute/call/v2']['post']['responses']['200']['content']['application/json']['breakdown']
 export type CheckApi = NonNullable<
   NonNullable<
-    paths['/execute/call/v2']['post']['responses']['200']['content']['application/json']['steps']
+    paths['/quote/v2']['post']['responses']['200']['content']['application/json']['steps']
   >['0']['items']
 >[0]['check']
 export type QuoteDetails = NonNullable<
-  paths['/quote']['post']['responses']['200']['content']['application/json']['details']
+  paths['/quote/v2']['post']['responses']['200']['content']['application/json']['details']
 >
 export type QuoteStepId = NonNullable<
-  paths['/quote']['post']['responses']['200']['content']['application/json']['steps']
+  paths['/quote/v2']['post']['responses']['200']['content']['application/json']['steps']
 >['0']['id']
 
 export type TransactionStepState = 'confirming' | 'validating' | 'complete'

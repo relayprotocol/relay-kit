@@ -17,10 +17,10 @@ import type { WalletClient } from 'viem'
 import type { AxiosRequestConfig } from 'axios'
 
 type QuoteBody =
-  paths['/quote']['post']['requestBody']['content']['application/json']
+  paths['/quote/v2']['post']['requestBody']['content']['application/json']
 
 export type QuoteResponse =
-  paths['/quote']['post']['responses']['200']['content']['application/json']
+  paths['/quote/v2']['post']['responses']['200']['content']['application/json']
 
 type QueryType = typeof useQuery<
   QuoteResponse,
