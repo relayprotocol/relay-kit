@@ -17,7 +17,7 @@ import { isValidAddress } from '../utils/address.js'
 import useRelayClient from './useRelayClient.js'
 import useEclipseBalance from '../hooks/useEclipseBalance.js'
 import { eclipse } from '../utils/solana.js'
-import useHyperliquidUsdcBalance from './useHyperliquidUsdcBalance.js'
+import useHyperliquidBalance from './useHyperliquidBalance.js'
 import useTronBalance from '../hooks/useTronBalance.js'
 
 type UseBalanceProps = {
@@ -168,18 +168,22 @@ const useCurrencyBalance = ({
     )
   })
 
-  const hyperliquidUsdcBalance = useHyperliquidUsdcBalance(address, {
-    enabled: Boolean(
-      !adaptedWalletBalanceIsEnabled &&
-        chain &&
-        chain.vmType === 'hypevm' &&
-        address &&
-        _isValidAddress &&
-        enabled
-    ),
-    gcTime: refreshInterval,
-    staleTime: refreshInterval
-  })
+  const hyperliquidBalance = useHyperliquidBalance(
+    address,
+    currency as string,
+    {
+      enabled: Boolean(
+        !adaptedWalletBalanceIsEnabled &&
+          chain &&
+          chain.vmType === 'hypevm' &&
+          address &&
+          _isValidAddress &&
+          enabled
+      ),
+      gcTime: refreshInterval,
+      staleTime: refreshInterval
+    }
+  )
 
   const tronBalance = useTronBalance(address, currency, {
     enabled: Boolean(
@@ -297,11 +301,11 @@ const useCurrencyBalance = ({
     }
   } else if (chain?.vmType === 'hypevm') {
     return {
-      value: hyperliquidUsdcBalance.balance,
-      queryKey: hyperliquidUsdcBalance.queryKey,
-      isLoading: hyperliquidUsdcBalance.isLoading,
-      isError: hyperliquidUsdcBalance.isError,
-      error: hyperliquidUsdcBalance.error,
+      value: hyperliquidBalance.balance,
+      queryKey: hyperliquidBalance.queryKey,
+      isLoading: hyperliquidBalance.isLoading,
+      isError: hyperliquidBalance.isError,
+      error: hyperliquidBalance.error,
       isDuneBalance: false
     }
   } else if (chain?.vmType === 'tvm') {
