@@ -6,7 +6,7 @@ import type { RelayKitTheme } from '../themes/index.js'
 import { generateCssVars } from '../utils/theme.js'
 
 export type AppFees =
-  paths['/quote']['post']['requestBody']['content']['application/json']['appFees']
+  paths['/quote/v2']['post']['requestBody']['content']['application/json']['appFees']
 
 type RelayKitProviderOptions = {
   /**

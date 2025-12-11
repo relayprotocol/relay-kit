@@ -13,6 +13,7 @@ export const routes = [
   "/execute/swap/multi-input",
   "/execute/permits",
   "/quote",
+  "/quote/v2",
   "/price",
   "/execute",
   "/fast-fill",
@@ -20,8 +21,6 @@ export const routes = [
   "/intents/status",
   "/intents/status/v2",
   "/intents/status/v3",
-  "/intents/quote",
-  "/intents/quote/v2",
   "/requests/{requestId}/signature",
   "/requests/{requestId}/signature/v2",
   "/requests",
@@ -29,7 +28,7 @@ export const routes = [
   "/requests/metadata",
   "/transactions/index",
   "/transactions/single",
-  "/transactions/status",
+  "/swap-sources",
   "/loadforge.txt",
   "/conduit/install",
   "/prices/rates",
@@ -40,5 +39,6 @@ export const routes = [
   "/chains/{chainId}/currencies/{address}",
   "/chains/{chainId}/currencies/{address}/chart",
   "/provision/chain",
-  "/sanctioned/{address}"
+  "/sanctioned/{address}",
+  "/wallets/screen"
 ];

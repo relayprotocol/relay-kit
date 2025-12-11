@@ -59,7 +59,7 @@ describe('API Key Header Tests', () => {
 
     expect(axiosRequestSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        url: expect.stringContaining('/quote'),
+        url: expect.stringContaining('/quote/v2'),
         headers: expect.objectContaining({
           'x-api-key': 'test-api-key'
         })

@@ -473,19 +473,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         ...tokenPriceQueryOptions
       }
     )
-  const originChainSupportsProtocolv2 =
-    fromChain?.protocol?.v2?.depository !== undefined &&
-    toChain?.protocol?.v2?.chainId !== undefined
-
-  //Enabled only on certain chains
-  const quoteProtocol =
-    fromChain?.id && originChainSupportsProtocolv2 ? 'preferV2' : undefined
 
   const isFromNative = fromToken?.address === fromChain?.currency?.address
 
   const explicitDeposit = useEOADetection(
     wallet,
-    quoteProtocol,
     fromToken?.chainId,
     fromChain?.vmType,
     fromChain,
@@ -497,9 +489,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const shouldSetQuoteParameters =
     fromToken &&
     toToken &&
-    (quoteProtocol !== 'preferV2' ||
-      fromChain?.vmType !== 'evm' ||
-      explicitDeposit !== undefined)
+    (fromChain?.vmType !== 'evm' || explicitDeposit !== undefined)
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     shouldSetQuoteParameters
@@ -533,12 +523,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
                   userPublicKey: wallet?.metadata?.publicKey
                 }
               }
-            : {}),
-          protocolVersion: quoteProtocol,
-          ...(quoteProtocol === 'preferV2' &&
-            explicitDeposit !== undefined && {
-              explicitDeposit: explicitDeposit
-            })
+            : {})
         }
       : undefined
 

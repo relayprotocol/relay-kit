@@ -2,7 +2,7 @@ import { paths } from '@relayprotocol/relay-sdk'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 type QuoteResponse =
-  paths['/quote']['post']['responses']['200']['content']['application/json']
+  paths['/quote/v2']['post']['responses']['200']['content']['application/json']
 
 const sponsoredTokens = [
   '792703809:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
@@ -21,7 +21,7 @@ export default async function handler(
 ) {
   const { query } = req
 
-  const url = new URL('https://api.relay.link/quote')
+  const url = new URL('https://api.relay.link/quote/v2')
 
   for (const [key, value] of Object.entries(query)) {
     url.searchParams.set(key, value as string)

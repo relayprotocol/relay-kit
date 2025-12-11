@@ -1038,7 +1038,7 @@ describe('Base tests', () => {
     const result = await executeSteps(
       1,
       {
-        url: 'https://api.relay.link/get/quote',
+        url: 'https://api.relay.link/get/quote/v2',
         method: 'GET'
       },
       wallet,
