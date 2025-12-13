@@ -21,7 +21,7 @@ import useFallbackState from './useFallbackState.js'
 import useMoonPayTransaction from './useMoonPayTransaction.js'
 import { useInternalRelayChains } from './useInternalRelayChains.js'
 import useGasTopUpRequired from './useGasTopUpRequired.js'
-import useHyperliquidUsdcBalance from './useHyperliquidUsdcBalance.js'
+import useHyperliquidBalance from './useHyperliquidBalance.js'
 import useEOADetection from './useEOADetection.js'
 import useTransactionCount from './useTransactionCount.js'
 import useTronBalance from './useTronBalance.js'
@@ -50,7 +50,7 @@ export {
   useMoonPayTransaction,
   useInternalRelayChains,
   useGasTopUpRequired,
-  useHyperliquidUsdcBalance,
+  useHyperliquidBalance,
   useEOADetection,
   useTransactionCount,
   useTronBalance
