@@ -18,9 +18,9 @@ import {
 /**
  * Adapts a Solana wallet to work with the Relay SDK
  * @param walletAddress - The public key address of the Solana wallet
- * @param chainId - The chain ID for the Solana network (e.g., 101 for mainnet, 102 for testnet)
+ * @param chainId - The chain ID for the Solana network (Relay uses 792703809)
  * @param connection - The Solana web3.js Connection instance for interacting with the network
- * @param signAndSendTransaction - Function to sign and send a transaction, returning a promise with the transaction signature
+ * @param signAndSendTransaction - Function to sign and send a transaction, returning a promise with a base58 encoded transaction signature
  * @param payerKey - Optional public key of the account that will pay for transaction fees (defaults to walletAddress)
  * @returns An AdaptedWallet object that conforms to the Relay SDK interface
  */
