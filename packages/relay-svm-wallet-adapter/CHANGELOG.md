@@ -1,5 +1,11 @@
 # @reservoir0x/relay-svm-wallet-adapter
 
+## 14.0.1
+
+### Patch Changes
+
+- 8854ced: Update solana adapter docs
+
 ## 14.0.0
 
 ### Patch Changes

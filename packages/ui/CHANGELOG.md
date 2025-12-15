@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 6.1.1
+
+### Patch Changes
+
+- e27e88a: Support hyperliquid balance fetching for spot coins
+
 ## 6.1.0
 
 ### Minor Changes
