@@ -523,7 +523,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
                   userPublicKey: wallet?.metadata?.publicKey
                 }
               }
-            : {})
+            : {}),
+          ...(explicitDeposit !== undefined && {
+            explicitDeposit: explicitDeposit
+          })
         }
       : undefined
 

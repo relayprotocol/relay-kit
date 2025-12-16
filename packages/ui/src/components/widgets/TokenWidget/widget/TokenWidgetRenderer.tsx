@@ -609,7 +609,10 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
                   userPublicKey: wallet?.metadata?.publicKey
                 }
               }
-            : {})
+            : {}),
+          ...(explicitDeposit !== undefined && {
+            explicitDeposit: explicitDeposit
+          })
         }
       : undefined
 
