@@ -6,11 +6,10 @@ import useTransactionCount from './useTransactionCount.js'
 /**
  * Hook to detect if a wallet is an EOA and return the appropriate explicitDeposit flag
  * Includes checks for zero native balance and low transaction count
- * Only runs detection when protocol version is 'preferV2' and wallet supports EOA detection
+ * Only runs detection when evm chain and wallet supports EOA detection
  */
 const useEOADetection = (
   wallet?: AdaptedWallet,
-  protocolVersion?: string,
   chainId?: number,
   chainVmType?: string,
   fromChain?: RelayChain,
@@ -32,11 +31,7 @@ const useEOADetection = (
   }
 
   const shouldRunSafetyChecks = Boolean(
-    protocolVersion === 'preferV2' &&
-      chainVmType === 'evm' &&
-      !isFromNative &&
-      userAddress &&
-      fromChain
+    chainVmType === 'evm' && !isFromNative && userAddress && fromChain
   )
 
   // get native balance
@@ -73,11 +68,10 @@ const useEOADetection = (
     transactionCount !== undefined &&
     transactionCount <= 1
 
-  const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${protocolVersion}:${chainId}:${walletId.current}:${hasZeroNativeBalance}:${hasLowTransactionCount}`
+  const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${chainId}:${walletId.current}:${hasZeroNativeBalance}:${hasLowTransactionCount}`
 
   const shouldDetect = useMemo(() => {
     return (
-      protocolVersion === 'preferV2' &&
       chainId !== undefined &&
       (!wallet || wallet?.vmType === 'evm') &&
       chainVmType === 'evm' &&
@@ -86,7 +80,6 @@ const useEOADetection = (
     )
   }, [
     wallet?.vmType,
-    protocolVersion,
     chainId,
     chainVmType,
     hasZeroNativeBalance,
@@ -179,7 +172,7 @@ const useEOADetection = (
     detectEOA()
   }, [conditionKey, shouldDetect, wallet, chainId])
 
-  if (!shouldDetect && protocolVersion === 'preferV2' && chainVmType === 'evm') {
+  if (!shouldDetect && chainVmType === 'evm') {
     return explicitDeposit ?? true
   }
 

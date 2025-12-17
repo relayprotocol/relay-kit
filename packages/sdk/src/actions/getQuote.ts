@@ -15,7 +15,7 @@ import type { AdaptedWallet, Execute, paths } from '../types/index.js'
 import { getDeadAddress } from '../constants/address.js'
 
 export type QuoteBody = NonNullable<
-  paths['/quote']['post']['requestBody']['content']['application/json']
+  paths['/quote/v2']['post']['requestBody']['content']['application/json']
 >
 export type QuoteBodyOptions = Omit<
   QuoteBody,
@@ -158,7 +158,7 @@ export async function getQuote(
   }
 
   const request: AxiosRequestConfig = {
-    url: `${client.baseApiUrl}/quote`,
+    url: `${client.baseApiUrl}/quote/v2`,
     method: 'post',
     data: query,
     headers: {
