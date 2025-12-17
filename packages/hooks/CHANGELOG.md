@@ -1,5 +1,16 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.0
+
+### Major Changes
+
+- f544c1d: Upgrade to quote/v2 api
+
+### Patch Changes
+
+- Updated dependencies [f544c1d]
+  - @relayprotocol/relay-sdk@4.0.0
+
 ## 2.0.10
 
 ### Patch Changes

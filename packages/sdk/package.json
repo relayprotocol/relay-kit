@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-sdk",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
