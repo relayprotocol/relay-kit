@@ -483,8 +483,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromChain,
     address,
     fromBalance,
-    isFromNative,
-    onAnalyticEvent
+    isFromNative
   )
 
   const shouldSetQuoteParameters =
