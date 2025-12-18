@@ -569,7 +569,8 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     fromChain,
     address,
     fromBalance,
-    isFromNative
+    isFromNative,
+    onAnalyticEvent
   )
 
   const shouldSetQuoteParameters =

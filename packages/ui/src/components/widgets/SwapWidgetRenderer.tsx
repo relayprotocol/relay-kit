@@ -40,7 +40,7 @@ import {
   isValidAddress,
   findSupportedWallet
 } from '../../utils/address.js'
-import { adaptViemWallet, getDeadAddress } from '@relayprotocol/relay-sdk'
+import { adaptViemWallet } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
@@ -483,7 +483,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     fromChain,
     address,
     fromBalance,
-    isFromNative
+    isFromNative,
+    onAnalyticEvent
   )
 
   const shouldSetQuoteParameters =

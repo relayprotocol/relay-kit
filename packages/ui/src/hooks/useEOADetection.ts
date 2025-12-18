@@ -2,6 +2,7 @@ import { useMemo, useEffect, useState, useRef } from 'react'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import useCurrencyBalance from './useCurrencyBalance.js'
 import useTransactionCount from './useTransactionCount.js'
+import { EventNames } from '../constants/events.js'
 
 /**
  * Hook to detect if a wallet is an EOA and return the appropriate explicitDeposit flag
@@ -15,7 +16,8 @@ const useEOADetection = (
   fromChain?: RelayChain,
   userAddress?: string,
   fromBalance?: bigint,
-  isFromNative?: boolean
+  isFromNative?: boolean,
+  onAnalyticEvent?: (eventName: string, data?: any) => void
 ): boolean | undefined => {
   const [detectionState, setDetectionState] = useState<{
     value: boolean | undefined
@@ -86,6 +88,42 @@ const useEOADetection = (
     hasLowTransactionCount
   ])
 
+  // Track safety check conditions that force explicit deposit
+  const hasTrackedSafetyCheck = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (isLoadingSafetyChecks) return
+
+    const trackingKey = `${chainId}:${userAddress}:${hasZeroNativeBalance}:${hasLowTransactionCount}`
+    if (hasTrackedSafetyCheck.current === trackingKey) return
+
+    const baseEventData = {
+      chain_id: chainId,
+      address: userAddress,
+      wallet_type: wallet?.vmType,
+      native_balance: effectiveNativeBalance?.toString(),
+      transaction_count: transactionCount
+    }
+
+    if (hasZeroNativeBalance) {
+      onAnalyticEvent?.(EventNames.EOA_DETECTION_ZERO_BALANCE, baseEventData)
+      hasTrackedSafetyCheck.current = trackingKey
+    } else if (hasLowTransactionCount) {
+      onAnalyticEvent?.(EventNames.EOA_DETECTION_LOW_TX_COUNT, baseEventData)
+      hasTrackedSafetyCheck.current = trackingKey
+    }
+  }, [
+    isLoadingSafetyChecks,
+    hasZeroNativeBalance,
+    hasLowTransactionCount,
+    chainId,
+    userAddress,
+    wallet?.vmType,
+    effectiveNativeBalance,
+    transactionCount,
+    onAnalyticEvent
+  ])
+
   // Synchronously return undefined when conditions change
   const explicitDeposit = useMemo(() => {
     if (isLoadingSafetyChecks) {
@@ -117,6 +155,12 @@ const useEOADetection = (
     }
 
     const detectEOA = async () => {
+      const baseEventData = {
+        chain_id: chainId,
+        address: userAddress,
+        wallet_type: wallet?.vmType
+      }
+
       try {
         if (!wallet || !wallet?.isEOA) {
           setDetectionState((current) =>
@@ -132,6 +176,8 @@ const useEOADetection = (
           abortController.abort()
         }, 1000)
 
+        const startTime = performance.now()
+
         try {
           const eoaResult = await Promise.race([
             wallet.isEOA(chainId!),
@@ -143,8 +189,17 @@ const useEOADetection = (
           ])
 
           clearTimeout(timeoutId)
+          const duration = performance.now() - startTime
           const { isEOA, isEIP7702Delegated } = eoaResult
           const explicitDepositValue = !isEOA || isEIP7702Delegated
+
+          onAnalyticEvent?.(EventNames.EOA_DETECTION_SUCCESS, {
+            ...baseEventData,
+            duration_ms: Math.round(duration),
+            is_eoa: isEOA,
+            is_eip7702_delegated: isEIP7702Delegated,
+            explicit_deposit: explicitDepositValue
+          })
 
           setDetectionState((current) =>
             current.conditionKey === conditionKey
@@ -153,6 +208,22 @@ const useEOADetection = (
           )
         } catch (eoaError: any) {
           clearTimeout(timeoutId)
+          const duration = performance.now() - startTime
+          const isTimeout = eoaError?.message === 'EOA_DETECTION_TIMEOUT'
+
+          if (isTimeout) {
+            onAnalyticEvent?.(EventNames.EOA_DETECTION_TIMEOUT, {
+              ...baseEventData,
+              duration_ms: Math.round(duration)
+            })
+          } else {
+            onAnalyticEvent?.(EventNames.EOA_DETECTION_ERROR, {
+              ...baseEventData,
+              duration_ms: Math.round(duration),
+              error_message: eoaError?.message || 'Unknown error',
+              error_name: eoaError?.name
+            })
+          }
 
           setDetectionState((current) =>
             current.conditionKey === conditionKey
@@ -160,7 +231,13 @@ const useEOADetection = (
               : current
           )
         }
-      } catch (error) {
+      } catch (error: any) {
+        onAnalyticEvent?.(EventNames.EOA_DETECTION_ERROR, {
+          ...baseEventData,
+          error_message: error?.message || 'Unknown error',
+          error_name: error?.name
+        })
+
         setDetectionState((current) =>
           current.conditionKey === conditionKey
             ? { value: true, conditionKey }
@@ -170,7 +247,14 @@ const useEOADetection = (
     }
 
     detectEOA()
-  }, [conditionKey, shouldDetect, wallet, chainId])
+  }, [
+    conditionKey,
+    shouldDetect,
+    wallet,
+    chainId,
+    userAddress,
+    onAnalyticEvent
+  ])
 
   if (!shouldDetect && chainVmType === 'evm') {
     return explicitDeposit ?? true
