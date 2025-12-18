@@ -117,6 +117,12 @@ const useEOADetection = (
     }
 
     const detectEOA = async () => {
+      const baseEventData = {
+        chain_id: chainId,
+        address: userAddress,
+        wallet_type: wallet?.vmType
+      }
+
       try {
         if (!wallet || !wallet?.isEOA) {
           setDetectionState((current) =>
@@ -131,6 +137,8 @@ const useEOADetection = (
         const timeoutId = setTimeout(() => {
           abortController.abort()
         }, 1000)
+
+        const startTime = performance.now()
 
         try {
           const eoaResult = await Promise.race([
@@ -153,6 +161,24 @@ const useEOADetection = (
           )
         } catch (eoaError: any) {
           clearTimeout(timeoutId)
+          const duration = performance.now() - startTime
+          const isTimeout = eoaError?.message === 'EOA_DETECTION_TIMEOUT'
+
+          if (isTimeout) {
+            console.error('[EOA Detection]', {
+              ...baseEventData,
+              error_type: 'timeout',
+              duration_ms: Math.round(duration)
+            })
+          } else {
+            console.error('[EOA Detection]', {
+              ...baseEventData,
+              error_type: 'error',
+              duration_ms: Math.round(duration),
+              error_message: eoaError?.message || 'Unknown error',
+              error_name: eoaError?.name
+            })
+          }
 
           setDetectionState((current) =>
             current.conditionKey === conditionKey
@@ -160,7 +186,14 @@ const useEOADetection = (
               : current
           )
         }
-      } catch (error) {
+      } catch (error: any) {
+        console.error('[EOA Detection]', {
+          ...baseEventData,
+          error_type: 'error',
+          error_message: error?.message || 'Unknown error',
+          error_name: error?.name
+        })
+
         setDetectionState((current) =>
           current.conditionKey === conditionKey
             ? { value: true, conditionKey }
@@ -170,7 +203,7 @@ const useEOADetection = (
     }
 
     detectEOA()
-  }, [conditionKey, shouldDetect, wallet, chainId])
+  }, [conditionKey, shouldDetect, wallet, chainId, userAddress])
 
   if (!shouldDetect && chainVmType === 'evm') {
     return explicitDeposit ?? true
