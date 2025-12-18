@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.1
+
+### Patch Changes
+
+- 34167fa: Add tracking for eoa detection
+
 ## 7.0.0
 
 ### Major Changes
