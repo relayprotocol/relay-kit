@@ -165,13 +165,13 @@ const useEOADetection = (
           const isTimeout = eoaError?.message === 'EOA_DETECTION_TIMEOUT'
 
           if (isTimeout) {
-            console.error('[EOA Detection]', {
+            console.error('[EOA Detection] timeout', {
               ...baseEventData,
               error_type: 'timeout',
               duration_ms: Math.round(duration)
             })
           } else {
-            console.error('[EOA Detection]', {
+            console.error('[EOA Detection] error', {
               ...baseEventData,
               error_type: 'error',
               duration_ms: Math.round(duration),
@@ -187,7 +187,7 @@ const useEOADetection = (
           )
         }
       } catch (error: any) {
-        console.error('[EOA Detection]', {
+        console.error('[EOA Detection] error', {
           ...baseEventData,
           error_type: 'error',
           error_message: error?.message || 'Unknown error',
