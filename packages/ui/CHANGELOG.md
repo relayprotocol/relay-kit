@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.2
+
+### Patch Changes
+
+- e2a4b65: Clearer eoa logs
+
 ## 7.0.1
 
 ### Patch Changes
