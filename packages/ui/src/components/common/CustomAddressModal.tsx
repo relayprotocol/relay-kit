@@ -24,6 +24,10 @@ import {
   addCustomAddress,
   getCustomAddresses
 } from '../../utils/localStorage.js'
+import {
+  getAddressResolver,
+  resolveAddress
+} from '../../utils/addressResolver.js'
 
 type Props = {
   open: boolean
@@ -59,8 +63,14 @@ export const CustomAddressModal: FC<Props> = ({
   const [recentCustomAddresses, setRecentCustomAddresses] = useState<string[]>(
     []
   )
+  const [isResolving, setIsResolving] = useState(false)
+  const [resolveError, setResolveError] = useState<string | null>(null)
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
+
+  // Check if this VM supports address resolution (e.g., EVM -> Lighter)
+  const resolver = getAddressResolver(toChain?.vmType)
+  const didResolve = resolver?.canResolve(input, toChain?.vmType) && !!address
 
   const availableWallets = useMemo(
     () =>
@@ -109,14 +119,24 @@ export const CustomAddressModal: FC<Props> = ({
   )
 
   useEffect(() => {
-    if (isValidAddress(toChain?.vmType, input, toChain?.id)) {
+    setResolveError(null)
+
+    // Try address resolution if a resolver exists and can handle this input
+    if (resolver?.canResolve(input, toChain?.vmType)) {
+      setIsResolving(true)
+      resolveAddress(input, toChain?.vmType).then(({ address, error }) => {
+        setAddress(address ?? '')
+        setResolveError(error)
+        setIsResolving(false)
+      })
+    } else if (isValidAddress(toChain?.vmType, input, toChain?.id)) {
       setAddress(input)
     } else if (resolvedENS?.address) {
       setAddress(resolvedENS.address)
     } else {
       setAddress('')
     }
-  }, [input, resolvedENS])
+  }, [input, resolvedENS, resolver, toChain])
 
   return (
     <Modal
@@ -164,14 +184,16 @@ export const CustomAddressModal: FC<Props> = ({
                   ? 'Enter address'
                   : toChain.vmType === 'evm'
                     ? 'Address or ENS'
-                    : `Enter ${toChain.displayName} address`
+                    : resolver
+                      ? `${toChain.displayName} address or EVM address`
+                      : `Enter ${toChain.displayName} address`
               }
               value={input}
               onChange={(e) => {
                 setInput((e.target as HTMLInputElement).value)
               }}
             />
-            {input.length > 0 && !isLoading && (
+            {input.length > 0 && !isLoading && !isResolving && (
               <Button
                 color="ghost"
                 size="none"
@@ -202,7 +224,7 @@ export const CustomAddressModal: FC<Props> = ({
                 <FontAwesomeIcon icon={faCircleXmark} width={16} height={16} />
               </Button>
             )}
-            {isLoading && (
+            {(isLoading || isResolving) && (
               <LoadingSpinner
                 css={{
                   right: 2,
@@ -212,10 +234,31 @@ export const CustomAddressModal: FC<Props> = ({
               />
             )}
           </Flex>
-          {!address && input.length ? (
+          {resolveError ? (
+            <Text color="red" style="subtitle2">
+              {resolveError}
+            </Text>
+          ) : !address && input.length && !isResolving ? (
             <Text color="red" style="subtitle2">
               Not a valid address
             </Text>
+          ) : null}
+
+          {didResolve && resolver ? (
+            <Flex
+              css={{ bg: 'green2', p: '2', borderRadius: 8, gap: '2' }}
+              align="center"
+            >
+              <FontAwesomeIcon
+                icon={faCircleCheck}
+                color="#30A46C"
+                width={16}
+                height={16}
+              />
+              <Text style="subtitle3">
+                {resolver.successLabel}: {address}
+              </Text>
+            </Flex>
           ) : null}
 
           {!connectedAddressSet && address && isConnected ? (
@@ -304,7 +347,10 @@ export const CustomAddressModal: FC<Props> = ({
         </Flex>
         <Button
           cta={true}
-          disabled={!isValidAddress(toChain?.vmType, address, toChain?.id)}
+          disabled={
+            isResolving ||
+            !isValidAddress(toChain?.vmType, address, toChain?.id)
+          }
           css={{ justifyContent: 'center' }}
           onClick={() => {
             if (isValidAddress(toChain?.vmType, address, toChain?.id)) {
