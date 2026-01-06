@@ -229,6 +229,7 @@ const SwapWidgetPage: NextPage = () => {
             style={{ width: '100%', display: 'flex', justifyContent: 'end' }}
           >
             <SlippageToleranceConfig
+              currentSlippageTolerance={slippageTolerance}
               setSlippageTolerance={setSlippageTolerance}
               onAnalyticEvent={(eventName, data) => {
                 console.log('Analytic Event', eventName, data)
