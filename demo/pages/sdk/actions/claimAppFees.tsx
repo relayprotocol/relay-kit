@@ -12,6 +12,7 @@ const ClaimAppFeesPage: NextPage = () => {
     '0x0000000000000000000000000000000000000000'
   )
   const [recipient, setRecipient] = useState<string>('')
+  const [amount, setAmount] = useState<string>('')
   const [progress, setProgress] = useState<any>(null)
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -55,6 +56,16 @@ const ClaimAppFeesPage: NextPage = () => {
           style={{ minWidth: 350 }}
         />
       </div>
+      <div>
+        <label>Amount: </label>
+        <input
+          type="text"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          style={{ minWidth: 100 }}
+          placeholder="Optional"
+        />
+      </div>
       <button
         style={{
           marginTop: 20,
@@ -81,6 +92,7 @@ const ClaimAppFeesPage: NextPage = () => {
               chainId,
               currency,
               recipient,
+              amount: amount || undefined,
               onProgress: setProgress
             })
             setResult(claim.data)
