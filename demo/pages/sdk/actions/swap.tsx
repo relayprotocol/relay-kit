@@ -305,7 +305,10 @@ const SwapActionPage: NextPage = () => {
                   chainId: originChainId,
                   amount,
                   tradeType,
-                  options
+                  options: {
+                    ...options,
+                    referrer: referrer
+                  }
                 },
                 true,
                 headersPayload ? JSON.parse(headersPayload) : undefined
