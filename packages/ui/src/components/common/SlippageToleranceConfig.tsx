@@ -279,7 +279,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
   const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
-    currentSlippageTolerance
+    currentSlippageTolerance !== undefined
       ? convertBpsToPercent(currentSlippageTolerance)
       : undefined
   )
@@ -294,7 +294,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   }, [bpsValue, externalSetValue])
 
   const [mode, setMode] = useState<SlippageToleranceMode>(
-    currentSlippageTolerance ? 'Custom' : 'Auto'
+    currentSlippageTolerance !== undefined ? 'Custom' : 'Auto'
   )
   const [open, setOpen] = useFallbackState(
     _open !== undefined ? _open : false,
@@ -303,7 +303,6 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
       : undefined
   )
 
-  const isInlineVariant = variant === 'inline'
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -317,7 +316,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   useEffect(() => {
     if (!open && currentSlippageTolerance !== undefined) {
       setDisplayValue(convertBpsToPercent(currentSlippageTolerance))
-      setMode(currentSlippageTolerance ? 'Custom' : 'Auto')
+      setMode(currentSlippageTolerance !== undefined ? 'Custom' : 'Auto')
     }
   }, [currentSlippageTolerance, open])
 
