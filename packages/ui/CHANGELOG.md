@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.4
+
+### Patch Changes
+
+- 4323f0e: Allow setting 0 slippage tolerance
+
 ## 7.0.3
 
 ### Patch Changes
