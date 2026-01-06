@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 4.0.1
+
+### Patch Changes
+
+- dd3f0c2: Add amount param to claimAppFees action
+
 ## 4.0.0
 
 ### Major Changes
