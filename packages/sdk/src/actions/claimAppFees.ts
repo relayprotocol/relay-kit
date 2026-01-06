@@ -24,6 +24,7 @@ export type ClaimAppFeesParameters = {
   chainId: number
   currency: string
   recipient?: string
+  amount?: string
   onProgress?: (data: any) => any
 }
 
@@ -37,7 +38,8 @@ export async function claimAppFees(
   data: Execute
   abortController: AbortController
 }> {
-  const { wallet, chainId, currency, recipient, onProgress } = parameters
+  const { wallet, chainId, currency, recipient, amount, onProgress } =
+    parameters
   const client = getClient()
 
   if (!client.baseApiUrl || !client.baseApiUrl.length) {
@@ -62,7 +64,7 @@ export async function claimAppFees(
   const request: AxiosRequestConfig = {
     url: `${client.baseApiUrl}/app-fees/${address}/claim`,
     method: 'post',
-    data: { chainId, currency, recipient: recipient || address },
+    data: { chainId, currency, recipient: recipient || address, amount },
     signal: abortController.signal,
     headers: getApiKeyHeader(client)
   }
