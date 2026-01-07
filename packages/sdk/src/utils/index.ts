@@ -6,8 +6,7 @@ export { log, LogLevel } from './logger.js'
 export { axios } from './axios.js'
 export { default as prepareCallTransaction } from './prepareCallTransaction.js'
 export { adaptViemWallet } from './viemWallet.js'
-export { configureViemChain, convertViemChainToRelayChain } from './chain.js'
-export { fetchChainConfigs } from './fetchChainConfigs.js'
+export { convertViemChainToRelayChain, type RelayAPIChain } from './chain.js'
 export { getCurrentStepData } from './getCurrentStepData.js'
 export {
   type SimulateContractRequest,
