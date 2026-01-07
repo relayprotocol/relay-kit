@@ -1,9 +1,13 @@
 import { type FC, useState, useEffect, useMemo, useContext } from 'react'
 import { Text, Flex, Button, Input, Pill } from '../primitives/index.js'
 import { Modal } from '../common/Modal.js'
-import { type Address } from 'viem'
+import { type Address, isAddress } from 'viem'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useENSResolver, useWalletAddress } from '../../hooks/index.js'
+import {
+  useENSResolver,
+  useWalletAddress,
+  useLighterResolver
+} from '../../hooks/index.js'
 import { isENSName } from '../../utils/ens.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
 import { EventNames } from '../../constants/events.js'
@@ -24,10 +28,7 @@ import {
   addCustomAddress,
   getCustomAddresses
 } from '../../utils/localStorage.js'
-import {
-  getAddressResolver,
-  resolveAddress
-} from '../../utils/addressResolver.js'
+import { isLighterAddress } from '../../utils/lighter.js'
 
 type Props = {
   open: boolean
@@ -63,14 +64,24 @@ export const CustomAddressModal: FC<Props> = ({
   const [recentCustomAddresses, setRecentCustomAddresses] = useState<string[]>(
     []
   )
-  const [isResolving, setIsResolving] = useState(false)
-  const [resolveError, setResolveError] = useState<string | null>(null)
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
 
-  // Check if this VM supports address resolution (e.g., EVM -> Lighter)
-  const resolver = getAddressResolver(toChain?.vmType)
-  const didResolve = resolver?.canResolve(input, toChain?.vmType) && !!address
+  // Lighter: allow resolving EVM address to Lighter account ID
+  const isLighterChain = toChain?.vmType === 'lvm'
+  const isEvmInput = isAddress(input)
+
+  const {
+    data: lighterData,
+    isLoading: isResolvingLighter,
+    isError: isLighterError
+  } = useLighterResolver(isLighterChain && isEvmInput ? input : undefined)
+
+  const didResolve =
+    isLighterChain &&
+    isEvmInput &&
+    !!lighterData?.address &&
+    isLighterAddress(lighterData.address)
 
   const availableWallets = useMemo(
     () =>
@@ -114,21 +125,15 @@ export const CustomAddressModal: FC<Props> = ({
     }
   }, [open])
 
-  const { data: resolvedENS, isLoading } = useENSResolver(
+  const { data: resolvedENS, isLoading: isLoadingENS } = useENSResolver(
     isENSName(input) ? input : ''
   )
 
-  useEffect(() => {
-    setResolveError(null)
+  const isLoading = isLoadingENS || isResolvingLighter
 
-    // Try address resolution if a resolver exists and can handle this input
-    if (resolver?.canResolve(input, toChain?.vmType)) {
-      setIsResolving(true)
-      resolveAddress(input, toChain?.vmType).then(({ address, error }) => {
-        setAddress(address ?? '')
-        setResolveError(error)
-        setIsResolving(false)
-      })
+  useEffect(() => {
+    if (isLighterChain && isEvmInput) {
+      setAddress(lighterData?.address ?? '')
     } else if (isValidAddress(toChain?.vmType, input, toChain?.id)) {
       setAddress(input)
     } else if (resolvedENS?.address) {
@@ -136,7 +141,7 @@ export const CustomAddressModal: FC<Props> = ({
     } else {
       setAddress('')
     }
-  }, [input, resolvedENS, resolver, toChain])
+  }, [input, resolvedENS, lighterData, isLighterChain, isEvmInput, toChain])
 
   return (
     <Modal
@@ -184,7 +189,7 @@ export const CustomAddressModal: FC<Props> = ({
                   ? 'Enter address'
                   : toChain.vmType === 'evm'
                     ? 'Address or ENS'
-                    : resolver
+                    : isLighterChain
                       ? `${toChain.displayName} address or EVM address`
                       : `Enter ${toChain.displayName} address`
               }
@@ -193,7 +198,7 @@ export const CustomAddressModal: FC<Props> = ({
                 setInput((e.target as HTMLInputElement).value)
               }}
             />
-            {input.length > 0 && !isLoading && !isResolving && (
+            {input.length > 0 && !isLoading && (
               <Button
                 color="ghost"
                 size="none"
@@ -224,7 +229,7 @@ export const CustomAddressModal: FC<Props> = ({
                 <FontAwesomeIcon icon={faCircleXmark} width={16} height={16} />
               </Button>
             )}
-            {(isLoading || isResolving) && (
+            {isLoading && (
               <LoadingSpinner
                 css={{
                   right: 2,
@@ -234,17 +239,24 @@ export const CustomAddressModal: FC<Props> = ({
               />
             )}
           </Flex>
-          {resolveError ? (
+          {isLighterError ? (
             <Text color="red" style="subtitle2">
-              {resolveError}
+              Failed to resolve Lighter address
             </Text>
-          ) : !address && input.length && !isResolving ? (
+          ) : isLighterChain &&
+            isEvmInput &&
+            !isResolvingLighter &&
+            !lighterData?.address ? (
+            <Text color="red" style="subtitle2">
+              No Lighter account found for this EVM address
+            </Text>
+          ) : !address && input.length && !isLoading ? (
             <Text color="red" style="subtitle2">
               Not a valid address
             </Text>
           ) : null}
 
-          {didResolve && resolver ? (
+          {didResolve && lighterData?.address ? (
             <Flex
               css={{ bg: 'green2', p: '2', borderRadius: 8, gap: '2' }}
               align="center"
@@ -256,7 +268,7 @@ export const CustomAddressModal: FC<Props> = ({
                 height={16}
               />
               <Text style="subtitle3">
-                {resolver.successLabel}: {address}
+                Lighter Account ID: {lighterData.address}
               </Text>
             </Flex>
           ) : null}
@@ -348,8 +360,7 @@ export const CustomAddressModal: FC<Props> = ({
         <Button
           cta={true}
           disabled={
-            isResolving ||
-            !isValidAddress(toChain?.vmType, address, toChain?.id)
+            isLoading || !isValidAddress(toChain?.vmType, address, toChain?.id)
           }
           css={{ justifyContent: 'center' }}
           onClick={() => {
