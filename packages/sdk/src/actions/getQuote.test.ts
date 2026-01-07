@@ -1,9 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { RelayClient, createClient, getClient } from '../client'
+import { RelayClient, createClient } from '../client'
+import { convertViemChainToRelayChain } from '../utils/chain'
 import { http, zeroAddress } from 'viem'
-import { mainnet } from 'viem/chains'
+import {
+  mainnet,
+  base,
+  zora,
+  optimism,
+  arbitrum,
+  arbitrumNova
+} from 'viem/chains'
 import { MAINNET_RELAY_API } from '../constants'
 import { axios } from '../utils'
+
+const viemChains = [mainnet, base, zora, optimism, arbitrum, arbitrumNova]
+const relayChains = viemChains.map(convertViemChainToRelayChain)
 
 let client: RelayClient | undefined
 let wallet = {
@@ -34,7 +45,8 @@ describe('Should test the getQuote action.', () => {
 
   it("Should throw 'RelayClient missing api url configuration'.", async () => {
     client = createClient({
-      baseApiUrl: ''
+      baseApiUrl: '',
+      chains: relayChains
     })
 
     await expect(
@@ -55,7 +67,8 @@ describe('Should test the getQuote action.', () => {
 
   it('Should allow not passing in a wallet', async () => {
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
     })
 
     await client?.actions?.getQuote(
@@ -89,7 +102,8 @@ describe('Should test the getQuote action.', () => {
 
   it('Should allow passing in additional txs', async () => {
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
     })
 
     await client?.actions?.getQuote(
