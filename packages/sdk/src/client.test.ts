@@ -1,23 +1,30 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  RelayClient,
-  configureDynamicChains,
-  createClient,
-  getClient
-} from './client.js'
+import { RelayClient, createClient, getClient } from './client.js'
+import { configureDynamicChains } from './chain-utils/configureDynamicChains.js'
 import {
   MAINNET_RELAY_API,
   TESTNET_RELAY_API,
   convertViemChainToRelayChain
 } from './index.js'
-import { base } from 'viem/chains'
+import {
+  mainnet,
+  base,
+  zora,
+  optimism,
+  arbitrum,
+  arbitrumNova
+} from 'viem/chains'
 
 let client: RelayClient
+
+const viemChains = [mainnet, base, zora, optimism, arbitrum, arbitrumNova]
+const relayChains = viemChains.map(convertViemChainToRelayChain)
 
 describe('Should test the client.', () => {
   beforeEach(() => {
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
     })
   })
 

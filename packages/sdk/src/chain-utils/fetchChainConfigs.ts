@@ -1,7 +1,7 @@
-import { configureViemChain } from './chain.js'
+import { configureViemChain } from './configureViemChain.js'
 import type { RelayChain } from '../types/index.js'
-import { axios } from './axios.js'
-import { isRelayApiUrl } from './apiKey.js'
+import { axios } from '../utils/axios.js'
+import { isRelayApiUrl } from '../utils/apiKey.js'
 
 export const fetchChainConfigs = async (
   baseApiUrl: string,
@@ -28,3 +28,4 @@ export const fetchChainConfigs = async (
   }
   throw 'No Chain Data'
 }
+

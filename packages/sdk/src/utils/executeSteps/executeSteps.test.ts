@@ -5,12 +5,23 @@ import { executeBridge } from '../../../tests/data/executeBridge'
 import { executeSteps } from '.'
 import { MAINNET_RELAY_API } from '../../constants/servers'
 import { http } from 'viem'
-import { mainnet } from 'viem/chains'
+import {
+  mainnet,
+  base,
+  zora,
+  optimism,
+  arbitrum,
+  arbitrumNova
+} from 'viem/chains'
+import { convertViemChainToRelayChain } from '../../utils/chain'
 import { executeBridgeAuthorize } from '../../../tests/data/executeBridgeAuthorize'
 import type { ChainVM, Execute } from '../../types'
 import { postSignatureExtraSteps } from '../../../tests/data/postSignatureExtraSteps'
 import { swapWithApproval } from '../../../tests/data/swapWithApproval'
 import { adaptViemWallet } from '../viemWallet'
+
+const viemChains = [mainnet, base, zora, optimism, arbitrum, arbitrumNova]
+const relayChains = viemChains.map(convertViemChainToRelayChain)
 
 const waitForTransactionReceiptMock = vi.fn().mockResolvedValue({
   blobGasPrice: 100n,
@@ -89,7 +100,8 @@ let wallet = {
 }
 
 let client = createClient({
-  baseApiUrl: MAINNET_RELAY_API
+  baseApiUrl: MAINNET_RELAY_API,
+  chains: relayChains
 })
 
 let axiosRequestSpy: ReturnType<typeof mockAxiosRequest>
@@ -160,7 +172,8 @@ describe('Should test the executeSteps method.', () => {
       handleBatchTransactionStep: vi.fn().mockResolvedValue('0x')
     }
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
     })
   })
 
@@ -310,7 +323,8 @@ describe('Should test the executeSteps method.', () => {
     client = createClient({
       baseApiUrl: MAINNET_RELAY_API,
       pollingInterval: 50,
-      maxPollingAttemptsBeforeTimeout: 1
+      maxPollingAttemptsBeforeTimeout: 1,
+      chains: relayChains
     })
 
     wallet.handleConfirmTransactionStep = vi.fn().mockResolvedValue(null)
@@ -383,7 +397,8 @@ describe('Should test the executeSteps method.', () => {
     client = createClient({
       baseApiUrl: MAINNET_RELAY_API,
       pollingInterval: 50,
-      maxPollingAttemptsBeforeTimeout: 1
+      maxPollingAttemptsBeforeTimeout: 1,
+      chains: relayChains
     })
 
     vi.spyOn(axios, 'request').mockRestore()
@@ -554,7 +569,8 @@ describe('Should test a signature step.', () => {
       handleBatchTransactionStep: vi.fn().mockResolvedValue('0x')
     }
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
     })
   })
 
@@ -1001,7 +1017,8 @@ describe('Base tests', () => {
       handleBatchTransactionStep: vi.fn().mockResolvedValue('0x')
     }
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
     })
   })
 
@@ -1091,7 +1108,8 @@ describe('Base tests', () => {
     const viem = await vi.importActual('viem')
     client = createClient({
       baseApiUrl: MAINNET_RELAY_API,
-      useGasFeeEstimations: false
+      useGasFeeEstimations: false,
+      chains: relayChains
     })
     //@ts-ignore
     const walletClient = viem.createWalletClient({
@@ -1138,7 +1156,8 @@ describe('Should test atomic batch transactions', () => {
       handleBatchTransactionStep: vi.fn().mockResolvedValue('0x')
     }
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
     })
   })
 
@@ -1272,6 +1291,7 @@ describe('Should test WebSocket functionality', () => {
 
     client = createClient({
       baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains,
       websocket: {
         enabled: true,
         url: 'ws://test.relay.link'
@@ -1566,6 +1586,7 @@ describe('Should test WebSocket functionality', () => {
   it('Should handle WebSocket disabled configuration', async () => {
     client = createClient({
       baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains,
       websocket: {
         enabled: false
       }

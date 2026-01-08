@@ -1,10 +1,10 @@
 import {
-  configureViemChain,
   convertViemChainToRelayChain,
   MAINNET_RELAY_API,
   setParams,
   type paths
 } from '@relayprotocol/relay-sdk'
+import { configureViemChain } from '@relayprotocol/relay-sdk/chain-utils'
 import fetcher from '../fetcher.js'
 import {
   useQuery,
