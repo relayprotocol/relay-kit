@@ -1,5 +1,13 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.2
+
+### Patch Changes
+
+- 7d8cfef: Move configureViemChain, configureDynamicChains, and fetchChainConfigs to new /chain-utils subpath to reduce bundle size
+- Updated dependencies [7d8cfef]
+  - @relayprotocol/relay-sdk@5.0.0
+
 ## 3.0.1
 
 ### Patch Changes
