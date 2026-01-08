@@ -11,9 +11,9 @@ import {
   convertViemChainToRelayChain,
   MAINNET_RELAY_API,
   TESTNET_RELAY_API,
-  configureViemChain,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
+import { configureViemChain } from '@relayprotocol/relay-sdk/chain-utils'
 import { ThemeProvider } from 'next-themes'
 import { useRouter } from 'next/router'
 import {

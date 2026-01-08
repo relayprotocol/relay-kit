@@ -13,9 +13,21 @@
     "./_types"
   ],
   "exports": {
-    "types": "./_types/src/index.d.ts",
-    "import": "./_esm/src/index.js",
-    "require": "./_cjs/src/index.js"
+    ".": {
+      "types": "./_types/src/index.d.ts",
+      "import": "./_esm/src/index.js",
+      "require": "./_cjs/src/index.js"
+    },
+    "./chain-utils": {
+      "types": "./_types/src/chain-utils/index.d.ts",
+      "import": "./_esm/src/chain-utils/index.js",
+      "require": "./_cjs/src/chain-utils/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "chain-utils": ["./_types/src/chain-utils/index.d.ts"]
+    }
   },
   "scripts": {
     "prebuild": "node scripts/version.mjs",

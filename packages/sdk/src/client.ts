@@ -1,13 +1,4 @@
-import {
-  arbitrum,
-  arbitrumNova,
-  base,
-  baseGoerli,
-  mainnet,
-  optimism,
-  sepolia,
-  zora
-} from 'viem/chains'
+import { mainnet, sepolia } from 'viem/chains'
 import type { RelayChain } from './types/index.js'
 import { LogLevel, log as logUtil } from './utils/logger.js'
 import * as actions from './actions/index.js'
@@ -24,7 +15,7 @@ import { SDK_VERSION } from './version.js'
  * @property {LogLevel} [logLevel] - Log level from 0-4, the higher the more verbose. Defaults to LogLevel.None.
  * @property {number} [pollingInterval] - Interval (in ms) for polling the API for status updates.
  * @property {number} [maxPollingAttemptsBeforeTimeout] - The maximum number of polling attempts before timing out. The API is polled every 5 seconds by default (default is 30 attempts).
- * @property {RelayChain[]} [chains] - List of supported chains. If not provided, defaults to all mainnet/testnet chains based on the API URL.
+ * @property {RelayChain[]} [chains] - List of supported chains. If not provided, defaults to mainnet or sepolia for testnets.
  * @property {boolean} [useGasFeeEstimations] - Whether to use gas fee estimations. Defaults to true.
  * @property {string} [uiVersion] - Optional UI version string for analytics/debugging.
  * @property {(message: Parameters<typeof logUtil>[0], level: LogLevel) => void} [logger] - Custom logger function. If not provided, uses the default logger.
@@ -52,17 +43,10 @@ export type RelayClientOptions = {
 }
 
 let _client: RelayClient
-const _backupChains: RelayChain[] = [
-  mainnet,
-  base,
-  zora,
-  optimism,
-  arbitrum,
-  arbitrumNova
-].map((chain) => utils.convertViemChainToRelayChain(chain))
-const _backupTestnetChains: RelayChain[] = [sepolia, baseGoerli].map((chain) =>
-  utils.convertViemChainToRelayChain(chain)
-)
+const _backupMainnetChain: RelayChain =
+  utils.convertViemChainToRelayChain(mainnet)
+const _backupTestnetChain: RelayChain =
+  utils.convertViemChainToRelayChain(sepolia)
 
 export class RelayClient {
   version: string
@@ -104,9 +88,9 @@ export class RelayClient {
     if (options.chains) {
       this.chains = options.chains
     } else if (options.baseApiUrl?.includes('testnets')) {
-      this.chains = _backupTestnetChains
+      this.chains = [_backupTestnetChain]
     } else {
-      this.chains = _backupChains
+      this.chains = [_backupMainnetChain]
     }
 
     if (!options.source) {
@@ -165,24 +149,6 @@ export class RelayClient {
     if (options.chains) {
       this.chains = options.chains
     }
-  }
-}
-
-export async function configureDynamicChains() {
-  try {
-    const chains = await utils.fetchChainConfigs(
-      _client.baseApiUrl,
-      _client.source,
-      _client.apiKey
-    )
-    _client.chains = chains
-    return chains
-  } catch (e) {
-    _client.log(
-      ['Failed to fetch remote chain configuration, falling back', e],
-      LogLevel.Error
-    )
-    throw e
   }
 }
 
