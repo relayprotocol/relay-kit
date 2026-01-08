@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.0.0
+
+### Major Changes
+
+- 7d8cfef: Move configureViemChain, configureDynamicChains, and fetchChainConfigs to new /chain-utils subpath to reduce bundle size
+
 ## 4.0.1
 
 ### Patch Changes

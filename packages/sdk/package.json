@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-sdk",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
@@ -26,7 +26,9 @@
   },
   "typesVersions": {
     "*": {
-      "chain-utils": ["./_types/src/chain-utils/index.d.ts"]
+      "chain-utils": [
+        "./_types/src/chain-utils/index.d.ts"
+      ]
     }
   },
   "scripts": {
