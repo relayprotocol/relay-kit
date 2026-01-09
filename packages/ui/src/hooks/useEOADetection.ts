@@ -136,7 +136,7 @@ const useEOADetection = (
         const abortController = new AbortController()
         const timeoutId = setTimeout(() => {
           abortController.abort()
-        }, 1000)
+        }, 2500)
 
         const startTime = performance.now()
 
