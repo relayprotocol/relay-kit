@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.6
+
+### Patch Changes
+
+- 6c804bc: Lenient eoa detection timeout
+
 ## 7.0.5
 
 ### Patch Changes
