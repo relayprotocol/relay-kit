@@ -11,10 +11,10 @@ import {
 } from 'react'
 import {
   useRelayClient,
-  useENSResolver,
   useIsPassthrough,
   useSupportedMoonPayCurrencyCode,
-  useFallbackState
+  useFallbackState,
+  useDisplayName
 } from '../../../../hooks/index.js'
 import { zeroAddress } from 'viem'
 import { type ChainVM, type RelayChain } from '@relayprotocol/relay-sdk'
@@ -176,10 +176,11 @@ const OnrampWidgetRenderer: FC<OnrampWidgetRendererProps> = ({
   const [recipient, setRecipient] = useState<string | undefined>(
     defaultWalletAddress
   )
-  const { displayName: toDisplayName } = useENSResolver(recipient, {
-    refetchOnWindowFocus: false,
-    enabled: toChain?.vmType === 'evm'
-  })
+  const { displayName: toDisplayName } = useDisplayName(
+    recipient,
+    toChain?.vmType,
+    toChain?.id
+  )
 
   const [fiatCurrency, setFiatCurrency] = useState<FiatCurrency>({
     name: 'US Dollar',

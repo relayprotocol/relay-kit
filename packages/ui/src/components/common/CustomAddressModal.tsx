@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   useENSResolver,
   useWalletAddress,
-  useLighterResolver
+  useLighterAccount
 } from '../../hooks/index.js'
 import { isENSName } from '../../utils/ens.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
@@ -67,21 +67,25 @@ export const CustomAddressModal: FC<Props> = ({
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
 
-  // Lighter: allow resolving EVM address to Lighter account ID
+  // Lighter: allow resolving EVM address to Lighter account ID (and vice versa)
   const isLighterChain = toChain?.vmType === 'lvm'
   const isEvmInput = isAddress(input)
+  const isLighterIndexInput = isLighterAddress(input)
 
   const {
-    data: lighterData,
+    data: lighterAccount,
     isLoading: isResolvingLighter,
     isError: isLighterError
-  } = useLighterResolver(isLighterChain && isEvmInput ? input : undefined)
+  } = useLighterAccount(
+    isLighterChain && (isEvmInput || isLighterIndexInput) ? input : undefined
+  )
 
+  const resolvedLighterIndex = lighterAccount?.index?.toString()
   const didResolve =
     isLighterChain &&
     isEvmInput &&
-    !!lighterData?.address &&
-    isLighterAddress(lighterData.address)
+    !!resolvedLighterIndex &&
+    isLighterAddress(resolvedLighterIndex)
 
   const availableWallets = useMemo(
     () =>
@@ -105,10 +109,22 @@ export const CustomAddressModal: FC<Props> = ({
     [recentCustomAddresses, toChain]
   )
 
+  // For Lighter: check if the EVM address (input or resolved) matches connected wallet
+  const isLighterConnectedWallet =
+    isLighterChain &&
+    !!lighterAccount &&
+    // User entered EVM address - check if it matches connected wallet
+    ((isEvmInput && input.toLowerCase() === connectedAddress?.toLowerCase()) ||
+      // User entered Lighter index - check if resolved l1_address matches connected wallet
+      (isLighterIndexInput &&
+        lighterAccount.l1_address?.toLowerCase() ===
+          connectedAddress?.toLowerCase()))
+
   const connectedAddressSet =
     (!address && !toAddress) ||
     (toAddress === connectedAddress && address === connectedAddress) ||
-    availableWallets.some((wallet) => wallet.address === toAddress)
+    availableWallets.some((wallet) => wallet.address === toAddress) ||
+    isLighterConnectedWallet
 
   useEffect(() => {
     if (!open) {
@@ -133,7 +149,7 @@ export const CustomAddressModal: FC<Props> = ({
 
   useEffect(() => {
     if (isLighterChain && isEvmInput) {
-      setAddress(lighterData?.address ?? '')
+      setAddress(resolvedLighterIndex ?? '')
     } else if (isValidAddress(toChain?.vmType, input, toChain?.id)) {
       setAddress(input)
     } else if (resolvedENS?.address) {
@@ -141,7 +157,14 @@ export const CustomAddressModal: FC<Props> = ({
     } else {
       setAddress('')
     }
-  }, [input, resolvedENS, lighterData, isLighterChain, isEvmInput, toChain])
+  }, [
+    input,
+    resolvedENS,
+    resolvedLighterIndex,
+    isLighterChain,
+    isEvmInput,
+    toChain
+  ])
 
   return (
     <Modal
@@ -246,7 +269,7 @@ export const CustomAddressModal: FC<Props> = ({
           ) : isLighterChain &&
             isEvmInput &&
             !isResolvingLighter &&
-            !lighterData?.address ? (
+            !resolvedLighterIndex ? (
             <Text color="red" style="subtitle2">
               No Lighter account found for this EVM address
             </Text>
@@ -256,7 +279,7 @@ export const CustomAddressModal: FC<Props> = ({
             </Text>
           ) : null}
 
-          {didResolve && lighterData?.address ? (
+          {didResolve && resolvedLighterIndex ? (
             <Flex
               css={{ bg: 'green2', p: '2', borderRadius: 8, gap: '2' }}
               align="center"
@@ -268,7 +291,7 @@ export const CustomAddressModal: FC<Props> = ({
                 height={16}
               />
               <Text style="subtitle3">
-                Lighter Account ID: {lighterData.address}
+                Lighter Account ID: {resolvedLighterIndex}
               </Text>
             </Flex>
           ) : null}

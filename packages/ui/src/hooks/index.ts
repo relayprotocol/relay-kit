@@ -25,7 +25,8 @@ import useHyperliquidBalance from './useHyperliquidBalance.js'
 import useEOADetection from './useEOADetection.js'
 import useTransactionCount from './useTransactionCount.js'
 import useTronBalance from './useTronBalance.js'
-import useLighterResolver from './useLighterResolver.js'
+import useLighterAccount from './useLighterAccount.js'
+import useDisplayName from './useDisplayName.js'
 
 export {
   useMounted,
@@ -55,5 +56,6 @@ export {
   useEOADetection,
   useTransactionCount,
   useTronBalance,
-  useLighterResolver
+  useLighterAccount,
+  useDisplayName
 }
