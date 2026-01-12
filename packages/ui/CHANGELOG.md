@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.7
+
+### Patch Changes
+
+- 9cc3fac: Refactored timeout logic
+
 ## 7.0.6
 
 ### Patch Changes
