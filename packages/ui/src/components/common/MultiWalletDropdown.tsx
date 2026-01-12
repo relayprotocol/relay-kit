@@ -147,8 +147,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
           corners="pill"
           css={{
             gap: '2',
-            pl: '0 !important',
-            pr: '2 !important',
+            px: '2 !important',
             py: '1',
             cursor: 'pointer',
             display: 'flex',
@@ -160,7 +159,12 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
             {isSupportedSelectedWallet && selectedWallet?.walletLogoUrl ? (
               <img
                 src={selectedWallet.walletLogoUrl}
-                style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0 }}
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: 4,
+                  flexShrink: 0
+                }}
               />
             ) : selectedWalletAddress && !selectedWallet ? (
               <Box css={{ color: 'amber11', flexShrink: 0 }}>
