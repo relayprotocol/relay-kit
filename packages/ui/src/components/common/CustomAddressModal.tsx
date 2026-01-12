@@ -81,7 +81,8 @@ export const CustomAddressModal: FC<Props> = ({
   )
 
   const resolvedLighterIndex = lighterAccount?.index?.toString()
-  const didResolve =
+
+  const didResolveLighterFromEvm =
     isLighterChain &&
     isEvmInput &&
     !!resolvedLighterIndex &&
@@ -279,7 +280,7 @@ export const CustomAddressModal: FC<Props> = ({
             </Text>
           ) : null}
 
-          {didResolve && resolvedLighterIndex ? (
+          {didResolveLighterFromEvm && resolvedLighterIndex ? (
             <Flex
               css={{ bg: 'green2', p: '2', borderRadius: 8, gap: '2' }}
               align="center"
