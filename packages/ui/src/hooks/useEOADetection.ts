@@ -133,10 +133,9 @@ const useEOADetection = (
           return
         }
 
-        const abortController = new AbortController()
-        const timeoutId = setTimeout(() => {
-          abortController.abort()
-        }, 2500)
+        const timeoutMs = 2500
+        const timeoutError = new Error('EOA_DETECTION_TIMEOUT')
+        let timeoutId: ReturnType<typeof setTimeout> | undefined
 
         const startTime = performance.now()
 
@@ -144,13 +143,15 @@ const useEOADetection = (
           const eoaResult = await Promise.race([
             wallet.isEOA(chainId!),
             new Promise<never>((_, reject) => {
-              abortController.signal.addEventListener('abort', () => {
-                reject(new Error('EOA_DETECTION_TIMEOUT'))
-              })
+              timeoutId = setTimeout(() => {
+                reject(timeoutError)
+              }, timeoutMs)
             })
           ])
 
-          clearTimeout(timeoutId)
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+          }
           const { isEOA, isEIP7702Delegated } = eoaResult
           const explicitDepositValue = !isEOA || isEIP7702Delegated
 
@@ -160,9 +161,11 @@ const useEOADetection = (
               : current
           )
         } catch (eoaError: any) {
-          clearTimeout(timeoutId)
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+          }
           const duration = performance.now() - startTime
-          const isTimeout = eoaError?.message === 'EOA_DETECTION_TIMEOUT'
+          const isTimeout = eoaError === timeoutError
 
           if (isTimeout) {
             console.error('[EOA Detection] timeout', {
