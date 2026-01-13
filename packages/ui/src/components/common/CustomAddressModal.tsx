@@ -1,9 +1,13 @@
 import { type FC, useState, useEffect, useMemo, useContext } from 'react'
 import { Text, Flex, Button, Input, Pill } from '../primitives/index.js'
 import { Modal } from '../common/Modal.js'
-import { type Address } from 'viem'
+import { type Address, isAddress } from 'viem'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useENSResolver, useWalletAddress } from '../../hooks/index.js'
+import {
+  useENSResolver,
+  useWalletAddress,
+  useLighterAccount
+} from '../../hooks/index.js'
 import { isENSName } from '../../utils/ens.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
 import { EventNames } from '../../constants/events.js'
@@ -24,6 +28,7 @@ import {
   addCustomAddress,
   getCustomAddresses
 } from '../../utils/localStorage.js'
+import { isLighterAddress } from '../../utils/lighter.js'
 
 type Props = {
   open: boolean
@@ -62,6 +67,27 @@ export const CustomAddressModal: FC<Props> = ({
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
 
+  // Lighter: allow resolving EVM address to Lighter account ID (and vice versa)
+  const isLighterChain = toChain?.vmType === 'lvm'
+  const isEvmInput = isAddress(input)
+  const isLighterIndexInput = isLighterAddress(input)
+
+  const {
+    data: lighterAccount,
+    isLoading: isResolvingLighter,
+    isError: isLighterError
+  } = useLighterAccount(
+    isLighterChain && (isEvmInput || isLighterIndexInput) ? input : undefined
+  )
+
+  const resolvedLighterIndex = lighterAccount?.index?.toString()
+
+  const didResolveLighterFromEvm =
+    isLighterChain &&
+    isEvmInput &&
+    !!resolvedLighterIndex &&
+    isLighterAddress(resolvedLighterIndex)
+
   const availableWallets = useMemo(
     () =>
       linkedWallets.filter((wallet) =>
@@ -84,10 +110,22 @@ export const CustomAddressModal: FC<Props> = ({
     [recentCustomAddresses, toChain]
   )
 
+  // For Lighter: check if the EVM address (input or resolved) matches connected wallet
+  const isLighterConnectedWallet =
+    isLighterChain &&
+    !!lighterAccount &&
+    // User entered EVM address - check if it matches connected wallet
+    ((isEvmInput && input.toLowerCase() === connectedAddress?.toLowerCase()) ||
+      // User entered Lighter index - check if resolved l1_address matches connected wallet
+      (isLighterIndexInput &&
+        lighterAccount.l1_address?.toLowerCase() ===
+          connectedAddress?.toLowerCase()))
+
   const connectedAddressSet =
     (!address && !toAddress) ||
     (toAddress === connectedAddress && address === connectedAddress) ||
-    availableWallets.some((wallet) => wallet.address === toAddress)
+    availableWallets.some((wallet) => wallet.address === toAddress) ||
+    isLighterConnectedWallet
 
   useEffect(() => {
     if (!open) {
@@ -104,19 +142,30 @@ export const CustomAddressModal: FC<Props> = ({
     }
   }, [open])
 
-  const { data: resolvedENS, isLoading } = useENSResolver(
+  const { data: resolvedENS, isLoading: isLoadingENS } = useENSResolver(
     isENSName(input) ? input : ''
   )
 
+  const isLoading = isLoadingENS || isResolvingLighter
+
   useEffect(() => {
-    if (isValidAddress(toChain?.vmType, input, toChain?.id)) {
+    if (isLighterChain && isEvmInput) {
+      setAddress(resolvedLighterIndex ?? '')
+    } else if (isValidAddress(toChain?.vmType, input, toChain?.id)) {
       setAddress(input)
     } else if (resolvedENS?.address) {
       setAddress(resolvedENS.address)
     } else {
       setAddress('')
     }
-  }, [input, resolvedENS])
+  }, [
+    input,
+    resolvedENS,
+    resolvedLighterIndex,
+    isLighterChain,
+    isEvmInput,
+    toChain
+  ])
 
   return (
     <Modal
@@ -164,7 +213,9 @@ export const CustomAddressModal: FC<Props> = ({
                   ? 'Enter address'
                   : toChain.vmType === 'evm'
                     ? 'Address or ENS'
-                    : `Enter ${toChain.displayName} address`
+                    : isLighterChain
+                      ? `${toChain.displayName} address or EVM address`
+                      : `Enter ${toChain.displayName} address`
               }
               value={input}
               onChange={(e) => {
@@ -212,10 +263,38 @@ export const CustomAddressModal: FC<Props> = ({
               />
             )}
           </Flex>
-          {!address && input.length ? (
+          {isLighterError ? (
+            <Text color="red" style="subtitle2">
+              Failed to resolve Lighter address
+            </Text>
+          ) : isLighterChain &&
+            isEvmInput &&
+            !isResolvingLighter &&
+            !resolvedLighterIndex ? (
+            <Text color="red" style="subtitle2">
+              No Lighter account found for this EVM address
+            </Text>
+          ) : !address && input.length && !isLoading ? (
             <Text color="red" style="subtitle2">
               Not a valid address
             </Text>
+          ) : null}
+
+          {didResolveLighterFromEvm && resolvedLighterIndex ? (
+            <Flex
+              css={{ bg: 'green2', p: '2', borderRadius: 8, gap: '2' }}
+              align="center"
+            >
+              <FontAwesomeIcon
+                icon={faCircleCheck}
+                color="#30A46C"
+                width={16}
+                height={16}
+              />
+              <Text style="subtitle3">
+                Lighter Account ID: {resolvedLighterIndex}
+              </Text>
+            </Flex>
           ) : null}
 
           {!connectedAddressSet && address && isConnected ? (
@@ -304,7 +383,9 @@ export const CustomAddressModal: FC<Props> = ({
         </Flex>
         <Button
           cta={true}
-          disabled={!isValidAddress(toChain?.vmType, address, toChain?.id)}
+          disabled={
+            isLoading || !isValidAddress(toChain?.vmType, address, toChain?.id)
+          }
           css={{ justifyContent: 'center' }}
           onClick={() => {
             if (isValidAddress(toChain?.vmType, address, toChain?.id)) {

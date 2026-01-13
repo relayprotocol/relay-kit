@@ -2,7 +2,6 @@ import type { Dispatch, FC, ReactNode, SetStateAction } from 'react'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
   useCurrencyBalance,
-  useENSResolver,
   useRelayClient,
   useDebounceState,
   useWalletAddress,
@@ -11,7 +10,9 @@ import {
   useIsWalletCompatible,
   useFallbackState,
   useGasTopUpRequired,
-  useEOADetection
+  useEOADetection,
+  useDisplayName,
+  useLighterAccount
 } from '../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
@@ -45,6 +46,7 @@ import { errorToJSON } from '../../utils/errors.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
 import { get15MinuteInterval } from '../../utils/time.js'
+import { isLighterAddress } from '../../utils/lighter.js'
 import type { FeeBreakdown } from '../../types/FeeBreakdown.js'
 
 export type TradeType = 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
@@ -425,9 +427,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     toChain?.id
   )
 
-  const { displayName: toDisplayName } = useENSResolver(recipient, {
-    enabled: toChain?.vmType === 'evm' && isValidToAddress
-  })
+  const { displayName: toDisplayName } = useDisplayName(
+    recipient,
+    toChain?.vmType,
+    toChain?.id
+  )
 
   const [currentSlippageTolerance, setCurrentSlippageTolerance] = useState<
     string | undefined
@@ -647,6 +651,23 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   useDisconnected(address, () => {
     setCustomToAddress(undefined)
   })
+
+  // Auto-select Lighter account when switching to LVM chain
+  const isLighterChain = toChain?.vmType === 'lvm'
+  const { data: connectedLighterAccount } = useLighterAccount(
+    isLighterChain && address ? address : undefined
+  )
+
+  useEffect(() => {
+    if (
+      isLighterChain &&
+      connectedLighterAccount?.index &&
+      // Only auto-set if no valid Lighter address is already set
+      (!customToAddress || !isLighterAddress(customToAddress))
+    ) {
+      setCustomToAddress(connectedLighterAccount.index.toString())
+    }
+  }, [isLighterChain, connectedLighterAccount, customToAddress])
 
   useEffect(() => {
     if (tradeType === 'EXACT_INPUT') {
