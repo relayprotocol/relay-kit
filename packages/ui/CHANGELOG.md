@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.8
+
+### Patch Changes
+
+- 492e417: Add support for lighter evm address lookup
+
 ## 7.0.7
 
 ### Patch Changes
