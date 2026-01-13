@@ -14,8 +14,7 @@ import {
 } from '../../../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
-import { useAccount, useWalletClient } from 'wagmi'
-import { useCapabilities } from 'wagmi/experimental'
+import { useConnection, useWalletClient, useCapabilities } from 'wagmi'
 import type { Token } from '../../../../types/index.js'
 import { useQueryClient } from '@tanstack/react-query'
 import type { ChainVM, Execute } from '@relayprotocol/relay-sdk'
@@ -204,7 +203,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
   const relayClient = useRelayClient()
-  const { connector } = useAccount()
+  const { connector } = useConnection()
   const walletClient = useWalletClient()
   const [customToAddress, setCustomToAddress] = useState<
     Address | string | undefined

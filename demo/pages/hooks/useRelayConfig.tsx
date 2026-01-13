@@ -3,11 +3,11 @@ import { useState } from 'react'
 import { MAINNET_RELAY_API } from '@relayprotocol/relay-sdk'
 
 import { useRelayConfig } from '@relayprotocol/relay-kit-hooks'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { ConnectButton } from 'components/ConnectButton'
 
 const UseRelayConfigPage: NextPage = () => {
-  const { address } = useAccount()
+  const { address } = useConnection()
   const [toChainId, setToChainId] = useState<string>('1')
   const [fromChainId, setFromChainId] = useState<string>('8453')
   const [currency, setCurrency] = useState<string>('eth')

@@ -9,7 +9,7 @@ import type {
   AdaptedWallet,
   Execute
 } from '@relayprotocol/relay-sdk'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import type { LinkedWallet } from '../../types/index.js'
 
 export type WidgetContainerProps = {
@@ -93,7 +93,7 @@ const WidgetContainer: FC<WidgetContainerProps> = ({
   setCustomToAddress
 }) => {
   const isMounted = useMounted()
-  const { isConnected } = useAccount()
+  const { isConnected } = useConnection()
 
   return (
     <div className="relay-kit-reset">

@@ -60,7 +60,7 @@
     "node-fetch": "^3.3.2",
     "postcss": "^8",
     "rimraf": "^5.0.5",
-    "typescript": "5.4.5",
+    "typescript": "5.7.3",
     "typescript-eslint": "^7.13.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0"
@@ -71,7 +71,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "viem": ">=2.26.0",
-    "wagmi": "^2.15.6"
+    "wagmi": "^3.1.0"
   },
   "peerDependenciesMeta": {
     "@moonpay/moonpay-react": {

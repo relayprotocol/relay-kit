@@ -27,7 +27,7 @@ import {
 import { useRelayClient } from '../../../hooks/index.js'
 import { EventNames } from '../../../constants/events.js'
 import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import {
   calculatePriceTimeEstimate,
   extractDepositAddress,
@@ -114,7 +114,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
 
   const relayClient = useRelayClient()
   const providerOptionsContext = useContext(ProviderOptionsContext)
-  const { connector } = useAccount()
+  const { connector } = useConnection()
   const deadAddress = getDeadAddress(fromChain?.vmType, fromChain?.id)
 
   const quote = fetchingQuote ? undefined : quoteData

@@ -14,17 +14,17 @@
     "trailingComma": "none"
   },
   "dependencies": {
-    "@dynamic-labs-connectors/abstract-global-wallet-evm": "4.4.3",
-    "@dynamic-labs/bitcoin": "4.40.2",
-    "@dynamic-labs/eclipse": "4.40.2",
-    "@dynamic-labs/ethereum": "4.40.2",
-    "@dynamic-labs/ethereum-core": "4.40.2",
-    "@dynamic-labs/sdk-react-core": "4.40.2",
-    "@dynamic-labs/solana": "4.40.2",
-    "@dynamic-labs/sui": "4.40.2",
-    "@dynamic-labs/tron": "4.40.2",
-    "@dynamic-labs/utils": "4.40.2",
-    "@dynamic-labs/wagmi-connector": "4.40.2",
+    "@dynamic-labs-connectors/abstract-global-wallet-evm": "4.5.0",
+    "@dynamic-labs/bitcoin": "4.52.5",
+    "@dynamic-labs/eclipse": "4.52.5",
+    "@dynamic-labs/ethereum": "4.52.5",
+    "@dynamic-labs/ethereum-core": "4.52.5",
+    "@dynamic-labs/sdk-react-core": "4.52.5",
+    "@dynamic-labs/solana": "4.52.5",
+    "@dynamic-labs/sui": "4.52.5",
+    "@dynamic-labs/tron": "4.52.5",
+    "@dynamic-labs/utils": "4.52.5",
+    "@dynamic-labs/wagmi-connector": "4.52.5",
     "@moonpay/moonpay-react": "^1.8.3",
     "@privy-io/cross-app-connect": "0.2.2",
     "@radix-ui/colors": "^0.1.8",
@@ -47,13 +47,13 @@
     "tronweb": "^6.0.4",
     "usehooks-ts": "^3.1.0",
     "viem": ">=2.26.0",
-    "wagmi": "^2.15.6"
+    "wagmi": "^3.1.0"
   },
   "devDependencies": {
-    "@dynamic-labs/types": "4.10.4",
+    "@dynamic-labs/types": "4.52.5",
     "@types/node": "^12.12.21",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "5.4.5"
+    "typescript": "5.7.3"
   }
 }

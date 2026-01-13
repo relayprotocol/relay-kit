@@ -30,7 +30,7 @@ import { OnrampMoonPayStep } from './steps/OnrampMoonPayStep.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { ErrorStep } from '../../../common/TransactionModal/steps/ErrorStep.js'
 import { errorToJSON } from '../../../../utils/errors.js'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { mainnet } from 'viem/chains'
 
 export enum OnrampStep {
@@ -103,7 +103,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   >()
   const [moonPayRequestId, setMoonPayRequestId] = useState<string | undefined>()
   const client = useRelayClient()
-  const { connector } = useAccount()
+  const { connector } = useConnection()
   const [moonPayIdAppended, setMoonPayIdAppended] = useState(false)
   const { data: ethTokenPriceResponse } = useTokenPrice(
     client?.baseApiUrl,

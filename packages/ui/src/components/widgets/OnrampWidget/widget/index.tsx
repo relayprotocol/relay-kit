@@ -17,7 +17,7 @@ import type { LinkedWallet, Token } from '../../../../types/index.js'
 import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
 import { MultiWalletDropdown } from '../../../common/MultiWalletDropdown.js'
 import { CustomAddressModal } from '../../../common/CustomAddressModal.js'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { OnrampModal } from '../modals/OnrampModal.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { findSupportedWallet } from '../../../../utils/address.js'
@@ -92,7 +92,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
   )
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [onrampModalOpen, setOnrampModalOpen] = useState(false)
-  const { isConnected } = useAccount()
+  const { isConnected } = useConnection()
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
 
