@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.0.1
+
+### Patch Changes
+
+- 9d7aab2: Improve SolverStatusTimeout error log
+
 ## 5.0.0
 
 ### Major Changes
