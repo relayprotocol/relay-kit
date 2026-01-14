@@ -117,6 +117,7 @@ const mockAxiosRequest = () => {
     }
     if (
       config.url?.includes('transactions/index') ||
+      config.url?.includes('/transactions/single') ||
       config.url?.includes('/execute/permits')
     ) {
       return Promise.resolve({
@@ -432,7 +433,7 @@ describe('Should test the executeSteps method.', () => {
         undefined
       )
     ).rejects.toThrow(
-      `Failed to receive a successful response for solver status check with hash '0x' and and request id '0xabc' after 1 attempt(s).`
+      `Failed to receive a successful response for solver status check with hash '0x' and request id '0xabc' after 1 attempt(s).`
     )
 
     vi.spyOn(axios, 'request').mockRestore()
@@ -495,6 +496,8 @@ describe('Should test the executeSteps method.', () => {
   it('Should handle step with id of "approve" by waiting on receipt before polling for confirmation', async () => {
     const axiosRequestSpy = vi.spyOn(axios, 'request')
 
+    client.logLevel = 4
+
     await executeSteps(
       1,
       {},
@@ -506,12 +509,12 @@ describe('Should test the executeSteps method.', () => {
 
     const waitForTransactionReceiptCallIndex =
       wallet.handleConfirmTransactionStep.mock.invocationCallOrder[0]
-    const pollForConfirmationCallIndices = axiosRequestSpy.mock.calls
-      .filter((call) => call[0].url?.includes('/intents/status'))
-      .map((call, index) => axiosRequestSpy.mock.invocationCallOrder[index])
+    const pollForConfirmationCallIndex = axiosRequestSpy.mock.calls.findIndex(
+      (call) => call[0].url?.includes('/intents/status')
+    )
 
     expect(waitForTransactionReceiptCallIndex).toBeLessThan(
-      Math.min(...pollForConfirmationCallIndices)
+      axiosRequestSpy.mock.invocationCallOrder[pollForConfirmationCallIndex]
     )
     expect(wallet.handleConfirmTransactionStep).toHaveBeenCalledTimes(2)
   })

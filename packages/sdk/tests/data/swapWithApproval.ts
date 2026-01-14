@@ -44,7 +44,8 @@ export const swapWithApproval: Execute = {
             method: 'GET'
           }
         }
-      ]
+      ],
+      requestId: '0xabc'
     }
   ],
   fees: {
