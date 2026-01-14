@@ -1,4 +1,4 @@
-import { Execute } from '../../src/types'
+import type { Execute } from '../../src/types'
 
 export const swapWithApproval: Execute = {
   steps: [
@@ -19,7 +19,8 @@ export const swapWithApproval: Execute = {
             chainId: 1
           }
         }
-      ]
+      ],
+      requestId: '0xabc'
     },
     {
       id: 'swap',
@@ -43,7 +44,8 @@ export const swapWithApproval: Execute = {
             method: 'GET'
           }
         }
-      ]
+      ],
+      requestId: '0xabc'
     }
   ],
   fees: {
