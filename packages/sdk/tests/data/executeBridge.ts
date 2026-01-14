@@ -25,7 +25,8 @@ export const executeBridge: Execute = {
                         "method": "GET"
                     }
                 }
-            ]
+            ],
+            "requestId": "0xabc"
         }
     ],
     "fees": {

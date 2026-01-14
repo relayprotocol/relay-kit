@@ -339,7 +339,7 @@ describe('Should test the executeSteps method.', () => {
         undefined
       )
     ).rejects.toThrow(
-      `Deposit transaction with hash '0x' is pending after 1 attempt(s).`
+      `Deposit transaction with hash '0x' and request id '0xabc' is pending after 1 attempt(s).`
     )
     vi.spyOn(axios, 'request').mockRestore()
     vi.spyOn(axios, 'request').mockClear()
@@ -432,7 +432,7 @@ describe('Should test the executeSteps method.', () => {
         undefined
       )
     ).rejects.toThrow(
-      `Failed to receive a successful response for solver status check with hash '0x' after 1 attempt(s).`
+      `Failed to receive a successful response for solver status check with hash '0x' and and request id '0xabc' after 1 attempt(s).`
     )
 
     vi.spyOn(axios, 'request').mockRestore()
