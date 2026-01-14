@@ -1,5 +1,6 @@
 export class DepositTransactionTimeoutError extends Error {
   txHash: `0x${string}`
+  requestId: string
 
   constructor(txHash: `0x${string}`, requestId: string, attemptCount: number) {
     super(
