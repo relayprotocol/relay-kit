@@ -347,10 +347,15 @@ export async function sendTransactionSafely(
 
     if (attemptCount >= maximumAttempts) {
       if (receipt) {
-        throw new SolverStatusTimeoutError(txHash as Address, attemptCount)
+        throw new SolverStatusTimeoutError(
+          txHash as Address,
+          step.requestId ?? '',
+          attemptCount
+        )
       } else {
         throw new DepositTransactionTimeoutError(
           txHash as Address,
+          step.requestId ?? '',
           attemptCount
         )
       }
