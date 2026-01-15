@@ -2,11 +2,15 @@ import { useMemo, useEffect, useState, useRef } from 'react'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import useCurrencyBalance from './useCurrencyBalance.js'
 import useTransactionCount from './useTransactionCount.js'
+import { isValidAddress } from '../utils/address.js'
 
 /**
  * Hook to detect if a wallet is an EOA and return the appropriate explicitDeposit flag
  * Includes checks for zero native balance and low transaction count
- * Only runs detection when evm chain and wallet supports EOA detection
+ * Only runs detection when:
+ * - Chain is EVM
+ * - Wallet is EVM
+ * - Address is a valid EVM address format
  */
 const useEOADetection = (
   wallet?: AdaptedWallet,
@@ -30,8 +34,12 @@ const useEOADetection = (
     walletId.current += 1
   }
 
+  // Validate address is a proper EVM address
+  const hasValidEvmAddress = isValidAddress('evm', userAddress)
+
+  // Only run safety checks if we have a valid EVM address
   const shouldRunSafetyChecks = Boolean(
-    chainVmType === 'evm' && !isFromNative && userAddress && fromChain
+    chainVmType === 'evm' && !isFromNative && hasValidEvmAddress && fromChain
   )
 
   // get native balance
@@ -68,13 +76,14 @@ const useEOADetection = (
     transactionCount !== undefined &&
     transactionCount <= 1
 
-  const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${chainId}:${walletId.current}:${hasZeroNativeBalance}:${hasLowTransactionCount}`
+  const conditionKey = `${wallet?.vmType}:${chainVmType}:${!!wallet?.isEOA}:${chainId}:${walletId.current}:${hasZeroNativeBalance}:${hasLowTransactionCount}:${hasValidEvmAddress}`
 
   const shouldDetect = useMemo(() => {
     return (
       chainId !== undefined &&
       (!wallet || wallet?.vmType === 'evm') &&
       chainVmType === 'evm' &&
+      hasValidEvmAddress &&
       !hasZeroNativeBalance &&
       !hasLowTransactionCount
     )
@@ -82,6 +91,7 @@ const useEOADetection = (
     wallet?.vmType,
     chainId,
     chainVmType,
+    hasValidEvmAddress,
     hasZeroNativeBalance,
     hasLowTransactionCount
   ])
