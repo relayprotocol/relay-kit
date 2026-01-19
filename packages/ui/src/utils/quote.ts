@@ -28,32 +28,26 @@ export const parseFees = (
   quote?: ReturnType<typeof useQuote>['data']
 ): FeeBreakdown => {
   const fees = quote?.fees
+  const expandedPriceImpact = quote?.details?.expandedPriceImpact
+
   const gasFee = BigInt(fees?.gas?.amount ?? 0)
   const formattedGasFee = formatBN(
     gasFee,
     5,
     Number(fees?.gas?.currency?.decimals ?? 18)
   )
-  const relayerGasFee = BigInt(fees?.relayerGas?.amount ?? 0)
-  const formattedRelayerGas = formatBN(
-    relayerGasFee,
-    5,
-    Number(fees?.relayerGas?.currency?.decimals ?? 18)
-  )
-  const relayerFee = BigInt(fees?.relayerService?.amount ?? 0)
-  const relayerFeeIsReward = relayerFee < 0
-  const formattedRelayer = relayerFeeIsReward
-    ? formatBN(
-        BigInt(fees?.relayerService?.amount?.replace('-', '') ?? 0),
-        5,
-        Number(fees?.relayerService?.currency?.decimals ?? 18)
-      )
-    : formatBN(
-        relayerFee,
-        5,
-        Number(fees?.relayerService?.currency?.decimals ?? 18)
-      )
-  const appFee = BigInt(fees?.app?.amount ?? 0)
+
+  // Execution fee
+  const executionFeeUsd = expandedPriceImpact?.execution?.usd
+
+  // Relay fee
+  const relayFeeUsd = expandedPriceImpact?.relay?.usd
+  const relayFeeIsReward = Number(relayFeeUsd ?? 0) > 0
+
+  // App fee
+  const appFeeUsd = expandedPriceImpact?.app?.usd
+  const hasAppFee = appFeeUsd && Number(appFeeUsd) !== 0
+
   const totalFeesUsd =
     Number(fees?.relayer?.amountUsd ?? 0) + Number(fees?.app?.amountUsd ?? 0)
   const _isGasSponsored = isGasSponsored(quote)
@@ -70,44 +64,37 @@ export const parseFees = (
       currency: fees?.gas?.currency
     },
     {
-      raw: _isGasSponsored ? 0n : relayerGasFee,
-      formatted: _isGasSponsored ? '0' : `${formattedRelayerGas}`,
+      raw: 0n,
+      formatted: '0',
       usd: _isGasSponsored
         ? { value: 0, formatted: '0' }
-        : formatUsdFee(fees?.relayerGas?.amountUsd, true),
-      name: `Fill Gas (${selectedTo.displayName})`,
+        : formatUsdFee(executionFeeUsd, false),
+      name: `Execution Fee`,
       tooltip: null,
       type: 'gas',
       id: 'destination-gas',
-      currency: fees?.relayerGas?.currency
+      currency: fees?.relayer?.currency
     },
     {
-      raw: _isGasSponsored ? 0n : relayerFee,
-      formatted: _isGasSponsored
-        ? '0'
-        : `${relayerFeeIsReward ? '+' : '-'}${formattedRelayer}`,
+      raw: 0n,
+      formatted: '0',
       usd: _isGasSponsored
         ? { value: 0, formatted: '0' }
-        : formatUsdFee(fees?.relayerService?.amountUsd, true),
-      name: relayerFeeIsReward ? 'Reward' : 'Relay Fee',
+        : formatUsdFee(relayFeeUsd, false),
+      name: relayFeeIsReward ? 'Reward' : 'Relay Fee',
       tooltip: null,
       type: 'relayer',
       id: 'relayer-fee',
-      currency: fees?.relayerService?.currency
+      currency: fees?.relayer?.currency
     }
   ]
-  if (appFee) {
-    const formattedAppFee = formatBN(
-      appFee,
-      5,
-      Number(fees?.app?.currency?.decimals ?? 18)
-    )
+  if (hasAppFee) {
     breakdown.push({
-      raw: _isGasSponsored ? 0n : appFee,
-      formatted: _isGasSponsored ? '0' : `${formattedAppFee}`,
+      raw: 0n,
+      formatted: '0',
       usd: _isGasSponsored
         ? { value: 0, formatted: '0' }
-        : formatUsdFee(fees?.app?.amountUsd, true),
+        : formatUsdFee(appFeeUsd, false),
       name: 'App Fee',
       tooltip: null,
       type: 'relayer',
@@ -146,7 +133,7 @@ export const parseFees = (
           ? formatDollar(parseFloat(quote?.details?.totalImpact?.usd ?? 0))
           : undefined,
       priceImpactColor,
-      swapImpact: formatUsdFee(quote?.details?.swapImpact?.usd, false)
+      swapImpact: formatUsdFee(expandedPriceImpact?.swap?.usd, false)
     },
     isGasSponsored: _isGasSponsored
   }
