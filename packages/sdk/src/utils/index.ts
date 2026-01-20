@@ -5,7 +5,7 @@ export { request, APIError, isAPIError } from './request.js'
 export { log, LogLevel } from './logger.js'
 export { axios } from './axios.js'
 export { default as prepareCallTransaction } from './prepareCallTransaction.js'
-export { adaptViemWallet } from './viemWallet.js'
+export { adaptViemWallet, isViemWalletClient } from './viemWallet.js'
 export { convertViemChainToRelayChain, type RelayAPIChain } from './chain.js'
 export { getCurrentStepData } from './getCurrentStepData.js'
 export {
