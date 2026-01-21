@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-kit-hooks",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
