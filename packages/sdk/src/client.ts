@@ -107,6 +107,10 @@ export class RelayClient {
     } else {
       this.source = options.source
     }
+
+    if (options.logger) {
+      this.log = options.logger
+    }
   }
 
   configure(options: Partial<RelayClientOptions>) {
