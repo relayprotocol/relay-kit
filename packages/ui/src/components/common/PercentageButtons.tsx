@@ -65,11 +65,10 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
       )
     }
 
+    // Reserve gas buffer for native tokens, or use full balance if dust amount
     const finalMaxAmount =
-      isFromNative && feeBufferAmount > 0n
-        ? balance > feeBufferAmount
-          ? balance - feeBufferAmount
-          : 0n
+      isFromNative && feeBufferAmount > 0n && balance > feeBufferAmount
+        ? balance - feeBufferAmount
         : balance
 
     onPercentageClick(
