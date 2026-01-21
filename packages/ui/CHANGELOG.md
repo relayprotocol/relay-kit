@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.10
+
+### Patch Changes
+
+- da08649: Better handling of max input for low balances
+- Updated dependencies [efa0aae]
+- Updated dependencies [b86a59d]
+  - @relayprotocol/relay-sdk@5.0.2
+  - @relayprotocol/relay-kit-hooks@3.0.4
+
 ## 7.0.9
 
 ### Patch Changes
