@@ -4,7 +4,7 @@ import type {
   TransactionStepItem
 } from '../../types/index.js'
 import { sendTransactionSafely } from '../transaction.js'
-import type { AxiosRequestConfig } from 'axios'
+import type { AxiosRequestConfig, AxiosRequestHeaders } from 'axios'
 import { LogLevel } from '../logger.js'
 import type { RelayClient } from '../../client.js'
 import type { SetStateData } from './index.js'
@@ -98,7 +98,9 @@ export async function handleTransactionStepItem({
     },
     onWebsocketFailed,
     request,
-    undefined,
+    {
+      'relay-sdk-version': client.version ?? 'unknown'
+    } as unknown as AxiosRequestHeaders,
     crossChainIntentChainId,
     () => {
       stepItem.progressState = 'validating'

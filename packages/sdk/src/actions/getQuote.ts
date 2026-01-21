@@ -163,6 +163,7 @@ export async function getQuote(
     data: query,
     headers: {
       ...getApiKeyHeader(client),
+      'relay-sdk-version': client?.version ?? 'unknown',
       ...headers
     }
   }
