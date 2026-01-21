@@ -11,6 +11,20 @@ import {
   http
 } from 'viem'
 
+// Cache for expensive RPC calls (code, balance, tx count)
+interface EOACacheEntry {
+  code?: { value: string | undefined; timestamp: number }
+  balance?: { value: bigint; timestamp: number }
+  txCount?: { value: number; timestamp: number }
+}
+
+const CACHE_DURATION_MS = 2 * 60 * 1000 // 2 minutes
+const eoaCache = new Map<string, EOACacheEntry>()
+
+function getCacheKey(address: string, chainId: number): string {
+  return `${address}-${chainId}`
+}
+
 export function isViemWalletClient(
   wallet: WalletClient | AdaptedWallet
 ): wallet is WalletClient {
@@ -245,60 +259,219 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
     },
     isEOA: async (
       chainId: number
-    ): Promise<{ isEOA: boolean; isEIP7702Delegated: boolean }> => {
+    ): Promise<{
+      isEOA: boolean
+      isEIP7702Delegated: boolean
+    }> => {
       if (!wallet.account) {
-        return { isEOA: false, isEIP7702Delegated: false }
+        return {
+          isEOA: false,
+          isEIP7702Delegated: false
+        }
       }
 
       try {
-        let hasSmartWalletCapabilities = false
-        try {
-          const capabilities = await wallet.getCapabilities({
-            account: wallet.account,
-            chainId
-          })
+        const address = wallet.account.address
+        const cacheKey = getCacheKey(address, chainId)
+        const now = Date.now()
 
-          hasSmartWalletCapabilities = Boolean(
-            capabilities?.atomicBatch?.supported ||
-              capabilities?.paymasterService?.supported ||
-              capabilities?.auxiliaryFunds?.supported ||
-              capabilities?.sessionKeys?.supported
-          )
-        } catch (capabilitiesError) {}
-
-        const client = getClient()
-        const chain = client.chains.find((chain) => chain.id === chainId)
-        const rpcUrl = chain?.httpRpcUrl
-
-        if (!chain) {
-          throw new Error(`Chain ${chainId} not found in relay client`)
+        // Get or create cache entry for this address+chain
+        let cacheEntry = eoaCache.get(cacheKey)
+        if (!cacheEntry) {
+          cacheEntry = {}
+          eoaCache.set(cacheKey, cacheEntry)
         }
 
-        const viemClient = createPublicClient({
-          chain: chain?.viemChain,
-          transport: rpcUrl ? http(rpcUrl) : http()
-        })
+        // Always fetch capabilities fresh (wallet-specific, not cacheable)
+        const getSmartWalletCapabilities = async () => {
+          let _hasSmartWalletCapabilities = false
+          try {
+            const capabilities = await wallet.getCapabilities({
+              account: wallet.account,
+              chainId
+            })
 
-        let code
-        try {
-          code = await viemClient.getCode({
-            address: wallet.account.address
-          })
-        } catch (getCodeError) {
-          throw getCodeError
+            _hasSmartWalletCapabilities = Boolean(
+              capabilities?.atomicBatch?.supported ||
+                capabilities?.paymasterService?.supported ||
+                capabilities?.auxiliaryFunds?.supported ||
+                capabilities?.sessionKeys?.supported
+            )
+          } catch (capabilitiesError) {}
+          return _hasSmartWalletCapabilities
         }
 
-        const hasCode = Boolean(code && code !== '0x')
-        const isEIP7702Delegated = Boolean(
-          code && code.toLowerCase().startsWith('0xef01')
-        )
-        const isSmartWallet =
+        // Get code with caching
+        const getCode = async () => {
+          // Check cache first
+          console.log('CHECKING CODE CACHE')
+          if (
+            cacheEntry &&
+            cacheEntry?.code &&
+            now - cacheEntry?.code.timestamp < CACHE_DURATION_MS
+          ) {
+            console.log('CODE CACHE HIT')
+            const code = cacheEntry!.code.value
+            const hasCode = Boolean(code && code !== '0x')
+            const isEIP7702Delegated = Boolean(
+              code && code.toLowerCase().startsWith('0xef01')
+            )
+            return { hasCode, isEIP7702Delegated }
+          }
+
+          // Fetch from RPC
+          console.log('FETCHING CODE FROM RPC')
+          const client = getClient()
+          const chain = client.chains.find((chain) => chain.id === chainId)
+          const rpcUrl = chain?.httpRpcUrl
+
+          if (!chain) {
+            throw new Error(`Chain ${chainId} not found in relay client`)
+          }
+
+          const viemClient = createPublicClient({
+            chain: chain?.viemChain,
+            transport: rpcUrl ? http(rpcUrl) : http()
+          })
+
+          try {
+            const _code = await viemClient.getCode({ address })
+
+            // Cache the result
+            cacheEntry!.code = { value: _code, timestamp: now }
+
+            const hasCode = Boolean(_code && _code !== '0x')
+            const isEIP7702Delegated = Boolean(
+              _code && _code.toLowerCase().startsWith('0xef01')
+            )
+            return { hasCode, isEIP7702Delegated }
+          } catch (getCodeError) {
+            throw getCodeError
+          }
+        }
+
+        // Get balance with caching
+        const getNativeBalance = async () => {
+          // Check cache first
+          console.log('CHECKING BALANCE CACHE')
+          if (
+            cacheEntry &&
+            cacheEntry?.balance &&
+            now - cacheEntry?.balance.timestamp < CACHE_DURATION_MS
+          ) {
+            console.log('BALANCE CACHE HIT')
+            return cacheEntry?.balance.value
+          }
+
+          // Fetch from RPC
+          console.log('FETCHING BALANCE FROM RPC')
+          const client = getClient()
+          const chain = client.chains.find((chain) => chain.id === chainId)
+          const rpcUrl = chain?.httpRpcUrl
+
+          if (!chain) {
+            return BigInt(0)
+          }
+
+          const viemClient = createPublicClient({
+            chain: chain?.viemChain,
+            transport: rpcUrl ? http(rpcUrl) : http()
+          })
+
+          try {
+            console.log('FETCHING BALANCE FROM RPC')
+            const balance = await viemClient.getBalance({ address })
+            console.log('BALANCE FETCHED FROM RPC')
+            // Cache the result
+            cacheEntry!.balance = { value: balance, timestamp: now }
+            return balance
+          } catch (error) {
+            return BigInt(0)
+          }
+        }
+
+        // Get transaction count with caching
+        const getTransactionCount = async () => {
+          // Check cache first
+          console.log('CHECKING TRANSACTION COUNT CACHE')
+          if (
+            cacheEntry &&
+            cacheEntry?.txCount &&
+            now - cacheEntry?.txCount.timestamp < CACHE_DURATION_MS
+          ) {
+            console.log('TRANSACTION COUNT CACHE HIT')
+            return cacheEntry?.txCount.value
+          }
+
+          // Fetch from RPC
+          console.log('FETCHING TRANSACTION COUNT FROM RPC')
+          const client = getClient()
+          const chain = client.chains.find((chain) => chain.id === chainId)
+          const rpcUrl = chain?.httpRpcUrl
+
+          if (!chain) {
+            return 0
+          }
+
+          const viemClient = createPublicClient({
+            chain: chain?.viemChain,
+            transport: rpcUrl ? http(rpcUrl) : http()
+          })
+
+          try {
+            const txCount = await viemClient.getTransactionCount({ address })
+            // Cache the result
+            cacheEntry!.txCount = { value: txCount, timestamp: now }
+            return txCount
+          } catch (error) {
+            return 0
+          }
+        }
+
+        const [
+          hasSmartWalletCapabilitiesResult,
+          getCodeResult,
+          nativeBalanceResult,
+          transactionCountResult
+        ] = await Promise.allSettled([
+          getSmartWalletCapabilities(),
+          getCode(),
+          getNativeBalance(),
+          getTransactionCount()
+        ])
+
+        const hasSmartWalletCapabilities =
+          hasSmartWalletCapabilitiesResult.status === 'fulfilled'
+            ? hasSmartWalletCapabilitiesResult.value
+            : false
+        const { hasCode, isEIP7702Delegated } =
+          getCodeResult.status === 'fulfilled'
+            ? getCodeResult.value
+            : { hasCode: false, isEIP7702Delegated: false }
+        const nativeBalance =
+          nativeBalanceResult.status === 'fulfilled'
+            ? nativeBalanceResult.value
+            : BigInt(0)
+        const transactionCount =
+          transactionCountResult.status === 'fulfilled'
+            ? transactionCountResult.value
+            : 0
+
+        let isSmartWallet =
           hasSmartWalletCapabilities || hasCode || isEIP7702Delegated
-        const isEOA = !isSmartWallet
 
-        return { isEOA, isEIP7702Delegated }
+        // If balance is zero or transaction count is <= 1, it's likely a smart wallet
+        if (nativeBalance === BigInt(0) || transactionCount <= 1) {
+          isSmartWallet = true
+        }
+
+        return { isEOA: !isSmartWallet, isEIP7702Delegated }
       } catch (error) {
-        return { isEOA: false, isEIP7702Delegated: false }
+        // On error, default to explicit deposit (isEOA: false) for safety
+        return {
+          isEOA: false,
+          isEIP7702Delegated: false
+        }
       }
     }
   }

@@ -9,9 +9,9 @@ import {
   usePreviousValueChange,
   useIsWalletCompatible,
   useFallbackState,
-  useEOADetection,
   useDisplayName,
-  useLighterAccount
+  useLighterAccount,
+  useExplicitDeposit
 } from '../../../../hooks/index.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
@@ -572,20 +572,14 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
 
   const isFromNative = fromToken?.address === fromChain?.currency?.address
 
-  const explicitDeposit = useEOADetection(
+  const explicitDeposit = useExplicitDeposit(
     wallet,
     fromToken?.chainId,
     fromChain?.vmType,
-    fromChain,
-    address,
-    fromBalance,
-    isFromNative
+    address
   )
 
-  const shouldSetQuoteParameters =
-    fromToken &&
-    toToken &&
-    (fromChain?.vmType !== 'evm' || explicitDeposit !== undefined)
+  const shouldSetQuoteParameters = fromToken && toToken
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     shouldSetQuoteParameters
@@ -620,9 +614,10 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
                 }
               }
             : {}),
-          ...(explicitDeposit !== undefined && {
-            explicitDeposit: explicitDeposit
-          })
+          ...(explicitDeposit !== undefined &&
+            fromChain?.vmType === 'evm' && {
+              explicitDeposit: explicitDeposit
+            })
         }
       : undefined
 
