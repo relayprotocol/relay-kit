@@ -1,5 +1,12 @@
 # @reservoir0x/relay-sdk
 
+## 5.0.2
+
+### Patch Changes
+
+- efa0aae: Add support for custom logger function in createClient initializer
+- b86a59d: Add relay sdk version headers
+
 ## 5.0.1
 
 ### Patch Changes
