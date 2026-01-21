@@ -88,7 +88,8 @@ export async function handleSignatureStepItem({
     const postOrderUrl = new URL(`${request.baseURL}${postData.endpoint}`)
     const headers = {
       'Content-Type': 'application/json',
-      ...getApiKeyHeader(client, request.baseURL)
+      ...getApiKeyHeader(client, request.baseURL),
+      'relay-sdk-version': client.version ?? 'unknown'
     }
 
     if (postData.body && !postData.body.referrer) {
@@ -160,7 +161,8 @@ export async function handleSignatureStepItem({
 
     const headers = {
       'Content-Type': 'application/json',
-      ...getApiKeyHeader(client, request.baseURL)
+      ...getApiKeyHeader(client, request.baseURL),
+      'relay-sdk-version': client.version ?? 'unknown'
     }
 
     // If websocket is enabled, wait for it to fail before falling back to polling

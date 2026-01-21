@@ -66,6 +66,13 @@ export async function executeSteps(
   if (client?.baseApiUrl) {
     request.baseURL = client.baseApiUrl
   }
+  if (request.headers) {
+    request.headers['relay-sdk-version'] = client.version ?? 'unknown'
+  } else {
+    request.headers = {
+      'relay-sdk-version': client.version ?? 'unknown'
+    }
+  }
 
   const pollingInterval = client.pollingInterval ?? 5000
 
