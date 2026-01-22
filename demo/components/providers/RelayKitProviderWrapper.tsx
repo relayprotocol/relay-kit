@@ -40,7 +40,8 @@ export const RelayKitProviderWrapper: FC<{
         source: 'relay-demo',
         logLevel: LogLevel.Verbose,
         duneConfig: {
-          apiBaseUrl: process.env.NEXT_PUBLIC_DUNE_API_URL
+          apiBaseUrl: process.env.NEXT_PUBLIC_DUNE_API_URL,
+          apiKey: process.env.NEXT_PUBLIC_DUNE_API_KEY
         },
         chains: dynamicChains,
         privateChainIds: process.env.NEXT_PUBLIC_INCLUDE_CHAINS?.split(','),

@@ -224,7 +224,7 @@ const useCurrencyBalance = ({
 
     if (chain.id === eclipse.id) {
       value = eclipseBalances.data?.balance
-      isDuneBalance = true
+      isDuneBalance = false
       isError = eclipseBalances.isError
       error = eclipseBalances.error
     } else {
@@ -237,7 +237,7 @@ const useCurrencyBalance = ({
               duneBalances.balanceMap[`${chain.id}:${currency}`].amount ?? 0
             )
           : undefined
-      isDuneBalance = false
+      isDuneBalance = true
       isError = duneBalances.isError
       error = duneBalances.error
     }
