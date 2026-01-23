@@ -117,31 +117,36 @@ export default (
       (isSvmAddress || isEvmAddress)
   })
 
-  response?.data?.balances?.forEach((balance) => {
-    if (!balance.chain_id && balance.chain === 'solana') {
-      balance.chain_id = solana.id
-    }
-    if (!balance.chain_id && balance.chain === 'eclipse') {
-      balance.chain_id = eclipse.id
-    }
-  })
-
   const balanceMap = response?.data?.balances?.reduce((balanceMap, balance) => {
-    if (balance.address === 'native') {
-      balance.address =
-        balance.chain === 'solana' || balance.chain === 'eclipse'
+    // Create a new object instead of mutating the cached one
+    const normalizedBalance = { ...balance }
+
+    // Normalize chain_id
+    if (!normalizedBalance.chain_id && normalizedBalance.chain === 'solana') {
+      normalizedBalance.chain_id = solana.id
+    }
+    if (!normalizedBalance.chain_id && normalizedBalance.chain === 'eclipse') {
+      normalizedBalance.chain_id = eclipse.id
+    }
+
+    // Normalize native address
+    if (normalizedBalance.address === 'native') {
+      normalizedBalance.address =
+        normalizedBalance.chain === 'solana' ||
+        normalizedBalance.chain === 'eclipse'
           ? '11111111111111111111111111111111'
           : zeroAddress
     }
-    let chainId = balance.chain_id
-    if (!chainId && balance.chain === 'solana') {
+
+    let chainId = normalizedBalance.chain_id
+    if (!chainId && normalizedBalance.chain === 'solana') {
       chainId = solana.id
     }
-    if (!chainId && balance.chain === 'eclipse') {
+    if (!chainId && normalizedBalance.chain === 'eclipse') {
       chainId = eclipse.id
     }
 
-    balanceMap[`${chainId}:${balance.address}`] = balance
+    balanceMap[`${chainId}:${normalizedBalance.address}`] = normalizedBalance
     return balanceMap
   }, {} as BalanceMap)
 
