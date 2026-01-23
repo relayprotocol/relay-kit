@@ -8,8 +8,7 @@ import {
   type AdaptedWallet,
   type Execute,
   type GetQuoteParameters,
-  type TransactionStepItem,
-  getClient
+  type TransactionStepItem
 } from '@relayprotocol/relay-sdk'
 
 const FastFillPage: NextPage = () => {
@@ -34,15 +33,30 @@ const FastFillPage: NextPage = () => {
         stepItem: TransactionStepItem,
         step: Execute['steps'][0]
       ) => {
-        // Call fastFill SDK action if requestId is available
+        // Call fastFill proxy API if requestId is available
         if (step.requestId) {
           try {
-            console.log('Calling fastFill for requestId:', step.requestId)
-            const relayClient = getClient()
-            await relayClient.actions.fastFill({
-              requestId: step.requestId
+            console.log('Calling fastFill proxy for requestId:', step.requestId)
+            const response = await fetch('/api/fast-fill', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                requestId: step.requestId
+              })
             })
-            console.log('FastFill called successfully')
+
+            if (response.ok) {
+              const data = await response.json()
+              console.log('FastFill called successfully:', data)
+            } else {
+              const error = await response.json()
+              console.warn(
+                'FastFill error (continuing with transaction):',
+                error.error || error.message
+              )
+            }
           } catch (e: any) {
             // Log error but don't fail the transaction
             console.warn(

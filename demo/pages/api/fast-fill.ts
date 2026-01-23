@@ -1,9 +1,12 @@
-import { paths } from '@relayprotocol/relay-sdk'
+import { paths, createClient } from '@relayprotocol/relay-sdk'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-type FastFillRequest = paths['/fast-fill']['post']['requestBody']['content']['application/json']
-type FastFillResponse = paths['/fast-fill']['post']['responses']['200']['content']['application/json']
-type RequestsV2Response = paths['/requests/v2']['get']['responses']['200']['content']['application/json']
+type FastFillRequest =
+  paths['/fast-fill']['post']['requestBody']['content']['application/json']
+type FastFillResponse =
+  paths['/fast-fill']['post']['responses']['200']['content']['application/json']
+type RequestsV2Response =
+  paths['/requests/v2']['get']['responses']['200']['content']['application/json']
 
 // Whitelist of allowed user addresses
 const WHITELISTED_USERS = ['0x03508bB71268BBA25ECaCC8F620e01866650532c']
@@ -27,7 +30,8 @@ export default async function handler(
     return res.status(500).json({ error: 'API key not configured' })
   }
 
-  const baseApiUrl = process.env.NEXT_PUBLIC_RELAY_API_URL || 'https://api.relay.link'
+  const baseApiUrl =
+    process.env.NEXT_PUBLIC_RELAY_API_URL || 'https://api.relay.link'
 
   try {
     // Fetch the request to check user and status
@@ -74,31 +78,31 @@ export default async function handler(
       })
     }
 
-    // Call the fast-fill API
-    const fastFillUrl = `${baseApiUrl}/fast-fill`
-    const fastFillBody: FastFillRequest = {
-      requestId,
-      ...(solverInputCurrencyAmount && { solverInputCurrencyAmount })
-    }
-
-    const fastFillResponse = await fetch(fastFillUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey
-      },
-      body: JSON.stringify(fastFillBody)
+    // Create a RelayClient instance with the API key and base URL
+    const relayClient = createClient({
+      baseApiUrl,
+      apiKey
     })
 
-    const fastFillData = await fastFillResponse.json()
-
-    if (!fastFillResponse.ok) {
-      return res.status(fastFillResponse.status).json({
-        error: fastFillData.error || fastFillData.message || 'Fast fill failed'
+    // Call the fast-fill API using the SDK action
+    // The fastFill action uses getClient() internally, which will return
+    // the client we just created via createClient()
+    try {
+      const fastFillData = await relayClient.actions.fastFill({
+        requestId,
+        ...(solverInputCurrencyAmount && { solverInputCurrencyAmount })
       })
-    }
 
-    return res.status(200).json(fastFillData as FastFillResponse)
+      return res.status(200).json(fastFillData)
+    } catch (error: any) {
+      // Handle APIError from the SDK
+      if (error.statusCode) {
+        return res.status(error.statusCode).json({
+          error: error.message || 'Fast fill failed'
+        })
+      }
+      throw error
+    }
   } catch (error: any) {
     console.error('Fast fill proxy error:', error)
     return res.status(500).json({
