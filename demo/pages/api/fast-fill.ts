@@ -2,14 +2,13 @@ import { paths, createClient } from '@relayprotocol/relay-sdk'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
 type FastFillRequest =
-  paths['/fast-fill']['post']['requestBody']['content']['application/json']
+  paths['/fast-fill']['post']['requestBody']['content']['application/json'] & {
+    password?: string // Password for fast fill authentication
+  }
 type FastFillResponse =
   paths['/fast-fill']['post']['responses']['200']['content']['application/json']
 type RequestsV2Response =
   paths['/requests/v2']['get']['responses']['200']['content']['application/json']
-
-// Whitelist of allowed user addresses
-const WHITELISTED_USERS = ['0x03508bB71268BBA25ECaCC8F620e01866650532c']
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,10 +18,23 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { requestId, solverInputCurrencyAmount } = req.body as FastFillRequest
+  const { requestId, solverInputCurrencyAmount, password } =
+    req.body as FastFillRequest
 
   if (!requestId) {
     return res.status(400).json({ error: 'requestId is required' })
+  }
+
+  // Check password first (before any API calls)
+  const expectedPassword = process.env.FAST_FILL_PASSWORD
+  if (!expectedPassword) {
+    return res.status(500).json({
+      error: 'Fast fill password not configured on server'
+    })
+  }
+
+  if (!password || password !== expectedPassword) {
+    return res.status(401).json({ error: 'Invalid fast fill password' })
   }
 
   const apiKey = process.env.NEXT_RELAY_API_KEY
@@ -34,7 +46,7 @@ export default async function handler(
     process.env.NEXT_PUBLIC_RELAY_API_URL || 'https://api.relay.link'
 
   try {
-    // Fetch the request to check user and status
+    // Fetch the request to check status (password already verified)
     const requestsUrl = new URL(`${baseApiUrl}/requests/v2`)
     requestsUrl.searchParams.set('id', requestId)
 
@@ -57,18 +69,6 @@ export default async function handler(
 
     if (!request) {
       return res.status(404).json({ error: 'Request not found' })
-    }
-
-    // Check if user is whitelisted
-    const user = request.user?.toLowerCase()
-    const isWhitelisted = WHITELISTED_USERS.some(
-      (addr) => addr.toLowerCase() === user
-    )
-
-    if (!isWhitelisted) {
-      return res.status(403).json({
-        error: `User ${request.user} is not whitelisted for fast fill`
-      })
     }
 
     // Check if request is already in success status

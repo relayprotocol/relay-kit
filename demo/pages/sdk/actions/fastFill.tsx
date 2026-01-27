@@ -1,13 +1,13 @@
 import { NextPage } from 'next'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useWalletClient } from 'wagmi'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { ConnectButton } from 'components/ConnectButton'
 import {
   adaptViemWallet,
+  type QuoteBody,
   type AdaptedWallet,
   type Execute,
-  type GetQuoteParameters,
   type TransactionStepItem
 } from '@relayprotocol/relay-sdk'
 
@@ -20,11 +20,13 @@ const FastFillPage: NextPage = () => {
   const [progress, setProgress] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fastFillPassword, setFastFillPassword] = useState<string>('')
 
   // Create a custom wallet adapter that wraps the viemWallet adapter
   // and intercepts handleSendTransactionStep to call fastFill
   const createFastFillWalletAdapter = (
-    originalWallet: AdaptedWallet
+    originalWallet: AdaptedWallet,
+    password: string
   ): AdaptedWallet => {
     return {
       ...originalWallet,
@@ -33,8 +35,13 @@ const FastFillPage: NextPage = () => {
         stepItem: TransactionStepItem,
         step: Execute['steps'][0]
       ) => {
+        const txHash = await originalWallet.handleSendTransactionStep(
+          chainId,
+          stepItem,
+          step
+        )
         // Call fastFill proxy API if requestId is available
-        if (step.requestId) {
+        if (step.requestId && step.id === 'deposit') {
           try {
             console.log('Calling fastFill proxy for requestId:', step.requestId)
             const response = await fetch('/api/fast-fill', {
@@ -43,7 +50,8 @@ const FastFillPage: NextPage = () => {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                requestId: step.requestId
+                requestId: step.requestId,
+                password
               })
             })
 
@@ -66,8 +74,7 @@ const FastFillPage: NextPage = () => {
           }
         }
 
-        // Call the original handleSendTransactionStep method
-        return originalWallet.handleSendTransactionStep(chainId, stepItem, step)
+        return txHash
       }
     }
   }
@@ -91,12 +98,21 @@ const FastFillPage: NextPage = () => {
     setProgress(null)
     setLoading(true)
 
+    if (!fastFillPassword) {
+      setError('Fast fill password is required')
+      setLoading(false)
+      return
+    }
+
     try {
       // Adapt the wallet
       const adaptedWallet = adaptViemWallet(wallet)
 
       // Wrap it with our fastFill adapter
-      const fastFillWallet = createFastFillWalletAdapter(adaptedWallet)
+      const fastFillWallet = createFastFillWalletAdapter(
+        adaptedWallet,
+        fastFillPassword
+      )
 
       // Execute the quote with the fastFill wallet adapter
       const executeResult = await client.actions.execute({
@@ -128,7 +144,7 @@ const FastFillPage: NextPage = () => {
     setLoading(true)
 
     try {
-      let params: GetQuoteParameters
+      let params: QuoteBody
       if (quoteParams.trim()) {
         params = JSON.parse(quoteParams)
       } else {
@@ -137,11 +153,27 @@ const FastFillPage: NextPage = () => {
         return
       }
 
+      const userAddress = wallet.account?.address
+      if (!userAddress) {
+        setError('Could not get address from connected wallet')
+        setLoading(false)
+        return
+      }
       const adaptedWallet = adaptViemWallet(wallet)
-      const quoteResult = await client.actions.getQuote({
-        ...params,
-        wallet: adaptedWallet
-      })
+      const quoteResult = await client.actions.getQuote(
+        {
+          chainId: params.originChainId,
+          toChainId: params.destinationChainId,
+          currency: params.originCurrency,
+          toCurrency: params.destinationCurrency,
+          amount: params.amount,
+          tradeType: params.tradeType,
+          wallet: adaptedWallet,
+          user: userAddress,
+          recipient: params.recipient ?? userAddress
+        },
+        true
+      )
 
       setQuote(quoteResult)
     } catch (e: any) {
@@ -150,6 +182,14 @@ const FastFillPage: NextPage = () => {
       setLoading(false)
     }
   }
+
+  const progressString = useMemo(() => {
+    try {
+      return JSON.stringify(progress, null, 2)
+    } catch (e) {
+      return ''
+    }
+  }, [result])
 
   return (
     <div
@@ -170,6 +210,18 @@ const FastFillPage: NextPage = () => {
         <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
           Quote Parameters (JSON):
         </label>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 200,
+            fontStyle: 'italic',
+            marginBottom: 8,
+            color: '#666'
+          }}
+        >
+          Note that user/recipient are not required — they are taken from the
+          connected wallet.
+        </div>
         <textarea
           value={quoteParams}
           onChange={(e) => setQuoteParams(e.target.value)}
@@ -204,7 +256,7 @@ const FastFillPage: NextPage = () => {
         {loading && !quote ? 'Getting Quote...' : 'Get Quote'}
       </button>
 
-      {quote && (
+      {quote && quote.steps && (
         <div
           style={{
             width: '100%',
@@ -216,16 +268,29 @@ const FastFillPage: NextPage = () => {
         >
           <b>Quote obtained! Request IDs:</b>
           <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 200 }}>
-            {JSON.stringify(
-              quote.steps
-                .map((step) => step.requestId)
-                .filter((id) => id !== undefined),
-              null,
-              2
-            )}
+            {quote.steps.find((step) => step.requestId)?.requestId ?? ''}
           </pre>
         </div>
       )}
+
+      <div style={{ width: '100%' }}>
+        <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
+          Fast Fill Password:
+        </label>
+        <input
+          type="password"
+          value={fastFillPassword}
+          onChange={(e) => setFastFillPassword(e.target.value)}
+          placeholder="Enter fast fill password"
+          style={{
+            width: '100%',
+            padding: 12,
+            fontSize: 14,
+            border: '1px solid #ccc',
+            borderRadius: 8
+          }}
+        />
+      </div>
 
       <button
         style={{
@@ -240,7 +305,7 @@ const FastFillPage: NextPage = () => {
           cursor: 'pointer',
           width: '100%'
         }}
-        disabled={!wallet || !quote || loading}
+        disabled={!wallet || !quote || loading || !fastFillPassword.trim()}
         onClick={handleExecute}
       >
         {loading ? 'Executing with Fast Fill...' : 'Execute with Fast Fill'}
@@ -264,24 +329,7 @@ const FastFillPage: NextPage = () => {
         >
           <b>Progress:</b>
           <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 300 }}>
-            {JSON.stringify(progress, null, 2)}
-          </pre>
-        </div>
-      )}
-
-      {result && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: '10px',
-            background: '#e0ffe0',
-            borderRadius: '8px',
-            width: '100%'
-          }}
-        >
-          <b>Result:</b>
-          <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 300 }}>
-            {JSON.stringify(result, null, 2)}
+            {progressString}
           </pre>
         </div>
       )}

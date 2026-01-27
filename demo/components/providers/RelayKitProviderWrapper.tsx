@@ -65,6 +65,7 @@ export const RelayKitProviderWrapper: FC<{
               }
             })
           )
+          console.log('message', message, level)
         }
       }}
       theme={{
