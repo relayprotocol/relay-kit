@@ -101,7 +101,8 @@ export async function sendTransactionSafely(
   if (isBatchTransaction) {
     txHash = await wallet.handleBatchTransactionStep?.(
       chainId,
-      items as TransactionStepItem[]
+      items as TransactionStepItem[],
+      step
     )
   } else {
     txHash = await wallet.handleSendTransactionStep(
