@@ -34,6 +34,7 @@ const Index: NextPage = () => {
           <Link href="/sdk/actions/bridge">Bridge</Link>
           <Link href="/sdk/actions/swap">Swap</Link>
           <Link href="/sdk/actions/claimAppFees">Claim App Fees</Link>
+          <Link href="/sdk/actions/fastFill">Fast Fill</Link>
         </nav>
         <h2>
           <b>SDK Read Actions</b>
