@@ -46,38 +46,6 @@ export default async function handler(
     process.env.NEXT_PUBLIC_RELAY_API_URL || 'https://api.relay.link'
 
   try {
-    // Fetch the request to check status (password already verified)
-    const requestsUrl = new URL(`${baseApiUrl}/requests/v2`)
-    requestsUrl.searchParams.set('id', requestId)
-
-    const requestsResponse = await fetch(requestsUrl.href, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey
-      }
-    })
-
-    if (!requestsResponse.ok) {
-      return res.status(requestsResponse.status).json({
-        error: `Failed to fetch request: ${requestsResponse.statusText}`
-      })
-    }
-
-    const requestsData = (await requestsResponse.json()) as RequestsV2Response
-    const request = requestsData.requests?.[0]
-
-    if (!request) {
-      return res.status(404).json({ error: 'Request not found' })
-    }
-
-    // Check if request is already in success status
-    if (request.status === 'success') {
-      return res.status(400).json({
-        error: 'Request is already in success status'
-      })
-    }
-
     // Create a RelayClient instance with the API key and base URL
     const relayClient = createClient({
       baseApiUrl,
