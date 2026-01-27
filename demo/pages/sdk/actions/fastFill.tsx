@@ -75,6 +75,48 @@ const FastFillPage: NextPage = () => {
         }
 
         return txHash
+      },
+      handleBatchTransactionStep: async (chainId, items, step) => {
+        const txHash = await originalWallet?.handleBatchTransactionStep?.(
+          chainId,
+          items,
+          step
+        )
+        // Call fastFill proxy API if requestId is available
+        if (txHash) {
+          try {
+            console.log('Calling fastFill proxy for requestId:', step.requestId)
+            const response = await fetch('/api/fast-fill', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                requestId: step.requestId,
+                password
+              })
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              console.log('FastFill called successfully:', data)
+            } else {
+              const error = await response.json()
+              console.warn(
+                'FastFill error (continuing with transaction):',
+                error.error || error.message
+              )
+            }
+          } catch (e: any) {
+            // Log error but don't fail the transaction
+            console.warn(
+              'FastFill error (continuing with transaction):',
+              e?.message || String(e)
+            )
+          }
+        }
+
+        return txHash
       }
     }
   }

@@ -112,7 +112,8 @@ export type AdaptedWallet = {
   supportsAtomicBatch?: (chainId: number) => Promise<boolean>
   handleBatchTransactionStep?: (
     chainId: number,
-    items: TransactionStepItem[]
+    items: TransactionStepItem[],
+    step: Execute['steps'][0]
   ) => Promise<string | undefined>
   // detect if wallet is an EOA (externally owned account)
   isEOA?: (
