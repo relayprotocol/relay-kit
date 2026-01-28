@@ -1,5 +1,12 @@
 # @reservoir0x/relay-sui-wallet-adapter
 
+## 11.0.3
+
+### Patch Changes
+
+- Updated dependencies [0f0ad9f]
+  - @relayprotocol/relay-sdk@5.0.3
+
 ## 11.0.2
 
 ### Patch Changes
