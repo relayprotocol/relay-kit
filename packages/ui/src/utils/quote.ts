@@ -69,7 +69,7 @@ export const parseFees = (
       usd: _isGasSponsored
         ? { value: 0, formatted: '0' }
         : formatUsdFee(executionFeeUsd, false),
-      name: `Execution Fee`,
+      name: `Execution Fee (${selectedTo.displayName})`,
       tooltip: null,
       type: 'gas',
       id: 'destination-gas',
