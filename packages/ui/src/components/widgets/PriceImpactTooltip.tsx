@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react'
-import { Flex, Text, Box } from '../primitives/index.js'
+import { Anchor, Flex, Text, Box } from '../primitives/index.js'
 import Tooltip from '../primitives/Tooltip.js'
 import type { ChildrenProps } from '../widgets/SwapWidgetRenderer.js'
 
@@ -82,6 +82,16 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
               </Flex>
             )
           })}
+
+          {/* Learn More Link */}
+          <Anchor
+            href="https://docs.relay.link/references/api/api_core_concepts/fees#relay-fees"
+            target="_blank"
+            rel="noopener noreferrer"
+            css={{ color: 'primary11', fontSize: 12 }}
+          >
+            Learn more about the fees
+          </Anchor>
         </Flex>
       }
       {...tooltipProps}

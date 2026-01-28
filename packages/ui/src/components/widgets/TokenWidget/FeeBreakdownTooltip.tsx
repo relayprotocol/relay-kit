@@ -22,6 +22,7 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
 }) => {
   const currencyInAmount = quote?.details?.currencyIn?.amountUsd
   const currencyInAmountFormatted = quote?.details?.currencyIn?.amountFormatted
+  const expandedPriceImpact = quote?.details?.expandedPriceImpact
 
   // Relay fee
   const relayFee = feeBreakdown?.breakdown?.find(
@@ -29,35 +30,35 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
   )
   const relayFeeUsd =
     relayFee?.usd.value ??
-    (quote?.fees?.relayerService?.amountUsd !== undefined
-      ? -Number(quote.fees.relayerService.amountUsd)
+    (expandedPriceImpact?.relay?.usd !== undefined
+      ? Number(expandedPriceImpact.relay.usd)
       : undefined)
 
   // Swap impact
   const swapImpactUsd =
     feeBreakdown?.totalFees?.swapImpact?.value ??
-    (quote?.details?.swapImpact?.usd !== undefined
-      ? Number(quote.details.swapImpact.usd)
+    (expandedPriceImpact?.swap?.usd !== undefined
+      ? Number(expandedPriceImpact.swap.usd)
       : undefined)
 
-  // Destination gas (fill gas)
-  const destinationGas = feeBreakdown?.breakdown?.find(
+  // Execution fee
+  const executionFee = feeBreakdown?.breakdown?.find(
     (fee) => fee.id === 'destination-gas'
   )
-  const fillGasUsd =
-    destinationGas?.usd.value ??
-    (quote?.fees?.relayerGas?.amountUsd !== undefined
-      ? -Number(quote.fees.relayerGas.amountUsd)
+  const executionFeeUsd =
+    executionFee?.usd.value ??
+    (expandedPriceImpact?.execution?.usd !== undefined
+      ? Number(expandedPriceImpact.execution.usd)
       : undefined)
 
-  const fillGasLabel = destinationGas?.name ?? 'Fill Gas'
+  const executionFeeLabel = executionFee?.name ?? 'Execution Fee'
 
   // App fee
   const appFee = feeBreakdown?.breakdown?.find((fee) => fee.id === 'app-fee')
   const appFeeUsd =
     appFee?.usd.value ??
-    (quote?.fees?.app?.amountUsd !== undefined
-      ? Number(quote.fees.app.amountUsd)
+    (expandedPriceImpact?.app?.usd !== undefined
+      ? Number(expandedPriceImpact.app.usd)
       : undefined)
 
   const tokenAmountFormatted = formatDollar(
@@ -69,8 +70,8 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
   const swapImpactFormatted = formatDollar(
     swapImpactUsd !== undefined ? Math.abs(swapImpactUsd) : undefined
   )
-  const fillGasFormatted = formatDollar(
-    fillGasUsd !== undefined ? Math.abs(fillGasUsd) : undefined
+  const executionFeeFormatted = formatDollar(
+    executionFeeUsd !== undefined ? Math.abs(executionFeeUsd) : undefined
   )
   const appFeeFormatted =
     appFee?.usd.formatted ??
@@ -118,18 +119,18 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
             </Flex>
           )}
 
-          {/* Fill Gas Row */}
-          {fillGasUsd !== undefined && fillGasFormatted !== '-' && (
+          {/* Execution Fee Row */}
+          {executionFeeUsd !== undefined && executionFeeFormatted !== '-' && (
             <Flex align="center" css={{ width: '100%', mb: '2' }}>
               <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
-                {fillGasLabel}
+                {executionFeeLabel}
               </Text>
-              {feeBreakdown?.isGasSponsored && fillGasUsd === 0 ? (
+              {feeBreakdown?.isGasSponsored && executionFeeUsd === 0 ? (
                 <Text style="subtitle2" color="success">
                   Free
                 </Text>
               ) : (
-                <Text style="subtitle2">{fillGasFormatted}</Text>
+                <Text style="subtitle2">{executionFeeFormatted}</Text>
               )}
             </Flex>
           )}
