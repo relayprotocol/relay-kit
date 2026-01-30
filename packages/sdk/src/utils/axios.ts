@@ -17,7 +17,7 @@ axios.interceptors.response.use(
   (error) => {
     return Promise.reject(
       new APIError(
-        error.response?.data?.message,
+        error.response?.data?.message || error.response?.data?.error,
         error.response?.data?.statusCode || 500,
         {
           ...error.response?.data,

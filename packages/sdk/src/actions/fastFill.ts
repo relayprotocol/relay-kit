@@ -36,14 +36,14 @@ export async function fastFill(
     data: parameters,
     headers: getApiKeyHeader(client)
   }
-
-  const res = await axios.request(request)
-  if (res.status !== 200) {
+  try {
+    const res = await axios.request(request)
+    return res.data
+  } catch (error: any) {
     throw new APIError(
-      res?.data?.error || res?.data?.message,
-      res.status,
-      res.data
+      error?.message || 'Fast fill failed',
+      error?.statusCode || 500,
+      error
     )
   }
-  return res.data
 }
