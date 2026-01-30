@@ -63,18 +63,20 @@ export default async function handler(
 
       return res.status(200).json(fastFillData)
     } catch (error: any) {
-      // Handle APIError from the SDK
       if (error.statusCode) {
-        return res.status(error.statusCode).json({
-          error: error.message || 'Fast fill failed'
-        })
+        return res.status(400).json({
+          message: error.message || 'Fast fill failed',
+          code: error?.rawError?.code ?? 'UNKNOWN_ERROR'
+        } as any)
+      } else {
+        throw error
       }
-      throw error
     }
   } catch (error: any) {
     console.error('Fast fill proxy error:', error)
     return res.status(500).json({
-      error: error?.message || 'Internal server error'
-    })
+      error: error?.message || 'Internal server error',
+      code: 'UNKNOWN_ERROR'
+    } as any)
   }
 }
