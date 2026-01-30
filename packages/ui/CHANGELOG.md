@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.0.11
+
+### Patch Changes
+
+- 6ff1ba6: Use expandedPriceImpact from quote response
+- Updated dependencies [0f0ad9f]
+- Updated dependencies [7acfaed]
+  - @relayprotocol/relay-sdk@5.0.3
+  - @relayprotocol/relay-kit-hooks@3.0.5
+
 ## 7.0.10
 
 ### Patch Changes
