@@ -1,6 +1,6 @@
 {
     "name": "@relayprotocol/relay-tron-wallet-adapter",
-    "version": "4.0.3",
+    "version": "5.0.0",
     "description": "A Tron adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
