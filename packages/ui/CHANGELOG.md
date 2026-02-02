@@ -1,5 +1,17 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.1.0
+
+### Minor Changes
+
+- 56123ee: Refactor EOA detection to improve ux
+
+### Patch Changes
+
+- Updated dependencies [56123ee]
+  - @relayprotocol/relay-sdk@5.1.0
+  - @relayprotocol/relay-kit-hooks@3.0.6
+
 ## 7.0.11
 
 ### Patch Changes
