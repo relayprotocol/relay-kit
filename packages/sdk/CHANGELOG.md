@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.1.0
+
+### Minor Changes
+
+- 56123ee: Refactor EOA detection to improve ux
+
 ## 5.0.3
 
 ### Patch Changes
