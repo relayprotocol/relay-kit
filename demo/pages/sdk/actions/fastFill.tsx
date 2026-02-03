@@ -1,19 +1,28 @@
 import { NextPage } from 'next'
-import { useMemo, useState } from 'react'
-import { useWalletClient } from 'wagmi'
+import { useEffect, useMemo, useState } from 'react'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { ConnectButton } from 'components/ConnectButton'
 import {
-  adaptViemWallet,
   type QuoteBody,
   type AdaptedWallet,
   type Execute,
-  type TransactionStepItem
+  adaptViemWallet
 } from '@relayprotocol/relay-sdk'
+import { createFastFillWallet } from 'utils/createFastFillWallet'
+import { useDynamicContext } from '@dynamic-labs/sdk-react-core'
+import { isEthereumWallet } from '@dynamic-labs/ethereum'
+import { isSolanaWallet } from '@dynamic-labs/solana'
+import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
+import { isSuiWallet } from '@dynamic-labs/sui'
+import { isTronWallet, type TronWallet } from '@dynamic-labs/tron'
+import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
+import { adaptBitcoinWallet } from '@relayprotocol/relay-bitcoin-wallet-adapter'
+import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
+import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 
 const FastFillPage: NextPage = () => {
-  const { data: wallet } = useWalletClient()
   const client = useRelayClient()
+  const { primaryWallet } = useDynamicContext()
   const [quoteParams, setQuoteParams] = useState<string>('')
   const [quote, setQuote] = useState<Execute | null>(null)
   const [result, setResult] = useState<any>(null)
@@ -21,112 +30,98 @@ const FastFillPage: NextPage = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fastFillPassword, setFastFillPassword] = useState<string>('')
+  const [solverInputCurrencyAmount, setSolverInputCurrencyAmount] = useState<string>('')
+  const [adaptedWallet, setAdaptedWallet] = useState<AdaptedWallet | null>(null)
 
-  // Create a custom wallet adapter that wraps the viemWallet adapter
-  // and intercepts handleSendTransactionStep to call fastFill
-  const createFastFillWalletAdapter = (
-    originalWallet: AdaptedWallet,
-    password: string
-  ): AdaptedWallet => {
-    return {
-      ...originalWallet,
-      handleSendTransactionStep: async (
-        chainId: number,
-        stepItem: TransactionStepItem,
-        step: Execute['steps'][0]
-      ) => {
-        const txHash = await originalWallet.handleSendTransactionStep(
-          chainId,
-          stepItem,
-          step
-        )
-        // Call fastFill proxy API if requestId is available
-        if (step.requestId && step.id === 'deposit') {
-          try {
-            console.log('Calling fastFill proxy for requestId:', step.requestId)
-            const response = await fetch('/api/fast-fill', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                requestId: step.requestId,
-                password
-              })
-            })
+  // Adapt wallet whenever primaryWallet changes
+  useEffect(() => {
+    const adaptWallet = async () => {
+      if (!primaryWallet) {
+        setAdaptedWallet(null)
+        return
+      }
 
-            if (response.ok) {
-              const data = await response.json()
-              console.log('FastFill called successfully:', data)
-            } else {
-              const error = await response.json()
-              console.warn(
-                'FastFill error (continuing with transaction):',
-                error.error || error.message
-              )
-            }
-          } catch (e: any) {
-            // Log error but don't fail the transaction
-            console.warn(
-              'FastFill error (continuing with transaction):',
-              e?.message || String(e)
-            )
+      try {
+        let wallet: AdaptedWallet | null = null
+
+        if (isEthereumWallet(primaryWallet)) {
+          const walletClient = await primaryWallet.getWalletClient()
+          wallet = adaptViemWallet(walletClient)
+        } else if (isSolanaWallet(primaryWallet)) {
+          const connection = await primaryWallet.getConnection()
+          const signer = await primaryWallet.getSigner()
+
+          if (!connection || !signer?.signTransaction) {
+            throw new Error('Unable to setup Solana wallet')
           }
-        }
 
-        return txHash
-      },
-      handleBatchTransactionStep: async (chainId, items, step) => {
-        const txHash = await originalWallet?.handleBatchTransactionStep?.(
-          chainId,
-          items,
-          step
-        )
-        // Call fastFill proxy API if requestId is available
-        if (txHash) {
-          try {
-            console.log('Calling fastFill proxy for requestId:', step.requestId)
-            const response = await fetch('/api/fast-fill', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                requestId: step.requestId,
-                password
-              })
-            })
-
-            if (response.ok) {
-              const data = await response.json()
-              console.log('FastFill called successfully:', data)
-            } else {
-              const error = await response.json()
-              console.warn(
-                'FastFill error (continuing with transaction):',
-                error.error || error.message
-              )
+          wallet = adaptSolanaWallet(
+            primaryWallet.address,
+            792703809, // Solana chain ID
+            connection,
+            signer.signAndSendTransaction
+          )
+        } else if (isBitcoinWallet(primaryWallet)) {
+          wallet = adaptBitcoinWallet(
+            primaryWallet.address,
+            async (_address, _psbt, dynamicParams) => {
+              const response = await primaryWallet.signPsbt(dynamicParams)
+              if (!response) {
+                throw new Error('Missing psbt response')
+              }
+              return response.signedPsbt
             }
-          } catch (e: any) {
-            // Log error but don't fail the transaction
-            console.warn(
-              'FastFill error (continuing with transaction):',
-              e?.message || String(e)
-            )
-          }
-        }
+          )
+        } else if (isSuiWallet(primaryWallet)) {
+          const walletClient = await primaryWallet.getWalletClient()
 
-        return txHash
+          if (!walletClient) {
+            throw new Error('Unable to setup Sui wallet')
+          }
+
+          wallet = adaptSuiWallet(
+            primaryWallet.address,
+            784, // Sui chain ID placeholder - will be updated based on quote params
+            walletClient,
+            async (tx) => {
+              const signedTransaction = await primaryWallet.signTransaction(tx)
+              const executionResult = await walletClient.executeTransactionBlock({
+                options: {},
+                signature: signedTransaction.signature,
+                transactionBlock: signedTransaction.bytes
+              })
+              return executionResult
+            }
+          )
+        } else if (isTronWallet(primaryWallet)) {
+          const tronWeb = (primaryWallet as TronWallet).getTronWeb()
+          if (!tronWeb) {
+            throw new Error('Unable to setup Tron wallet')
+          }
+          wallet = adaptTronWallet(
+            (primaryWallet as TronWallet).address,
+            tronWeb
+          )
+        }
+        // Note: Hyperliquid support can be added here following a similar pattern
+
+        setAdaptedWallet(wallet)
+      } catch (e: any) {
+        console.error('Error adapting wallet:', e)
+        setError(`Error adapting wallet: ${e?.message || String(e)}`)
+        setAdaptedWallet(null)
       }
     }
-  }
+
+    adaptWallet()
+  }, [primaryWallet])
 
   const handleExecute = async () => {
     if (!client) {
       setError('Missing Client!')
       return
     }
-    if (!wallet) {
+    if (!adaptedWallet) {
       setError('Please connect your wallet!')
       return
     }
@@ -147,13 +142,11 @@ const FastFillPage: NextPage = () => {
     }
 
     try {
-      // Adapt the wallet
-      const adaptedWallet = adaptViemWallet(wallet)
-
-      // Wrap it with our fastFill adapter
-      const fastFillWallet = createFastFillWalletAdapter(
+      // Wrap the adapted wallet with our fastFill wrapper
+      const fastFillWallet = createFastFillWallet(
         adaptedWallet,
-        fastFillPassword
+        fastFillPassword,
+        solverInputCurrencyAmount || undefined
       )
 
       // Execute the quote with the fastFill wallet adapter
@@ -176,7 +169,7 @@ const FastFillPage: NextPage = () => {
       setError('Missing Client!')
       return
     }
-    if (!wallet) {
+    if (!adaptedWallet || !primaryWallet) {
       setError('Please connect your wallet!')
       return
     }
@@ -195,13 +188,13 @@ const FastFillPage: NextPage = () => {
         return
       }
 
-      const userAddress = wallet.account?.address
+      const userAddress = primaryWallet.address
       if (!userAddress) {
         setError('Could not get address from connected wallet')
         setLoading(false)
         return
       }
-      const adaptedWallet = adaptViemWallet(wallet)
+
       const quoteResult = await client.actions.getQuote(
         {
           chainId: params.originChainId,
@@ -231,7 +224,7 @@ const FastFillPage: NextPage = () => {
     } catch (e) {
       return ''
     }
-  }, [result])
+  }, [progress])
 
   return (
     <div
@@ -248,6 +241,20 @@ const FastFillPage: NextPage = () => {
     >
       <ConnectButton />
 
+      {adaptedWallet && (
+        <div
+          style={{
+            width: '100%',
+            padding: '10px',
+            background: '#e0f0ff',
+            borderRadius: '8px',
+            marginBottom: 10
+          }}
+        >
+          <b>Connected Wallet VM Type:</b> {adaptedWallet.vmType}
+        </div>
+      )}
+
       <div style={{ width: '100%' }}>
         <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
           Quote Parameters (JSON):
@@ -262,12 +269,13 @@ const FastFillPage: NextPage = () => {
           }}
         >
           Note that user/recipient are not required — they are taken from the
-          connected wallet.
+          connected wallet. This demo now supports all wallet types: EVM, Solana
+          (SVM), Bitcoin (BVM), Sui, Tron (TVM), and Hyperliquid.
         </div>
         <textarea
           value={quoteParams}
           onChange={(e) => setQuoteParams(e.target.value)}
-          placeholder='{"chainId": 1, "toChainId": 8453, "currency": "0x0000000000000000000000000000000000000000", "toCurrency": "0x0000000000000000000000000000000000000000", "amount": "1000000000000000000", "tradeType": "EXACT_INPUT"}'
+          placeholder='{"originChainId": 1, "destinationChainId": 8453, "originCurrency": "0x0000000000000000000000000000000000000000", "destinationCurrency": "0x0000000000000000000000000000000000000000", "amount": "1000000000000000000", "tradeType": "EXACT_INPUT"}'
           style={{
             width: '100%',
             minHeight: 150,
@@ -292,7 +300,7 @@ const FastFillPage: NextPage = () => {
           cursor: 'pointer',
           width: '100%'
         }}
-        disabled={!wallet || loading || !quoteParams.trim()}
+        disabled={!adaptedWallet || loading || !quoteParams.trim()}
         onClick={handleGetQuote}
       >
         {loading && !quote ? 'Getting Quote...' : 'Get Quote'}
@@ -308,9 +316,9 @@ const FastFillPage: NextPage = () => {
             marginTop: 10
           }}
         >
-          <b>Quote obtained! Request IDs:</b>
+          <b>Quote obtained! Request ID:</b>
           <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 200 }}>
-            {quote.steps.find((step) => step.requestId)?.requestId ?? ''}
+            {quote.steps.find((step) => step.requestId)?.requestId ?? 'No request ID found'}
           </pre>
         </div>
       )}
@@ -334,6 +342,25 @@ const FastFillPage: NextPage = () => {
         />
       </div>
 
+      <div style={{ width: '100%' }}>
+        <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
+          Solver Input Currency Amount (Optional):
+        </label>
+        <input
+          type="text"
+          value={solverInputCurrencyAmount}
+          onChange={(e) => setSolverInputCurrencyAmount(e.target.value)}
+          placeholder="Enter solver input currency amount"
+          style={{
+            width: '100%',
+            padding: 12,
+            fontSize: 14,
+            border: '1px solid #ccc',
+            borderRadius: 8
+          }}
+        />
+      </div>
+
       <button
         style={{
           marginTop: 20,
@@ -347,7 +374,7 @@ const FastFillPage: NextPage = () => {
           cursor: 'pointer',
           width: '100%'
         }}
-        disabled={!wallet || !quote || loading || !fastFillPassword.trim()}
+        disabled={!adaptedWallet || !quote || loading || !fastFillPassword.trim()}
         onClick={handleExecute}
       >
         {loading ? 'Executing with Fast Fill...' : 'Execute with Fast Fill'}
@@ -372,6 +399,23 @@ const FastFillPage: NextPage = () => {
           <b>Progress:</b>
           <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 300 }}>
             {progressString}
+          </pre>
+        </div>
+      )}
+
+      {result && (
+        <div
+          style={{
+            marginTop: 20,
+            padding: '10px',
+            background: '#e0ffe0',
+            borderRadius: '8px',
+            width: '100%'
+          }}
+        >
+          <b>Result:</b>
+          <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 300 }}>
+            {JSON.stringify(result, null, 2)}
           </pre>
         </div>
       )}
