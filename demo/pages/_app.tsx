@@ -62,8 +62,7 @@ type AppWrapperProps = {
 
 const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_KEY || ''
 
-// @TODO: Change back to dev.relay.link
-const DEV_RELAY_API = 'https://api.relay.link'
+const DEV_RELAY_API = 'https://api.dev.relay.link'
 
 const queryClient = new QueryClient()
 
