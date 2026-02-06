@@ -21,8 +21,9 @@ import {
 import type { Token } from '../../../types/index.js'
 import {
   useRequests,
-  useExecutionStatus,
-  queryQuote
+  useDepositAddressStatus,
+  queryQuote,
+  type DepositAddressStatusResponse
 } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '../../../hooks/index.js'
 import { EventNames } from '../../../constants/events.js'
@@ -62,7 +63,7 @@ export type ChildrenProps = {
   fillTime: string
   requestId: string | null
   depositAddress?: string
-  executionStatus?: ReturnType<typeof useExecutionStatus>['data']
+  executionStatus?: DepositAddressStatusResponse
   isLoadingTransaction: boolean
   toChain?: RelayChain | null
   timeEstimate?: { time: number; formattedTime: string }
@@ -83,7 +84,7 @@ type Props = {
   children: (props: ChildrenProps) => ReactNode
   onSuccess?: (
     quote?: Execute | null,
-    executionStatus?: ReturnType<typeof useExecutionStatus>['data']
+    executionStatus?: DepositAddressStatusResponse
   ) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
@@ -226,22 +227,18 @@ export const DepositAddressModalRenderer: FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  const { data: executionStatus } = useExecutionStatus(
-    relayClient ? relayClient : undefined,
+  const { data: executionStatus } = useDepositAddressStatus(
+    depositAddress ? { depositAddress } : undefined,
+    relayClient?.baseApiUrl,
     {
-      requestId: requestId ?? undefined,
-      referrer: relayClient?.source
-    },
-    undefined,
-    undefined,
-    {
-      enabled: requestId !== null && open,
+      enabled: depositAddress !== undefined && open,
       refetchInterval(query) {
         const observableStates = ['waiting', 'pending']
 
         if (
           !query.state.data?.status ||
-          (requestId && observableStates.includes(query.state.data?.status))
+          (depositAddress &&
+            observableStates.includes(query.state.data?.status))
         ) {
           return 1000
         }

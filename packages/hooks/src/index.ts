@@ -18,6 +18,10 @@ export {
   queryExecutionStatus
 } from './hooks/useExecutionStatus.js'
 export {
+  default as useDepositAddressStatus,
+  queryDepositAddressStatus
+} from './hooks/useDepositAddressStatus.js'
+export {
   default as useTokenPrice,
   queryTokenPrice
 } from './hooks/useTokenPrice.js'
@@ -29,3 +33,4 @@ export {
 //types
 export type { CurrencyList, Currency } from './hooks/useTokenList.js'
 export type { QuoteResponse } from './hooks/useQuote.js'
+export type { DepositAddressStatusResponse } from './hooks/useDepositAddressStatus.js'

@@ -10,7 +10,7 @@ import type { FiatCurrency, Token } from '../../../../types/index.js'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { EventNames } from '../../../../constants/events.js'
 import {
-  useExecutionStatus,
+  useDepositAddressStatus,
   useQuote,
   useRequests,
   useTokenPrice
@@ -223,22 +223,21 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     [quote]
   )
 
-  const { data: executionStatus } = useExecutionStatus(
-    client ? client : undefined,
+  const { data: executionStatus } = useDepositAddressStatus(
+    depositAddress ? { depositAddress } : undefined,
+    client?.baseApiUrl,
     {
-      requestId: requestId ?? undefined,
-      referrer: client?.source
-    },
-    undefined,
-    undefined,
-    {
-      enabled: requestId !== null && step === OnrampStep.Processing && open,
+      enabled:
+        depositAddress !== undefined &&
+        step === OnrampStep.Processing &&
+        open,
       refetchInterval(query) {
         const observableStates = ['waiting', 'pending']
 
         if (
           !query.state.data?.status ||
-          (requestId && observableStates.includes(query.state.data?.status))
+          (depositAddress &&
+            observableStates.includes(query.state.data?.status))
         ) {
           return 1000
         }
