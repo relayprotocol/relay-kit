@@ -1,4 +1,4 @@
-import type { AdaptedWallet, Execute, TransactionStepItem } from '@relayprotocol/relay-sdk'
+import type { AdaptedWallet, Execute, SignatureStepItem, TransactionStepItem } from '@relayprotocol/relay-sdk'
 
 /**
  * Creates a fast-fill wallet adapter that wraps any AdaptedWallet
@@ -48,6 +48,19 @@ export const createFastFillWallet = (
 
   return {
     ...originalWallet,
+    handleSignMessageStep: async (
+      item: SignatureStepItem,
+      step: Execute['steps'][0]
+    ) => {
+      const signature = await originalWallet.handleSignMessageStep(item, step)
+
+      // Call fastFill proxy API after Hyperliquid signature deposit
+      if (step.requestId && step.id === ('hyperliquid-signature' as any)) {
+        await callFastFillAPI(step.requestId)
+      }
+
+      return signature
+    },
     handleSendTransactionStep: async (
       chainId: number,
       stepItem: TransactionStepItem,
