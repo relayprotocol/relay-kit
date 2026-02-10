@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.7
+
+### Patch Changes
+
+- 448ec7c: Refactor deposit address transaction tracking to use requests API
+
 ## 3.0.6
 
 ### Patch Changes
