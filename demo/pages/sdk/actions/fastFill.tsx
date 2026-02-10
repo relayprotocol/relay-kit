@@ -103,7 +103,8 @@ const FastFillPage: NextPage = () => {
             tronWeb
           )
         }
-        // Note: Hyperliquid support can be added here following a similar pattern
+        // Note: Hyperliquid wallets are EVM-compatible and handled by the isEthereumWallet path above.
+        // The SDK automatically converts Hyperliquid transaction steps to signature steps (chain ID 1337).
 
         setAdaptedWallet(wallet)
       } catch (e: any) {
