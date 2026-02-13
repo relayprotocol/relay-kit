@@ -45,6 +45,7 @@ export type RelayChain = {
   depositEnabled?: boolean
   blockProductionLagging?: boolean
   erc20Currencies?: RelayAPIChain['erc20Currencies']
+  solverCurrencies?: RelayAPIChain['solverCurrencies']
   featuredTokens?: RelayAPIChain['featuredTokens']
   tags?: RelayAPIChain['tags']
   iconUrl?: string | null
