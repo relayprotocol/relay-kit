@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.1.2
+
+### Patch Changes
+
+- 00cad1c: Implement AGW logic when hyperliquid is selected as destination
+
 ## 7.1.1
 
 ### Patch Changes
