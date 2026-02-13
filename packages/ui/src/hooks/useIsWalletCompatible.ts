@@ -34,9 +34,10 @@ export default (
       return true
     }
 
-    //Hyperliquid operates as a CEX, so there's no need to check for wallet compatibility
+    // Hyperliquid operates as a CEX, so wallet compatibility checks are skipped.
+    // AGW recipients are still incompatible with Hyperliquid deposits.
     if (chainId === 1337) {
-      return true
+      return !isRecipientAGW
     }
 
     if (!linkedWallet) {
