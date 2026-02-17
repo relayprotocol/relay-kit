@@ -2,6 +2,10 @@ import { type FC } from 'react'
 import { Button, Flex } from '../primitives/index.js'
 import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
 import type { PublicClient } from 'viem'
+import {
+  MAX_INPUT_BUFFER_BPS,
+  MIN_INPUT_BUFFER_UNITS
+} from '../../constants/maxAmountBuffer.js'
 
 type PercentageButtonsProps = {
   balance: bigint
@@ -31,6 +35,16 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   percentages = [20, 50],
   buttonStyles: customButtonStyles
 }) => {
+  const getExecutionBuffer = (amount: bigint) => {
+    if (amount <= 0n) return 0n
+
+    const bpsBuffer = (amount * MAX_INPUT_BUFFER_BPS) / 10000n
+    const minimumBuffer =
+      amount > MIN_INPUT_BUFFER_UNITS ? MIN_INPUT_BUFFER_UNITS : amount
+
+    return bpsBuffer > minimumBuffer ? bpsBuffer : minimumBuffer
+  }
+
   const isMobile = variant === 'mobile'
 
   const defaultButtonStyles = {
@@ -55,8 +69,12 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   const handleMaxClick = async () => {
     if (!balance || !fromChain) return
 
+    const executionBufferAmount = getExecutionBuffer(balance)
+    const supportsNativeGasBuffer =
+      fromChain.vmType === 'evm' || fromChain.vmType === 'svm'
+
     let feeBufferAmount: bigint = 0n
-    if (isFromNative && getFeeBufferAmount) {
+    if (isFromNative && supportsNativeGasBuffer && getFeeBufferAmount) {
       feeBufferAmount = await getFeeBufferAmount(
         fromChain.vmType,
         fromChain.id,
@@ -65,11 +83,9 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
       )
     }
 
-    // Reserve gas buffer for native tokens, or use full balance if dust amount
+    const totalBufferAmount = executionBufferAmount + feeBufferAmount
     const finalMaxAmount =
-      isFromNative && feeBufferAmount > 0n && balance > feeBufferAmount
-        ? balance - feeBufferAmount
-        : balance
+      balance > totalBufferAmount ? balance - totalBufferAmount : 0n
 
     onPercentageClick(
       finalMaxAmount,
