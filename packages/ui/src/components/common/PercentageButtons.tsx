@@ -87,7 +87,11 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
     const finalMaxAmount =
       balance > totalBufferAmount ? balance - totalBufferAmount : 0n
 
-    onPercentageClick(finalMaxAmount, 'max', totalBufferAmount)
+    onPercentageClick(
+      finalMaxAmount,
+      'max',
+      isFromNative ? feeBufferAmount : 0n
+    )
   }
 
   const handleMaxMouseEnter = () => {
