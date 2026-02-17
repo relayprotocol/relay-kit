@@ -40,6 +40,7 @@ import Tooltip from '../../../components/primitives/Tooltip.js'
 type MobileChainSelectorProps = {
   options: (RelayChain | { id: undefined; name: string })[]
   value: ChainFilterValue
+  sameChainOption?: RelayChain
   onSelect: (value: ChainFilterValue) => void
   onBack: () => void
   onClose: () => void
@@ -60,6 +61,7 @@ const fuseSearchOptions = {
 export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
   options,
   value,
+  sameChainOption,
   onSelect,
   onBack,
   onClose,
@@ -96,26 +98,9 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
   const handleChainSelect = useCallback(
     (chain: ChainFilterValue) => {
       onSelect(chain)
-      const fromStarredList =
-        chain.id !== undefined && starredChains.some((c) => c.id === chain.id)
-
-      onAnalyticEvent?.(EventNames.CURRENCY_STEP_CHAIN_FILTER, {
-        chain: chain.name,
-        chain_id: chain.id,
-        search_term: chainSearchInput,
-        context,
-        from_starred_list: fromStarredList
-      })
       onBack() // Go back to token view after selection
     },
-    [
-      onSelect,
-      onAnalyticEvent,
-      chainSearchInput,
-      context,
-      starredChains,
-      onBack
-    ]
+    [onSelect, onBack]
   )
 
   return (
@@ -203,13 +188,28 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
       <AccessibleList
         onSelect={(selectedValue) => {
           if (selectedValue) {
+            const isSameChainSelection = selectedValue === 'same-chain'
             const chain =
               selectedValue === 'all-chains'
                 ? { id: undefined, name: 'All Chains' }
+                : isSameChainSelection
+                  ? sameChainOption
                 : options.find(
                     (chain) => chain.id?.toString() === selectedValue
                   )
             if (chain) {
+              const fromStarredList =
+                !isSameChainSelection &&
+                chain.id !== undefined &&
+                starredChains.some((c) => c.id === chain.id)
+
+              onAnalyticEvent?.(EventNames.CURRENCY_STEP_CHAIN_FILTER, {
+                chain: isSameChainSelection ? 'Same Chain' : chain.name,
+                chain_id: chain.id,
+                search_term: chainSearchInput,
+                context,
+                from_starred_list: fromStarredList
+              })
               handleChainSelect(chain)
             }
           }
@@ -247,6 +247,35 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
                 value="all-chains"
                 onAnalyticEvent={onAnalyticEvent}
               />
+            )}
+            {sameChainOption && (
+              <AccessibleListItem value="same-chain" asChild>
+                <Button
+                  color="ghost"
+                  size="none"
+                  css={{
+                    py: '3',
+                    px: '2',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2',
+                    width: '100%',
+                    height: '56px',
+                    borderRadius: '12px',
+                    _hover: {
+                      backgroundColor: 'gray3'
+                    }
+                  }}
+                >
+                  <ChainIcon
+                    chainId={sameChainOption.id}
+                    square
+                    width={24}
+                    height={24}
+                  />
+                  <Text style="subtitle1">Same Chain</Text>
+                </Button>
+              </AccessibleListItem>
             )}
 
             {starredChains.length > 0 && (

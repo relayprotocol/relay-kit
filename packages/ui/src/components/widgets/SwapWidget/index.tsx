@@ -1297,6 +1297,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           address={recipient}
                           isValidAddress={isValidToAddress}
                           token={toToken}
+                          sameChainId={fromToken?.chainId}
                           fromChainWalletVMSupported={
                             fromChainWalletVMSupported
                           }

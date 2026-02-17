@@ -36,6 +36,7 @@ type ChainFilterSidebarProps = {
   value: ChainFilterValue
   isOpen: boolean
   onSelect: (value: ChainFilterValue) => void
+  sameChainOption?: RelayChain
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onInputRef?: (element: HTMLInputElement | null) => void
   tokenSearchInputRef?: HTMLInputElement | null
@@ -57,6 +58,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
   value,
   isOpen,
   onSelect,
+  sameChainOption,
   onAnalyticEvent,
   onInputRef,
   tokenSearchInputRef,
@@ -74,6 +76,8 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
     () => groupChains(options, popularChainIds, starredChainIds),
     [options, popularChainIds, starredChainIds, isOpen]
   )
+  const isSameChainSelected =
+    sameChainOption !== undefined && value.id === sameChainOption.id
 
   const filteredChains = useMemo(() => {
     if (chainSearchInput.trim() === '') {
@@ -120,20 +124,24 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
         onSelect={(selectedValue) => {
           if (selectedValue === 'input') return
           if (selectedValue) {
+            const isSameChainSelection = selectedValue === 'same-chain'
             const chain =
               selectedValue === 'all-chains'
                 ? { id: undefined, name: 'All Chains' }
+                : isSameChainSelection
+                  ? sameChainOption
                 : options.find(
                     (chain) => chain.id?.toString() === selectedValue
                   )
             if (chain) {
               onSelect(chain)
               const fromStarredList =
+                !isSameChainSelection &&
                 chain.id !== undefined &&
                 starredChains.some((c) => c.id === chain.id)
 
               onAnalyticEvent?.(EventNames.CURRENCY_STEP_CHAIN_FILTER, {
-                chain: chain.name,
+                chain: isSameChainSelection ? 'Same Chain' : chain.name,
                 chain_id: chain.id,
                 search_term: chainSearchInput,
                 context,
@@ -207,6 +215,51 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                     key="all-chains"
                     onAnalyticEvent={onAnalyticEvent}
                   />
+                  {sameChainOption && (
+                    <AccessibleListItem value="same-chain" asChild>
+                      <Button
+                        color="ghost"
+                        size="none"
+                        onClick={(e) => {
+                          if (e.detail > 0) {
+                            tokenSearchInputRef?.focus()
+                          }
+                        }}
+                        ref={isSameChainSelected ? activeChainRef : null}
+                        css={{
+                          p: '2',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2',
+                          position: 'relative',
+                          ...(isSameChainSelected && {
+                            backgroundColor: 'gray6'
+                          }),
+                          transition: 'backdrop-filter 250ms linear',
+                          _hover: {
+                            backgroundColor:
+                              isSameChainSelected
+                                ? 'gray6'
+                                : 'gray/10'
+                          },
+                          '--focusColor': 'colors.focus-color',
+                          _focus: {
+                            boxShadow: 'inset 0 0 0 2px var(--focusColor)'
+                          }
+                        }}
+                      >
+                        <ChainIcon
+                          chainId={sameChainOption.id}
+                          square
+                          width={24}
+                          height={24}
+                        />
+                        <Text style="subtitle1" ellipsify>
+                          Same Chain
+                        </Text>
+                      </Button>
+                    </AccessibleListItem>
+                  )}
                 </>
               )}
 
@@ -235,7 +288,9 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                   </Flex>
                   {starredChains.map((chain) => {
                     const tag = 'tags' in chain ? chain.tags?.[0] : undefined
-                    const active = value.id === chain.id
+                    const active =
+                      value.id === chain.id &&
+                      !(isSameChainSelected && chain.id === sameChainOption?.id)
                     return chain.id ? (
                       <ChainFilterRow
                         chain={chain}
@@ -263,7 +318,9 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
               </Text>
               {alphabeticalChains.map((chain) => {
                 const tag = 'tags' in chain ? chain.tags?.[0] : undefined
-                const active = value.id === chain.id
+                const active =
+                  value.id === chain.id &&
+                  !(isSameChainSelected && chain.id === sameChainOption?.id)
                 return chain.id ? (
                   <ChainFilterRow
                     chain={chain}
