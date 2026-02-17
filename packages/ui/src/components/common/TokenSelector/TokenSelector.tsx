@@ -58,6 +58,7 @@ export type TokenSelectorProps = {
   trigger: ReactNode
   chainIdsFilter?: number[]
   lockedChainIds?: number[]
+  sameChainId?: number
   context: 'from' | 'to'
   address?: Address | string
   isValidAddress?: boolean
@@ -74,6 +75,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   trigger,
   chainIdsFilter,
   lockedChainIds,
+  sameChainId,
   context,
   address,
   isValidAddress,
@@ -176,6 +178,18 @@ const TokenSelector: FC<TokenSelectorProps> = ({
       : configuredChains?.filter((chain) =>
           configuredChainIds.includes(chain.id)
         )
+
+  const sameChainOption = useMemo(() => {
+    if (
+      context !== 'to' ||
+      sameChainId === undefined ||
+      isReceivingDepositAddress
+    ) {
+      return undefined
+    }
+
+    return chainFilterOptions?.find((chain) => chain.id === sameChainId)
+  }, [context, sameChainId, isReceivingDepositAddress, chainFilterOptions])
 
   const allChains = useMemo(
     () => [
@@ -540,6 +554,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
             <MobileChainSelector
               options={allChains}
               value={chainFilter}
+              sameChainOption={sameChainOption}
               onSelect={(chain) => {
                 setChainFilter(chain)
                 setMobileView('tokens')
@@ -573,6 +588,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                     value={chainFilter}
                     isOpen={open}
                     onSelect={setChainFilter}
+                    sameChainOption={sameChainOption}
                     onAnalyticEvent={onAnalyticEvent}
                     onInputRef={setChainSearchInputElement}
                     tokenSearchInputRef={tokenSearchInputElement}
