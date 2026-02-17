@@ -274,7 +274,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
       ? {
           tokens: userTokensQuery,
           limit: 100,
-          depositAddressOnly,
+          depositAddressOnly: false,
           referrer: relayClient?.source
         }
       : undefined,
