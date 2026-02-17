@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.1.1
+
+### Patch Changes
+
+- f851b3c: Refactor token selector currency metadata fetching
+
 ## 5.1.0
 
 ### Minor Changes
