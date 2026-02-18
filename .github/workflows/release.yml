@@ -15,29 +15,26 @@ jobs:
       contents: write
       pull-requests: write
       packages: write
+      id-token: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js 20.x
+      - name: Setup Node.js 22.14.0
         uses: actions/setup-node@v3
         with:
-          node-version: 20.x
+          node-version: 22.14.0
+
+      - name: Setup npm for trusted publishing
+        run: sudo npm i -g npm@^11.5.1
 
       - name: Setup pnpm
         run: sudo npm i -g pnpm@10.4.1
 
       - name: Install Dependencies
         run: pnpm install
-
-      - name: Creating .npmrc
-        run: |
-              cat << EOF > "$HOME/.npmrc"
-              //registry.npmjs.org/:_authToken=$NPM_TOKEN
-              EOF
 
       - name: Get Open PRs Created by Bots
         id: get_bot_prs
@@ -96,5 +93,3 @@ jobs:
           commitMode: github-api
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
