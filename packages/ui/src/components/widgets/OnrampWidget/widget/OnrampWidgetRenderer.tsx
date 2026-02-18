@@ -26,6 +26,7 @@ import type {
 import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
 import {
   findSupportedWallet,
+  isChainVmTypeSupported,
   isValidAddress
 } from '../../../../utils/address.js'
 import useWalletAddress from '../../../../hooks/useWalletAddress.js'
@@ -140,7 +141,7 @@ const OnrampWidgetRenderer: FC<OnrampWidgetRendererProps> = ({
     [token, client?.chains]
   )
   const toChainWalletVMSupported =
-    !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType)
+    isChainVmTypeSupported(toChain?.vmType, supportedWalletVMs)
 
   const moonPayCurrency = useSupportedMoonPayCurrencyCode(
     [

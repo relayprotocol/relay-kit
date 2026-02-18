@@ -37,6 +37,10 @@ import BuyTabContent from '../BuyTabContent.js'
 import SellTabContent from '../SellTabContent.js'
 import { useQuote } from '@relayprotocol/relay-kit-hooks'
 import { useWalletGuards } from '../hooks/useWalletGuards.js'
+import {
+  isChainVmTypeSupported,
+  isWalletVmTypeCompatible
+} from '../../../../utils/address.js'
 
 type BaseTokenWidgetProps = {
   fromToken?: Token
@@ -443,7 +447,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
             if (toChain) {
               // Filter wallets compatible with the destination chain VM type
               const compatibleWallets = linkedWallets.filter((wallet) => {
-                return wallet.vmType === toChain.vmType
+                return isWalletVmTypeCompatible(wallet.vmType, toChain.vmType)
               })
 
               // Auto-select the first compatible wallet (prefer the current address if compatible)
@@ -569,7 +573,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
             if (
               newFromChain?.vmType &&
-              !supportedWalletVMs.includes(newFromChain?.vmType)
+              !isChainVmTypeSupported(newFromChain?.vmType, supportedWalletVMs)
             ) {
               setTradeType('EXACT_INPUT')
 
@@ -1065,7 +1069,11 @@ const TokenWidget: FC<TokenWidgetProps> = ({
 
                 if (toChainForRecipient) {
                   const compatibleWallets = linkedWallets.filter(
-                    (wallet) => wallet.vmType === toChainForRecipient.vmType
+                    (wallet) =>
+                      isWalletVmTypeCompatible(
+                        wallet.vmType,
+                        toChainForRecipient.vmType
+                      )
                   )
 
                   if (compatibleWallets.length > 0) {
