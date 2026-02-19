@@ -20,13 +20,17 @@ import useRelayClient from '../../../hooks/useRelayClient.js'
 import { type Address } from 'viem'
 import { useDebounceState, useDuneBalances } from '../../../hooks/index.js'
 import { useMediaQuery } from 'usehooks-ts'
-import { useTokenList } from '@relayprotocol/relay-kit-hooks'
+import {
+  type Currency,
+  useTokenList,
+  useTrendingCurrencies
+} from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../../constants/events.js'
 import { UnverifiedTokenModal } from '../UnverifiedTokenModal.js'
 import { useEnhancedTokensList } from '../../../hooks/useEnhancedTokensList.js'
 import { TokenList } from './TokenList.js'
 import { UnsupportedDepositAddressChainIds } from '../../../constants/depositAddresses.js'
-import { getRelayUiKitData } from '../../../utils/localStorage.js'
+import { getRelayUiKitData, getStarredChainIds } from '../../../utils/localStorage.js'
 import { isValidAddress as isValidAddressUtil } from '../../../utils/address.js'
 import {
   AccessibleList,
@@ -43,6 +47,7 @@ import {
   bitcoinDeadAddress,
   evmDeadAddress,
   solDeadAddress,
+  ASSETS_RELAY_API,
   type ChainVM
 } from '@relayprotocol/relay-sdk'
 import {
@@ -50,14 +55,13 @@ import {
   sortChains
 } from '../../../utils/tokenSelector.js'
 import { useInternalRelayChains } from '../../../hooks/index.js'
-import { useTrendingCurrencies } from '@relayprotocol/relay-kit-hooks'
-import { getStarredChainIds } from '../../../utils/localStorage.js'
 
 export type TokenSelectorProps = {
   token?: Token
   trigger: ReactNode
   chainIdsFilter?: number[]
   lockedChainIds?: number[]
+  sameChainId?: number
   context: 'from' | 'to'
   address?: Address | string
   isValidAddress?: boolean
@@ -74,6 +78,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   trigger,
   chainIdsFilter,
   lockedChainIds,
+  sameChainId,
   context,
   address,
   isValidAddress,
@@ -177,6 +182,18 @@ const TokenSelector: FC<TokenSelectorProps> = ({
           configuredChainIds.includes(chain.id)
         )
 
+  const sameChainOption = useMemo(() => {
+    if (
+      context !== 'to' ||
+      sameChainId === undefined ||
+      isReceivingDepositAddress
+    ) {
+      return undefined
+    }
+
+    return chainFilterOptions?.find((chain) => chain.id === sameChainId)
+  }, [context, sameChainId, isReceivingDepositAddress, chainFilterOptions])
+
   const allChains = useMemo(
     () => [
       ...(isReceivingDepositAddress
@@ -217,13 +234,52 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   }, [duneTokens?.balances, configuredChainIds])
 
   const userTokensQuery = useMemo(() => {
+    if (depositAddressOnly) {
+      return undefined
+    }
+
     if (filteredDuneTokenBalances && filteredDuneTokenBalances.length > 0) {
-      return filteredDuneTokenBalances.map(
+      const sortedBalances = [...filteredDuneTokenBalances]
+        .sort((a, b) => (b.value_usd ?? 0) - (a.value_usd ?? 0))
+        .slice(0, 100)
+
+      return sortedBalances.map(
         (balance) => `${balance.chain_id}:${balance.address}`
       )
     }
     return undefined
-  }, [filteredDuneTokenBalances])
+  }, [filteredDuneTokenBalances, depositAddressOnly])
+
+  const solverUserTokens = useMemo<Currency[] | undefined>(() => {
+    if (!depositAddressOnly) {
+      return undefined
+    }
+
+    const tokenMap = new Map<string, Currency>()
+
+    configuredChains.forEach((chain) => {
+      chain.solverCurrencies?.forEach((currency) => {
+        if (!currency.address || !currency.symbol || !currency.name) return
+        const tokenKey = `${chain.id}:${currency.address.toLowerCase()}`
+        const logoId = currency.id ?? currency.symbol.toLowerCase()
+
+        tokenMap.set(tokenKey, {
+          chainId: chain.id,
+          address: currency.address,
+          symbol: currency.symbol,
+          name: currency.name,
+          decimals: currency.decimals ?? 18,
+          vmType: chain.vmType,
+          metadata: {
+            verified: true,
+            logoURI: `${ASSETS_RELAY_API}/icons/currencies/${logoId}.png`
+          }
+        })
+      })
+    })
+
+    return Array.from(tokenMap.values())
+  }, [depositAddressOnly, configuredChains])
 
   // Get user's tokens from currencies api
   const { data: userTokens, isLoading: isLoadingUserTokens } = useTokenList(
@@ -232,14 +288,19 @@ const TokenSelector: FC<TokenSelectorProps> = ({
       ? {
           tokens: userTokensQuery,
           limit: 100,
-          depositAddressOnly,
+          depositAddressOnly: false,
           referrer: relayClient?.source
         }
       : undefined,
     {
-      enabled: !!filteredDuneTokenBalances
+      enabled: !depositAddressOnly && !!userTokensQuery
     }
   )
+
+  const resolvedUserTokens = depositAddressOnly ? solverUserTokens : userTokens
+  const isLoadingResolvedUserTokens = depositAddressOnly
+    ? !allRelayChains
+    : isLoadingUserTokens
 
   const isSearchTermValidAddress = isValidAddressUtil(
     chainFilter.vmType,
@@ -303,7 +364,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   }, [tokenList, externalTokenList, debouncedTokenSearchValue])
 
   const sortedUserTokens = useEnhancedTokensList(
-    userTokens,
+    resolvedUserTokens,
     tokenBalances,
     context,
     multiWalletSupportEnabled,
@@ -540,6 +601,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
             <MobileChainSelector
               options={allChains}
               value={chainFilter}
+              sameChainOption={sameChainOption}
               onSelect={(chain) => {
                 setChainFilter(chain)
                 setMobileView('tokens')
@@ -573,6 +635,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                     value={chainFilter}
                     isOpen={open}
                     onSelect={setChainFilter}
+                    sameChainOption={sameChainOption}
                     onAnalyticEvent={onAnalyticEvent}
                     onInputRef={setChainSearchInputElement}
                     tokenSearchInputRef={tokenSearchInputElement}
@@ -774,7 +837,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                           {
                             title: 'Your Tokens',
                             tokens: sortedUserTokens,
-                            isLoading: isLoadingUserTokens,
+                            isLoading: isLoadingResolvedUserTokens,
                             show: sortedUserTokens.length > 0
                           },
                           {

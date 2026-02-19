@@ -9,7 +9,11 @@ import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { eclipse, eclipseWallets, solana } from '../../utils/solana.js'
 import { useENSResolver } from '../../hooks/index.js'
 import { EventNames } from '../../constants/events.js'
-import { isValidAddress, addressesEqual } from '../../utils/address.js'
+import {
+  isValidAddress,
+  addressesEqual,
+  isWalletVmTypeCompatible
+} from '../../utils/address.js'
 import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
 
 type MultiWalletDropdownProps = {
@@ -53,7 +57,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
     }
 
     return wallets.filter((wallet) => {
-      if (wallet.vmType !== chain.vmType) {
+      if (!isWalletVmTypeCompatible(wallet.vmType, chain.vmType)) {
         return false
       }
       if (
@@ -69,7 +73,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
       }
       return true
     })
-  }, [wallets, chain, disableWalletFiltering])
+  }, [wallets, chain, disableWalletFiltering, connectorKeyOverrides])
 
   const selectedWallet = useMemo(
     () =>

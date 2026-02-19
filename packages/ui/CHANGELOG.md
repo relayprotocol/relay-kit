@@ -1,5 +1,31 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.1.3
+
+### Patch Changes
+
+- 5b4830b: Enable multi wallet dropdown for hyperliquid
+
+## 7.1.2
+
+### Patch Changes
+
+- f851b3c: Refactor token selector currency metadata fetching
+- 00cad1c: Implement AGW logic when hyperliquid is selected as destination
+- 8aa2bca: Add same chain selector
+- c7da389: Universal max amount buffering
+- Updated dependencies [f851b3c]
+  - @relayprotocol/relay-sdk@5.1.1
+  - @relayprotocol/relay-kit-hooks@3.0.8
+
+## 7.1.1
+
+### Patch Changes
+
+- 448ec7c: Refactor deposit address transaction tracking to use requests API
+- Updated dependencies [448ec7c]
+  - @relayprotocol/relay-kit-hooks@3.0.7
+
 ## 7.1.0
 
 ### Minor Changes

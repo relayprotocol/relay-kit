@@ -17,6 +17,39 @@ import { isSuiAddress } from '../utils/sui.js'
 import { isTronAddress } from './tron.js'
 import { isLighterAddress } from './lighter.js'
 
+export const isWalletVmTypeCompatible = (
+  walletVmType?: ChainVM,
+  chainVmType?: ChainVM
+) => {
+  if (!walletVmType || !chainVmType) {
+    return false
+  }
+
+  if (walletVmType === chainVmType) {
+    return true
+  }
+
+  // Hyperliquid uses EVM-style addresses/wallets for signing.
+  return chainVmType === 'hypevm' && walletVmType === 'evm'
+}
+
+export const isChainVmTypeSupported = (
+  chainVmType: ChainVM | undefined,
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
+) => {
+  if (!chainVmType) {
+    return true
+  }
+
+  if (chainVmType === 'hypevm') {
+    return supportedWalletVMs.includes('evm')
+  }
+
+  return supportedWalletVMs.includes(
+    chainVmType as Omit<ChainVM, 'hypevm' | 'lvm'>
+  )
+}
+
 export const isValidAddress = (
   vmType?: ChainVM,
   address?: string,
@@ -93,7 +126,7 @@ export function findSupportedWallet(
     (wallet) => wallet.address === currentAddress
   )
   if (
-    currentWallet?.vmType !== chain.vmType ||
+    !isWalletVmTypeCompatible(currentWallet?.vmType, chain.vmType) ||
     (currentWallet &&
       !isValidAddress(
         chain.vmType,
@@ -123,7 +156,7 @@ export function addressesEqual(
   b?: string
 ): boolean {
   if (!a || !b) return false
-  if (vmType === 'evm' || vmType === 'suivm') {
+  if (vmType === 'evm' || vmType === 'hypevm' || vmType === 'suivm') {
     return a.toLowerCase() === b.toLowerCase()
   }
   return a === b
