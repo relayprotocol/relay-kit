@@ -38,7 +38,9 @@ import type { LinkedWallet } from '../../../../types/index.js'
 import {
   addressesEqual,
   addressWithFallback,
-  isValidAddress
+  isValidAddress,
+  isChainVmTypeSupported,
+  isWalletVmTypeCompatible
 } from '../../../../utils/address.js'
 import { adaptViemWallet } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../../../utils/errors.js'
@@ -269,14 +271,13 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
 
   const fromChainWalletVMSupported = useMemo(
     () =>
-      !fromChain?.vmType ||
-      supportedWalletVMs.includes(fromChain?.vmType) ||
+      isChainVmTypeSupported(fromChain?.vmType, supportedWalletVMs) ||
       fromChain?.id === 1337,
     [fromChain?.vmType, fromChain?.id, supportedWalletVMs]
   )
 
   const toChainWalletVMSupported = useMemo(
-    () => !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType),
+    () => isChainVmTypeSupported(toChain?.vmType, supportedWalletVMs),
     [toChain?.vmType, supportedWalletVMs]
   )
 
@@ -297,7 +298,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
     }
 
     const isCompatibleWallet = (wallet: LinkedWallet) =>
-      wallet.vmType === targetChain.vmType &&
+      isWalletVmTypeCompatible(wallet.vmType, targetChain.vmType) &&
       isValidAddress(
         targetChain.vmType,
         wallet.address,
