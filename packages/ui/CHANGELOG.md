@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.1.3
+
+### Patch Changes
+
+- 5b4830b: Enable multi wallet dropdown for hyperliquid
+
 ## 7.1.2
 
 ### Patch Changes
