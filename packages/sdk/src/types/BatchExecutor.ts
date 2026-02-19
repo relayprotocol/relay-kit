@@ -13,6 +13,9 @@ export type BatchExecutorConfig = {
   /** ABI for the batch executor contract */
   abi: readonly Record<string, unknown>[]
 
+  /** Default gas overhead for origin chain gasless transactions (e.g., 80_000 for Calibur) */
+  originGasOverhead?: number
+
   /** EIP-712 types for the signed batch call */
   eip712Types: Record<
     string,

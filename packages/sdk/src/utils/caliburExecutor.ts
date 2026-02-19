@@ -15,6 +15,8 @@ import {
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as Address
 
+export const CALIBUR_ORIGIN_GAS_OVERHEAD = 80_000
+
 export function createCaliburExecutor(): BatchExecutorConfig {
   return {
     address: CALIBUR_ADDRESS,
@@ -22,6 +24,7 @@ export function createCaliburExecutor(): BatchExecutorConfig {
     eip712Types: CALIBUR_EIP712_TYPES,
     eip712PrimaryType: 'SignedBatchedCall',
     salt: CALIBUR_SALT,
+    originGasOverhead: CALIBUR_ORIGIN_GAS_OVERHEAD,
 
     buildSignDomain(chainId: number, verifyingContract: Address) {
       return {

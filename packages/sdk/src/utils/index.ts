@@ -16,4 +16,7 @@ export { safeStructuredClone } from './structuredClone.js'
 export { repeatUntilOk } from './repeatUntilOk.js'
 export { prepareHyperliquidSteps } from './hyperliquid.js'
 export { isRelayApiUrl, getApiKeyHeader } from './apiKey.js'
-export { createCaliburExecutor } from './caliburExecutor.js'
+export {
+  createCaliburExecutor,
+  CALIBUR_ORIGIN_GAS_OVERHEAD
+} from './caliburExecutor.js'

@@ -45,6 +45,9 @@ export type ExecuteGaslessBatchParameters = {
   executor?: BatchExecutorConfig
   /** Whether the sponsor pays all fees (default: false) */
   subsidizeFees?: boolean
+  /** Gas overhead for the origin chain gasless transaction.
+   *  Overrides the executor's default if provided (Calibur default: 80,000). */
+  originGasOverhead?: number
   /** Progress callback for each stage of the flow */
   onProgress?: (data: GaslessBatchProgress) => void
 }
@@ -77,6 +80,7 @@ export async function executeGaslessBatch(
     walletClient,
     executor: executorConfig,
     subsidizeFees = false,
+    originGasOverhead: originGasOverheadOverride,
     onProgress
   } = parameters
 
@@ -101,6 +105,8 @@ export async function executeGaslessBatch(
 
   const userAddress = account.address
   const executor = executorConfig ?? createCaliburExecutor()
+  const originGasOverhead =
+    originGasOverheadOverride ?? executor.originGasOverhead
 
   client.log(
     ['Gasless Batch: starting', { user: userAddress, executor: executor.address }],
@@ -257,6 +263,7 @@ export async function executeGaslessBatch(
       referrer: client.source || '',
       subsidizeFees
     },
+    ...(originGasOverhead != null ? { originGasOverhead } : {}),
     ...(requestId ? { requestId } : {})
   }
 
