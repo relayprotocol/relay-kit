@@ -1,20 +1,29 @@
-import type { AdaptedWallet, ProgressData, Execute } from '../types/index.js'
+import type {
+  AdaptedWallet,
+  ProgressData,
+  Execute,
+  RelayTransaction
+} from '../types/index.js'
 import { getClient } from '../client.js'
 import {
   executeSteps,
   adaptViemWallet,
   getCurrentStepData,
-  safeStructuredClone
+  safeStructuredClone,
+  request as requestApi,
+  getApiKeyHeader
 } from '../utils/index.js'
 import { type WalletClient } from 'viem'
 import { isViemWalletClient } from '../utils/viemWallet.js'
 import { isDeadAddress } from '../constants/address.js'
+import { extractDepositRequestId } from '../utils/websocket.js'
 
 export type ExecuteActionParameters = {
   quote: Execute
   wallet: AdaptedWallet | WalletClient
   depositGasLimit?: string
   onProgress?: (data: ProgressData) => any
+  onTransactionReceived?: (transaction: RelayTransaction) => any
 }
 
 /**
@@ -23,6 +32,7 @@ export type ExecuteActionParameters = {
  * @param data.depositGasLimit A gas limit to use in base units (wei, etc)
  * @param data.wallet Wallet object that adheres to the AdaptedWakket interface or a viem WalletClient
  * @param data.onProgress Callback to update UI state as execution progresses
+ * @param data.onTransactionReceived Callback fired when /requests metadata is available
  * @param abortController Optional AbortController to cancel the execution
  */
 export function execute(data: ExecuteActionParameters): Promise<{
@@ -31,7 +41,8 @@ export function execute(data: ExecuteActionParameters): Promise<{
 }> & {
   abortController: AbortController
 } {
-  const { quote, wallet, depositGasLimit, onProgress } = data
+  const { quote, wallet, depositGasLimit, onProgress, onTransactionReceived } =
+    data
   const client = getClient()
 
   if (!client.baseApiUrl || !client.baseApiUrl.length) {
@@ -113,6 +124,12 @@ export function execute(data: ExecuteActionParameters): Promise<{
       )
         .then((data) => {
           resolve({ data, abortController })
+          void hydrateTransactionMetadataAndNotify({
+            data,
+            abortController,
+            onProgress,
+            onTransactionReceived
+          })
         })
         .catch(reject)
     })
@@ -127,4 +144,121 @@ export function execute(data: ExecuteActionParameters): Promise<{
     console.error(err)
     throw err
   }
+}
+
+async function hydrateTransactionMetadataAndNotify({
+  data,
+  abortController,
+  onProgress,
+  onTransactionReceived
+}: {
+  data: Execute
+  abortController: AbortController
+  onProgress?: (data: ProgressData) => any
+  onTransactionReceived?: (transaction: RelayTransaction) => any
+}) {
+  try {
+    const requestId = extractDepositRequestId(data.steps)
+    if (!requestId) {
+      return
+    }
+
+    const transaction = await pollRequestById(requestId)
+    if (!transaction) {
+      return
+    }
+
+    onTransactionReceived?.(transaction)
+
+    const metadata = transaction.data?.metadata
+    const existingCurrencyOut = data.details?.currencyOut
+    const nextCurrencyOut = metadata?.currencyOut
+
+    if (!nextCurrencyOut) {
+      return
+    }
+
+    const amountChanged =
+      nextCurrencyOut.amount !== existingCurrencyOut?.amount ||
+      nextCurrencyOut.amountFormatted !== existingCurrencyOut?.amountFormatted ||
+      nextCurrencyOut.amountUsd !== existingCurrencyOut?.amountUsd
+
+    if (!amountChanged) {
+      return
+    }
+
+    data.details = {
+      ...data.details,
+      sender: metadata?.sender ?? data.details?.sender,
+      recipient: metadata?.recipient ?? data.details?.recipient,
+      currencyIn: metadata?.currencyIn ?? data.details?.currencyIn,
+      currencyOut: nextCurrencyOut,
+      currencyGasTopup: metadata?.currencyGasTopup ?? data.details?.currencyGasTopup
+    }
+
+    if (!onProgress || abortController.signal.aborted) {
+      return
+    }
+
+    const { currentStep, currentStepItem, txHashes } = getCurrentStepData(
+      data.steps
+    )
+    onProgress({
+      steps: data.steps,
+      fees: data.fees,
+      breakdown: data.breakdown,
+      details: data.details,
+      currentStep,
+      currentStepItem,
+      txHashes,
+      refunded: data.refunded,
+      error: data.error
+    })
+  } catch {
+    return
+  }
+}
+
+async function pollRequestById(
+  requestId: string
+): Promise<RelayTransaction | undefined> {
+  const client = getClient()
+  const requestConfig = {
+    url: `${client.baseApiUrl}/requests/v2`,
+    method: 'get' as const,
+    params: {
+      id: requestId,
+      limit: 1,
+      sortBy: 'updatedAt' as const,
+      sortDirection: 'desc' as const
+    },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getApiKeyHeader(client, client.baseApiUrl),
+      'relay-sdk-version': client.version ?? 'unknown'
+    }
+  }
+
+  const maxAttempts = 5
+  const pollingInterval = 1000
+  let transaction: RelayTransaction | undefined = undefined
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const res = (await requestApi(requestConfig)) as {
+      data?: {
+        requests?: RelayTransaction[]
+      }
+    }
+    transaction = res.data?.requests?.[0]
+
+    if (transaction?.data?.metadata?.currencyOut) {
+      break
+    }
+
+    if (attempt < maxAttempts - 1) {
+      await new Promise((resolve) => setTimeout(resolve, pollingInterval))
+    }
+  }
+
+  return transaction
 }
