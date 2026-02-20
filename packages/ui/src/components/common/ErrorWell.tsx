@@ -30,7 +30,7 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
       !hasTxHashes ||
       error?.message?.includes('Deposit transaction with hash')
     ) {
-      return 'Oops, something went wrong while initiating the swap. Your request was not submitted. Please try again.'
+      return 'Oops, something went wrong while initiating the swap. Your request was not submitted. Please try again, and make sure your wallet is unlocked.'
     } else if (error?.message?.includes('solver status check')) {
       return 'This transaction is taking longer than usual to process. Please visit the transaction page for more details.'
     } else if (error?.message?.includes('OUT_OF_ENERGY')) {
