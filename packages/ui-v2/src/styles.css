@@ -1,0 +1,216 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Relay Kit UI v2 — Design Tokens
+ *
+ * Minimal and professional palette. Relay violet is used only for interactive
+ * elements (primary button, focus ring, selected state). Backgrounds and
+ * borders are neutral gray.
+ *
+ * Override any CSS variable on a parent element to theme the widget.
+ */
+@layer base {
+  :root {
+    /* ── Backgrounds ──────────────────────────────────────────────── */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* ── Primary: Relay violet (buttons, focus rings, selected) ───── */
+    --primary: 256 75% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    /* ── Secondary / subtle surfaces ────────────────────────────── */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 210 40% 93%;
+    --accent-foreground: 222 47% 11%;
+
+    /* ── Semantic ────────────────────────────────────────────────── */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* ── Chrome ──────────────────────────────────────────────────── */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 256 75% 50%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 256 75% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 33% 20%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+    --ring: 256 75% 62%;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Bottom-sheet / Token-selector dialog                                        */
+/*                                                                             */
+/* Uses CSS @media queries (not Tailwind responsive prefixes) to avoid the     */
+/* "starts at bottom-right then snaps to center" animation glitch that occurs  */
+/* when Tailwind's sm: classes conflict with open-state animations.             */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* Mobile: slide up from bottom */
+.relay-bottom-sheet {
+  position: fixed;
+  z-index: 50;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80vh;
+  max-height: 90vh;
+  min-height: 400px;
+  border-radius: 1rem 1rem 0 0;
+  background: hsl(var(--background));
+  box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  /* Must be a flex column so children can use flex-1 + overflow-y: auto */
+  display: flex;
+  flex-direction: column;
+}
+
+.relay-bottom-sheet[data-state='open'] {
+  animation: relay-slide-up 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.relay-bottom-sheet[data-state='closed'] {
+  animation: relay-slide-down 0.22s ease-in;
+}
+
+/* Desktop (sm+): centered modal, scale in */
+@media (min-width: 640px) {
+  .relay-bottom-sheet {
+    bottom: auto;
+    left: 50%;
+    top: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 620px;
+    height: 640px;
+    max-height: 90vh;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .relay-bottom-sheet[data-state='open'] {
+    animation: relay-scale-in 0.15s ease-out;
+  }
+
+  .relay-bottom-sheet[data-state='closed'] {
+    animation: relay-fade-out 0.15s ease-in;
+  }
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
+
+@keyframes relay-slide-up {
+  from { transform: translateY(100%); opacity: 0.9; }
+  to   { transform: translateY(0);    opacity: 1;   }
+}
+
+@keyframes relay-slide-down {
+  from { transform: translateY(0);    opacity: 1;   }
+  to   { transform: translateY(100%); opacity: 0;   }
+}
+
+@keyframes relay-scale-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1);    }
+}
+
+@keyframes relay-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Centered modals (TransactionModal, CustomAddressModal, etc.)            */
+/* Uses pure CSS transform (no Tailwind variables) to prevent the          */
+/* "appears bottom-right before centering" animation glitch.               */
+.relay-centered-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
+  outline: none;
+}
+
+.relay-centered-modal[data-state='open'] {
+  animation: relay-scale-in 0.15s ease-out;
+}
+
+.relay-centered-modal[data-state='closed'] {
+  animation: relay-fade-out 0.15s ease-in;
+}
+
+/* Standard fade + scale for centered modals (e.g. transaction modal) */
+@keyframes scale-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1);    }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.15s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.animate-fade-in  { animation: fade-in  0.15s ease-out; }
+.animate-fade-out { animation: fade-out 0.15s ease-in;  }
+
+/* Collapsible content animation (used in FeeBreakdown) */
+@keyframes slide-down {
+  from { height: 0; opacity: 0; }
+  to   { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to   { height: 0; opacity: 0; }
+}

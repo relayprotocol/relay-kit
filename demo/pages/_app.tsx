@@ -1,4 +1,5 @@
 import '@relayprotocol/relay-kit-ui/styles.css'
+import '@relayprotocol/relay-kit-ui-v2/styles.css'
 import '../fonts.css'
 import '../global.css'
 

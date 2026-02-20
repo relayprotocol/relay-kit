@@ -31,6 +31,7 @@
     "@relayprotocol/relay-bitcoin-wallet-adapter": "workspace:*",
     "@relayprotocol/relay-kit-hooks": "workspace:*",
     "@relayprotocol/relay-kit-ui": "workspace:*",
+    "@relayprotocol/relay-kit-ui-v2": "workspace:*",
     "@relayprotocol/relay-sdk": "workspace:*",
     "@relayprotocol/relay-sui-wallet-adapter": "workspace:*",
     "@relayprotocol/relay-svm-wallet-adapter": "workspace:*",
