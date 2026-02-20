@@ -1,6 +1,5 @@
 import { lazy, memo, Suspense, useEffect, type FC } from 'react'
 import {
-  Box,
   ChainTokenIcon,
   Flex,
   Text
@@ -185,14 +184,13 @@ export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
     <Flex
       direction="column"
       id="onramp-moonpay-step"
-      css={{
-        width: '100%',
-        height: '100%',
+      className="relay-w-full relay-h-full"
+      style={{
         position: step === OnrampStep.Moonpay ? undefined : 'fixed',
         top: step === OnrampStep.Moonpay ? undefined : '-100%'
       }}
     >
-      <Text style="h6" css={{ mb: '2' }}>
+      <Text style="h6" className="relay-mb-2">
         {!isPassthrough
           ? `Buy ${toToken?.symbol} (${toChain?.displayName})`
           : 'Checkout'}
@@ -200,46 +198,26 @@ export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
       {!isPassthrough ? (
         <Flex
           align="center"
-          css={{
-            width: '100%',
-            overflow: 'hidden',
-            borderRadius: 'widget-card-border-radius',
-            '--borderColor': 'colors.subtle-border-color',
-            border: '1px solid var(--borderColor)',
-            p: '4',
-            gap: 2,
-            mb: '2'
-          }}
+          className="relay-w-full relay-overflow-hidden relay-p-4 relay-gap-2 relay-mb-2 relay-rounded-widget-card relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)]"
         >
-          <Box
-            css={{ position: 'relative', width: 48, height: 52, flexShrink: 0 }}
+          <div
+            className="relay-relative relay-shrink-0 relay-w-[48px] relay-h-[52px]"
           >
-            <ChainTokenIcon
-              chainId={toToken?.chainId}
-              tokenlogoURI={toToken?.logoURI}
-              tokenSymbol={toToken?.symbol}
-              css={{
-                width: 32,
-                height: 32,
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                zIndex: 1
-              }}
-            />
-            <ChainTokenIcon
-              chainId={fromToken?.chainId}
-              tokenlogoURI={fromToken?.logoURI}
-              tokenSymbol={fromToken?.symbol}
-              css={{
-                width: 32,
-                height: 32,
-                position: 'absolute',
-                bottom: 0,
-                left: 0
-              }}
-            />
-          </Box>
+            <div className="relay-absolute relay-top-0 relay-right-0 relay-z-[1]">
+              <ChainTokenIcon
+                chainId={toToken?.chainId}
+                tokenlogoURI={toToken?.logoURI}
+                tokenSymbol={toToken?.symbol}
+              />
+            </div>
+            <div className="relay-absolute relay-bottom-0 relay-left-0">
+              <ChainTokenIcon
+                chainId={fromToken?.chainId}
+                tokenlogoURI={fromToken?.logoURI}
+                tokenSymbol={fromToken?.symbol}
+              />
+            </div>
+          </div>
           <Text style="subtitle2">
             Purchase {fromToken?.symbol} ({fromChain?.displayName}) via your
             card for Relay to convert to {toToken?.symbol} (

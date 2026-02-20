@@ -2,7 +2,6 @@ import { type FC, useState } from 'react'
 import { Button, Text } from '../primitives/index.js'
 import Tooltip from '../primitives/Tooltip.js'
 import { useCopyToClipboard } from 'usehooks-ts'
-import { AnimatePresence, motion } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faCopy } from '@fortawesome/free-solid-svg-icons'
 
@@ -42,27 +41,15 @@ export const CopyToClipBoard: FC<CopyToClipBoardProps> = ({ text }) => {
           setOpen(true)
           setTimeout(() => setOpen(false), 1000)
         }}
-        css={{ color: 'gray9', _hover: { color: 'gray11' } }}
+        className="relay-text-[color:var(--relay-colors-gray9)] hover:relay-text-[color:var(--relay-colors-gray11)]"
       >
-        <AnimatePresence initial={false} mode="wait">
-          <motion.span
-            transition={{
-              type: 'spring',
-              duration: 0.15,
-              bounce: 0
-            }}
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            key={isCopied ? 'Copied' : 'Copy'}
-          >
-            {isCopied ? (
-              <FontAwesomeIcon icon={faCheck} width={16} height={16} />
-            ) : (
-              <FontAwesomeIcon icon={faCopy} width={16} height={16} />
-            )}
-          </motion.span>
-        </AnimatePresence>
+        <span className="relay-inline-flex relay-transition-transform relay-duration-150">
+          {isCopied ? (
+            <FontAwesomeIcon icon={faCheck} width={16} height={16} />
+          ) : (
+            <FontAwesomeIcon icon={faCopy} width={16} height={16} />
+          )}
+        </span>
       </Button>
     </Tooltip>
   )

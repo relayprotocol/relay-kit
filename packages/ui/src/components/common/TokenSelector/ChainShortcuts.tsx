@@ -6,6 +6,7 @@ import type { ChainFilterValue } from './ChainFilter.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { groupChains } from '../../../utils/tokenSelector.js'
 import { EventNames } from '../../../constants/events.js'
+import { cn } from '../../../utils/cn.js'
 
 type ChainShortcutsProps = {
   options: (RelayChain | { id: undefined; name: string })[]
@@ -92,7 +93,7 @@ export const ChainShortcuts: FC<ChainShortcutsProps> = ({
   }
 
   return (
-    <Flex css={{ gap: '2', width: '100%', overflowX: 'auto', py: '2' }}>
+    <Flex className="relay-gap-2 relay-w-full relay-overflow-x-auto relay-py-2">
       {shortcutChains.map((chain) => (
         <ChainShortcutButton
           key={chain.id?.toString() ?? 'all-chains'}
@@ -106,20 +107,7 @@ export const ChainShortcuts: FC<ChainShortcutsProps> = ({
         color="ghost"
         size="none"
         onClick={onMoreClick}
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1',
-          px: '2',
-          py: '10px',
-          height: '40px',
-          borderRadius: '8px',
-          backgroundColor: 'dropdown-background',
-          color: 'gray9',
-          _hover: {
-            backgroundColor: 'gray3'
-          }
-        }}
+        className="relay-flex relay-items-center relay-gap-1 relay-px-2 relay-py-[10px] relay-h-[40px] relay-rounded-[8px] relay-bg-[var(--relay-colors-dropdown-background)] relay-text-[color:var(--relay-colors-gray9)] hover:relay-bg-[var(--relay-colors-gray3)]"
       >
         <Text style="subtitle1" color="subtle">
           More
@@ -146,29 +134,22 @@ const ChainShortcutButton: FC<ChainShortcutButtonProps> = ({
       color="ghost"
       size="none"
       onClick={onClick}
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '1',
-        py: '2',
-        px: '3',
-        borderRadius: '12px',
-        backgroundColor: isSelected ? 'gray6' : 'dropdown-background',
-        _hover: {
-          backgroundColor: isSelected ? 'gray6' : 'gray3'
-        }
-      }}
+      className={cn(
+        'relay-flex relay-flex-col relay-items-center relay-gap-1 relay-py-2 relay-px-3 relay-rounded-[12px]',
+        isSelected
+          ? 'relay-bg-[var(--relay-colors-gray6)] hover:relay-bg-[var(--relay-colors-gray6)]'
+          : 'relay-bg-[var(--relay-colors-dropdown-background)] hover:relay-bg-[var(--relay-colors-gray3)]'
+      )}
     >
       {chain.id ? (
         <ChainIcon
           chainId={chain.id}
           width={24}
           height={24}
-          css={{ borderRadius: '4px', overflow: 'hidden' }}
+          className="relay-rounded-[4px] relay-overflow-hidden"
         />
       ) : (
-        <Text style="subtitle1" css={{ height: '24px', width: '20px' }}>
+        <Text style="subtitle1" className="relay-h-[24px] relay-w-[20px]">
           All
         </Text>
       )}

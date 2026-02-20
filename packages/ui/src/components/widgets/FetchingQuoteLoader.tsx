@@ -1,14 +1,14 @@
 import { type FC } from 'react'
 import { Flex, Text } from '../primitives/index.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
-import type { Styles } from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../utils/cn.js'
 
 type Props = {
   isLoading: boolean
-  containerCss?: Styles
+  containerClassName?: string
 }
 
-const FetchingQuoteLoader: FC<Props> = ({ isLoading, containerCss }) => {
+const FetchingQuoteLoader: FC<Props> = ({ isLoading, containerClassName }) => {
   if (!isLoading) {
     return null
   }
@@ -16,16 +16,12 @@ const FetchingQuoteLoader: FC<Props> = ({ isLoading, containerCss }) => {
   return (
     <Flex
       align="center"
-      css={{
-        gap: 14,
-        mb: '3',
-        mt: '1',
-        p: '3 0',
-        m: '0 auto',
-        ...containerCss
-      }}
+      className={cn(
+        'relay-gap-[14px] relay-mb-3 relay-mt-1 relay-py-3 relay-mx-auto',
+        containerClassName
+      )}
     >
-      <LoadingSpinner css={{ height: 16, width: 16 }} />
+      <LoadingSpinner className="relay-h-4 relay-w-4" />
       <Text style="subtitle2">Fetching the best price</Text>
     </Flex>
   )

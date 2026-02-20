@@ -1,9 +1,5 @@
 import { useContext, type FC, type SVGProps } from 'react'
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../utils/cn.js'
 import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
 
 const SpinnerSVG: FC<SVGProps<SVGSVGElement>> = (props) => {
@@ -21,22 +17,15 @@ const SpinnerSVG: FC<SVGProps<SVGSVGElement>> = (props) => {
   )
 }
 
-const LoadingSpinnerCss = cva({
-  base: {
-    animation: 'spin 1s linear infinite',
-    fill: 'primary-color'
-  }
-})
-
-export const LoadingSpinner: FC<{ css?: Styles }> = ({ css }) => {
+export const LoadingSpinner: FC<{ className?: string }> = ({ className }) => {
   const providerOptionsContext = useContext(ProviderOptionsContext)
   if (providerOptionsContext.loader) {
     return (
-      <div className={designCss(css)}>
+      <div className={cn(className)}>
         {providerOptionsContext.loader({
-          width: (css as any)?.width ?? 20,
-          height: (css as any)?.height ?? 20,
-          fill: (css as any)?.fill
+          width: 20,
+          height: 20,
+          fill: undefined
         })}
       </div>
     )
@@ -44,7 +33,10 @@ export const LoadingSpinner: FC<{ css?: Styles }> = ({ css }) => {
 
   return (
     <SpinnerSVG
-      className={designCss(LoadingSpinnerCss.raw(), designCss.raw(css))}
+      className={cn(
+        'relay-animate-spin relay-fill-[var(--relay-colors-primary-color)]',
+        className
+      )}
     />
   )
 }

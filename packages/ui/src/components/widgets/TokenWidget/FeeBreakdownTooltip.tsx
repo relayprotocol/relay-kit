@@ -80,11 +80,11 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
   return (
     <Tooltip
       content={
-        <Flex css={{ minWidth: 240 }} direction="column">
+        <Flex className="relay-min-w-[240px]" direction="column">
           {/* Token Amount Row */}
           {fromToken && currencyInAmount && tokenAmountFormatted !== '-' && (
-            <Flex align="center" css={{ width: '100%', mb: '2' }}>
-              <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
+            <Flex align="center" className="relay-w-full relay-mb-2">
+              <Text style="subtitle2" color="subtle" className="relay-mr-auto">
                 {currencyInAmountFormatted && currencyInAmountFormatted !== '-'
                   ? `${formatNumber(currencyInAmountFormatted, 4, true)} ${fromToken.symbol}`
                   : fromToken.symbol}
@@ -95,8 +95,8 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
 
           {/* Relay Fee Row */}
           {relayFeeUsd !== undefined && relayFeeFormatted !== '-' && (
-            <Flex align="center" css={{ width: '100%', mb: '2' }}>
-              <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
+            <Flex align="center" className="relay-w-full relay-mb-2">
+              <Text style="subtitle2" color="subtle" className="relay-mr-auto">
                 {relayFee?.name ?? 'Relay Fee'}
               </Text>
               {feeBreakdown?.isGasSponsored && relayFeeUsd === 0 ? (
@@ -111,8 +111,8 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
 
           {/* Swap Impact Row */}
           {swapImpactUsd !== undefined && swapImpactFormatted !== '-' && (
-            <Flex align="center" css={{ width: '100%', mb: '2' }}>
-              <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
+            <Flex align="center" className="relay-w-full relay-mb-2">
+              <Text style="subtitle2" color="subtle" className="relay-mr-auto">
                 Swap Impact
               </Text>
               <Text style="subtitle2">{swapImpactFormatted}</Text>
@@ -121,8 +121,8 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
 
           {/* Execution Fee Row */}
           {executionFeeUsd !== undefined && executionFeeFormatted !== '-' && (
-            <Flex align="center" css={{ width: '100%', mb: '2' }}>
-              <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
+            <Flex align="center" className="relay-w-full relay-mb-2">
+              <Text style="subtitle2" color="subtle" className="relay-mr-auto">
                 {executionFeeLabel}
               </Text>
               {feeBreakdown?.isGasSponsored && executionFeeUsd === 0 ? (
@@ -137,8 +137,8 @@ export const FeeBreakdownTooltip: FC<FeeBreakdownTooltipProps> = ({
 
           {/* App Fee Row */}
           {appFee && appFeeUsd !== undefined && appFeeFormatted !== '-' && (
-            <Flex align="center" css={{ width: '100%' }}>
-              <Text style="subtitle2" color="subtle" css={{ mr: 'auto' }}>
+            <Flex align="center" className="relay-w-full">
+              <Text style="subtitle2" color="subtle" className="relay-mr-auto">
                 {appFee.name}
               </Text>
               {feeBreakdown?.isGasSponsored && appFeeUsd === 0 ? (

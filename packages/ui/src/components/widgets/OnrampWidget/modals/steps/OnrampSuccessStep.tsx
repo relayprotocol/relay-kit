@@ -1,5 +1,4 @@
 import type { FC } from 'react'
-import { motion } from 'framer-motion'
 import {
   Anchor,
   Box,
@@ -39,72 +38,53 @@ export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
   return (
     <Flex
       direction="column"
-      css={{
-        width: '100%',
-        height: '100%'
-      }}
+      className="relay-w-full relay-h-full"
     >
-      <Text style="h6" css={{ mb: '4' }}>
+      <Text style="h6" className="relay-mb-4">
         Transaction Details
       </Text>
       <Flex direction="column" align="center" justify="between">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{
-            type: 'spring',
-            stiffness: 260,
-            damping: 20
-          }}
-        >
+        <div className="relay-animate-content-fade-in">
           <Flex
             align="center"
             justify="center"
-            css={{
-              height: 80,
-              width: 80,
-              backgroundColor: 'green2',
-              '--borderColor': 'colors.green10',
-              border: '6px solid var(--borderColor)',
-              borderRadius: '999999px',
-              position: 'relative'
-            }}
+            className="relay-relative relay-rounded-full relay-h-[80px] relay-w-[80px] relay-bg-[var(--relay-colors-green2)] relay-border-[6px] relay-border-solid relay-border-[var(--relay-colors-green10)]"
           >
-            <Box css={{ color: 'green9', mr: '$2' }}>
-              <FontAwesomeIcon icon={faCheck} style={{ height: 40 }} />
+            <Box className="relay-text-[color:var(--relay-colors-green9)] relay-mr-[8px]">
+              <FontAwesomeIcon icon={faCheck} className="relay-h-[40px]" />
             </Box>
           </Flex>
-        </motion.div>
+        </div>
 
-        <Text style="subtitle1" css={{ mt: '4', textAlign: 'center' }}>
+        <Text style="subtitle1" className="relay-mt-4 relay-text-center">
           Successfully purchased
         </Text>
         <Pill
           color="gray"
-          css={{ alignItems: 'center', my: '4', py: '2', px: '3', gap: '2' }}
+          className="relay-items-center relay-my-4 relay-py-2 relay-px-3 relay-gap-2"
         >
           <ChainTokenIcon
             chainId={toToken.chainId}
             tokenlogoURI={toToken.logoURI}
             tokenSymbol={toToken.symbol}
-            css={{ height: 32, width: 32 }}
+            className="relay-h-[32px] relay-w-[32px]"
           />
           {isLoadingTransaction ? (
-            <Skeleton css={{ height: 24, width: 60, background: 'gray5' }} />
+            <Skeleton className="relay-h-[24px] relay-w-[60px] relay-bg-[var(--relay-colors-gray5)]" />
           ) : (
             <Text style="subtitle1" ellipsify>
               {toAmountFormatted} {toToken.symbol}
             </Text>
           )}
         </Pill>
-        <Flex direction="column" css={{ gap: '2' }} align="center">
+        <Flex direction="column" className="relay-gap-2" align="center">
           <Anchor
             href={moonpayTxUrl}
             target="_blank"
-            css={{ display: 'flex', alignItems: 'center', gap: '1' }}
+            className="relay-flex relay-items-center relay-gap-1"
           >
             View MoonPay transaction{' '}
-            <FontAwesomeIcon icon={faUpRightFromSquare} style={{ width: 14 }} />
+            <FontAwesomeIcon icon={faUpRightFromSquare} className="relay-w-[14px]" />
           </Anchor>
           {fillTxUrl ? (
             <Anchor href={fillTxUrl} target="_blank">
@@ -113,11 +93,11 @@ export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
           ) : null}
         </Flex>
       </Flex>
-      <Flex css={{ width: '100%', mt: '24px', gap: '3' }}>
+      <Flex className="relay-w-full relay-mt-[24px] relay-gap-3">
         {fillTxHash ? (
           <a
             href={`${baseTransactionUrl}/transaction/${fillTxHash}`}
-            style={{ width: '100%' }}
+            className="relay-w-full"
             target="_blank"
             onClick={(e) => {
               e.stopPropagation()
@@ -126,10 +106,7 @@ export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
             <Button
               cta={true}
               color="secondary"
-              css={{
-                justifyContent: 'center',
-                width: 'max-content'
-              }}
+              className="relay-justify-center relay-w-max"
             >
               View Details
             </Button>
@@ -140,10 +117,7 @@ export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
           onClick={() => {
             onOpenChange(false)
           }}
-          css={{
-            justifyContent: 'center',
-            width: '100%'
-          }}
+          className="relay-justify-center relay-w-full"
         >
           Done
         </Button>

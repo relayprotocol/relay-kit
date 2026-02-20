@@ -1,6 +1,5 @@
 import { type FC } from 'react'
 import { Box, Button, Flex, Text } from '../../../primitives/index.js'
-import { motion } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons/faCircleExclamation'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
@@ -109,47 +108,39 @@ export const ErrorStep: FC<ErrorStepProps> = ({
       direction="column"
       align="center"
       justify="between"
-      css={{ width: '100%' }}
+      className="relay-w-full"
     >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{
-          type: 'spring',
-          stiffness: 260,
-          damping: 20
-        }}
-      >
+      <div className="relay-animate-content-fade-in">
         {isRefund ? (
-          <Box css={{ color: 'gray9', mr: '$2' }}>
-            <FontAwesomeIcon icon={faRotateRight} style={{ height: 40 }} />
+          <Box className="relay-mr-2 relay-text-[color:var(--relay-colors-gray9)]">
+            <FontAwesomeIcon icon={faRotateRight} className="relay-h-[40px]" />
           </Box>
         ) : null}
 
         {!isRefund && isSolverStatusTimeout ? (
-          <Box css={{ color: 'amber9', mr: '$2' }}>
+          <Box className="relay-mr-2 relay-text-[color:var(--relay-colors-amber9)]">
             <FontAwesomeIcon
               icon={faCircleExclamation}
-              style={{ height: 40 }}
+              className="relay-h-[40px]"
             />
           </Box>
         ) : null}
 
         {!isRefund && !isSolverStatusTimeout ? (
-          <Box css={{ color: 'red9', mr: '$2' }}>
-            <FontAwesomeIcon icon={faCircleXmark} style={{ height: 40 }} />
+          <Box className="relay-mr-2 relay-text-[color:var(--relay-colors-red9)]">
+            <FontAwesomeIcon icon={faCircleXmark} className="relay-h-[40px]" />
           </Box>
         ) : null}
-      </motion.div>
+      </div>
 
       {isRefund ? (
         transaction?.data?.failReason === 'UNKNOWN' ||
         !transaction?.data?.failReason ? (
           <Flex
             direction="column"
-            css={{ my: '4', textAlign: 'center', alignItems: 'center' }}
+            className="relay-my-4 relay-text-center relay-items-center"
           >
-            <Text style="subtitle1" css={{ mb: '16px' }}>
+            <Text style="subtitle1" className="relay-mb-4">
               It looks like an unknown issue occurred during the transaction.
               {fromToken && fromAmountFormatted && fromChain
                 ? ` We've refunded ${fromAmountFormatted} ${fromToken.symbol} on ${fromChain.displayName}.`
@@ -157,11 +148,11 @@ export const ErrorStep: FC<ErrorStepProps> = ({
             </Text>
 
             {/* Transaction Pills */}
-            <Flex css={{ alignItems: 'center', gap: '2' }}>
+            <Flex className="relay-items-center relay-gap-2">
               {fromToken && fromChain ? (
                 <Pill
                   color="gray"
-                  css={{ alignItems: 'center', py: '2', px: '3' }}
+                  className="relay-items-center relay-py-2 relay-px-3"
                 >
                   <ChainTokenIcon
                     chainId={fromChain.id}
@@ -169,7 +160,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                     tokenSymbol={fromToken.symbol}
                     size="base"
                   />
-                  <Text style="subtitle1" css={{ ml: '2' }}>
+                  <Text style="subtitle1" className="relay-ml-2">
                     {fromAmountFormatted} {fromToken.symbol}
                   </Text>
                 </Pill>
@@ -177,16 +168,14 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                 <Text style="subtitle1">?</Text>
               )}
 
-              <Flex
-                css={{ alignItems: 'center', justifyContent: 'center', p: '2' }}
-              >
-                <FontAwesomeIcon style={{ width: 14 }} icon={faArrowRight} />
+              <Flex className="relay-items-center relay-justify-center relay-p-2">
+                <FontAwesomeIcon className="relay-w-[14px]" icon={faArrowRight} />
               </Flex>
 
               {toToken && toChain ? (
                 <Pill
                   color="gray"
-                  css={{ alignItems: 'center', py: '2', px: '3' }}
+                  className="relay-items-center relay-py-2 relay-px-3"
                 >
                   <ChainTokenIcon
                     chainId={toChain.id}
@@ -194,7 +183,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                     tokenSymbol={toToken.symbol}
                     size="base"
                   />
-                  <Text style="subtitle1" css={{ ml: '2' }}>
+                  <Text style="subtitle1" className="relay-ml-2">
                     {toAmountFormatted} {toToken.symbol}
                   </Text>
                 </Pill>
@@ -204,7 +193,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
             </Flex>
           </Flex>
         ) : (
-          <Text style="subtitle2" css={{ my: '4', textAlign: 'center' }}>
+          <Text style="subtitle2" className="relay-my-4 relay-text-center">
             <RefundReason reasonCode={transaction?.data?.failReason} />
             {refundDetails
               ? ` We've refunded ${refundDetails.amountFormatted} ${refundDetails.currency?.symbol} on ${refundChain?.displayName}.`
@@ -222,15 +211,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
         <>
           <Flex
             direction="column"
-            css={{
-              p: '3',
-              '--borderColor': 'colors.subtle-border-color',
-              border: '1px solid var(--borderColor)',
-              gap: '3',
-              width: '100%',
-              borderRadius: 12,
-              mb: 24
-            }}
+            className="relay-p-3 relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] relay-gap-3 relay-w-full relay-rounded-[12px] relay-mb-6"
           >
             <TransactionsByChain
               allTxHashes={allTxHashes}
@@ -242,7 +223,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
             />
           </Flex>
 
-          <Flex css={{ gap: '3', width: '100%' }}>
+          <Flex className="relay-gap-3 relay-w-full">
             <Button
               color="secondary"
               cta={true}
@@ -254,10 +235,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                   '_blank'
                 )
               }}
-              css={{
-                justifyContent: 'center',
-                whiteSpace: 'nowrap'
-              }}
+              className="relay-justify-center relay-whitespace-nowrap"
             >
               View Details
             </Button>
@@ -266,10 +244,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
               onClick={() => {
                 onOpenChange(false)
               }}
-              css={{
-                justifyContent: 'center',
-                width: '100%'
-              }}
+              className="relay-justify-center relay-w-full"
             >
               Done
             </Button>
@@ -281,10 +256,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
           onClick={() => {
             onOpenChange(false)
           }}
-          css={{
-            justifyContent: 'center',
-            width: '100%'
-          }}
+          className="relay-justify-center relay-w-full"
         >
           Done
         </Button>

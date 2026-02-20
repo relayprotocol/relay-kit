@@ -6,6 +6,7 @@ import {
   MAX_INPUT_BUFFER_BPS,
   MIN_INPUT_BUFFER_UNITS
 } from '../../constants/maxAmountBuffer.js'
+import { cn } from '../../utils/cn.js'
 
 type PercentageButtonsProps = {
   balance: bigint
@@ -21,7 +22,7 @@ type PercentageButtonsProps = {
   isFromNative?: boolean
   variant?: 'desktop' | 'mobile'
   percentages?: number[]
-  buttonStyles?: Record<string, any>
+  buttonClassName?: string
 }
 
 export const PercentageButtons: FC<PercentageButtonsProps> = ({
@@ -33,7 +34,7 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   isFromNative,
   variant = 'desktop',
   percentages = [20, 50],
-  buttonStyles: customButtonStyles
+  buttonClassName: customButtonClassName
 }) => {
   const getExecutionBuffer = (amount: bigint) => {
     if (amount <= 0n) return 0n
@@ -47,24 +48,21 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
 
   const isMobile = variant === 'mobile'
 
-  const defaultButtonStyles = {
-    fontSize: isMobile ? 14 : 12,
-    fontWeight: '500',
-    px: '1',
-    py: isMobile ? '6px' : '1',
-    minHeight: isMobile ? 'auto' : '23px',
-    lineHeight: '100%',
-    backgroundColor: 'widget-selector-background',
-    border: 'none',
-    borderRadius: isMobile ? '6px' : '12px',
-    flex: isMobile ? '1' : 'none',
-    justifyContent: 'center',
-    _hover: {
-      backgroundColor: 'widget-selector-hover-background'
-    }
-  }
+  const defaultButtonClassName = cn(
+    isMobile ? 'relay-text-[14px]' : 'relay-text-[12px]',
+    'relay-font-medium relay-px-1',
+    isMobile ? 'relay-py-[6px]' : 'relay-py-1',
+    isMobile ? '' : 'relay-min-h-[23px]',
+    'relay-leading-none',
+    'relay-bg-[var(--relay-colors-widget-selector-background)]',
+    'relay-border-none',
+    isMobile ? 'relay-rounded-[6px]' : 'relay-rounded-[12px]',
+    isMobile ? 'relay-flex-1' : '',
+    'relay-justify-center',
+    'hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]'
+  )
 
-  const buttonStyles = customButtonStyles || defaultButtonStyles
+  const buttonClassName = customButtonClassName || defaultButtonClassName
 
   const handleMaxClick = async () => {
     if (!balance || !fromChain) return
@@ -113,17 +111,17 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
 
   return (
     <Flex
-      css={{
-        gap: '1',
-        width: isMobile ? '100%' : 'auto',
-        mb: isMobile ? '1' : '0'
-      }}
+      className={cn(
+        'relay-gap-1',
+        isMobile ? 'relay-w-full' : 'relay-w-auto',
+        isMobile ? 'relay-mb-1' : 'relay-mb-0'
+      )}
     >
       {percentages.map((percent) => (
         <Button
           key={percent}
           aria-label={`${percent}%`}
-          css={buttonStyles}
+          className={buttonClassName}
           color="white"
           disabled={!balance || balance === 0n}
           onClick={() => {
@@ -139,7 +137,7 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
 
       <Button
         aria-label="MAX"
-        css={buttonStyles}
+        className={buttonClassName}
         color="white"
         disabled={!balance || balance === 0n}
         onMouseEnter={handleMaxMouseEnter}

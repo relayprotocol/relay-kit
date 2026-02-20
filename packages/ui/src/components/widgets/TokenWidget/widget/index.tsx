@@ -1222,7 +1222,7 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                 return (
                   <Flex
                     direction="column"
-                    css={{ gap: '3', width: '100%', position: 'relative' }}
+                    className="relay-gap-3 relay-w-full relay-relative"
                   >
                     <TabsRoot
                       value={activeTab}
@@ -1237,88 +1237,24 @@ const TokenWidget: FC<TokenWidgetProps> = ({
                     >
                       <Flex
                         direction="column"
-                        css={{
-                          width: '100%',
-                          overflow: 'hidden',
-                          border: 'widget-border',
-                          minWidth: { base: 320, md: 400 },
-                          maxWidth: 408
-                        }}
+                        className="relay-w-full relay-overflow-hidden relay-border-[var(--relay-borders-widget-border)] relay-min-w-[320px] md:relay-min-w-[400px] relay-max-w-[408px]"
                       >
                         <TabsList
-                          css={{
-                            backgroundColor: 'transparent',
-                            p: '0',
-                            mb: '2'
-                          }}
+                          className="relay-bg-transparent relay-p-0 relay-mb-2"
                         >
                           <TabsTrigger
                             value="buy"
-                            css={{
-                              padding: '12px',
-                              background: 'none',
-                              border: '1px solid transparent',
-                              color: 'text-subtle',
-                              '&[data-state="active"]': {
-                                background: 'widget-background',
-                                borderRadius: '12px',
-                                borderColor: 'slate.4',
-                                color: 'text-default'
-                              },
-                              '&:not([data-state="active"])': {
-                                _hover: {
-                                  backgroundColor: 'transparent !important'
-                                }
-                              },
-                              _dark: {
-                                '&[data-state="active"]': {
-                                  background: 'widget-background',
-                                  borderColor: 'gray.4'
-                                },
-                                '&:not([data-state="active"])': {
-                                  _hover: {
-                                    backgroundColor: 'transparent !important'
-                                  }
-                                }
-                              }
-                            }}
+                            className="relay-p-3 relay-bg-none relay-border relay-border-solid relay-border-transparent relay-text-[color:var(--relay-colors-text-subtle)] data-[state=active]:relay-bg-[var(--relay-colors-widget-background)] data-[state=active]:relay-rounded-[12px] data-[state=active]:relay-border-[var(--relay-colors-slate4)] data-[state=active]:relay-text-[color:var(--relay-colors-text-default)] dark:data-[state=active]:relay-border-[var(--relay-colors-gray4)]"
                           >
-                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                            <Text style="subtitle1" className="relay-text-[color:inherit]">
                               Buy
                             </Text>
                           </TabsTrigger>
                           <TabsTrigger
                             value="sell"
-                            css={{
-                              padding: '12px',
-                              background: 'none',
-                              border: '1px solid transparent',
-                              color: 'text-subtle',
-                              '&[data-state="active"]': {
-                                background: 'widget-background',
-                                borderRadius: '12px',
-                                borderColor: 'slate.4',
-                                color: 'text-default'
-                              },
-                              '&:not([data-state="active"])': {
-                                _hover: {
-                                  backgroundColor: 'transparent !important'
-                                }
-                              },
-                              _dark: {
-                                '&[data-state="active"]': {
-                                  background: 'widget-background',
-                                  borderColor: 'gray.4'
-                                },
-                                '&:not([data-state="active"])': {
-                                  _hover: {
-                                    backgroundColor: 'transparent !important'
-                                  }
-                                }
-                              }
-                            }}
+                            className="relay-p-3 relay-bg-none relay-border relay-border-solid relay-border-transparent relay-text-[color:var(--relay-colors-text-subtle)] data-[state=active]:relay-bg-[var(--relay-colors-widget-background)] data-[state=active]:relay-rounded-[12px] data-[state=active]:relay-border-[var(--relay-colors-slate4)] data-[state=active]:relay-text-[color:var(--relay-colors-text-default)] dark:data-[state=active]:relay-border-[var(--relay-colors-gray4)]"
                           >
-                            <Text style="subtitle1" css={{ color: 'inherit' }}>
+                            <Text style="subtitle1" className="relay-text-[color:inherit]">
                               Sell
                             </Text>
                           </TabsTrigger>

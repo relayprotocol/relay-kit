@@ -1,58 +1,31 @@
 import React, { forwardRef } from 'react'
-import Flex from './Flex.js'
 import type { HTMLProps, PropsWithChildren, ReactNode } from 'react'
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
-import Box from './Box.js'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '../../utils/cn.js'
 
-const StyledInputCss = cva({
-  base: {
-    px: 16,
-    py: 12,
-    borderRadius: 'input-border-radius',
-    fontFamily: 'body',
-    fontSize: 16,
-    color: 'input-color',
-    backgroundColor: 'input-background',
-    _placeholder: {
-      color: 'gray10'
-    },
-    '--focusColor': 'colors.focus-color',
-    _focus: {
-      boxShadow: 'inset 0 0 0 2px var(--focusColor)',
-      outline: 'none'
-    },
-    _disabled: {
-      cursor: 'not-allowed'
-    },
-    _spinButtons: {
-      WebkitAppearance: 'none'
-    }
-  },
-
-  variants: {
-    size: {
-      large: {
-        fontSize: 32,
-        lineHeight: '42px'
-      }
-    },
-    ellipsify: {
-      true: {
-        textOverflow: 'ellipsis',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap'
+const inputVariants = cva(
+  [
+    'relay-px-4 relay-py-3 relay-rounded-input relay-font-body relay-text-[16px]',
+    'relay-text-[color:var(--relay-colors-input-color)]',
+    'relay-bg-[var(--relay-colors-input-background)]',
+    'placeholder:relay-text-[color:var(--relay-colors-gray10)]',
+    'focus:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus:relay-outline-none',
+    'disabled:relay-cursor-not-allowed',
+    '[&::-webkit-outer-spin-button]:relay-appearance-none [&::-webkit-inner-spin-button]:relay-appearance-none'
+  ].join(' '),
+  {
+    variants: {
+      size: {
+        large: 'relay-text-[32px] relay-leading-[42px]'
+      },
+      ellipsify: {
+        true: 'relay-text-ellipsis relay-overflow-hidden relay-whitespace-nowrap'
       }
     }
   }
-})
+)
 
-type StyledInputCssVariants = NonNullable<
-  Parameters<(typeof StyledInputCss)['raw']>['0']
->
+type InputVariants = VariantProps<typeof inputVariants>
 
 const Input = forwardRef<
   HTMLInputElement,
@@ -60,20 +33,20 @@ const Input = forwardRef<
     PropsWithChildren & {
       icon?: ReactNode
       iconPosition?: 'left' | 'right'
-      iconCss?: Styles
-      containerCss?: Styles
+      iconClassName?: string
+      containerClassName?: string
       inputStyle?: React.CSSProperties
-    } & { css?: Styles } & StyledInputCssVariants
+    } & { className?: string } & InputVariants
 >(
   (
     {
       children,
       icon,
       iconPosition,
-      iconCss,
-      containerCss,
+      iconClassName,
+      containerClassName,
       inputStyle,
-      css,
+      className,
       ...props
     },
     ref
@@ -81,27 +54,21 @@ const Input = forwardRef<
     const { size, ellipsify, style, ...inputProps } = props
 
     return (
-      <Flex
-        css={{
-          ...containerCss
-        }}
-        style={{ ...style }}
-      >
+      <div className={cn('relay-flex', containerClassName)} style={style}>
         {icon && (
-          <Flex css={{ position: 'relative' }}>
-            <Box
-              css={{
-                position: 'absolute',
-                top: 12,
-                left: iconPosition === 'right' ? 'unset' : 16,
-                right: iconPosition === 'right' ? 16 : 'unset',
-                zIndex: 0,
-                ...iconCss
-              }}
+          <div className="relay-flex relay-relative">
+            <div
+              className={cn(
+                'relay-absolute relay-top-[12px] relay-z-0',
+                iconPosition === 'right'
+                  ? 'relay-right-4 relay-left-[unset]'
+                  : 'relay-left-4 relay-right-[unset]',
+                iconClassName
+              )}
             >
               {icon}
-            </Box>
-          </Flex>
+            </div>
+          </div>
         )}
         <input
           {...inputProps}
@@ -112,14 +79,9 @@ const Input = forwardRef<
             paddingRight: icon && iconPosition === 'right' ? 42 : 16,
             ...inputStyle
           }}
-          className={designCss(
-            StyledInputCss.raw({ size, ellipsify }),
-            designCss.raw({
-              ...css
-            })
-          )}
+          className={cn(inputVariants({ size, ellipsify }), className)}
         />
-      </Flex>
+      </div>
     )
   }
 )

@@ -1,0 +1,852 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================================================
+   Keyframes
+   =================================================================== */
+@keyframes pulse {
+  50% { opacity: 0.5; }
+}
+
+@keyframes pulse-shadow {
+  0% { box-shadow: 0 0 0 0px var(--relay-colors-primary4); }
+  100% { box-shadow: 0 0 0 6px var(--relay-colors-primary4); }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes collapsibleSlideDown {
+  from { height: 0; }
+  to { height: var(--radix-collapsible-content-height); }
+}
+
+@keyframes collapsibleSlideUp {
+  from { height: var(--radix-collapsible-content-height); }
+  to { height: 0; }
+}
+
+@keyframes dialog-slide-up {
+  from { opacity: 0; bottom: -100%; }
+  to { opacity: 1; bottom: 0; }
+}
+
+@keyframes dialog-slide-down {
+  from { opacity: 1; bottom: 0; }
+  to { opacity: 0; bottom: -100%; }
+}
+
+@keyframes dialog-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dialog-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes content-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================================================================
+   CSS Reset (scoped to .relay-kit-reset)
+   Wrapped in @layer base so it appears BEFORE @tailwind utilities
+   in the output. This ensures utility classes always win over the reset.
+   =================================================================== */
+@layer base {
+
+.relay-kit-reset {
+  --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -moz-tab-size: 4;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1.5;
+  font-family: var(--relay-fonts-body, var(--font-fallback));
+}
+
+.relay-kit-reset *,
+.relay-kit-reset ::before,
+.relay-kit-reset ::after,
+.relay-kit-reset ::backdrop,
+.relay-kit-reset ::file-selector-button {
+  margin: 0px;
+  padding: 0px;
+  box-sizing: border-box;
+  border-width: 0px;
+  border-style: solid;
+  border-color: currentColor;
+}
+
+.relay-kit-reset img,
+.relay-kit-reset svg,
+.relay-kit-reset video,
+.relay-kit-reset canvas,
+.relay-kit-reset audio,
+.relay-kit-reset iframe,
+.relay-kit-reset embed,
+.relay-kit-reset object {
+  display: block;
+  vertical-align: middle;
+}
+
+.relay-kit-reset img,
+.relay-kit-reset video {
+  max-width: 100%;
+  height: auto;
+}
+
+.relay-kit-reset h1,
+.relay-kit-reset h2,
+.relay-kit-reset h3,
+.relay-kit-reset h4,
+.relay-kit-reset h5,
+.relay-kit-reset h6 {
+  text-wrap: balance;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.relay-kit-reset p,
+.relay-kit-reset h1,
+.relay-kit-reset h2,
+.relay-kit-reset h3,
+.relay-kit-reset h4,
+.relay-kit-reset h5,
+.relay-kit-reset h6 {
+  overflow-wrap: break-word;
+}
+
+.relay-kit-reset ol,
+.relay-kit-reset ul,
+.relay-kit-reset menu {
+  list-style: none;
+}
+
+.relay-kit-reset button,
+.relay-kit-reset input:where([type='button'], [type='reset'], [type='submit']),
+.relay-kit-reset ::file-selector-button {
+  appearance: button;
+  -webkit-appearance: button;
+}
+
+.relay-kit-reset button,
+.relay-kit-reset input,
+.relay-kit-reset optgroup,
+.relay-kit-reset select,
+.relay-kit-reset textarea,
+.relay-kit-reset ::file-selector-button {
+  font: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background: transparent;
+}
+
+.relay-kit-reset ::placeholder {
+  opacity: 1;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+
+.relay-kit-reset textarea {
+  resize: vertical;
+}
+
+.relay-kit-reset table {
+  text-indent: 0px;
+  border-collapse: collapse;
+  border-color: inherit;
+}
+
+.relay-kit-reset summary {
+  display: list-item;
+}
+
+.relay-kit-reset a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+.relay-kit-reset abbr:where([title]) {
+  text-decoration: underline dotted;
+}
+
+.relay-kit-reset code,
+.relay-kit-reset kbd,
+.relay-kit-reset samp,
+.relay-kit-reset pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  font-size: 1em;
+}
+
+.relay-kit-reset ::-webkit-search-decoration,
+.relay-kit-reset ::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.relay-kit-reset ::-webkit-inner-spin-button,
+.relay-kit-reset ::-webkit-outer-spin-button {
+  height: auto;
+}
+
+.relay-kit-reset [hidden] {
+  display: none !important;
+}
+
+.relay-kit-reset img {
+  border-style: none;
+}
+
+.relay-kit-reset small {
+  font-size: 80%;
+}
+
+.relay-kit-reset b,
+.relay-kit-reset strong {
+  font-weight: bolder;
+}
+
+/* ===================================================================
+   Token Definitions — Light Mode (default)
+   =================================================================== */
+:root {
+  /* --- Spacing --- */
+  --relay-spacing-1: 4px;
+  --relay-spacing-2: 8px;
+  --relay-spacing-3: 12px;
+  --relay-spacing-4: 16px;
+  --relay-spacing-5: 32px;
+  --relay-spacing-6: 64px;
+  --relay-spacing-widget-card-section-gutter: 6px;
+
+  /* --- Fonts --- */
+  --relay-fonts-body: var(--font-inter), sans-serif;
+  --relay-fonts-heading: var(--font-inter), sans-serif;
+
+  /* --- Gradients --- */
+  --relay-gradients-success: linear-gradient(to right, #30A46C, #0ADF79);
+
+  /* --- Radii --- */
+  --relay-radii-widget-border-radius: 16px;
+  --relay-radii-widget-card-border-radius: 12px;
+  --relay-radii-modal-border-radius: 16px;
+  --relay-radii-input-border-radius: 8px;
+  --relay-radii-dropdown-border-radius: 8px;
+  --relay-radii-widget-swap-currency-button-border-radius: 8px;
+
+  /* --- Borders --- */
+  --relay-borders-widget-border: 0px solid white;
+  --relay-borders-modal-border: 0px solid white;
+  --relay-borders-dropdown-border: 1px solid var(--relay-colors-gray5);
+  --relay-borders-widget-swap-currency-button-border-width: 2px;
+  --relay-borders-widget-card-border: 1px solid var(--relay-colors-primary4);
+
+  /* --- Shadows --- */
+  --relay-shadows-widget-box-shadow: 0px 4px 30px rgba(0, 0, 0, 0.10);
+
+  /* ===================================================================
+     Custom Violet Scale (primary)
+     =================================================================== */
+  --relay-colors-violet-1: #FDFDFF;
+  --relay-colors-violet-2: #F7F8FF;
+  --relay-colors-violet-3: #EFF1FF;
+  --relay-colors-violet-4: #E4E7FF;
+  --relay-colors-violet-5: #D7DBFF;
+  --relay-colors-violet-6: #C8CCFF;
+  --relay-colors-violet-7: #B4B8FF;
+  --relay-colors-violet-8: #989AFF;
+  --relay-colors-violet-9: #4615C8;
+  --relay-colors-violet-10: #3B00B4;
+  --relay-colors-violet-11: #5A45DF;
+  --relay-colors-violet-12: #2A226E;
+
+  --relay-colors-violet-dark-1: #0E0E23;
+  --relay-colors-violet-dark-2: #141331;
+  --relay-colors-violet-dark-3: #002216;
+  --relay-colors-violet-dark-4: #2F0093;
+  --relay-colors-violet-dark-5: #3800A8;
+  --relay-colors-violet-dark-6: #4016B8;
+  --relay-colors-violet-dark-7: #4C24D1;
+  --relay-colors-violet-dark-8: #5B2AF9;
+  --relay-colors-violet-dark-9: #4615C8;
+  --relay-colors-violet-dark-10: #3901AA;
+  --relay-colors-violet-dark-11: #A7AAFF;
+  --relay-colors-violet-dark-12: #DBDEFF;
+
+  /* ===================================================================
+     Radix Slate Scale
+     =================================================================== */
+  --relay-colors-slate-light-1: hsl(206, 30.0%, 98.8%);
+  --relay-colors-slate-light-2: hsl(210, 16.7%, 97.6%);
+  --relay-colors-slate-light-3: hsl(209, 13.3%, 95.3%);
+  --relay-colors-slate-light-4: hsl(209, 12.2%, 93.2%);
+  --relay-colors-slate-light-5: hsl(208, 11.7%, 91.1%);
+  --relay-colors-slate-light-6: hsl(208, 11.3%, 88.9%);
+  --relay-colors-slate-light-7: hsl(207, 11.1%, 85.9%);
+  --relay-colors-slate-light-8: hsl(205, 10.7%, 78.0%);
+  --relay-colors-slate-light-9: hsl(206, 6.0%, 56.1%);
+  --relay-colors-slate-light-10: hsl(206, 5.8%, 52.3%);
+  --relay-colors-slate-light-11: hsl(206, 6.0%, 43.5%);
+  --relay-colors-slate-light-12: hsl(206, 24.0%, 9.0%);
+
+  --relay-colors-slate-dark-1: hsl(200, 7.0%, 8.8%);
+  --relay-colors-slate-dark-2: hsl(195, 7.1%, 11.0%);
+  --relay-colors-slate-dark-3: hsl(197, 6.8%, 13.6%);
+  --relay-colors-slate-dark-4: hsl(198, 6.6%, 15.8%);
+  --relay-colors-slate-dark-5: hsl(199, 6.4%, 17.9%);
+  --relay-colors-slate-dark-6: hsl(201, 6.2%, 20.5%);
+  --relay-colors-slate-dark-7: hsl(203, 6.0%, 24.3%);
+  --relay-colors-slate-dark-8: hsl(207, 5.6%, 31.6%);
+  --relay-colors-slate-dark-9: hsl(206, 6.0%, 43.9%);
+  --relay-colors-slate-dark-10: hsl(206, 5.2%, 49.5%);
+  --relay-colors-slate-dark-11: hsl(206, 6.0%, 63.0%);
+  --relay-colors-slate-dark-12: hsl(210, 6.0%, 93.0%);
+
+  --relay-colors-slate-1: var(--relay-colors-slate-light-1);
+  --relay-colors-slate-2: var(--relay-colors-slate-light-2);
+  --relay-colors-slate-3: var(--relay-colors-slate-light-3);
+  --relay-colors-slate-4: var(--relay-colors-slate-light-4);
+  --relay-colors-slate-5: var(--relay-colors-slate-light-5);
+  --relay-colors-slate-6: var(--relay-colors-slate-light-6);
+  --relay-colors-slate-7: var(--relay-colors-slate-light-7);
+  --relay-colors-slate-8: var(--relay-colors-slate-light-8);
+  --relay-colors-slate-9: var(--relay-colors-slate-light-9);
+  --relay-colors-slate-10: var(--relay-colors-slate-light-10);
+  --relay-colors-slate-11: var(--relay-colors-slate-light-11);
+  --relay-colors-slate-12: var(--relay-colors-slate-light-12);
+
+  /* ===================================================================
+     Radix Gray Scale
+     =================================================================== */
+  --relay-colors-gray-light-1: hsl(0, 0%, 99.0%);
+  --relay-colors-gray-light-2: hsl(0, 0%, 97.3%);
+  --relay-colors-gray-light-3: hsl(0, 0%, 95.1%);
+  --relay-colors-gray-light-4: hsl(0, 0%, 93.0%);
+  --relay-colors-gray-light-5: hsl(0, 0%, 90.9%);
+  --relay-colors-gray-light-6: hsl(0, 0%, 88.7%);
+  --relay-colors-gray-light-7: hsl(0, 0%, 85.8%);
+  --relay-colors-gray-light-8: hsl(0, 0%, 78.0%);
+  --relay-colors-gray-light-9: hsl(0, 0%, 56.1%);
+  --relay-colors-gray-light-10: hsl(0, 0%, 52.3%);
+  --relay-colors-gray-light-11: hsl(0, 0%, 43.5%);
+  --relay-colors-gray-light-12: hsl(0, 0%, 9.0%);
+
+  --relay-colors-gray-dark-1: hsl(0, 0%, 8.5%);
+  --relay-colors-gray-dark-2: hsl(0, 0%, 11.0%);
+  --relay-colors-gray-dark-3: hsl(0, 0%, 13.6%);
+  --relay-colors-gray-dark-4: hsl(0, 0%, 15.8%);
+  --relay-colors-gray-dark-5: hsl(0, 0%, 17.9%);
+  --relay-colors-gray-dark-6: hsl(0, 0%, 20.5%);
+  --relay-colors-gray-dark-7: hsl(0, 0%, 24.3%);
+  --relay-colors-gray-dark-8: hsl(0, 0%, 31.2%);
+  --relay-colors-gray-dark-9: hsl(0, 0%, 43.9%);
+  --relay-colors-gray-dark-10: hsl(0, 0%, 49.4%);
+  --relay-colors-gray-dark-11: hsl(0, 0%, 62.8%);
+  --relay-colors-gray-dark-12: hsl(0, 0%, 93.0%);
+
+  --relay-colors-gray-1: var(--relay-colors-gray-light-1);
+  --relay-colors-gray-2: var(--relay-colors-gray-light-2);
+  --relay-colors-gray-3: var(--relay-colors-gray-light-3);
+  --relay-colors-gray-4: var(--relay-colors-gray-light-4);
+  --relay-colors-gray-5: var(--relay-colors-gray-light-5);
+  --relay-colors-gray-6: var(--relay-colors-gray-light-6);
+  --relay-colors-gray-7: var(--relay-colors-gray-light-7);
+  --relay-colors-gray-8: var(--relay-colors-gray-light-8);
+  --relay-colors-gray-9: var(--relay-colors-gray-light-9);
+  --relay-colors-gray-10: var(--relay-colors-gray-light-10);
+  --relay-colors-gray-11: var(--relay-colors-gray-light-11);
+  --relay-colors-gray-12: var(--relay-colors-gray-light-12);
+
+  /* ===================================================================
+     Radix Tomato Scale (Red)
+     =================================================================== */
+  --relay-colors-tomato-light-1: hsl(10, 100%, 99.4%);
+  --relay-colors-tomato-light-2: hsl(8, 100%, 98.4%);
+  --relay-colors-tomato-light-3: hsl(8, 100%, 96.6%);
+  --relay-colors-tomato-light-4: hsl(8, 100%, 94.3%);
+  --relay-colors-tomato-light-5: hsl(8, 92.8%, 91.0%);
+  --relay-colors-tomato-light-6: hsl(9, 84.7%, 86.3%);
+  --relay-colors-tomato-light-7: hsl(10, 77.3%, 79.5%);
+  --relay-colors-tomato-light-8: hsl(10, 71.6%, 71.0%);
+  --relay-colors-tomato-light-9: hsl(10, 78.0%, 54.0%);
+  --relay-colors-tomato-light-10: hsl(10, 71.5%, 50.0%);
+  --relay-colors-tomato-light-11: hsl(10, 82.0%, 43.5%);
+  --relay-colors-tomato-light-12: hsl(10, 50.0%, 13.5%);
+
+  --relay-colors-tomato-dark-1: hsl(10, 23.0%, 9.4%);
+  --relay-colors-tomato-dark-2: hsl(9, 44.8%, 11.4%);
+  --relay-colors-tomato-dark-3: hsl(8, 52.0%, 15.3%);
+  --relay-colors-tomato-dark-4: hsl(7, 56.3%, 18.0%);
+  --relay-colors-tomato-dark-5: hsl(7, 60.1%, 20.6%);
+  --relay-colors-tomato-dark-6: hsl(8, 64.8%, 24.0%);
+  --relay-colors-tomato-dark-7: hsl(8, 71.2%, 29.1%);
+  --relay-colors-tomato-dark-8: hsl(10, 80.2%, 35.7%);
+  --relay-colors-tomato-dark-9: hsl(10, 78.0%, 54.0%);
+  --relay-colors-tomato-dark-10: hsl(10, 81.7%, 59.0%);
+  --relay-colors-tomato-dark-11: hsl(10, 85.0%, 62.8%);
+  --relay-colors-tomato-dark-12: hsl(10, 89.0%, 96.0%);
+
+  --relay-colors-tomato-1: var(--relay-colors-tomato-light-1);
+  --relay-colors-tomato-2: var(--relay-colors-tomato-light-2);
+  --relay-colors-tomato-3: var(--relay-colors-tomato-light-3);
+  --relay-colors-tomato-4: var(--relay-colors-tomato-light-4);
+  --relay-colors-tomato-5: var(--relay-colors-tomato-light-5);
+  --relay-colors-tomato-6: var(--relay-colors-tomato-light-6);
+  --relay-colors-tomato-7: var(--relay-colors-tomato-light-7);
+  --relay-colors-tomato-8: var(--relay-colors-tomato-light-8);
+  --relay-colors-tomato-9: var(--relay-colors-tomato-light-9);
+  --relay-colors-tomato-10: var(--relay-colors-tomato-light-10);
+  --relay-colors-tomato-11: var(--relay-colors-tomato-light-11);
+  --relay-colors-tomato-12: var(--relay-colors-tomato-light-12);
+
+  /* ===================================================================
+     Radix Grass Scale (Green)
+     =================================================================== */
+  --relay-colors-grass-light-1: hsl(116, 50.0%, 98.9%);
+  --relay-colors-grass-light-2: hsl(120, 60.0%, 97.1%);
+  --relay-colors-grass-light-3: hsl(120, 53.6%, 94.8%);
+  --relay-colors-grass-light-4: hsl(121, 47.5%, 91.4%);
+  --relay-colors-grass-light-5: hsl(122, 42.6%, 86.5%);
+  --relay-colors-grass-light-6: hsl(124, 39.0%, 79.7%);
+  --relay-colors-grass-light-7: hsl(126, 37.1%, 70.2%);
+  --relay-colors-grass-light-8: hsl(131, 38.1%, 56.3%);
+  --relay-colors-grass-light-9: hsl(131, 41.0%, 46.5%);
+  --relay-colors-grass-light-10: hsl(132, 43.1%, 42.2%);
+  --relay-colors-grass-light-11: hsl(133, 50.0%, 32.5%);
+  --relay-colors-grass-light-12: hsl(130, 30.0%, 14.9%);
+
+  --relay-colors-grass-dark-1: hsl(146, 30.0%, 7.4%);
+  --relay-colors-grass-dark-2: hsl(136, 33.3%, 8.8%);
+  --relay-colors-grass-dark-3: hsl(137, 36.0%, 11.4%);
+  --relay-colors-grass-dark-4: hsl(137, 37.6%, 13.7%);
+  --relay-colors-grass-dark-5: hsl(136, 38.7%, 16.0%);
+  --relay-colors-grass-dark-6: hsl(135, 39.6%, 19.1%);
+  --relay-colors-grass-dark-7: hsl(134, 40.3%, 23.8%);
+  --relay-colors-grass-dark-8: hsl(131, 40.1%, 30.8%);
+  --relay-colors-grass-dark-9: hsl(131, 41.0%, 46.5%);
+  --relay-colors-grass-dark-10: hsl(131, 39.0%, 52.1%);
+  --relay-colors-grass-dark-11: hsl(131, 43.0%, 57.2%);
+  --relay-colors-grass-dark-12: hsl(137, 72.0%, 94.0%);
+
+  --relay-colors-grass-1: var(--relay-colors-grass-light-1);
+  --relay-colors-grass-2: var(--relay-colors-grass-light-2);
+  --relay-colors-grass-3: var(--relay-colors-grass-light-3);
+  --relay-colors-grass-4: var(--relay-colors-grass-light-4);
+  --relay-colors-grass-5: var(--relay-colors-grass-light-5);
+  --relay-colors-grass-6: var(--relay-colors-grass-light-6);
+  --relay-colors-grass-7: var(--relay-colors-grass-light-7);
+  --relay-colors-grass-8: var(--relay-colors-grass-light-8);
+  --relay-colors-grass-9: var(--relay-colors-grass-light-9);
+  --relay-colors-grass-10: var(--relay-colors-grass-light-10);
+  --relay-colors-grass-11: var(--relay-colors-grass-light-11);
+  --relay-colors-grass-12: var(--relay-colors-grass-light-12);
+
+  /* ===================================================================
+     Radix Amber Scale
+     =================================================================== */
+  --relay-colors-amber-light-1: hsl(39, 70.0%, 99.0%);
+  --relay-colors-amber-light-2: hsl(40, 100%, 96.5%);
+  --relay-colors-amber-light-3: hsl(44, 100%, 91.7%);
+  --relay-colors-amber-light-4: hsl(43, 100%, 86.8%);
+  --relay-colors-amber-light-5: hsl(42, 100%, 81.8%);
+  --relay-colors-amber-light-6: hsl(38, 99.7%, 76.3%);
+  --relay-colors-amber-light-7: hsl(36, 86.1%, 67.1%);
+  --relay-colors-amber-light-8: hsl(35, 85.2%, 55.1%);
+  --relay-colors-amber-light-9: hsl(39, 100%, 57.0%);
+  --relay-colors-amber-light-10: hsl(35, 100%, 55.5%);
+  --relay-colors-amber-light-11: hsl(30, 100%, 34.0%);
+  --relay-colors-amber-light-12: hsl(20, 80.0%, 17.0%);
+
+  --relay-colors-amber-dark-1: hsl(36, 100%, 6.1%);
+  --relay-colors-amber-dark-2: hsl(35, 100%, 7.6%);
+  --relay-colors-amber-dark-3: hsl(32, 100%, 10.2%);
+  --relay-colors-amber-dark-4: hsl(32, 100%, 12.4%);
+  --relay-colors-amber-dark-5: hsl(33, 100%, 14.6%);
+  --relay-colors-amber-dark-6: hsl(35, 100%, 17.1%);
+  --relay-colors-amber-dark-7: hsl(35, 91.0%, 21.6%);
+  --relay-colors-amber-dark-8: hsl(36, 100%, 25.5%);
+  --relay-colors-amber-dark-9: hsl(39, 100%, 57.0%);
+  --relay-colors-amber-dark-10: hsl(43, 100%, 64.0%);
+  --relay-colors-amber-dark-11: hsl(39, 90.0%, 49.8%);
+  --relay-colors-amber-dark-12: hsl(39, 97.0%, 93.2%);
+
+  --relay-colors-amber-1: var(--relay-colors-amber-light-1);
+  --relay-colors-amber-2: var(--relay-colors-amber-light-2);
+  --relay-colors-amber-3: var(--relay-colors-amber-light-3);
+  --relay-colors-amber-4: var(--relay-colors-amber-light-4);
+  --relay-colors-amber-5: var(--relay-colors-amber-light-5);
+  --relay-colors-amber-6: var(--relay-colors-amber-light-6);
+  --relay-colors-amber-7: var(--relay-colors-amber-light-7);
+  --relay-colors-amber-8: var(--relay-colors-amber-light-8);
+  --relay-colors-amber-9: var(--relay-colors-amber-light-9);
+  --relay-colors-amber-10: var(--relay-colors-amber-light-10);
+  --relay-colors-amber-11: var(--relay-colors-amber-light-11);
+  --relay-colors-amber-12: var(--relay-colors-amber-light-12);
+
+  /* ===================================================================
+     Radix Yellow Scale
+     =================================================================== */
+  --relay-colors-yellow-light-1: hsl(60, 54.0%, 98.5%);
+  --relay-colors-yellow-light-2: hsl(52, 100%, 95.5%);
+  --relay-colors-yellow-light-3: hsl(55, 100%, 90.9%);
+  --relay-colors-yellow-light-4: hsl(54, 100%, 86.6%);
+  --relay-colors-yellow-light-5: hsl(52, 97.9%, 82.0%);
+  --relay-colors-yellow-light-6: hsl(50, 89.4%, 76.1%);
+  --relay-colors-yellow-light-7: hsl(47, 80.4%, 68.0%);
+  --relay-colors-yellow-light-8: hsl(48, 100%, 46.1%);
+  --relay-colors-yellow-light-9: hsl(53, 92.0%, 50.0%);
+  --relay-colors-yellow-light-10: hsl(50, 100%, 48.5%);
+  --relay-colors-yellow-light-11: hsl(42, 100%, 29.0%);
+  --relay-colors-yellow-light-12: hsl(40, 55.0%, 13.5%);
+
+  --relay-colors-yellow-dark-1: hsl(45, 100%, 5.5%);
+  --relay-colors-yellow-dark-2: hsl(46, 100%, 6.7%);
+  --relay-colors-yellow-dark-3: hsl(45, 100%, 8.7%);
+  --relay-colors-yellow-dark-4: hsl(45, 100%, 10.4%);
+  --relay-colors-yellow-dark-5: hsl(47, 100%, 12.1%);
+  --relay-colors-yellow-dark-6: hsl(49, 100%, 14.3%);
+  --relay-colors-yellow-dark-7: hsl(49, 90.3%, 18.4%);
+  --relay-colors-yellow-dark-8: hsl(50, 100%, 22.0%);
+  --relay-colors-yellow-dark-9: hsl(53, 92.0%, 50.0%);
+  --relay-colors-yellow-dark-10: hsl(54, 100%, 68.0%);
+  --relay-colors-yellow-dark-11: hsl(48, 100%, 47.0%);
+  --relay-colors-yellow-dark-12: hsl(53, 100%, 91.0%);
+
+  --relay-colors-yellow-1: var(--relay-colors-yellow-light-1);
+  --relay-colors-yellow-2: var(--relay-colors-yellow-light-2);
+  --relay-colors-yellow-3: var(--relay-colors-yellow-light-3);
+  --relay-colors-yellow-4: var(--relay-colors-yellow-light-4);
+  --relay-colors-yellow-5: var(--relay-colors-yellow-light-5);
+  --relay-colors-yellow-6: var(--relay-colors-yellow-light-6);
+  --relay-colors-yellow-7: var(--relay-colors-yellow-light-7);
+  --relay-colors-yellow-8: var(--relay-colors-yellow-light-8);
+  --relay-colors-yellow-9: var(--relay-colors-yellow-light-9);
+  --relay-colors-yellow-10: var(--relay-colors-yellow-light-10);
+  --relay-colors-yellow-11: var(--relay-colors-yellow-light-11);
+  --relay-colors-yellow-12: var(--relay-colors-yellow-light-12);
+
+  /* ===================================================================
+     Radix Blue Scale
+     =================================================================== */
+  --relay-colors-blue-light-1: hsl(206, 100%, 99.2%);
+  --relay-colors-blue-light-2: hsl(210, 100%, 98.0%);
+  --relay-colors-blue-light-3: hsl(209, 100%, 96.5%);
+  --relay-colors-blue-light-4: hsl(210, 98.8%, 94.0%);
+  --relay-colors-blue-light-5: hsl(209, 95.0%, 90.1%);
+  --relay-colors-blue-light-6: hsl(209, 81.2%, 84.5%);
+  --relay-colors-blue-light-7: hsl(208, 77.5%, 76.9%);
+  --relay-colors-blue-light-8: hsl(206, 81.9%, 65.3%);
+  --relay-colors-blue-light-9: hsl(206, 100%, 50.0%);
+  --relay-colors-blue-light-10: hsl(208, 100%, 47.3%);
+  --relay-colors-blue-light-11: hsl(211, 100%, 43.2%);
+  --relay-colors-blue-light-12: hsl(211, 100%, 15.0%);
+
+  --relay-colors-blue-dark-1: hsl(212, 35.0%, 9.2%);
+  --relay-colors-blue-dark-2: hsl(216, 50.0%, 11.8%);
+  --relay-colors-blue-dark-3: hsl(214, 59.4%, 15.3%);
+  --relay-colors-blue-dark-4: hsl(214, 65.8%, 17.9%);
+  --relay-colors-blue-dark-5: hsl(213, 71.2%, 20.2%);
+  --relay-colors-blue-dark-6: hsl(212, 77.4%, 23.1%);
+  --relay-colors-blue-dark-7: hsl(211, 85.1%, 27.4%);
+  --relay-colors-blue-dark-8: hsl(211, 89.7%, 34.1%);
+  --relay-colors-blue-dark-9: hsl(206, 100%, 50.0%);
+  --relay-colors-blue-dark-10: hsl(209, 100%, 60.6%);
+  --relay-colors-blue-dark-11: hsl(210, 100%, 66.1%);
+  --relay-colors-blue-dark-12: hsl(206, 98.0%, 95.8%);
+
+  --relay-colors-blue-1: var(--relay-colors-blue-light-1);
+  --relay-colors-blue-2: var(--relay-colors-blue-light-2);
+  --relay-colors-blue-3: var(--relay-colors-blue-light-3);
+  --relay-colors-blue-4: var(--relay-colors-blue-light-4);
+  --relay-colors-blue-5: var(--relay-colors-blue-light-5);
+  --relay-colors-blue-6: var(--relay-colors-blue-light-6);
+  --relay-colors-blue-7: var(--relay-colors-blue-light-7);
+  --relay-colors-blue-8: var(--relay-colors-blue-light-8);
+  --relay-colors-blue-9: var(--relay-colors-blue-light-9);
+  --relay-colors-blue-10: var(--relay-colors-blue-light-10);
+  --relay-colors-blue-11: var(--relay-colors-blue-light-11);
+  --relay-colors-blue-12: var(--relay-colors-blue-light-12);
+
+  /* ===================================================================
+     Radix Black Alpha Scale
+     =================================================================== */
+  --relay-colors-black-a-1: hsla(0, 0%, 0%, 0.012);
+  --relay-colors-black-a-2: hsla(0, 0%, 0%, 0.027);
+  --relay-colors-black-a-3: hsla(0, 0%, 0%, 0.047);
+  --relay-colors-black-a-4: hsla(0, 0%, 0%, 0.071);
+  --relay-colors-black-a-5: hsla(0, 0%, 0%, 0.090);
+  --relay-colors-black-a-6: hsla(0, 0%, 0%, 0.114);
+  --relay-colors-black-a-7: hsla(0, 0%, 0%, 0.141);
+  --relay-colors-black-a-8: hsla(0, 0%, 0%, 0.220);
+  --relay-colors-black-a-9: hsla(0, 0%, 0%, 0.439);
+  --relay-colors-black-a-10: hsla(0, 0%, 0%, 0.478);
+  --relay-colors-black-a-11: hsla(0, 0%, 0%, 0.565);
+  --relay-colors-black-a-12: hsla(0, 0%, 0%, 0.910);
+
+  /* ===================================================================
+     Panda Token Aliases (gray1–12 → slate scale)
+     =================================================================== */
+  --relay-colors-gray1: var(--relay-colors-slate-1);
+  --relay-colors-gray2: var(--relay-colors-slate-2);
+  --relay-colors-gray3: var(--relay-colors-slate-3);
+  --relay-colors-gray4: var(--relay-colors-slate-4);
+  --relay-colors-gray5: var(--relay-colors-slate-5);
+  --relay-colors-gray6: var(--relay-colors-slate-6);
+  --relay-colors-gray7: var(--relay-colors-slate-7);
+  --relay-colors-gray8: var(--relay-colors-slate-8);
+  --relay-colors-gray9: var(--relay-colors-slate-9);
+  --relay-colors-gray10: var(--relay-colors-slate-10);
+  --relay-colors-gray11: var(--relay-colors-slate-11);
+  --relay-colors-gray12: var(--relay-colors-slate-12);
+
+  --relay-colors-blackA10: var(--relay-colors-black-a-10);
+  --relay-colors-blue12: var(--relay-colors-blue-12);
+
+  --relay-colors-red2: var(--relay-colors-tomato-2);
+  --relay-colors-red3: var(--relay-colors-tomato-3);
+  --relay-colors-red4: var(--relay-colors-tomato-4);
+  --relay-colors-red5: var(--relay-colors-tomato-5);
+  --relay-colors-red6: var(--relay-colors-tomato-6);
+  --relay-colors-red9: var(--relay-colors-tomato-9);
+  --relay-colors-red10: var(--relay-colors-tomato-10);
+  --relay-colors-red11: var(--relay-colors-tomato-11);
+  --relay-colors-red12: var(--relay-colors-tomato-12);
+
+  --relay-colors-green2: var(--relay-colors-grass-2);
+  --relay-colors-green3: var(--relay-colors-grass-3);
+  --relay-colors-green9: var(--relay-colors-grass-9);
+  --relay-colors-green10: var(--relay-colors-grass-10);
+  --relay-colors-green11: var(--relay-colors-grass-11);
+  --relay-colors-green12: var(--relay-colors-grass-12);
+
+  --relay-colors-yellow9: var(--relay-colors-yellow-9);
+  --relay-colors-yellow10: var(--relay-colors-yellow-10);
+  --relay-colors-yellow11: var(--relay-colors-yellow-11);
+  --relay-colors-yellow12: var(--relay-colors-yellow-12);
+
+  --relay-colors-amber2: var(--relay-colors-amber-2);
+  --relay-colors-amber3: var(--relay-colors-amber-3);
+  --relay-colors-amber4: var(--relay-colors-amber-4);
+  --relay-colors-amber9: var(--relay-colors-amber-9);
+  --relay-colors-amber10: var(--relay-colors-amber-10);
+  --relay-colors-amber11: var(--relay-colors-amber-11);
+  --relay-colors-amber12: var(--relay-colors-amber-12);
+
+  /* ===================================================================
+     Primary Scale (semantic → violet)
+     =================================================================== */
+  --relay-colors-primary1: var(--relay-colors-violet-1);
+  --relay-colors-primary2: var(--relay-colors-violet-2);
+  --relay-colors-primary3: var(--relay-colors-violet-3);
+  --relay-colors-primary4: var(--relay-colors-violet-4);
+  --relay-colors-primary5: var(--relay-colors-violet-5);
+  --relay-colors-primary6: var(--relay-colors-violet-6);
+  --relay-colors-primary7: var(--relay-colors-violet-7);
+  --relay-colors-primary8: var(--relay-colors-violet-8);
+  --relay-colors-primary9: var(--relay-colors-violet-9);
+  --relay-colors-primary10: var(--relay-colors-violet-10);
+  --relay-colors-primary11: var(--relay-colors-violet-11);
+  --relay-colors-primary12: var(--relay-colors-violet-12);
+
+  /* ===================================================================
+     Semantic Color Tokens
+     =================================================================== */
+  --relay-colors-primary-color: var(--relay-colors-primary9);
+  --relay-colors-focus-color: var(--relay-colors-primary7);
+  --relay-colors-subtle-background-color: var(--relay-colors-gray-1);
+  --relay-colors-subtle-border-color: var(--relay-colors-gray-5);
+
+  /* Text */
+  --relay-colors-text-default: var(--relay-colors-gray-12);
+  --relay-colors-text-subtle: var(--relay-colors-gray-11);
+  --relay-colors-text-subtle-secondary: var(--relay-colors-gray-11);
+  --relay-colors-text-error: var(--relay-colors-tomato-12);
+  --relay-colors-text-success: var(--relay-colors-grass-11);
+
+  /* Buttons */
+  --relay-colors-primary-button-background: var(--relay-colors-primary9);
+  --relay-colors-primary-button-color: white;
+  --relay-colors-primary-button-hover-background: var(--relay-colors-primary10);
+  --relay-colors-primary-button-hover-color: white;
+  --relay-colors-secondary-button-background: var(--relay-colors-primary3);
+  --relay-colors-secondary-button-color: var(--relay-colors-gray12);
+  --relay-colors-secondary-button-hover-background: var(--relay-colors-primary4);
+  --relay-colors-secondary-button-hover-color: var(--relay-colors-gray12);
+  --relay-colors-button-disabled-background: var(--relay-colors-gray-8);
+  --relay-colors-button-disabled-color: var(--relay-colors-gray-11);
+
+  /* Input */
+  --relay-colors-input-background: var(--relay-colors-gray-3);
+  --relay-colors-input-color: var(--relay-colors-gray-12);
+
+  /* Anchor */
+  --relay-colors-anchor-color: var(--relay-colors-primary11);
+  --relay-colors-anchor-hover-color: var(--relay-colors-primary9);
+
+  /* Dropdown */
+  --relay-colors-dropdown-background: var(--relay-colors-gray-3);
+
+  /* Widget */
+  --relay-colors-widget-background: white;
+  --relay-colors-widget-card-background: var(--relay-colors-gray-1);
+  --relay-colors-widget-selector-background: var(--relay-colors-gray-2);
+  --relay-colors-widget-selector-hover-background: var(--relay-colors-gray-3);
+  --relay-colors-widget-swap-currency-button-border-color: var(--relay-colors-primary4);
+
+  /* Modal */
+  --relay-colors-modal-background: white;
+
+  /* Skeleton */
+  --relay-colors-skeleton-background: var(--relay-colors-gray-3);
+
+  /* Prose */
+  --relay-colors-prose-body: var(--relay-colors-slate-12);
+}
+
+/* ===================================================================
+   Dark Mode Overrides
+   =================================================================== */
+:where(.dark, [data-theme="dark"]) {
+  /* Primary → violet dark */
+  --relay-colors-primary1: var(--relay-colors-violet-dark-1);
+  --relay-colors-primary2: var(--relay-colors-violet-dark-2);
+  --relay-colors-primary3: var(--relay-colors-violet-dark-3);
+  --relay-colors-primary4: var(--relay-colors-violet-dark-4);
+  --relay-colors-primary5: var(--relay-colors-violet-dark-5);
+  --relay-colors-primary6: var(--relay-colors-violet-dark-6);
+  --relay-colors-primary7: var(--relay-colors-violet-dark-7);
+  --relay-colors-primary8: var(--relay-colors-violet-dark-8);
+  --relay-colors-primary9: var(--relay-colors-violet-dark-9);
+  --relay-colors-primary10: var(--relay-colors-violet-dark-10);
+  --relay-colors-primary11: var(--relay-colors-violet-dark-11);
+  --relay-colors-primary12: var(--relay-colors-violet-dark-12);
+
+  /* Widget/Modal backgrounds */
+  --relay-colors-widget-background: var(--relay-colors-gray-1);
+  --relay-colors-modal-background: var(--relay-colors-gray-1);
+
+  /* Radix scale dark overrides */
+  --relay-colors-amber-1: var(--relay-colors-amber-dark-1);
+  --relay-colors-amber-2: var(--relay-colors-amber-dark-2);
+  --relay-colors-amber-3: var(--relay-colors-amber-dark-3);
+  --relay-colors-amber-4: var(--relay-colors-amber-dark-4);
+  --relay-colors-amber-5: var(--relay-colors-amber-dark-5);
+  --relay-colors-amber-6: var(--relay-colors-amber-dark-6);
+  --relay-colors-amber-7: var(--relay-colors-amber-dark-7);
+  --relay-colors-amber-8: var(--relay-colors-amber-dark-8);
+  --relay-colors-amber-9: var(--relay-colors-amber-dark-9);
+  --relay-colors-amber-10: var(--relay-colors-amber-dark-10);
+  --relay-colors-amber-11: var(--relay-colors-amber-dark-11);
+  --relay-colors-amber-12: var(--relay-colors-amber-dark-12);
+
+  --relay-colors-blue-1: var(--relay-colors-blue-dark-1);
+  --relay-colors-blue-2: var(--relay-colors-blue-dark-2);
+  --relay-colors-blue-3: var(--relay-colors-blue-dark-3);
+  --relay-colors-blue-4: var(--relay-colors-blue-dark-4);
+  --relay-colors-blue-5: var(--relay-colors-blue-dark-5);
+  --relay-colors-blue-6: var(--relay-colors-blue-dark-6);
+  --relay-colors-blue-7: var(--relay-colors-blue-dark-7);
+  --relay-colors-blue-8: var(--relay-colors-blue-dark-8);
+  --relay-colors-blue-9: var(--relay-colors-blue-dark-9);
+  --relay-colors-blue-10: var(--relay-colors-blue-dark-10);
+  --relay-colors-blue-11: var(--relay-colors-blue-dark-11);
+  --relay-colors-blue-12: var(--relay-colors-blue-dark-12);
+
+  --relay-colors-grass-1: var(--relay-colors-grass-dark-1);
+  --relay-colors-grass-2: var(--relay-colors-grass-dark-2);
+  --relay-colors-grass-3: var(--relay-colors-grass-dark-3);
+  --relay-colors-grass-4: var(--relay-colors-grass-dark-4);
+  --relay-colors-grass-5: var(--relay-colors-grass-dark-5);
+  --relay-colors-grass-6: var(--relay-colors-grass-dark-6);
+  --relay-colors-grass-7: var(--relay-colors-grass-dark-7);
+  --relay-colors-grass-8: var(--relay-colors-grass-dark-8);
+  --relay-colors-grass-9: var(--relay-colors-grass-dark-9);
+  --relay-colors-grass-10: var(--relay-colors-grass-dark-10);
+  --relay-colors-grass-11: var(--relay-colors-grass-dark-11);
+  --relay-colors-grass-12: var(--relay-colors-grass-dark-12);
+
+  --relay-colors-gray-1: var(--relay-colors-gray-dark-1);
+  --relay-colors-gray-2: var(--relay-colors-gray-dark-2);
+  --relay-colors-gray-3: var(--relay-colors-gray-dark-3);
+  --relay-colors-gray-4: var(--relay-colors-gray-dark-4);
+  --relay-colors-gray-5: var(--relay-colors-gray-dark-5);
+  --relay-colors-gray-6: var(--relay-colors-gray-dark-6);
+  --relay-colors-gray-7: var(--relay-colors-gray-dark-7);
+  --relay-colors-gray-8: var(--relay-colors-gray-dark-8);
+  --relay-colors-gray-9: var(--relay-colors-gray-dark-9);
+  --relay-colors-gray-10: var(--relay-colors-gray-dark-10);
+  --relay-colors-gray-11: var(--relay-colors-gray-dark-11);
+  --relay-colors-gray-12: var(--relay-colors-gray-dark-12);
+
+  --relay-colors-slate-1: var(--relay-colors-slate-dark-1);
+  --relay-colors-slate-2: var(--relay-colors-slate-dark-2);
+  --relay-colors-slate-3: var(--relay-colors-slate-dark-3);
+  --relay-colors-slate-4: var(--relay-colors-slate-dark-4);
+  --relay-colors-slate-5: var(--relay-colors-slate-dark-5);
+  --relay-colors-slate-6: var(--relay-colors-slate-dark-6);
+  --relay-colors-slate-7: var(--relay-colors-slate-dark-7);
+  --relay-colors-slate-8: var(--relay-colors-slate-dark-8);
+  --relay-colors-slate-9: var(--relay-colors-slate-dark-9);
+  --relay-colors-slate-10: var(--relay-colors-slate-dark-10);
+  --relay-colors-slate-11: var(--relay-colors-slate-dark-11);
+  --relay-colors-slate-12: var(--relay-colors-slate-dark-12);
+
+  --relay-colors-tomato-1: var(--relay-colors-tomato-dark-1);
+  --relay-colors-tomato-2: var(--relay-colors-tomato-dark-2);
+  --relay-colors-tomato-3: var(--relay-colors-tomato-dark-3);
+  --relay-colors-tomato-4: var(--relay-colors-tomato-dark-4);
+  --relay-colors-tomato-5: var(--relay-colors-tomato-dark-5);
+  --relay-colors-tomato-6: var(--relay-colors-tomato-dark-6);
+  --relay-colors-tomato-7: var(--relay-colors-tomato-dark-7);
+  --relay-colors-tomato-8: var(--relay-colors-tomato-dark-8);
+  --relay-colors-tomato-9: var(--relay-colors-tomato-dark-9);
+  --relay-colors-tomato-10: var(--relay-colors-tomato-dark-10);
+  --relay-colors-tomato-11: var(--relay-colors-tomato-dark-11);
+  --relay-colors-tomato-12: var(--relay-colors-tomato-dark-12);
+
+  --relay-colors-yellow-1: var(--relay-colors-yellow-dark-1);
+  --relay-colors-yellow-2: var(--relay-colors-yellow-dark-2);
+  --relay-colors-yellow-3: var(--relay-colors-yellow-dark-3);
+  --relay-colors-yellow-4: var(--relay-colors-yellow-dark-4);
+  --relay-colors-yellow-5: var(--relay-colors-yellow-dark-5);
+  --relay-colors-yellow-6: var(--relay-colors-yellow-dark-6);
+  --relay-colors-yellow-7: var(--relay-colors-yellow-dark-7);
+  --relay-colors-yellow-8: var(--relay-colors-yellow-dark-8);
+  --relay-colors-yellow-9: var(--relay-colors-yellow-dark-9);
+  --relay-colors-yellow-10: var(--relay-colors-yellow-dark-10);
+  --relay-colors-yellow-11: var(--relay-colors-yellow-dark-11);
+  --relay-colors-yellow-12: var(--relay-colors-yellow-dark-12);
+}
+
+} /* end @layer base */
+
+/* ===================================================================
+   Custom Utility Classes — Border Shorthands
+   These CSS variables contain full border declarations (width + style + color)
+   and must be applied via the `border` shorthand property, not `border-width`.
+   =================================================================== */
+@layer utilities {
+  .relay-border-widget-card {
+    border: var(--relay-borders-widget-card-border);
+  }
+  .relay-border-widget {
+    border: var(--relay-borders-widget-border);
+  }
+  .relay-border-modal {
+    border: var(--relay-borders-modal-border);
+  }
+  .relay-border-dropdown {
+    border: var(--relay-borders-dropdown-border);
+  }
+}

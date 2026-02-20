@@ -32,33 +32,19 @@ const ChainFilterTrigger = forwardRef<
     aria-label="Chain filter"
     color="ghost"
     size="none"
-    css={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '6px',
-      height: 40,
-      px: '12px',
-      cursor: 'pointer',
-      backgroundColor: 'dropdown-background',
-      borderRadius: 'dropdown-border-radius',
-      flexShrink: 0,
-      '--focusColor': 'colors.focus-color',
-      _focusVisible: {
-        boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-      }
-    }}
+    className="relay-flex relay-items-center relay-gap-[6px] relay-h-[40px] relay-px-[12px] relay-cursor-pointer relay-bg-[var(--relay-colors-dropdown-background)] relay-rounded-dropdown relay-shrink-0 focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]"
   >
     {value.id ? (
       <ChainIcon
         chainId={value.id}
         width={20}
         height={20}
-        css={{ borderRadius: 4, overflow: 'hidden' }}
+        className="relay-rounded-[4px] relay-overflow-hidden"
       />
     ) : (
       <AllChainsLogo style={{ width: 20, height: 20 }} />
     )}
-    <Box css={{ color: 'gray9' }}>
+    <Box className="relay-text-[color:var(--relay-colors-gray9)]">
       <FontAwesomeIcon
         icon={faChevronDown}
         width={12}
@@ -166,15 +152,10 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
       contentProps={{
         align: 'end',
         avoidCollisions: false,
-        css: {
-          p: 0,
-          minWidth: '100%',
-          maxWidth: '100%',
-          mx: '0'
-        }
+        className: 'relay-p-0 relay-min-w-full relay-max-w-full relay-mx-0'
       }}
     >
-      <Flex direction="column" css={{ p: '2' }} data-chain-dropdown="true">
+      <Flex direction="column" className="relay-p-2" data-chain-dropdown="true">
         <ChainSearchInput
           ref={searchInputRef}
           value={chainSearchInput}
@@ -186,12 +167,8 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
         />
         <Flex
           direction="column"
-          css={{
-            overflowY: 'auto',
-            borderRadius: 8,
-            maxHeight: 290,
-            scrollbarColor: 'var(--relay-colors-gray5) transparent'
-          }}
+          className="relay-overflow-y-auto relay-rounded-[8px] relay-max-h-[290px]"
+          style={{ scrollbarColor: 'var(--relay-colors-gray5) transparent' }}
         >
           {filteredChains ? (
             filteredChains.length > 0 ? (
@@ -206,19 +183,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                       setOpen(false)
                       setChainSearchInput('')
                     }}
-                    css={{
-                      padding: '8px',
-                      borderRadius: 4,
-                      cursor: 'pointer',
-                      backgroundColor: 'modal-background',
-                      outline: 'none',
-                      _hover: {
-                        backgroundColor: 'gray3'
-                      },
-                      _focus: {
-                        backgroundColor: 'gray3'
-                      }
-                    }}
+                    className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] relay-outline-none hover:relay-bg-[var(--relay-colors-gray3)] focus:relay-bg-[var(--relay-colors-gray3)]"
                   >
                     <ChainFilterRow
                       chain={chain}
@@ -230,7 +195,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                 )
               })
             ) : (
-              <Text style="body1" css={{ p: '2', textAlign: 'center' }}>
+              <Text style="body1" className="relay-p-2 relay-text-center">
                 No results.
               </Text>
             )
@@ -244,19 +209,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                     onSelect(allChainsOption)
                     setChainSearchInput('')
                   }}
-                  css={{
-                    padding: '8px',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                    backgroundColor: 'modal-background',
-                    outline: 'none',
-                    _hover: {
-                      backgroundColor: 'gray3'
-                    },
-                    _focus: {
-                      backgroundColor: 'gray3'
-                    }
-                  }}
+                  className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] relay-outline-none hover:relay-bg-[var(--relay-colors-gray3)] focus:relay-bg-[var(--relay-colors-gray3)]"
                 >
                   <ChainFilterRow
                     chain={allChainsOption}
@@ -267,8 +220,8 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Flex align="center" css={{ px: '2', py: '1', gap: '1' }}>
-                    <Box css={{ color: 'primary9' }}>
+                  <Flex align="center" className="relay-px-2 relay-py-1 relay-gap-1">
+                    <Box className="relay-text-[color:var(--relay-colors-primary9)]">
                       <FontAwesomeIcon icon={faStar} width={12} height={12} />
                     </Box>
                     <Text style="subtitle2" color="subtle">
@@ -286,19 +239,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                           setOpen(false)
                           setChainSearchInput('')
                         }}
-                        css={{
-                          padding: '8px',
-                          borderRadius: 4,
-                          cursor: 'pointer',
-                          backgroundColor: 'modal-background',
-                          outline: 'none',
-                          _hover: {
-                            backgroundColor: 'gray3'
-                          },
-                          _focus: {
-                            backgroundColor: 'gray3'
-                          }
-                        }}
+                        className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] relay-outline-none hover:relay-bg-[var(--relay-colors-gray3)] focus:relay-bg-[var(--relay-colors-gray3)]"
                       >
                         <ChainFilterRow
                           chain={chain}
@@ -313,7 +254,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                 </>
               )}
 
-              <Text style="subtitle2" color="subtle" css={{ px: '2', py: '1' }}>
+              <Text style="subtitle2" color="subtle" className="relay-px-2 relay-py-1">
                 Chains A-Z
               </Text>
               {alphabeticalChains.map((chain: ChainFilterValue) => {
@@ -327,19 +268,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                       setOpen(false)
                       setChainSearchInput('')
                     }}
-                    css={{
-                      padding: '8px',
-                      borderRadius: 4,
-                      cursor: 'pointer',
-                      backgroundColor: 'modal-background',
-                      outline: 'none',
-                      _hover: {
-                        backgroundColor: 'gray3'
-                      },
-                      _focus: {
-                        backgroundColor: 'gray3'
-                      }
-                    }}
+                    className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] relay-outline-none hover:relay-bg-[var(--relay-colors-gray3)] focus:relay-bg-[var(--relay-colors-gray3)]"
                   >
                     <ChainFilterRow
                       chain={chain}

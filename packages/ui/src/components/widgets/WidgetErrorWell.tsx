@@ -7,7 +7,7 @@ import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons/faExclama
 import { type Currency } from '../../constants/currencies.js'
 import Tooltip from '../primitives/Tooltip.js'
 import { useMediaQuery } from 'usehooks-ts'
-import type { Styles } from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../utils/cn.js'
 import type { QuoteResponse } from '@relayprotocol/relay-kit-hooks'
 import type { LinkedWallet } from '../../types/index.js'
 import { faRoute } from '@fortawesome/free-solid-svg-icons'
@@ -21,7 +21,7 @@ type Props = {
   isHighRelayerServiceFee?: boolean
   isCapacityExceededError?: boolean
   isCouldNotExecuteError?: boolean
-  containerCss?: Styles
+  containerClassName?: string
   recipientWalletSupportsChain?: boolean | null
   recipient?: string
   toChainWalletVMSupported?: boolean
@@ -38,7 +38,7 @@ export const WidgetErrorWell: FC<Props> = ({
   isHighRelayerServiceFee,
   isCapacityExceededError,
   isCouldNotExecuteError,
-  containerCss,
+  containerClassName,
   recipientWalletSupportsChain,
   recipient,
   toChainWalletVMSupported,
@@ -72,23 +72,14 @@ export const WidgetErrorWell: FC<Props> = ({
       <Flex
         align="center"
         justify="between"
-        css={{
-          gap: '2',
-          p: '3',
-          width: '100%',
-          borderRadius: 'widget-card-border-radius',
-          backgroundColor: 'widget-background',
-          border: 'widget-card-border',
-          overflow: 'hidden',
-          mb: 'widget-card-section-gutter'
-        }}
+        className="relay-gap-2 relay-p-3 relay-w-full relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-border-widget-card relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)]"
       >
         <Text style="subtitle2">Route</Text>
-        <Flex align="center" css={{ gap: '1' }}>
+        <Flex align="center" className="relay-gap-1">
           <Text style="subtitle2" color="subtle">
             No available routes
           </Text>
-          <Box css={{ color: 'gray11', width: 14, flexShrink: 0 }}>
+          <Box className="relay-text-[color:var(--relay-colors-gray11)] relay-w-[14px] relay-shrink-0">
             <FontAwesomeIcon icon={faRoute} width={14} />
           </Box>
         </Flex>
@@ -98,10 +89,10 @@ export const WidgetErrorWell: FC<Props> = ({
 
   /*
    * Show wallet incompatibility warning when:
-   * • Wallet doesn't support destination chain
-   * • Valid recipient address (not dead/burn address)
-   * • Destination chain supports wallet's VM type
-   * • Wallet VM type matches destination chain VM
+   * - Wallet doesn't support destination chain
+   * - Valid recipient address (not dead/burn address)
+   * - Destination chain supports wallet's VM type
+   * - Wallet VM type matches destination chain VM
    */
   if (
     !recipientWalletSupportsChain &&
@@ -114,22 +105,16 @@ export const WidgetErrorWell: FC<Props> = ({
     return (
       <Flex
         align="center"
-        css={{
-          gap: '2',
-          p: '3',
-          backgroundColor: 'amber2',
-          '--borderColor': 'colors.amber4',
-          border: '1px solid var(--borderColor)',
-          borderRadius: 12,
-          mb: '3',
-          ...containerCss
-        }}
+        className={cn(
+          'relay-gap-2 relay-p-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          containerClassName
+        )}
         id={'widget-error-well-section'}
       >
-        <Box css={{ color: 'amber9' }}>
+        <Box className="relay-text-[color:var(--relay-colors-amber9)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" css={{ color: 'amber12' }}>
+        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
           Your selected wallet doesn't support the destination chain. Please
           choose a different wallet.
         </Text>
@@ -141,22 +126,16 @@ export const WidgetErrorWell: FC<Props> = ({
     return (
       <Flex
         align="center"
-        css={{
-          gap: '2',
-          p: '3',
-          backgroundColor: 'red2',
-          '--borderColor': 'colors.red4',
-          border: '1px solid var(--borderColor)',
-          borderRadius: 12,
-          mb: '3',
-          ...containerCss
-        }}
+        className={cn(
+          'relay-gap-2 relay-p-3 relay-bg-[var(--relay-colors-red2)] relay-border relay-border-solid relay-border-[var(--relay-colors-red4)] relay-rounded-[12px] relay-mb-3',
+          containerClassName
+        )}
         id={'widget-error-well-section'}
       >
-        <Box css={{ color: 'red10' }}>
+        <Box className="relay-text-[color:var(--relay-colors-red10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" css={{ color: 'red12' }}>
+        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-red12)]">
           {fetchQuoteErrorMessage}
         </Text>
       </Flex>
@@ -174,7 +153,7 @@ export const WidgetErrorWell: FC<Props> = ({
         content={
           <Text
             style="subtitle3"
-            css={{ maxWidth: 215, display: 'inline-block' }}
+            className="relay-max-w-[215px] relay-inline-block"
           >
             We recommend increasing the amount or waiting for the gas fee to be
             lower.
@@ -183,23 +162,16 @@ export const WidgetErrorWell: FC<Props> = ({
       >
         <Flex
           align="center"
-          css={{
-            gap: '2',
-            py: '3',
-            px: '3',
-            backgroundColor: 'amber2',
-            '--borderColor': 'colors.amber4',
-            border: '1px solid var(--borderColor)',
-            borderRadius: 12,
-            mb: '3',
-            ...containerCss
-          }}
+          className={cn(
+            'relay-gap-2 relay-py-3 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+            containerClassName
+          )}
           id={'widget-error-well-section'}
         >
-          <Box css={{ color: 'amber10' }}>
+          <Box className="relay-text-[color:var(--relay-colors-amber10)]">
             <FontAwesomeIcon icon={faExclamationCircle} width={16} />
           </Box>
-          <Text style="subtitle3" css={{ color: 'amber12' }}>
+          <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
             Fees exceed 40% of the received amount.
           </Text>
         </Flex>
@@ -211,23 +183,16 @@ export const WidgetErrorWell: FC<Props> = ({
     return (
       <Flex
         align="center"
-        css={{
-          gap: '2',
-          py: '2',
-          px: '3',
-          backgroundColor: 'amber2',
-          '--borderColor': 'colors.amber4',
-          border: '1px solid var(--borderColor)',
-          borderRadius: 12,
-          mb: '3',
-          ...containerCss
-        }}
+        className={cn(
+          'relay-gap-2 relay-py-2 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          containerClassName
+        )}
         id={'widget-error-well-section'}
       >
-        <Box css={{ color: 'amber10' }}>
+        <Box className="relay-text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" css={{ color: 'amber12' }}>
+        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
           The price impact is currently high (
           {quote?.details?.totalImpact?.percent}%).
         </Text>
@@ -239,23 +204,16 @@ export const WidgetErrorWell: FC<Props> = ({
     return (
       <Flex
         align="center"
-        css={{
-          gap: '2',
-          py: '2',
-          px: '3',
-          backgroundColor: 'amber2',
-          '--borderColor': 'colors.amber4',
-          border: '1px solid var(--borderColor)',
-          borderRadius: 12,
-          mb: '3',
-          ...containerCss
-        }}
+        className={cn(
+          'relay-gap-2 relay-py-2 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          containerClassName
+        )}
         id={'widget-error-well-section'}
       >
-        <Box css={{ color: 'amber10' }}>
+        <Box className="relay-text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" css={{ color: 'amber12' }}>
+        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
           Unable to detect token price. Please confirm expected output before
           submitting.
         </Text>
@@ -267,23 +225,16 @@ export const WidgetErrorWell: FC<Props> = ({
     return (
       <Flex
         align="center"
-        css={{
-          gap: '2',
-          py: '3',
-          px: '3',
-          backgroundColor: 'amber2',
-          '--borderColor': 'colors.amber4',
-          border: '1px solid var(--borderColor)',
-          borderRadius: 12,
-          mb: '3',
-          ...containerCss
-        }}
+        className={cn(
+          'relay-gap-2 relay-py-3 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          containerClassName
+        )}
         id={'widget-error-well-section'}
       >
-        <Box css={{ color: 'amber10' }}>
+        <Box className="relay-text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" css={{ color: 'amber12' }}>
+        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
           Due to high demand, Relayer fees have temporarily been increased.
         </Text>
       </Flex>

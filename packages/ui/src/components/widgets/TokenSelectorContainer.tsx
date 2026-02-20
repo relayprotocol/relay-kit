@@ -1,27 +1,19 @@
 import { type FC, type PropsWithChildren } from 'react'
 import { Flex } from '../primitives/index.js'
-import { type Styles } from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../utils/cn.js'
 
 const TokenSelectorContainer: FC<
-  PropsWithChildren & { css?: Styles; id?: string }
-> = ({ children, css, id }) => {
+  PropsWithChildren & { className?: string; id?: string }
+> = ({ children, className, id }) => {
   return (
     <Flex
       align="center"
       justify="between"
       id={id}
-      css={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'start',
-        backgroundColor: 'widget-card-background',
-        border: 'widget-card-border',
-        gap: '3',
-        p: '12px 12px',
-        borderRadius: 'widget-card-border-radius',
-        ...css
-      }}
+      className={cn(
+        'relay-w-full relay-flex relay-flex-col relay-items-start relay-bg-[var(--relay-colors-widget-card-background)] relay-border-widget-card relay-gap-3 relay-p-3 relay-rounded-[var(--relay-radii-widget-card-border-radius)]',
+        className
+      )}
     >
       {children}
     </Flex>

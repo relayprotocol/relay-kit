@@ -35,7 +35,7 @@ export const BalanceDisplay: FC<BalanceDisplayProps> = ({
 
   if (pending) {
     return (
-      <Flex align="center" css={{ height: 18 }}>
+      <Flex align="center" className="relay-h-[18px]">
         <Text style={textStyle} color={'red'}>
           {hideBalanceLabel ? 'pending' : 'Balance: pending'}
         </Text>
@@ -44,7 +44,7 @@ export const BalanceDisplay: FC<BalanceDisplayProps> = ({
   }
 
   return (
-    <Flex align="center" css={{ height: 18 }}>
+    <Flex align="center" className="relay-h-[18px]">
       {isConnected ? (
         <>
           {isLoading ? (

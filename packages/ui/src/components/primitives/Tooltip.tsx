@@ -1,20 +1,7 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import * as Popover from '@radix-ui/react-popover'
 import { useMediaQuery } from 'usehooks-ts'
-import Box from './Box.js'
-import { cva } from '@relayprotocol/relay-design-system/css'
-
-const TooltipArrowStyle = cva({
-  base: {
-    fill: 'modal-background'
-  }
-})
-
-const PopoverArrow = cva({
-  base: {
-    fill: 'modal-background'
-  }
-})
+import { cn } from '../../utils/cn.js'
 
 const Tooltip = ({
   children,
@@ -42,24 +29,14 @@ const Tooltip = ({
           style={{ zIndex: 10000003, outline: 'none', maxWidth: '100vw' }}
           {...props}
         >
-          <Popover.Arrow className={PopoverArrow()} />
-          <Box
-            css={{
-              zIndex: 10000004,
-              boxShadow: '0px 1px 5px rgba(0,0,0,0.2)',
-              borderRadius: 8,
-              overflow: 'hidden'
-            }}
+          <Popover.Arrow className="relay-fill-[var(--relay-colors-modal-background)]" />
+          <div
+            className="relay-z-[10000004] relay-shadow-[0px_1px_5px_rgba(0,0,0,0.2)] relay-rounded-[8px] relay-overflow-hidden"
           >
-            <Box
-              css={{
-                background: 'modal-background',
-                p: '2'
-              }}
-            >
+            <div className="relay-bg-[var(--relay-colors-modal-background)] relay-p-2">
               {content}
-            </Box>
-          </Box>
+            </div>
+          </div>
         </Popover.Content>
       </Popover.Root>
     )
@@ -82,24 +59,14 @@ const Tooltip = ({
           style={{ zIndex: 10000003 }}
           {...props}
         >
-          <div className={TooltipArrowStyle()}></div>
-          <Box
-            css={{
-              zIndex: 10000004,
-              boxShadow: '0px 1px 5px rgba(0,0,0,0.2)',
-              borderRadius: 8,
-              overflow: 'hidden'
-            }}
+          <div className="relay-fill-[var(--relay-colors-modal-background)]" />
+          <div
+            className="relay-z-[10000004] relay-shadow-[0px_1px_5px_rgba(0,0,0,0.2)] relay-rounded-[8px] relay-overflow-hidden"
           >
-            <Box
-              css={{
-                background: 'modal-background',
-                p: '2'
-              }}
-            >
+            <div className="relay-bg-[var(--relay-colors-modal-background)] relay-p-2">
               {content}
-            </Box>
-          </Box>
+            </div>
+          </div>
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Root>
     </TooltipPrimitive.Provider>

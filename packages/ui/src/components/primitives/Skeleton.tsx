@@ -1,23 +1,17 @@
 import type { FC } from 'react'
-import Flex from './Flex.js'
-import { type Styles } from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../utils/cn.js'
 
 type SkeletonProps = {
-  css?: Styles
+  className?: string
 }
 
-const Skeleton: FC<SkeletonProps> = ({ css }) => {
+const Skeleton: FC<SkeletonProps> = ({ className }) => {
   return (
-    <Flex
-      css={{
-        animationName: 'pulse',
-        backgroundColor: 'skeleton-background',
-        borderRadius: 8,
-        width: 100,
-        height: 12,
-        animation: 'pulse 3s ease-in-out infinite',
-        ...css
-      }}
+    <div
+      className={cn(
+        'relay-flex relay-animate-pulse relay-bg-[var(--relay-colors-skeleton-background)] relay-rounded-[8px] relay-w-[100px] relay-h-[12px]',
+        className
+      )}
     />
   )
 }

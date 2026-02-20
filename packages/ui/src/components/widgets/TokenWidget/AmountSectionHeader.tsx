@@ -17,7 +17,7 @@ const AmountSectionHeader: FC<AmountSectionHeaderProps> = ({
   onAnalyticEvent,
   onOpenSlippageConfig
 }) => (
-  <Flex align="center" justify="between" css={{ gap: '2', width: '100%' }}>
+  <Flex align="center" justify="between" className="relay-gap-2 relay-w-full">
     <Text style="subtitle2">{label}</Text>
     <SlippageToleranceConfig
       label="Slippage"

@@ -1,9 +1,7 @@
 import { type FC } from 'react'
-import Flex from './Flex.js'
 import ChainIcon from './ChainIcon.js'
-import Box from './Box.js'
 import Text from './Text.js'
-import type { Styles } from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../utils/cn.js'
 
 type Size = 'sm' | 'base' | 'md' | 'lg'
 
@@ -11,7 +9,7 @@ type ChainTokenProps = {
   chainId?: number
   tokenlogoURI?: string
   tokenSymbol?: string
-  css?: Styles
+  className?: string
   size?: Size
   chainRadius?: number
   chainIconSize?: number
@@ -40,7 +38,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   chainId,
   tokenlogoURI,
   tokenSymbol,
-  css = {},
+  className,
   size = 'md',
   chainRadius = 4,
   chainIconSize
@@ -50,15 +48,15 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   const chainSize = chainIconSize ?? dimensions.chain
 
   return chainId ? (
-    <Flex
-      css={{
-        position: 'relative',
-        flexShrink: 0,
+    <div
+      className={cn(
+        'relay-relative relay-shrink-0 relay-overflow-hidden',
+        className
+      )}
+      style={{
         width: dimensions.token,
         height: dimensions.token,
-        overflow: 'hidden',
-        borderRadius: chainRadius,
-        ...css
+        borderRadius: chainRadius
       }}
     >
       {isValidTokenLogo ? (
@@ -73,36 +71,23 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           }}
         />
       ) : tokenSymbol ? (
-        <Box
-          css={{
+        <div
+          className="relay-rounded-[50%] relay-bg-[var(--relay-colors-primary4)] relay-text-[color:var(--relay-colors-primary8)] relay-flex relay-items-center relay-justify-center"
+          style={{
             width: dimensions.token,
-            height: dimensions.token,
-            borderRadius: '50%',
-            backgroundColor: 'primary4',
-            color: 'primary8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            height: dimensions.token
           }}
         >
           <Text style="h6">{tokenSymbol?.charAt(0).toUpperCase()}</Text>
-        </Box>
+        </div>
       ) : null}
       <ChainIcon
         chainId={chainId}
         width={chainSize}
         height={chainSize}
         borderRadius={chainRadius}
-        css={{
-          position: 'absolute',
-          right: 0,
-          bottom: 0,
-          overflow: 'hidden',
-          '--borderColor': 'colors.modal-background',
-          border: '1px solid var(--borderColor)',
-          backgroundColor: 'modal-background'
-        }}
+        className="relay-absolute relay-right-0 relay-bottom-0 relay-overflow-hidden relay-border relay-border-solid relay-border-[var(--relay-colors-modal-background)] relay-bg-[var(--relay-colors-modal-background)]"
       />
-    </Flex>
+    </div>
   ) : null
 }

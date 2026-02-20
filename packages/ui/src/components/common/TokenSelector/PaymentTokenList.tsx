@@ -15,6 +15,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { formatBN, formatDollar } from '../../../utils/numbers.js'
 import type { EnhancedToken } from '../../../hooks/useEnhancedTokensList.js'
+import { cn } from '../../../utils/cn.js'
 
 type PaymentTokenListProps = {
   title: string
@@ -50,27 +51,14 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
           <Flex
             key={index}
             align="center"
-            css={{
-              gap: '2',
-              py: '2',
-              px: '0',
-              width: '100%',
-              '@media(min-width: 660px)': {
-                px: '2'
-              }
-            }}
+            className="relay-gap-2 relay-py-2 relay-px-0 relay-w-full min-[660px]:relay-px-2"
           >
             <Skeleton
-              css={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                flexShrink: 0
-              }}
+              className="relay-w-[40px] relay-h-[40px] relay-rounded-[50%] relay-shrink-0"
             />
-            <Flex direction="column" css={{ gap: '2px', flexGrow: 1 }}>
-              <Skeleton css={{ width: '60%', height: 16 }} />
-              <Skeleton css={{ width: '40%', height: 16 }} />
+            <Flex direction="column" className="relay-gap-[2px] relay-grow">
+              <Skeleton className="relay-w-[60%] relay-h-[16px]" />
+              <Skeleton className="relay-w-[40%] relay-h-[16px]" />
             </Flex>
           </Flex>
         ))}
@@ -80,7 +68,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
 
   if (tokens.length > 0)
     return (
-      <Flex direction="column" css={{ gap: '1', width: '100%' }}>
+      <Flex direction="column" className="relay-gap-1 relay-w-full">
         <Text style="subtitle2" color="subtle">
           {title}
         </Text>
@@ -96,38 +84,8 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
             <AccessibleListItem value={value} key={value} asChild>
               <Button
                 color="ghost"
-                css={{
-                  gap: '2',
-                  cursor: 'pointer',
-                  px: '0',
-                  py: '2',
-                  transition: 'backdrop-filter 250ms linear',
-                  '@media(min-width: 660px)': {
-                    px: '2'
-                  },
-                  _hover: {
-                    backgroundColor: 'gray/10'
-                  },
-                  flexShrink: 0,
-                  alignContent: 'center',
-                  display: 'flex',
-                  width: '100%',
-                  '--focusColor': 'colors.focus-color',
-                  _focusVisible: {
-                    boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-                  },
-                  '&[data-state="on"]': {
-                    boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-                  },
-                  _active: {
-                    boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-                  },
-                  _focusWithin: {
-                    boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-                  },
-                  scrollSnapAlign: 'start',
-                  opacity
-                }}
+                className="relay-gap-2 relay-cursor-pointer relay-px-0 relay-py-2 relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear min-[660px]:relay-px-2 hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay-shrink-0 relay-content-center relay-flex relay-w-full focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] [&[data-state=on]]:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] active:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus-within:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay-snap-start"
+                style={{ opacity }}
               >
                 <ChainTokenIcon
                   chainId={token.chainId}
@@ -138,40 +96,26 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                 <Flex
                   direction="column"
                   align="start"
-                  css={{ gap: '2px', maxWidth: '100%', minWidth: 0 }}
+                  className="relay-gap-[2px] relay-max-w-full relay-min-w-0"
                 >
-                  <Flex align="center" css={{ gap: '1', maxWidth: '100%' }}>
+                  <Flex align="center" className="relay-gap-1 relay-max-w-full">
                     <Text
                       style="h6"
                       ellipsify
-                      css={{
-                        gap: '1',
-                        alignItems: 'center'
-                      }}
+                      className="relay-gap-1 relay-items-center"
                     >
                       {token.symbol}
                     </Text>
                     {token.isGasCurrency && chainFilterId && (
                       <Text
                         style="subtitle3"
-                        css={{
-                          px: '6px',
-                          py: '4px',
-                          borderRadius: '100px',
-                          backgroundColor: 'gray3',
-                          whiteSpace: 'nowrap',
-                          flexShrink: 0,
-                          lineHeight: '12px',
-                          'button:hover &': {
-                            backgroundColor: 'gray5'
-                          }
-                        }}
+                        className="relay-px-[6px] relay-py-[4px] relay-rounded-[100px] relay-bg-[var(--relay-colors-gray3)] relay-whitespace-nowrap relay-shrink-0 relay-leading-[12px] [button:hover_&]:relay-bg-[var(--relay-colors-gray5)]"
                       >
                         Gas Token
                       </Text>
                     )}
                   </Flex>
-                  <Flex align="center" css={{ gap: '1', maxWidth: '100%' }}>
+                  <Flex align="center" className="relay-gap-1 relay-max-w-full">
                     <Text style="subtitle3" color="subtle" ellipsify>
                       {token.chain?.displayName ||
                         token.chain?.name ||
@@ -179,7 +123,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                     </Text>
 
                     {!token.verified ? (
-                      <Box css={{ color: 'gray8' }}>
+                      <Box className="relay-text-[color:var(--relay-colors-gray8)]">
                         <FontAwesomeIcon
                           icon={faExclamationTriangle}
                           width={14}
@@ -194,12 +138,12 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                   <Flex
                     direction="column"
                     align="end"
-                    css={{ gap: '2px', ml: 'auto', flexShrink: 0 }}
+                    className="relay-gap-[2px] relay-ml-auto relay-shrink-0"
                   >
                     {isLoadingBalances ? (
                       <>
-                        <Skeleton css={{ ml: 'auto', width: 60 }} />
-                        <Skeleton css={{ ml: 'auto', width: 60 }} />
+                        <Skeleton className="relay-ml-auto relay-w-[60px]" />
+                        <Skeleton className="relay-ml-auto relay-w-[60px]" />
                       </>
                     ) : (
                       <>
@@ -231,7 +175,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
             color="grey"
             size="small"
             corners="pill"
-            css={{ ml: 'auto', minHeight: 24, px: '2', py: '1' }}
+            className="relay-ml-auto relay-min-h-[24px] relay-px-2 relay-py-1"
             onClick={() => setTokensExpanded(!tokensExpanded)}
           >
             <Text style="subtitle3" color="subtle">
@@ -239,12 +183,10 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
             </Text>
             <Text
               style="body1"
-              css={{
-                color: 'gray9',
-                marginLeft: 'auto',
-                transform: tokensExpanded ? 'rotate(180deg)' : 'rotate(0)',
-                width: 12
-              }}
+              className={cn(
+                'relay-text-[color:var(--relay-colors-gray9)] relay-ml-auto relay-w-[12px]',
+                tokensExpanded ? 'relay-rotate-180' : 'relay-rotate-0'
+              )}
             >
               <FontAwesomeIcon icon={faChevronDown} />
             </Text>

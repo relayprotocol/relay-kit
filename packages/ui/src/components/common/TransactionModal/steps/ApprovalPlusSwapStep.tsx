@@ -18,6 +18,7 @@ import { faRepeat } from '@fortawesome/free-solid-svg-icons'
 import { truncateAddress } from '../../../../utils/truncate.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
+import { cn } from '../../../../utils/cn.js'
 
 type ApprovalPlusSwapStepProps = {
   fromToken?: Token
@@ -45,28 +46,22 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
         align="center"
         justify="between"
         direction="column"
-        css={{ flexShrink: 0, bp500: { flexDirection: 'row' } }}
+        className="relay-shrink-0 bp500:relay-flex-row"
       >
         <Flex
           direction="column"
-          css={{
-            backgroundColor: 'subtle-background-color',
-            p: '12px 16px',
-            borderRadius: 12,
-            gap: 1,
-            width: '100%'
-          }}
+          className="relay-bg-[var(--relay-colors-subtle-background-color)] relay-rounded-[12px] relay-gap-1 relay-w-full relay-py-[12px] relay-px-[16px]"
         >
           <Flex
             direction="column"
             align="start"
-            css={{ gap: '1', cursor: 'pointer' }}
+            className="relay-gap-1 relay-cursor-pointer"
           >
             <ChainTokenIcon
               chainId={fromToken?.chainId}
               tokenlogoURI={fromToken?.logoURI}
               tokenSymbol={fromToken?.symbol}
-              css={{ height: 32, width: 32 }}
+              className="relay-h-[32px] relay-w-[32px]"
             />
             <Text style="h6" ellipsify>
               {fromAmountFormatted} {fromToken?.symbol}
@@ -78,34 +73,24 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
         </Flex>
         <Text
           style="body1"
-          css={{
-            color: 'gray9',
-            p: '0 16px',
-            bp400Down: { transform: 'rotate(90deg)' }
-          }}
+          className="relay-text-[color:var(--relay-colors-gray9)] relay-px-4 relay-py-0 bp400Down:relay-rotate-90"
         >
           <FontAwesomeIcon icon={faArrowRight} width={16} />
         </Text>
         <Flex
           direction="column"
-          css={{
-            backgroundColor: 'subtle-background-color',
-            p: '12px 16px',
-            borderRadius: 12,
-            gap: 1,
-            width: '100%'
-          }}
+          className="relay-bg-[var(--relay-colors-subtle-background-color)] relay-rounded-[12px] relay-gap-1 relay-w-full relay-py-[12px] relay-px-[16px]"
         >
           <Flex
             direction="column"
             align="start"
-            css={{ gap: '1', cursor: 'pointer' }}
+            className="relay-gap-1 relay-cursor-pointer"
           >
             <ChainTokenIcon
               chainId={toToken?.chainId}
               tokenlogoURI={toToken?.logoURI}
               tokenSymbol={toToken?.symbol}
-              css={{ height: 32, width: 32 }}
+              className="relay-h-[32px] relay-w-[32px]"
             />
             <Text style="h6" ellipsify>
               {toAmountFormatted} {toToken?.symbol}
@@ -118,14 +103,7 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
       </Flex>
       <Flex
         direction="column"
-        css={{
-          '--borderColor': 'colors.gray3',
-          border: '1px solid var(--borderColor)',
-          borderRadius: 12,
-          p: '3',
-          height: 260,
-          gap: '8px'
-        }}
+        className="relay-border relay-border-solid relay-border-[var(--relay-colors-gray3)] relay-rounded-[12px] relay-p-3 relay-gap-2 relay-h-[260px]"
       >
         {steps?.map((step, index) => {
           const isCurrentStep =
@@ -153,41 +131,36 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
               <Flex
                 align="center"
                 justify="between"
-                css={{ width: '100%', gap: '3' }}
+                className="relay-w-full relay-gap-3"
               >
-                <Flex align="center" css={{ gap: '2', height: 40 }}>
+                <Flex align="center" className="relay-gap-2 relay-h-[40px]">
                   {step.id === 'approve' ? (
                     <ChainTokenIcon
                       chainId={fromToken?.chainId}
                       tokenlogoURI={fromToken?.logoURI}
                       tokenSymbol={fromToken?.symbol}
-                      css={{
-                        borderRadius: 9999999,
-                        flexShrink: 0,
-                        filter: isCurrentStep ? 'none' : 'grayscale(100%)'
-                      }}
+                      className={cn(
+                        'relay-rounded-full relay-shrink-0',
+                        !isCurrentStep && 'relay-grayscale'
+                      )}
                     />
                   ) : (
                     <Flex
-                      css={{
-                        height: 32,
-                        width: 32,
-                        borderRadius: 9999999,
-                        flexShrink: 0,
-                        backgroundColor: isCurrentStep ? 'primary5' : 'gray5',
-                        color: isCurrentStep ? 'primary8' : 'gray9',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
+                      className={cn(
+                        'relay-rounded-full relay-shrink-0 relay-items-center relay-justify-center relay-h-[32px] relay-w-[32px]',
+                        isCurrentStep
+                          ? 'relay-bg-[var(--relay-colors-primary5)] relay-text-[color:var(--relay-colors-primary8)]'
+                          : 'relay-bg-[var(--relay-colors-gray5)] relay-text-[color:var(--relay-colors-gray9)]'
+                      )}
                     >
                       <FontAwesomeIcon icon={faRepeat} width={16} />
                     </Flex>
                   )}
-                  <Flex direction="column" css={{ gap: '2px' }}>
+                  <Flex direction="column" className="relay-gap-[2px]">
                     <Text style="subtitle2">{stepTitle}</Text>
                     {isApproveStep && !hasTxHash && (
                       <Anchor
-                        css={{ fontSize: 12 }}
+                        className="relay-text-[12px]"
                         href="https://support.relay.link/en/articles/10371133-why-do-i-have-to-approve-a-token"
                         target="_blank"
                       >
@@ -206,7 +179,7 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
                             key={txHash}
                             href={txUrl}
                             target="_blank"
-                            css={{ fontSize: 12 }}
+                            className="relay-text-[12px]"
                           >
                             View Tx: {truncateAddress(txHash, '...', 6, 4)}
                           </Anchor>
@@ -218,12 +191,12 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
                 <Flex>
                   {isCurrentStep && hasTxHash ? (
                     <LoadingSpinner
-                      css={{ height: 16, width: 16, fill: 'gray9' }}
+                      className="relay-h-4 relay-w-4 relay-fill-[var(--relay-colors-gray9)]"
                     />
                   ) : step?.items?.every(
                       (item) => item.status === 'complete'
                     ) ? (
-                    <Box css={{ color: 'green9' }}>
+                    <Box className="relay-text-[color:var(--relay-colors-green9)]">
                       <FontAwesomeIcon icon={faCheck} width={16} />
                     </Box>
                   ) : null}
@@ -231,14 +204,8 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
               </Flex>
 
               {index !== (steps?.length || 0) - 1 && (
-                <Box css={{ height: '14px', pl: '16px', marginTop: '12px' }}>
-                  <Box
-                    css={{
-                      width: '1px',
-                      height: '100%',
-                      backgroundColor: 'gray11'
-                    }}
-                  />
+                <Box className="relay-pl-4 relay-h-[14px] relay-mt-3">
+                  <Box className="relay-h-full relay-w-px relay-bg-[var(--relay-colors-gray11)]" />
                 </Box>
               )}
             </Box>

@@ -17,6 +17,7 @@ import { PriceImpactTooltip } from './PriceImpactTooltip.js'
 import { getSlippageRating, ratingToColor } from '../../utils/slippage.js'
 import Tooltip from '../primitives/Tooltip.js'
 import React from 'react'
+import { cn } from '../../utils/cn.js'
 
 type Props = Pick<
   ChildrenProps,
@@ -102,12 +103,12 @@ const FeeBreakdown: FC<Props> = ({
       value: (
         <Flex
           align="center"
-          css={{
-            gap: '1',
+          className="relay-gap-1"
+          style={{
             color:
               timeEstimate && timeEstimate.time <= 30
-                ? '{colors.grass.9}'
-                : '{colors.amber.9}'
+                ? 'var(--relay-colors-grass-9)'
+                : 'var(--relay-colors-amber-9)'
           }}
         >
           <FontAwesomeIcon icon={faClock} width={16} />
@@ -118,11 +119,11 @@ const FeeBreakdown: FC<Props> = ({
     {
       title: 'Network cost',
       value: (
-        <Flex align="center" css={{ gap: '1' }}>
+        <Flex align="center" className="relay-gap-1">
           <FontAwesomeIcon
             icon={faGasPump}
             width={16}
-            style={{ color: '#C1C8CD' }}
+            className="relay-text-[#C1C8CD]"
           />
           <Text style="subtitle2">{originGasFeeFormatted}</Text>
         </Flex>
@@ -137,12 +138,16 @@ const FeeBreakdown: FC<Props> = ({
         >
           {
             <div>
-              <Flex align="center" css={{ gap: '1', color: 'gray8' }}>
+              <Flex
+                align="center"
+                className="relay-gap-1 relay-text-[color:var(--relay-colors-gray8)]"
+              >
                 <Text
                   style="subtitle2"
-                  css={{
-                    color: isHighPriceImpact ? 'red11' : undefined
-                  }}
+                  className={cn(
+                    isHighPriceImpact &&
+                      'relay-text-[color:var(--relay-colors-red11)]'
+                  )}
                 >
                   {feeBreakdown?.totalFees?.priceImpactPercentage}
                 </Text>
@@ -150,10 +155,7 @@ const FeeBreakdown: FC<Props> = ({
                   icon={faInfoCircle}
                   width={14}
                   height={14}
-                  style={{
-                    display: 'inline-block',
-                    marginLeft: 4
-                  }}
+                  className="relay-inline-block relay-ml-[4px]"
                 />
               </Flex>
             </div>
@@ -168,25 +170,11 @@ const FeeBreakdown: FC<Props> = ({
       return (
         <Box
           id={'fee-breakdown-section'}
-          css={{
-            borderRadius: 'widget-card-border-radius',
-            backgroundColor: 'widget-background',
-            border: 'widget-card-border',
-            overflow: 'hidden',
-            mb: 'widget-card-section-gutter'
-          }}
+          className="relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-border-widget-card relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)]"
         >
-          <FetchingQuoteLoader
-            isLoading={isFetchingQuote}
-            containerCss={{
-              mt: 0,
-              mb: 0,
-              px: '4',
-              py: '3',
-              width: '100%',
-              justifyContent: 'center'
-            }}
-          />
+          <div className="relay-mt-0 relay-mb-0 relay-px-4 relay-py-3 relay-w-full relay-flex relay-justify-center">
+            <FetchingQuoteLoader isLoading={isFetchingQuote} />
+          </div>
         </Box>
       )
     } else {
@@ -196,39 +184,27 @@ const FeeBreakdown: FC<Props> = ({
 
   return (
     <Flex
-      css={{
-        borderRadius: 'widget-card-border-radius',
-        borderBottomRadius: isOpen ? '0' : 'widget-card-border-radius',
-        backgroundColor: 'widget-background',
-        border: 'widget-card-border',
-        borderBottom: isOpen ? 'none' : 'widget-card-border',
-        overflow: 'hidden',
-        transition: 'border-radius 300ms, border-bottom 0s',
-        transitionDelay: isOpen ? '0s, 0s' : '0s, 300ms',
-        mb: 'widget-card-section-gutter'
+      className={cn(
+        'relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)]',
+        'relay-border-widget-card relay-transition-[border-radius,border-bottom]',
+        isOpen && 'relay-rounded-b-none'
+      )}
+      style={{
+        borderBottom: isOpen ? 'none' : undefined,
+        transitionDuration: '300ms, 0s',
+        transitionDelay: isOpen ? '0s, 0s' : '0s, 300ms'
       }}
       direction="column"
     >
-      <Flex justify="between" align="center" css={{ p: '3', pb: '0' }}>
+      <Flex justify="between" align="center" className="relay-p-3 relay-pb-0">
         <Text style="subtitle2">Max Slippage</Text>
-        <Flex align="center" css={{ gap: '2' }}>
+        <Flex align="center" className="relay-gap-2">
           {isAutoSlippage ? (
             <Button
               aria-label="Auto"
-              css={{
-                fontSize: 12,
-                fontWeight: '500',
-                px: '1',
-                py: '1',
-                minHeight: '23px',
-                lineHeight: '100%',
-                backgroundColor: 'widget-selector-background',
-                border: 'none',
-                _hover: {
-                  backgroundColor: 'widget-selector-hover-background'
-                }
-              }}
+              className="relay-text-[12px] relay-font-medium relay-px-1 relay-py-1 relay-min-h-[23px] relay-leading-[100%] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
               color="white"
+              size="none"
               onClick={(e) => {
                 e.preventDefault()
                 onOpenSlippageConfig?.()
@@ -242,7 +218,7 @@ const FeeBreakdown: FC<Props> = ({
             align="end"
             content={
               minimumAmountFormatted ? (
-                <Flex direction="row" css={{ gap: '2' }}>
+                <Flex direction="row" className="relay-gap-2">
                   <Text style="subtitle2" color="subtle">
                     Min. received
                   </Text>
@@ -253,8 +229,16 @@ const FeeBreakdown: FC<Props> = ({
               ) : null
             }
           >
-            <Text style="subtitle2" css={{ color: slippageRatingColor }}>
-              {slippage}%
+            <Text style="subtitle2">
+              <span
+                style={{
+                  color: slippageRatingColor
+                    ? `var(--relay-colors-${slippageRatingColor})`
+                    : undefined
+                }}
+              >
+                {slippage}%
+              </span>
             </Text>
           </Tooltip>
         </Flex>
@@ -264,20 +248,10 @@ const FeeBreakdown: FC<Props> = ({
           <Flex
             justify="between"
             align="center"
-            css={{
-              flexDirection: 'row',
-              gap: '2',
-              width: '100%',
-              p: '3'
-            }}
+            className="relay-flex-row relay-gap-2 relay-w-full relay-p-3"
           >
             <span
-              style={{
-                cursor: 'pointer',
-                flexShrink: 1,
-                overflow: 'hidden',
-                height: 21
-              }}
+              className="relay-cursor-pointer relay-shrink relay-overflow-hidden relay-h-[21px]"
               onClick={(e) => {
                 setRateMode(rateMode === 'input' ? 'output' : 'input')
                 e.preventDefault()
@@ -292,26 +266,25 @@ const FeeBreakdown: FC<Props> = ({
             </span>
 
             <Flex
-              css={{
-                gap: '2',
+              className="relay-gap-2 relay-shrink-0"
+              style={{
                 color:
                   timeEstimate && timeEstimate.time <= 30
-                    ? '{colors.grass.9}'
-                    : '{colors.amber.9}',
-                flexShrink: 0
+                    ? 'var(--relay-colors-grass-9)'
+                    : 'var(--relay-colors-amber-9)'
               }}
               align="center"
             >
               {!isOpen && timeEstimate && timeEstimate?.time !== 0 ? (
                 <>
                   <FontAwesomeIcon icon={faClock} width={16} />
-                  <Text style="subtitle2" css={{ flexShrink: 0 }}>
+                  <Text style="subtitle2" className="relay-shrink-0">
                     ~ {timeEstimate?.formattedTime}
                   </Text>
                   <Flex
                     justify="center"
                     align="center"
-                    css={{ color: 'gray6', height: 4 }}
+                    className="relay-text-[color:var(--relay-colors-gray6)] relay-h-[4px]"
                   >
                     &#8226;
                   </Flex>
@@ -322,40 +295,28 @@ const FeeBreakdown: FC<Props> = ({
                   <FontAwesomeIcon
                     icon={faGasPump}
                     width={16}
-                    style={{ color: '#C1C8CD' }}
+                    className="relay-text-[#C1C8CD]"
                   />
-                  <Text style="subtitle2" css={{ flexShrink: 0 }}>
+                  <Text style="subtitle2" className="relay-shrink-0">
                     {originGasFeeFormatted}
                   </Text>
                 </>
               )}
-              <Box
-                css={{
-                  marginLeft: '2',
-                  transition: 'transform 300ms',
-                  transform: isOpen ? 'rotate(-180deg)' : 'rotate(0)',
-                  color: 'gray9'
+              <div
+                className="relay-ml-2 relay-transition-transform relay-duration-300 relay-text-[color:var(--relay-colors-gray9)]"
+                style={{
+                  transform: isOpen ? 'rotate(-180deg)' : 'rotate(0)'
                 }}
               >
                 <FontAwesomeIcon icon={faChevronDown} width={12} />
-              </Box>
+              </div>
             </Flex>
           </Flex>
         </CollapsibleTrigger>
-        <CollapsibleContent
-          css={{
-            borderRadius: '0 0 12px 12px'
-          }}
-        >
+        <CollapsibleContent className="relay-rounded-b-[12px]">
           <Flex
             direction="column"
-            css={{
-              px: '3',
-              pb: '3',
-              pt: '0',
-              gap: '2',
-              backgroundColor: 'widget-background'
-            }}
+            className="relay-px-3 relay-pb-3 relay-pt-0 relay-gap-2 relay-bg-[var(--relay-colors-widget-background)]"
           >
             {breakdown.map((item) => {
               return (
@@ -363,12 +324,12 @@ const FeeBreakdown: FC<Props> = ({
                   <Flex
                     justify="between"
                     align="center"
-                    css={{ width: '100%', gap: '4' }}
+                    className="relay-w-full relay-gap-4"
                   >
                     <Text
                       style="subtitle2"
                       color={'subtle'}
-                      css={{ alignSelf: 'flex-start' }}
+                      className="relay-self-start"
                     >
                       {item.title}
                     </Text>
@@ -407,7 +368,7 @@ const ConversionRate: FC<ConversionRateProps> = ({
   const shouldShowTooltip = rateText.length > 22
 
   const content = (
-    <div style={{ width: '100%', minWidth: 0 }}>
+    <div className="relay-w-full relay-min-w-0">
       <Text style="subtitle2" ellipsify>
         {rateText}
       </Text>

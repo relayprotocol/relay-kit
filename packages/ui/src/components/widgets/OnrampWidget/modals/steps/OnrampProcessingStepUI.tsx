@@ -69,41 +69,29 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
   return (
     <Flex
       direction="column"
-      css={{
-        width: '100%',
-        height: '100%'
-      }}
+      className="relay-w-full relay-h-full"
     >
-      <Text style="h6" css={{ mb: '4' }}>
+      <Text style="h6" className="relay-mb-4">
         Processing Transaction
       </Text>
       <Flex
         direction="column"
-        css={{
-          width: '100%',
-          overflow: 'hidden',
-          borderRadius: 'widget-card-border-radius',
-          '--borderColor': 'colors.subtle-border-color',
-          border: '1px solid var(--borderColor)',
-          p: '4',
-          mb: '4'
-        }}
+        className="relay-w-full relay-overflow-hidden relay-p-4 relay-mb-4 relay-rounded-widget-card relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)]"
       >
-        <Flex align="center" css={{ gap: '2' }}>
-          <ChainTokenIcon
-            chainId={fromToken?.chainId}
-            tokenlogoURI={fromToken?.logoURI}
-            tokenSymbol={fromToken?.symbol}
-            css={{
-              width: 32,
-              height: 32,
-              filter:
-                processingStep === OnrampProcessingStep.Relaying
-                  ? 'grayscale(1)'
-                  : 'none'
-            }}
-          />
-          <Flex css={{ gap: '1' }} direction="column">
+        <Flex align="center" className="relay-gap-2">
+          <div style={{
+            filter:
+              processingStep === OnrampProcessingStep.Relaying
+                ? 'grayscale(1)'
+                : 'none'
+          }}>
+            <ChainTokenIcon
+              chainId={fromToken?.chainId}
+              tokenlogoURI={fromToken?.logoURI}
+              tokenSymbol={fromToken?.symbol}
+            />
+          </div>
+          <Flex className="relay-gap-1" direction="column">
             <Text
               style="subtitle1"
               color={
@@ -120,23 +108,23 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
               <Anchor
                 href={moonpayTxUrl}
                 target="_blank"
-                css={{ display: 'flex', alignItems: 'center', gap: '1' }}
+                className="relay-flex relay-items-center relay-gap-1"
               >
                 Track MoonPay transaction{' '}
                 <FontAwesomeIcon
                   icon={faUpRightFromSquare}
-                  style={{ width: 14 }}
+                  className="relay-w-[14px]"
                 />
               </Anchor>
             ) : null}
           </Flex>
           {processingStep === OnrampProcessingStep.Relaying ? (
-            <Box css={{ color: 'green9', ml: 'auto' }}>
-              <FontAwesomeIcon icon={faCheck} style={{ height: 16 }} />
+            <Box className="relay-text-[color:var(--relay-colors-green9)] relay-ml-auto">
+              <FontAwesomeIcon icon={faCheck} className="relay-h-[16px]" />
             </Box>
           ) : (
             <LoadingSpinner
-              css={{ height: 20, width: 20, fill: 'gray9', ml: 'auto' }}
+              className="relay-h-[20px] relay-w-[20px] relay-fill-[var(--relay-colors-gray9)] relay-ml-auto"
             />
           )}
         </Flex>
@@ -144,17 +132,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
           delayedMoonpayTx ? (
             <Flex
               direction="column"
-              css={{
-                width: '100%',
-                overflow: 'hidden',
-                borderRadius: 'widget-card-border-radius',
-                '--borderColor': 'colors.subtle-border-color',
-                border: '1px solid var(--borderColor)',
-                p: '2',
-                mb: '6px',
-                gap: '3',
-                mt: '6px'
-              }}
+              className="relay-w-full relay-overflow-hidden relay-p-2 relay-mb-[6px] relay-gap-3 relay-mt-[6px] relay-rounded-widget-card relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)]"
             >
               <Text color="warning" style="subtitle2">
                 Looks like its taking longer than expected. Please go to MoonPay
@@ -163,12 +141,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
               <Button
                 cta={true}
                 color="warning"
-                css={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '2',
-                  justifyContent: 'center'
-                }}
+                className="relay-flex relay-items-center relay-gap-2 relay-justify-center"
                 onClick={(e) => {
                   window.open(moonpayTxUrl, '_blank')
                 }}
@@ -176,7 +149,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
                 Go to MoonPay{' '}
                 <FontAwesomeIcon
                   icon={faArrowUpRightFromSquare}
-                  style={{ width: 16, height: 16 }}
+                  className="relay-w-[16px] relay-h-[16px]"
                 />
               </Button>
             </Flex>
@@ -184,7 +157,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
             <Pill
               radius="rounded"
               color="gray"
-              css={{ width: '100%', py: '2', px: '3', mt: '6px' }}
+              className="relay-w-full relay-py-2 relay-px-3 relay-mt-[6px]"
             >
               <Text style="subtitle2" color="subtle">
                 It might take a few minutes for the MoonPay transaction to
@@ -194,34 +167,25 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
           )
         ) : null}
 
-        <Box
-          css={{
-            height: 24,
-            width: 1,
-            background: 'gray5',
-            my: '5px',
-            ml: 4
-          }}
+        <div
+          className="relay-ml-[16px] relay-h-[24px] relay-w-px relay-bg-[var(--relay-colors-gray5)] relay-mt-[5px] relay-mb-[5px]"
         />
         <Flex
           align="center"
-          css={{
-            gap: '2'
-          }}
+          className="relay-gap-2"
         >
-          <ChainTokenIcon
-            chainId={toToken?.chainId}
-            tokenlogoURI={toToken?.logoURI}
-            css={{
-              width: 32,
-              height: 32,
-              filter:
-                processingStep === OnrampProcessingStep.Relaying
-                  ? 'none'
-                  : 'grayscale(1)'
-            }}
-          />
-          <Flex css={{ gap: '1' }} direction="column">
+          <div style={{
+            filter:
+              processingStep === OnrampProcessingStep.Relaying
+                ? 'none'
+                : 'grayscale(1)'
+          }}>
+            <ChainTokenIcon
+              chainId={toToken?.chainId}
+              tokenlogoURI={toToken?.logoURI}
+            />
+          </div>
+          <Flex className="relay-gap-1" direction="column">
             <Text
               style="subtitle1"
               color={
@@ -238,7 +202,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
               <Anchor
                 href={fillTxUrl}
                 target="_blank"
-                css={{ display: 'flex', alignItems: 'center', gap: '1' }}
+                className="relay-flex relay-items-center relay-gap-1"
               >
                 View Tx: {truncateAddress(fillTxHash)}
               </Anchor>
@@ -246,7 +210,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
           </Flex>
           {processingStep === OnrampProcessingStep.Relaying ? (
             <LoadingSpinner
-              css={{ height: 16, width: 16, fill: 'gray9', ml: 'auto' }}
+              className="relay-h-[16px] relay-w-[16px] relay-fill-[var(--relay-colors-gray9)] relay-ml-auto"
             />
           ) : null}
         </Flex>
@@ -257,7 +221,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
           <Anchor
             href={`${baseTransactionUrl}/transaction/${requestId}`}
             target="_blank"
-            css={{ ml: '1' }}
+            className="relay-ml-1"
           >
             transaction page
           </Anchor>
@@ -271,7 +235,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
           <Anchor
             href="https://support.relay.link/en/articles/10517947-fiat-on-ramps"
             target="_blank"
-            css={{ ml: '1' }}
+            className="relay-ml-1"
           >
             Learn more
           </Anchor>

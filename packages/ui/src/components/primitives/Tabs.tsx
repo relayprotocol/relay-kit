@@ -1,58 +1,26 @@
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
-import {
   forwardRef,
   type ComponentPropsWithoutRef,
   type ElementRef
 } from 'react'
-
-const TabsListCss = cva({
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    borderRadius: 8,
-    p: '1',
-    backgroundColor: 'gray2',
-    border: 'none'
-  }
-})
-
-const TabsTriggerCss = cva({
-  base: {
-    width: '100%',
-    fontWeight: '500',
-    fontSize: '14px',
-    cursor: 'pointer',
-    py: '2px',
-    color: 'gray12',
-    borderRadius: 8,
-    backgroundColor: 'transparent',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: 'transparent',
-    '&[data-state="active"]': {
-      backgroundColor: 'subtle-background-color',
-      '--borderColor': 'colors.gray.5',
-      borderColor: 'var(--borderColor)'
-    }
-  }
-})
+import { cn } from '../../utils/cn.js'
 
 const TabsList = forwardRef<
   ElementRef<typeof TabsPrimitive.List>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.List> & {
-    css?: Styles
+    className?: string
   }
->(({ children, css, ...props }, forwardedRef) => {
+>(({ children, className, ...props }, forwardedRef) => {
   return (
     <TabsPrimitive.List
       {...props}
       ref={forwardedRef}
-      className={designCss(TabsListCss.raw(), designCss.raw(css))}
+      className={cn(
+        'relay-flex relay-items-center relay-rounded-[8px] relay-p-1',
+        'relay-bg-[var(--relay-colors-gray2)] relay-border-none',
+        className
+      )}
     >
       {children}
     </TabsPrimitive.List>
@@ -62,14 +30,22 @@ const TabsList = forwardRef<
 const TabsTrigger = forwardRef<
   ElementRef<typeof TabsPrimitive.Trigger>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & {
-    css?: Styles
+    className?: string
   }
->(({ children, css, ...props }, forwardedRef) => {
+>(({ children, className, ...props }, forwardedRef) => {
   return (
     <TabsPrimitive.Trigger
       {...props}
       ref={forwardedRef}
-      className={designCss(TabsTriggerCss.raw(), designCss.raw(css))}
+      className={cn(
+        'relay-w-full relay-font-medium relay-text-[14px] relay-cursor-pointer',
+        'relay-py-[2px] relay-text-[color:var(--relay-colors-gray12)]',
+        'relay-rounded-[8px] relay-bg-transparent',
+        'relay-border relay-border-solid relay-border-transparent',
+        'data-[state=active]:relay-bg-[var(--relay-colors-subtle-background-color)]',
+        'data-[state=active]:relay-border-[var(--relay-colors-gray-5)]',
+        className
+      )}
     >
       {children}
     </TabsPrimitive.Trigger>
@@ -79,14 +55,14 @@ const TabsTrigger = forwardRef<
 const TabsContent = forwardRef<
   ElementRef<typeof TabsPrimitive.Content>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.Content> & {
-    css?: Styles
+    className?: string
   }
->(({ children, css, ...props }, forwardedRef) => {
+>(({ children, className, ...props }, forwardedRef) => {
   return (
     <TabsPrimitive.Content
       {...props}
       ref={forwardedRef}
-      className={designCss(designCss.raw(css))}
+      className={cn(className)}
     >
       {children}
     </TabsPrimitive.Content>
@@ -96,14 +72,14 @@ const TabsContent = forwardRef<
 const TabsRoot = forwardRef<
   ElementRef<typeof TabsPrimitive.Root>,
   ComponentPropsWithoutRef<typeof TabsPrimitive.Root> & {
-    css?: Styles
+    className?: string
   }
->(({ children, css, ...props }, forwardedRef) => {
+>(({ children, className, ...props }, forwardedRef) => {
   return (
     <TabsPrimitive.Root
       {...props}
       ref={forwardedRef}
-      className={designCss(designCss.raw(css))}
+      className={cn(className)}
     >
       {children}
     </TabsPrimitive.Root>

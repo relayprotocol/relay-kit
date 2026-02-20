@@ -18,6 +18,7 @@ import {
   toggleStarredChain
 } from '../../../utils/localStorage.js'
 import { EventNames } from '../../../constants/events.js'
+import { cn } from '../../../utils/cn.js'
 
 export type ChainFilterRowProps = {
   chain: ChainFilterValue
@@ -89,13 +90,7 @@ export const ChainFilterRow: FC<ChainFilterRowProps> = ({
     return (
       <Flex
         align="center"
-        css={{
-          gap: '2',
-          cursor: 'pointer',
-          flexShrink: 0,
-          alignContent: 'center',
-          width: '100%'
-        }}
+        className="relay-gap-2 relay-cursor-pointer relay-shrink-0 relay-content-center relay-w-full"
       >
         <AllChainsLogo style={{ width: 24, height: 24 }} />
         <Text style="subtitle2">{chain.name}</Text>
@@ -104,32 +99,21 @@ export const ChainFilterRow: FC<ChainFilterRowProps> = ({
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
+    <div className="relay-relative relay-w-full">
       <Flex
         align="center"
         onContextMenu={(e) => {
           e.preventDefault()
           setDropdownOpen(true)
         }}
-        css={{
-          gap: '2',
-          cursor: 'pointer',
-          flexShrink: 0,
-          alignContent: 'center',
-          width: '100%',
-          position: 'relative',
-          userSelect: 'none'
-        }}
-        style={{
-          WebkitUserSelect: 'none'
-        }}
+        className="relay-gap-2 relay-cursor-pointer relay-shrink-0 relay-content-center relay-w-full relay-relative relay-select-none"
       >
         <ChainIcon chainId={chain.id} square width={24} height={24} />
         <Text style="subtitle2">
           {('displayName' in chain && chain.displayName) || chain.name}
         </Text>
         {showStar && isStarred && (
-          <Box css={{ color: 'primary9' }}>
+          <Box className="relay-text-[color:var(--relay-colors-primary9)]">
             <FontAwesomeIcon icon={faStar} width={12} height={12} />
           </Box>
         )}
@@ -140,14 +124,7 @@ export const ChainFilterRow: FC<ChainFilterRowProps> = ({
       {dropdownOpen && (
         <div
           ref={dropdownRef}
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            marginTop: '4px',
-            minWidth: 140,
-            zIndex: 9999
-          }}
+          className="relay-absolute relay-top-full relay-left-0 relay-mt-1 relay-min-w-[140px] relay-z-[9999]"
           onClick={(e) => {
             e.stopPropagation()
             handleToggleStar()
@@ -156,27 +133,18 @@ export const ChainFilterRow: FC<ChainFilterRowProps> = ({
           onTouchStart={(e) => e.stopPropagation()}
         >
           <Flex
-            css={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '3',
-              borderRadius: 12,
-              cursor: 'pointer',
-              backgroundColor: 'modal-background',
-              _hover: {
-                backgroundColor: 'gray2'
-              }
-            }}
+            className="relay-flex relay-items-center relay-gap-[6px] relay-p-3 relay-rounded-[12px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] hover:relay-bg-[var(--relay-colors-gray2)]"
           >
             <Box
-              css={{
-                color: isStarred ? 'gray8' : 'primary9'
-              }}
+              className={cn(
+                isStarred
+                  ? 'relay-text-[color:var(--relay-colors-gray8)]'
+                  : 'relay-text-[color:var(--relay-colors-primary9)]'
+              )}
             >
               <FontAwesomeIcon icon={faStar} width={16} height={16} />
             </Box>
-            <Text style="subtitle1" css={{ lineHeight: '20px' }}>
+            <Text style="subtitle1" className="relay-leading-[20px]">
               {isStarred ? 'Unstar chain' : 'Star chain'}
             </Text>
           </Flex>
@@ -201,24 +169,12 @@ export const ChainSearchInput = forwardRef<
     ref={ref}
     placeholder={placeholder}
     icon={
-      <Box css={{ color: 'gray9' }}>
+      <Box className="relay-text-[color:var(--relay-colors-gray9)]">
         <FontAwesomeIcon icon={faMagnifyingGlass} width={16} height={16} />
       </Box>
     }
-    containerCss={{
-      width: '100%',
-      height: 40,
-      mb: '2'
-    }}
-    css={{
-      width: '100%',
-      _placeholder_parent: {
-        textOverflow: 'ellipsis'
-      },
-      '--borderColor': 'colors.subtle-border-color',
-      border: '1px solid var(--borderColor)',
-      backgroundColor: 'modal-background'
-    }}
+    containerClassName="relay-w-full relay-h-[40px] relay-mb-2"
+    className="relay-w-full relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] relay-bg-[var(--relay-colors-modal-background)] [&::placeholder]:relay-text-ellipsis"
     value={value}
     onChange={(e) => onChange((e.target as HTMLInputElement).value)}
     onKeyDown={onKeyDown}

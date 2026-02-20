@@ -6,72 +6,51 @@ import {
   useState
 } from 'react'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
-
-const DropdownMenuContentCss = cva({
-  base: {
-    mx: '4',
-    p: '3',
-    borderRadius: 8,
-    zIndex: 10000002,
-    background: 'modal-background',
-    boxShadow: '0px 0px 50px 0px #0000001F',
-    border: 'dropdown-border'
-  }
-})
+import { cn } from '../../utils/cn.js'
 
 const DropdownMenuContent = forwardRef<
   ElementRef<typeof DropdownMenuPrimitive.DropdownMenuContent>,
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.DropdownMenuContent> & {
-    css?: Styles
+    className?: string
   }
->(({ children, css, ...props }, forwardedRef) => {
+>(({ children, className, ...props }, forwardedRef) => {
   return (
     <DropdownMenuPrimitive.DropdownMenuContent
       {...props}
       ref={forwardedRef}
-      className={designCss(DropdownMenuContentCss.raw(), designCss.raw(css))}
+      className={cn(
+        'relay-mx-4 relay-p-3 relay-rounded-[8px] relay-z-[10000002]',
+        'relay-bg-[var(--relay-colors-modal-background)]',
+        'relay-shadow-[0px_0px_50px_0px_#0000001F]',
+        'relay-border-dropdown',
+        className
+      )}
     >
       {children}
     </DropdownMenuPrimitive.DropdownMenuContent>
   )
 })
 
-const DropdownMenuItemCss = cva({
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: 16,
-    color: 'text-default',
-    background: 'modal-background',
-    p: '3',
-    outline: 'none',
-    cursor: 'pointer',
-    transition: 'background-color 150ms linear',
-    _hover: {
-      backgroundColor: 'gray/10'
-    },
-    '&:focus': {
-      backgroundColor: 'gray/10'
-    }
-  }
-})
-
 const DropdownMenuItem = forwardRef<
   ElementRef<typeof DropdownMenuPrimitive.DropdownMenuItem>,
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.DropdownMenuItem> & {
-    css?: Styles
+    className?: string
   }
->(({ children, css, ...props }, forwardedRef) => {
+>(({ children, className, ...props }, forwardedRef) => {
   return (
     <DropdownMenuPrimitive.DropdownMenuItem
       {...props}
       ref={forwardedRef}
-      className={designCss(DropdownMenuItemCss.raw(), designCss.raw(css))}
+      className={cn(
+        'relay-flex relay-items-center relay-text-[16px]',
+        'relay-text-[color:var(--relay-colors-text-default)]',
+        'relay-bg-[var(--relay-colors-modal-background)]',
+        'relay-p-3 relay-outline-none relay-cursor-pointer',
+        'relay-transition-[background-color] relay-duration-150 relay-ease-linear',
+        'hover:relay-bg-[var(--relay-colors-gray-10)]/10',
+        'focus:relay-bg-[var(--relay-colors-gray-10)]/10',
+        className
+      )}
     >
       {children}
     </DropdownMenuPrimitive.DropdownMenuItem>

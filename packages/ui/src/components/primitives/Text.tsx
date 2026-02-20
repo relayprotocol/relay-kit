@@ -1,122 +1,57 @@
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
+import { cva, type VariantProps } from 'class-variance-authority'
 import type { FC, PropsWithChildren } from 'react'
+import { cn } from '../../utils/cn.js'
 
-const TextCss = cva({
-  base: {
-    color: 'text-default',
-    fontFamily: 'body'
-  },
-  variants: {
-    style: {
-      h1: {
-        fontWeight: 800,
-        fontSize: '64px',
-        fontFamily: 'heading'
+const textVariants = cva(
+  'relay-text-[color:var(--relay-colors-text-default)] relay-font-body',
+  {
+    variants: {
+      style: {
+        h1: 'relay-font-[800] relay-text-[64px] relay-font-heading',
+        h2: 'relay-font-bold relay-text-[48px]',
+        h3: 'relay-font-bold relay-text-[32px]',
+        h4: 'relay-font-bold relay-text-[24px]',
+        h5: 'relay-font-bold relay-text-[20px]',
+        h6: 'relay-font-bold relay-text-[16px]',
+        subtitle1: 'relay-font-medium relay-text-[16px]',
+        subtitle2: 'relay-font-medium relay-text-[14px]',
+        subtitle3: 'relay-font-medium relay-text-[12px]',
+        body1: 'relay-font-normal relay-text-[16px]',
+        body2: 'relay-font-normal relay-text-[14px]',
+        body3: 'relay-font-normal relay-text-[12px]',
+        tiny:
+          'relay-font-medium relay-text-[10px] relay-text-[color:var(--relay-colors-gray11)]'
       },
-      h2: {
-        fontWeight: 700,
-        fontSize: '48px'
+      color: {
+        subtle: 'relay-text-[color:var(--relay-colors-text-subtle)]',
+        subtleSecondary:
+          'relay-text-[color:var(--relay-colors-text-subtle-secondary)]',
+        error: 'relay-text-[color:var(--relay-colors-text-error)]',
+        red: 'relay-text-[color:var(--relay-colors-red11)]',
+        blue: 'relay-text-[color:var(--relay-colors-blue12)]',
+        success: 'relay-text-[color:var(--relay-colors-text-success)]',
+        warning: 'relay-text-[color:var(--relay-colors-amber12)]',
+        warningSecondary: 'relay-text-[color:var(--relay-colors-amber11)]'
       },
-      h3: {
-        fontWeight: 700,
-        fontSize: '32px'
+      italic: {
+        true: 'relay-italic'
       },
-      h4: {
-        fontWeight: 700,
-        fontSize: '24px'
-      },
-      h5: {
-        fontWeight: 700,
-        fontSize: '20px'
-      },
-      h6: {
-        fontWeight: 700,
-        fontSize: '16px'
-      },
-      subtitle1: {
-        fontWeight: 500,
-        fontSize: '16px'
-      },
-      subtitle2: {
-        fontWeight: 500,
-        fontSize: '14px'
-      },
-      subtitle3: {
-        fontWeight: 500,
-        fontSize: '12px'
-      },
-      body1: {
-        fontWeight: 400,
-        fontSize: '16px'
-      },
-      body2: {
-        fontWeight: 400,
-        fontSize: '14px'
-      },
-      body3: {
-        fontWeight: 400,
-        fontSize: '12px'
-      },
-      tiny: {
-        fontWeight: 500,
-        fontSize: 10,
-        color: 'gray11'
-      }
-    },
-    color: {
-      subtle: {
-        color: 'text-subtle'
-      },
-      subtleSecondary: {
-        color: 'text-subtle-secondary'
-      },
-      error: {
-        color: 'text-error'
-      },
-      red: {
-        color: 'red11'
-      },
-      blue: {
-        color: 'blue12'
-      },
-      success: {
-        color: 'text-success'
-      },
-      warning: {
-        color: 'amber12'
-      },
-      warningSecondary: {
-        color: 'amber11'
-      }
-    },
-    italic: {
-      true: {
-        fontStyle: 'italic'
-      }
-    },
-    ellipsify: {
-      true: {
-        textOverflow: 'ellipsis',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap'
+      ellipsify: {
+        true: 'relay-text-ellipsis relay-overflow-hidden relay-whitespace-nowrap'
       }
     }
   }
-})
+)
 
-type TextCssProps = Parameters<typeof TextCss>['0']
+export type TextVariantProps = VariantProps<typeof textVariants>
 
-const Text: FC<{ css?: Styles } & TextCssProps & PropsWithChildren> = ({
-  css,
+const Text: FC<{ className?: string } & TextVariantProps & PropsWithChildren> = ({
+  className,
   children,
   ...props
 }) => {
   return (
-    <div className={designCss(TextCss.raw(props), designCss.raw(css))}>
+    <div className={cn(textVariants(props), className)}>
       {children}
     </div>
   )

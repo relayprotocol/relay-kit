@@ -78,67 +78,47 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
     <Button
       color="white"
       corners="pill"
-      css={{
-        height: 50,
-        minHeight: 50,
-        width: '220px',
-        flexShrink: 0,
-        overflow: 'hidden',
-        borderRadius: '12px',
-        padding: '12px',
-        backgroundColor: 'widget-selector-background',
-        border: 'none',
-        _hover: {
-          backgroundColor: 'widget-selector-hover-background'
-        }
-      }}
+      className="relay-h-[50px] relay-min-h-[50px] relay-w-[220px] relay-shrink-0 relay-overflow-hidden relay-rounded-[12px] relay-p-[12px] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
       data-testid={testId}
     >
-      <Flex align="center" justify="between" css={{ width: '100%' }}>
-        <Flex align="center" css={{ gap: '2' }}>
+      <Flex align="center" justify="between" className="relay-w-full">
+        <Flex align="center" className="relay-gap-2">
           <ChainTokenIcon
             chainId={token.chainId}
             tokenlogoURI={token.logoURI}
             tokenSymbol={token.symbol}
             chainIconSize={14}
-            css={{ width: 32, height: 32 }}
+            className="relay-w-[32px] relay-h-[32px]"
           />
           <Flex
             direction="column"
             align="start"
-            css={{ maxWidth: 150, minWidth: 60, flex: 1, gap: '4px' }}
+            className="relay-max-w-[150px] relay-min-w-[60px] relay-flex-1 relay-gap-[4px]"
           >
             <Text
               style="h6"
               ellipsify
-              css={{ maxWidth: '100%', lineHeight: 'normal' }}
+              className="relay-max-w-full relay-leading-normal"
             >
               {token.symbol}
             </Text>
             {showSkeleton ? (
               <Skeleton
-                css={{
-                  width: 70,
-                  height: 12,
-                  borderRadius: 4
-                }}
+                className="relay-w-[70px] relay-h-[12px] relay-rounded-[4px]"
               />
             ) : (
               <Text
                 style="subtitle3"
                 color="subtle"
                 ellipsify
-                css={{
-                  lineHeight: 'normal',
-                  maxWidth: '100%'
-                }}
+                className="relay-leading-normal relay-max-w-full"
               >
                 {balanceText}
               </Text>
             )}
           </Flex>
         </Flex>
-        <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
+        <Box className="relay-text-[color:var(--relay-colors-gray9)] relay-w-[14px] relay-shrink-0">
           <FontAwesomeIcon icon={faChevronRight} width={14} />
         </Box>
       </Flex>
@@ -147,25 +127,12 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
     <Button
       color="white"
       corners="pill"
-      css={{
-        height: 50,
-        minHeight: 50,
-        width: '220px',
-        flexShrink: 0,
-        overflow: 'hidden',
-        borderRadius: '12px',
-        padding: '12px',
-        backgroundColor: 'widget-selector-background',
-        border: 'none',
-        _hover: {
-          backgroundColor: 'widget-selector-hover-background'
-        }
-      }}
+      className="relay-h-[50px] relay-min-h-[50px] relay-w-[220px] relay-shrink-0 relay-overflow-hidden relay-rounded-[12px] relay-p-[12px] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
       data-testid={testId}
     >
-      <Flex align="center" justify="between" css={{ width: '100%' }}>
+      <Flex align="center" justify="between" className="relay-w-full">
         <Text style="h6">Select a token</Text>
-        <Box css={{ color: 'gray9', width: 14, flexShrink: 0 }}>
+        <Box className="relay-text-[color:var(--relay-colors-gray9)] relay-w-[14px] relay-shrink-0">
           <FontAwesomeIcon icon={faChevronRight} width={14} />
         </Box>
       </Flex>

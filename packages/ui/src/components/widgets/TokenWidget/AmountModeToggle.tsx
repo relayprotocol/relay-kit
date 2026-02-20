@@ -26,10 +26,7 @@ const AmountModeToggle: FC<AmountModeToggleProps> = ({
   return (
     <Flex
       align="center"
-      css={{
-        gap: '8px',
-        _hover: { cursor: 'pointer' }
-      }}
+      className="relay-gap-[8px] hover:relay-cursor-pointer"
       onClick={() => {
         onToggle()
       }}
@@ -39,16 +36,7 @@ const AmountModeToggle: FC<AmountModeToggleProps> = ({
         aria-label={buttonAriaLabel}
         size="none"
         color="ghost"
-        css={{
-          color: 'gray11',
-          alignSelf: 'center',
-          justifyContent: 'center',
-          width: '20px',
-          height: '20px',
-          borderRadius: '100px',
-          padding: '4px',
-          backgroundColor: 'gray3'
-        }}
+        className="relay-text-[color:var(--relay-colors-gray11)] relay-self-center relay-justify-center relay-w-[20px] relay-h-[20px] relay-rounded-[100px] relay-p-[4px] relay-bg-[var(--relay-colors-gray3)]"
         onClick={() => {
           onToggle()
         }}

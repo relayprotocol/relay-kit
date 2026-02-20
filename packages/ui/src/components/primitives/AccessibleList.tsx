@@ -1,49 +1,24 @@
 import React, { forwardRef, type FC } from 'react'
 import * as ToggleGroup from '@radix-ui/react-toggle-group'
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
-
-const AccessibleListContainerCss = cva({
-  base: {
-    display: 'flex',
-    flexDirection: 'column'
-  }
-})
-
-const AccessibleListItemCss = cva({
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    position: 'relative',
-    userSelect: 'none',
-    cursor: 'pointer',
-    '&[data-state=on]': {}
-  }
-})
+import { cn } from '../../utils/cn.js'
 
 type AccessibleListProps = {
   children: React.ReactNode
   onSelect: (value: string) => void
-  css?: Styles
+  className?: string
 }
 
 export const AccessibleList: FC<AccessibleListProps> = ({
   children,
   onSelect,
-  css
+  className
 }) => {
   return (
     <ToggleGroup.Root
       type="single"
       loop={false}
       onValueChange={onSelect}
-      className={designCss(
-        AccessibleListContainerCss.raw(),
-        designCss.raw(css)
-      )}
+      className={cn('relay-flex relay-flex-col', className)}
     >
       {children}
     </ToggleGroup.Root>
@@ -53,18 +28,21 @@ export const AccessibleList: FC<AccessibleListProps> = ({
 type AccessibleListItemProps = {
   children: React.ReactNode
   value: string
-  css?: Styles
+  className?: string
   asChild?: boolean
 }
 
 export const AccessibleListItem = forwardRef<
   HTMLButtonElement,
   AccessibleListItemProps
->(({ children, value, css, asChild, ...props }, forwardedRef) => {
+>(({ children, value, className, asChild, ...props }, forwardedRef) => {
   return (
     <ToggleGroup.Item
       value={value}
-      className={designCss(AccessibleListItemCss.raw(), designCss.raw(css))}
+      className={cn(
+        'relay-flex relay-items-center relay-relative relay-select-none relay-cursor-pointer',
+        className
+      )}
       asChild={asChild}
       {...props}
       ref={forwardedRef}

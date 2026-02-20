@@ -1,5 +1,6 @@
 import type { ComponentPropsWithoutRef, FC } from 'react'
 import { Input } from '../primitives/index.js'
+import { cn } from '../../utils/cn.js'
 
 type Props = {
   value: string
@@ -23,24 +24,14 @@ const AmountInput: FC<Props> = ({
       pattern="^[0-9]+(\.[0-9]*)?$"
       ellipsify
       size="large"
-      className="ph-no-capture"
-      css={{
-        width: '100%',
-        background: 'none',
-        backgroundColor: 'transparent',
-        fontWeight: '600',
-        fontSize: 32,
-        px: '0 !important',
-        py: '1',
-        _focus: {
-          boxShadow: 'none',
-          outline: 'none'
-        },
-        _placeholder: {
-          color: 'gray12'
-        },
-        ...inputProps.css
-      }}
+      className={cn(
+        'ph-no-capture',
+        'relay-w-full relay-bg-none relay-bg-transparent relay-font-semibold relay-text-[32px]',
+        '!relay-px-0 relay-py-1',
+        'focus:relay-shadow-none focus:relay-outline-none',
+        'placeholder:relay-text-[color:var(--relay-colors-gray12)]',
+        inputProps.className
+      )}
       placeholder={inputProps.placeholder ?? '0'}
       value={prefixSymbol ? `${prefixSymbol}${value}` : value}
       onChange={

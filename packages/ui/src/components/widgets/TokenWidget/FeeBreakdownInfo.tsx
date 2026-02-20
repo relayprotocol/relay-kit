@@ -33,25 +33,16 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
       direction="column"
       align="end"
       justify={!token ? 'center' : 'start'}
-      css={{
-        gap: '1',
-        minHeight: 42
-      }}
+      className="relay-gap-1 relay-min-h-[42px]"
     >
-      <Flex align="center" css={{ gap: '1', minWidth: 0 }}>
+      <Flex align="center" className="relay-gap-1 relay-min-w-0">
         {isLoading ? (
-          <Skeleton css={{ width: 90, height: 20 }} />
+          <Skeleton className="relay-w-[90px] relay-h-[20px]" />
         ) : amountUsd && Number(amountUsd) > 0 ? (
           <>
             <Text
               style="h6"
-              css={{
-                textAlign: 'right',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                minWidth: 0
-              }}
+              className="relay-text-right relay-overflow-hidden relay-text-ellipsis relay-whitespace-nowrap relay-min-w-0"
             >
               {formatDollarCompact(Number(amountUsd))} total
             </Text>
@@ -61,17 +52,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
               fromToken={token}
               tooltipProps={{ side: 'top', align: 'end' }}
             >
-              <Box
-                css={{
-                  color: 'gray8',
-                  width: 16,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  flexShrink: 0
-                }}
-              >
+              <Box className="relay-text-[color:var(--relay-colors-gray8)] relay-w-[16px] relay-flex relay-items-center relay-justify-center relay-cursor-pointer relay-shrink-0">
                 <FontAwesomeIcon icon={faInfoCircle} />
               </Box>
             </FeeBreakdownTooltip>
@@ -79,46 +60,27 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
         ) : token ? (
           <Text
             style="h6"
-            css={{
-              textAlign: 'right',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              lineHeight: 'normal',
-              minWidth: 0
-            }}
+            className="relay-text-right relay-overflow-hidden relay-text-ellipsis relay-whitespace-nowrap relay-leading-normal relay-min-w-0"
           >
             $0 total
           </Text>
         ) : (
           <Text
             style="h6"
-            css={{
-              textAlign: 'right',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              minWidth: 0
-            }}
+            className="relay-text-right relay-overflow-hidden relay-text-ellipsis relay-whitespace-nowrap relay-min-w-0"
           >
             - total
           </Text>
         )}
       </Flex>
       {isLoading ? (
-        <Skeleton css={{ width: 70, height: 14 }} />
+        <Skeleton className="relay-w-[70px] relay-h-[14px]" />
       ) : amountUsd && Number(amountUsd) > 0 ? (
         token && tokenAmountFormatted && Number(tokenAmountFormatted) > 0 ? (
           <Text
             style="subtitle3"
             color="subtleSecondary"
-            css={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              minWidth: 0,
-              maxWidth: '100%'
-            }}
+            className="relay-overflow-hidden relay-text-ellipsis relay-whitespace-nowrap relay-min-w-0 relay-max-w-full"
           >
             {formatNumber(tokenAmountFormatted, 4, true)} {token.symbol}
           </Text>
@@ -126,13 +88,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
           <Text
             style="subtitle3"
             color="subtleSecondary"
-            css={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              minWidth: 0,
-              maxWidth: '100%'
-            }}
+            className="relay-overflow-hidden relay-text-ellipsis relay-whitespace-nowrap relay-min-w-0 relay-max-w-full"
           >
             {formatNumber(fallbackTokenAmount, 4, true)} {token.symbol}
           </Text>
@@ -141,13 +97,7 @@ export const FeeBreakdownInfo: FC<FeeBreakdownInfoProps> = ({
         <Text
           style="subtitle3"
           color="subtleSecondary"
-          css={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            minWidth: 0,
-            maxWidth: '100%'
-          }}
+          className="relay-overflow-hidden relay-text-ellipsis relay-whitespace-nowrap relay-min-w-0 relay-max-w-full"
         >
           0.00 {token.symbol}
         </Text>

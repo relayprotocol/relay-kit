@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, FC, ReactNode } from 'react'
+import type { ComponentPropsWithoutRef, CSSProperties, FC, ReactNode } from 'react'
 import { AnimatedContent, Overlay } from '../primitives/Dialog.js'
 import {
   Root as DialogRoot,
@@ -9,12 +9,11 @@ import {
 import { Button } from '../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark'
-import type { SystemStyleObject } from '@relayprotocol/relay-design-system/types'
-import { AnimatePresence } from 'framer-motion'
 
 type ModalProps = {
   trigger?: ReactNode
-  css?: SystemStyleObject
+  className?: string
+  contentStyle?: CSSProperties
   overlayZIndex?: number
   showCloseButton?: boolean
   disableAnimation?: boolean
@@ -33,7 +32,8 @@ export const Modal: FC<
     >
 > = ({
   trigger,
-  css,
+  className,
+  contentStyle,
   overlayZIndex = 10000000,
   showCloseButton = true,
   disableAnimation = false,
@@ -43,61 +43,43 @@ export const Modal: FC<
   return (
     <DialogRoot modal={true} {...props}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <AnimatePresence>
-        {props.open ? (
-          <DialogPortal forceMount>
-            <Overlay
+      {props.open ? (
+        <DialogPortal forceMount>
+          <Overlay
+            forceMount
+            className="relay-fixed relay-inset-0 relay-bg-[var(--relay-colors-blackA10)]"
+            style={{ zIndex: overlayZIndex }}
+          >
+            <AnimatedContent
               forceMount
-              css={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'blackA10'
-              }}
-              style={{ zIndex: overlayZIndex }}
+              className={`relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] relay-p-4 ${className ?? ''}`}
+              style={contentStyle}
+              disableAnimation={disableAnimation}
+              onPointerDownOutside={props.onPointerDownOutside}
+              onOpenAutoFocus={props.onOpenAutoFocus}
             >
-              <AnimatedContent
-                forceMount
-                css={{
-                  '--borderColor': 'colors.subtle-border-color',
-                  border: '1px solid var(--borderColor)',
-                  padding: '4',
-                  ...css
-                }}
-                disableAnimation={disableAnimation}
-                onPointerDownOutside={props.onPointerDownOutside}
-                onOpenAutoFocus={props.onOpenAutoFocus}
-              >
-                {showCloseButton ? (
-                  <DialogClose
-                    asChild
-                    style={{
-                      position: 'absolute',
-                      right: 10,
-                      top: 12,
-                      zIndex: 10
+              {showCloseButton ? (
+                <DialogClose
+                  asChild
+                  className="relay-absolute relay-right-[10px] relay-top-[12px] relay-z-10"
+                >
+                  <Button
+                    color="ghost"
+                    size="none"
+                    className="relay-text-[color:var(--relay-colors-gray9)] relay-p-2"
+                    onClick={(e) => {
+                      props.onCloseButtonClicked?.(e)
                     }}
                   >
-                    <Button
-                      color="ghost"
-                      size="none"
-                      css={{ color: 'gray9', p: '2' }}
-                      onClick={(e) => {
-                        props.onCloseButtonClicked?.(e)
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faXmark} width={16} height={16} />
-                    </Button>
-                  </DialogClose>
-                ) : null}
-                {children}
-              </AnimatedContent>
-            </Overlay>
-          </DialogPortal>
-        ) : null}
-      </AnimatePresence>
+                    <FontAwesomeIcon icon={faXmark} width={16} height={16} />
+                  </Button>
+                </DialogClose>
+              ) : null}
+              {children}
+            </AnimatedContent>
+          </Overlay>
+        </DialogPortal>
+      ) : null}
     </DialogRoot>
   )
 }

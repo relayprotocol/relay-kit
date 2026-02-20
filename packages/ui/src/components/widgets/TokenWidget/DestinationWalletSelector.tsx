@@ -28,7 +28,7 @@ export const DestinationWalletSelector: FC<DestinationWalletSelectorProps> = ({
   fallback
 }) => {
   return (
-    <Flex align="center" css={{ width: '100%', gap: '2' }}>
+    <Flex align="center" className="relay-w-full relay-gap-2">
       <Text style="subtitle2" color="subtle">
         {label}
       </Text>
@@ -39,24 +39,17 @@ export const DestinationWalletSelector: FC<DestinationWalletSelectorProps> = ({
           color={fallback.highlighted ? 'warning' : 'secondary'}
           corners="pill"
           size="none"
-          css={{
-            display: 'flex',
-            alignItems: 'center',
-            px: '2',
-            py: '1'
-          }}
+          className="relay-flex relay-items-center relay-px-2 relay-py-1"
           onClick={fallback.onClick}
         >
           {fallback.showClipboard ? (
-            <Box css={{ color: 'amber11' }}>
+            <Box className="relay-text-[color:var(--relay-colors-amber11)]">
               <FontAwesomeIcon icon={faClipboard} width={16} height={16} />
             </Box>
           ) : null}
           <Text
             style="subtitle2"
-            css={{
-              color: fallback.highlighted ? 'amber11' : 'anchor-color'
-            }}
+            className={fallback.highlighted ? 'relay-text-[color:var(--relay-colors-amber11)]' : 'relay-text-[color:var(--relay-colors-anchor-color)]'}
           >
             {fallback.text}
           </Text>

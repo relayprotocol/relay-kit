@@ -1,13 +1,13 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Box } from '../../primitives/index.js'
 import AmountInput from '../../common/AmountInput.js'
+import { cn } from '../../../utils/cn.js'
 import {
   formatFixedLength,
   formatNumber,
   formatDollar
 } from '../../../utils/numbers.js'
 import { EventNames } from '../../../constants/events.js'
-import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { PaymentMethodTrigger } from '../../common/TokenSelector/triggers/PaymentMethodTrigger.js'
@@ -335,10 +335,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
   return (
     <TabsContent value="sell">
       <SectionContainer
-        css={{
-          border: { base: 'none', md: '1px solid' },
-          borderColor: { base: 'transparent', md: 'slate.4' }
-        }}
+        className="relay-border-none md:relay-border md:relay-border-solid md:relay-border-[var(--relay-colors-slate4)]"
         id={'sell-token-section'}
         isPaymentMethodOpen={isPaymentMethodOpen}
         paymentMethodMinHeight={paymentMethodMinHeight}
@@ -350,7 +347,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
           onSlippageToleranceChange={onSlippageToleranceChange}
           onAnalyticEvent={onAnalyticEvent}
         />
-        <Flex align="center" justify="between" css={{ width: '100%' }}>
+        <Flex align="center" justify="between" className="relay-w-full">
           <AmountInput
             prefixSymbol={isUsdInputMode ? '$' : undefined}
             value={
@@ -384,38 +381,25 @@ const SellTabContent: FC<SellTabContentProps> = ({
             onClick={() => {
               onAnalyticEvent?.(EventNames.SWAP_INPUT_FOCUSED)
             }}
-            css={{
-              fontWeight: '700',
-              fontSize: 32,
-              lineHeight: '32px',
-              py: 0,
-              color:
-                isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
-                  ? 'text-subtle'
-                  : 'input-color',
-              _placeholder: {
-                color:
-                  isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
-                    ? 'text-subtle'
-                    : 'input-color'
-              }
-            }}
+            className={cn(
+              'relay-font-bold relay-text-[32px] relay-leading-[32px] relay-py-0',
+              isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
+                ? 'relay-text-[color:var(--relay-colors-text-subtle)] placeholder:relay-text-[color:var(--relay-colors-text-subtle)]'
+                : 'relay-text-[color:var(--relay-colors-input-color)] placeholder:relay-text-[color:var(--relay-colors-input-color)]'
+            )}
           />
         </Flex>
-        <Flex direction="column" css={{ gap: '3', width: '100%' }}>
+        <Flex direction="column" className="relay-gap-3 relay-w-full">
           <Flex
             align="center"
             justify="between"
-            css={{ gap: '3', width: '100%' }}
+            className="relay-gap-3 relay-w-full"
           >
             <AmountModeToggle
               onToggle={toggleInputMode}
               textProps={{
-                css: {
-                  minHeight: 18,
-                  display: 'flex',
-                  alignItems: 'center'
-                }
+                className:
+                  'relay-min-h-[18px] relay-flex relay-items-center'
               }}
             >
               {isUsdInputMode
@@ -443,7 +427,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
             </AmountModeToggle>
           </Flex>
 
-          <Flex align="center" css={{ width: '100%', gap: '3' }}>
+          <Flex align="center" className="relay-w-full relay-gap-3">
             {multiWalletSupportEnabled === true ? (
               <MultiWalletDropdown
                 context="origin"
@@ -483,11 +467,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
 
             <Flex
               align="center"
-              css={{
-                gap: '8px',
-                marginLeft: 'auto',
-                flexShrink: 0
-              }}
+              className="relay-gap-2 relay-ml-auto relay-shrink-0"
             >
               {(() => {
                 const displayToken = fromToken || toToken
@@ -525,17 +505,12 @@ const SellTabContent: FC<SellTabContentProps> = ({
                     size="sm"
                   />
                 ) : (
-                  <Flex css={{ height: 18 }} />
+                  <Flex style={{ height: 18 }} />
                 )
               })()}
               {/* Desktop Percentage Buttons - Hidden on Mobile */}
               {fromBalance && fromBalance > 0n && onMaxAmountClicked ? (
-                <Box
-                  css={{
-                    display: 'none',
-                    sm: { display: 'block' }
-                  }}
-                >
+                <Box className="relay-hidden sm:relay-block">
                   <PercentageButtons
                     balance={fromBalance}
                     onPercentageClick={onMaxAmountClicked}
@@ -553,7 +528,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
 
           {/* Mobile Percentage Buttons - Hidden on Desktop */}
           {fromBalance && fromBalance > 0n && onMaxAmountClicked ? (
-            <Box css={{ display: 'block', sm: { display: 'none' } }}>
+            <Box className="relay-block sm:relay-hidden">
               <PercentageButtons
                 balance={fromBalance}
                 onPercentageClick={onMaxAmountClicked}
@@ -568,7 +543,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
           ) : null}
         </Flex>
 
-        <Divider color="gray4" />
+        <hr className="relay-w-full relay-border-[var(--relay-colors-gray4)] relay-border-t relay-border-solid relay-border-b-0 relay-border-x-0" />
 
         <DestinationWalletSelector
           label="Sell to"
@@ -627,8 +602,8 @@ const SellTabContent: FC<SellTabContentProps> = ({
           }}
         />
 
-        <Flex direction="column" css={{ gap: '2', width: '100%' }}>
-          <Flex align="center" css={{ width: '100%', gap: '32px' }}>
+        <Flex direction="column" className="relay-gap-2 relay-w-full">
+          <Flex align="center" className="relay-w-full relay-gap-8">
             <PaymentMethod
               address={recipient}
               isValidAddress={isValidToAddress}
@@ -663,7 +638,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
                 </div>
               }
             />
-            <Flex css={{ marginLeft: 'auto' }}>
+            <Flex className="relay-ml-auto">
               <FeeBreakdownInfo
                 isLoading={Boolean(isLoadingOutput)}
                 amountUsd={currencyOutAmountUsd}
@@ -689,11 +664,11 @@ const SellTabContent: FC<SellTabContentProps> = ({
             toChainWalletVMSupported={toChainWalletVMSupported}
             recipientLinkedWallet={recipientLinkedWallet}
             toChainVmType={toChainVmType}
-            containerCss={{ width: '100%', marginBottom: 0 }}
+            containerClassName="relay-w-full relay-mb-0"
           />
         </Flex>
 
-        <Flex css={{ width: '100%' }}>
+        <Flex className="relay-w-full">
           <SwapButton
             context="Sell"
             transactionModalOpen={transactionModalOpen}
@@ -727,7 +702,7 @@ const SellTabContent: FC<SellTabContentProps> = ({
           />
         </Flex>
 
-        <Flex css={{ width: '100%', marginTop: '-8px' }}>
+        <Flex className="relay-w-full" style={{ marginTop: '-8px' }}>
           <TransactionDetailsFooter
             timeEstimate={timeEstimate}
             feeBreakdown={feeBreakdown}

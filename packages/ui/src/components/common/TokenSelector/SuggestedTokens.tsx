@@ -46,13 +46,7 @@ export const SuggestedTokens: FC<SuggestedTokensProps> = ({
 
   return (
     <Flex
-      css={{
-        width: '100%',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1',
-        my: '2'
-      }}
+      className="relay-w-full relay-items-center relay-flex-wrap relay-gap-1 relay-my-2"
     >
       {suggestedTokens.map((token, idx) => (
         <AccessibleListItem
@@ -69,32 +63,7 @@ export const SuggestedTokens: FC<SuggestedTokensProps> = ({
             }}
             color="ghost"
             size="none"
-            css={{
-              display: 'flex',
-              flexShrink: 0,
-              cursor: 'pointer',
-              outline: 'none',
-              p: '1',
-              pr: '2',
-              gap: 1,
-              alignItems: 'center',
-              '--borderColor': 'colors.gray5',
-              border: '1px solid var(--borderColor)',
-              borderRadius: '100px',
-              '--focusColor': 'colors.focus-color',
-              _focusVisible: {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              },
-              '&[data-state="on"]': {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              },
-              _active: {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              },
-              _focusWithin: {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              }
-            }}
+            className="relay-flex relay-shrink-0 relay-cursor-pointer relay-outline-none relay-p-1 relay-pr-2 relay-gap-[1px] relay-items-center relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-rounded-[100px] focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] [&[data-state=on]]:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] active:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus-within:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]"
           >
             <ChainTokenIcon
               chainId={token.chainId}

@@ -1,5 +1,4 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { motion, AnimatePresence } from 'framer-motion'
 import type {
   ComponentPropsWithoutRef,
   ElementRef,
@@ -9,63 +8,35 @@ import type {
 } from 'react'
 import { forwardRef, useState } from 'react'
 import { useMediaQuery } from 'usehooks-ts'
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../utils/cn.js'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-
-const OverlayStyle = cva({
-  base: {
-    position: 'fixed',
-    inset: 0
-  }
-})
 
 const Overlay = forwardRef<
   ElementRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> &
-    PropsWithChildren & { css?: Styles }
->(({ children, css, ...props }, forwardedRef) => {
+    PropsWithChildren & { className?: string }
+>(({ children, className, ...props }, forwardedRef) => {
   return (
     <DialogPrimitive.Overlay
       ref={forwardedRef}
       {...props}
-      className={`${designCss(
-        OverlayStyle.raw(),
-        designCss.raw(css)
-      )} relay-kit-reset`}
+      className={cn('relay-fixed relay-inset-0', className, 'relay-kit-reset')}
     >
       {children}
     </DialogPrimitive.Overlay>
   )
 })
 
-const ContentCss = cva({
-  base: {
-    backgroundColor: 'modal-background',
-    borderRadius: 'modal-border-radius',
-    border: 'modal-border',
-    position: 'fixed',
-    left: '50%',
-    top: '100%',
-    minWidth: '90vw',
-    maxWidth: '100vw',
-    sm: {
-      minWidth: '400px',
-      maxWidth: '532px'
-    },
-    maxHeight: '85vh',
-    overflowY: 'auto',
-    _focus: { outline: 'none' },
-    '@media(max-width: 520px)': {
-      borderBottomRightRadius: 0,
-      borderBottomLeftRadius: 0,
-      width: '100%'
-    }
-  }
-})
+const contentBase = [
+  'relay-bg-[var(--relay-colors-modal-background)]',
+  'relay-rounded-modal',
+  'relay-border-modal',
+  'relay-fixed relay-left-1/2',
+  'relay-min-w-[90vw] relay-max-w-[100vw]',
+  'sm:relay-min-w-[400px] sm:relay-max-w-[532px]',
+  'relay-max-h-[85vh] relay-overflow-y-auto',
+  'focus:relay-outline-none'
+].join(' ')
 
 const Content = forwardRef<
   ElementRef<typeof DialogPrimitive.DialogContent>,
@@ -76,7 +47,7 @@ const Content = forwardRef<
     <DialogPrimitive.DialogContent
       ref={forwardedRef}
       {...props}
-      className={ContentCss()}
+      className={cn(contentBase, 'relay-top-full')}
     >
       {children}
     </DialogPrimitive.DialogContent>
@@ -86,71 +57,39 @@ const Content = forwardRef<
 const AnimatedContent = forwardRef<
   ElementRef<typeof DialogPrimitive.DialogContent>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.DialogContent> &
-    PropsWithChildren & { css?: Styles; disableAnimation?: boolean }
->(({ children, css, disableAnimation = false, ...props }, forwardedRef) => {
+    PropsWithChildren & { className?: string; disableAnimation?: boolean }
+>(({ children, className, disableAnimation = false, ...props }, forwardedRef) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
-  const isMobileSlideUpEnabled = isMobile && !disableAnimation
+  const isMobileSlideUp = isMobile && !disableAnimation
 
-  const animation = isMobileSlideUpEnabled
-    ? {
-        initial: {
-          opacity: 0,
-          bottom: '-100%',
-          top: 'auto',
-          left: 0
-        },
-        animate: {
-          opacity: 1,
-          bottom: 0,
-          top: 'auto',
-          left: 0
-        },
-        exit: {
-          opacity: 0,
-          bottom: '-100%',
-          top: 'auto',
-          left: 0
-        }
-      }
-    : {
-        initial: {
-          opacity: 0,
-          top: '50%',
-          transform: 'translateX(-50%) translateY(-50%)'
-        },
-        animate: {
-          opacity: 1,
-          top: '50%',
-          transform: 'translateX(-50%) translateY(-50%)'
-        },
-        exit: {
-          opacity: 0,
-          top: '50%',
-          transform: 'translateX(-50%) translateY(-50%)'
-        }
-      }
+  const mobileClasses = [
+    'relay-bottom-0 relay-top-auto relay-left-0',
+    'relay-translate-x-0',
+    'relay-animate-dialog-slide-up',
+    'data-[state=closed]:relay-animate-dialog-slide-down',
+    'max-[520px]:relay-rounded-b-none max-[520px]:relay-w-full'
+  ].join(' ')
+
+  const desktopClasses = [
+    'relay-top-1/2 -relay-translate-x-1/2 -relay-translate-y-1/2',
+    'relay-animate-dialog-fade-in',
+    'data-[state=closed]:relay-animate-dialog-fade-out'
+  ].join(' ')
+
   return (
     <DialogPrimitive.DialogContent
-      className={designCss(ContentCss.raw(props), designCss.raw(css))}
-      forceMount
-      asChild
+      ref={forwardedRef}
+      className={cn(
+        contentBase,
+        isMobileSlideUp ? mobileClasses : desktopClasses,
+        className
+      )}
       {...props}
     >
-      <motion.div
-        key={isMobile + 'modal'}
-        ref={forwardedRef}
-        transition={{
-          type: isMobileSlideUpEnabled ? 'tween' : undefined,
-          duration: isMobileSlideUpEnabled ? 0.2 : 0.1,
-          ease: isMobileSlideUpEnabled ? undefined : 'linear'
-        }}
-        {...animation}
-      >
-        <VisuallyHidden>
-          <DialogPrimitive.Title>Title</DialogPrimitive.Title>
-        </VisuallyHidden>
-        {children}
-      </motion.div>
+      <VisuallyHidden>
+        <DialogPrimitive.Title>Title</DialogPrimitive.Title>
+      </VisuallyHidden>
+      {children}
     </DialogPrimitive.DialogContent>
   )
 })
@@ -173,15 +112,13 @@ const Dialog = forwardRef<
       <DialogPrimitive.DialogTrigger asChild>
         {trigger}
       </DialogPrimitive.DialogTrigger>
-      <AnimatePresence>
-        {open ? (
-          <DialogPrimitive.DialogPortal forceMount {...portalProps}>
-            <AnimatedContent ref={forwardedRef} forceMount {...props}>
-              {children}
-            </AnimatedContent>
-          </DialogPrimitive.DialogPortal>
-        ) : null}
-      </AnimatePresence>
+      {open ? (
+        <DialogPrimitive.DialogPortal {...portalProps}>
+          <AnimatedContent ref={forwardedRef} {...props}>
+            {children}
+          </AnimatedContent>
+        </DialogPrimitive.DialogPortal>
+      ) : null}
     </DialogPrimitive.Root>
   )
 })

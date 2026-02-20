@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react'
-import { Anchor, Flex, Text, Box } from '../primitives/index.js'
+import { Anchor, Flex, Text } from '../primitives/index.js'
 import Tooltip from '../primitives/Tooltip.js'
 import type { ChildrenProps } from '../widgets/SwapWidgetRenderer.js'
 
@@ -22,14 +22,14 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
   return (
     <Tooltip
       content={
-        <Flex css={{ minWidth: 200 }} direction="column">
-          <Flex align="center" css={{ width: '100%' }}>
-            <Text style="subtitle3" css={{ mr: 'auto' }}>
+        <Flex className="relay-min-w-[200px]" direction="column">
+          <Flex align="center" className="relay-w-full">
+            <Text style="subtitle3" className="relay-mr-auto">
               Total Price Impact{' '}
             </Text>
             <Text
               style="subtitle3"
-              css={{ mr: '1', ml: '2' }}
+              className="relay-mr-1 relay-ml-2"
               color={feeBreakdown?.totalFees?.priceImpactColor}
             >
               {feeBreakdown?.totalFees.priceImpact}
@@ -41,17 +41,11 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
               ({feeBreakdown?.totalFees.priceImpactPercentage})
             </Text>
           </Flex>
-          <Box
-            css={{
-              width: '100%',
-              height: 1,
-              backgroundColor: 'slate.6',
-              marginTop: '2',
-              marginBottom: '2'
-            }}
+          <div
+            className="relay-w-full relay-h-px relay-bg-[var(--relay-colors-slate-6)] relay-my-2"
           />
-          <Flex align="center" css={{ width: '100%' }}>
-            <Text style="subtitle3" color="subtle" css={{ mr: 'auto' }}>
+          <Flex align="center" className="relay-w-full">
+            <Text style="subtitle3" color="subtle" className="relay-mr-auto">
               Swap Impact
             </Text>
             <Text
@@ -66,8 +60,8 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
               return null
             }
             return (
-              <Flex key={fee.id} align="center" css={{ width: '100%' }}>
-                <Text style="subtitle3" color="subtle" css={{ mr: 'auto' }}>
+              <Flex key={fee.id} align="center" className="relay-w-full">
+                <Text style="subtitle3" color="subtle" className="relay-mr-auto">
                   {fee.name}
                 </Text>
                 {feeBreakdown.isGasSponsored && fee.usd.value === 0 ? (
@@ -88,7 +82,7 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
             href="https://docs.relay.link/references/api/api_core_concepts/fees#relay-fees"
             target="_blank"
             rel="noopener noreferrer"
-            css={{ color: 'primary11', fontSize: 12 }}
+            className="relay-text-[color:var(--relay-colors-primary11)] relay-text-[12px]"
           >
             Learn more about the fees
           </Anchor>

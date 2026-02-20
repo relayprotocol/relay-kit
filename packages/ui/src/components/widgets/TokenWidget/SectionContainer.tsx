@@ -1,9 +1,9 @@
 import { type FC, type PropsWithChildren } from 'react'
 import { Flex } from '../../primitives/index.js'
-import { type Styles } from '@relayprotocol/relay-design-system/css'
+import { cn } from '../../../utils/cn.js'
 
 type SectionContainerProps = PropsWithChildren & {
-  css?: Styles
+  className?: string
   id?: string
   isPaymentMethodOpen?: boolean
   paymentMethodMinHeight?: string
@@ -11,7 +11,7 @@ type SectionContainerProps = PropsWithChildren & {
 
 const SectionContainer: FC<SectionContainerProps> = ({
   children,
-  css,
+  className,
   id,
   isPaymentMethodOpen = false,
   paymentMethodMinHeight = '85vh'
@@ -21,22 +21,17 @@ const SectionContainer: FC<SectionContainerProps> = ({
       align="center"
       justify="between"
       id={id}
-      css={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'start',
-        backgroundColor: { base: 'transparent', md: 'widget-card-background' },
-        border: 'widget-card-border',
-        gap: '4',
-        paddingY: { base: '12px', md: '16px' },
-        paddingX: { base: '0', md: '16px' },
-        borderRadius: { base: '0', md: 'widget-card-border-radius' },
-        minHeight: {
-          base: isPaymentMethodOpen ? paymentMethodMinHeight : 'auto',
-          md: 'auto'
-        },
-        ...css
+      className={cn(
+        'relay-w-full relay-flex relay-flex-col relay-items-start relay-border-widget-card relay-gap-4',
+        'relay-bg-transparent md:relay-bg-[var(--relay-colors-widget-card-background)]',
+        'relay-py-3 md:relay-py-4',
+        'relay-px-0 md:relay-px-4',
+        'relay-rounded-none md:relay-rounded-[var(--relay-radii-widget-card-border-radius)]',
+        'md:relay-min-h-[auto]',
+        className
+      )}
+      style={{
+        minHeight: isPaymentMethodOpen ? paymentMethodMinHeight : 'auto'
       }}
     >
       {children}

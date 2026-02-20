@@ -21,7 +21,7 @@ export const PriceImpact: FC<{
       quote?.details?.totalImpact?.percent === '0'
     ) {
       return (
-        <Flex css={{ gap: '2px' }}>
+        <Flex className="relay-gap-[2px]">
           <Text style="subtitle3" color="subtle">
             (
           </Text>
@@ -31,9 +31,7 @@ export const PriceImpact: FC<{
           <Text
             style="subtitle3"
             color="subtle"
-            css={{
-              textDecoration: 'line-through'
-            }}
+            className="relay-line-through"
           >
             0.01%
           </Text>
@@ -44,7 +42,7 @@ export const PriceImpact: FC<{
       )
     } else if (feeBreakdown?.isGasSponsored) {
       return (
-        <Flex css={{ gap: '2px' }}>
+        <Flex className="relay-gap-[2px]">
           <Text style="subtitle3" color="subtle">
             (
           </Text>

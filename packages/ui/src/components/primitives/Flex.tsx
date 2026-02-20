@@ -1,90 +1,50 @@
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
+import { cva, type VariantProps } from 'class-variance-authority'
 import type {
   FC,
   PropsWithChildren,
   CSSProperties,
   HTMLAttributes
 } from 'react'
+import { cn } from '../../utils/cn.js'
 
-export const FlexCss = cva({
-  base: {
-    display: 'flex'
-  },
+export const flexVariants = cva('relay-flex', {
   variants: {
     align: {
-      start: {
-        alignItems: 'flex-start'
-      },
-      center: {
-        alignItems: 'center'
-      },
-      end: {
-        alignItems: 'flex-end'
-      },
-      stretch: {
-        alignItems: 'stretch'
-      },
-      baseline: {
-        alignItems: 'baseline'
-      },
-      normal: {
-        alignItems: 'normal'
-      }
+      start: 'relay-items-start',
+      center: 'relay-items-center',
+      end: 'relay-items-end',
+      stretch: 'relay-items-stretch',
+      baseline: 'relay-items-baseline',
+      normal: 'relay-items-[normal]'
     },
     justify: {
-      start: {
-        justifyContent: 'flex-start'
-      },
-      center: {
-        justifyContent: 'center'
-      },
-      end: {
-        justifyContent: 'flex-end'
-      },
-      between: {
-        justifyContent: 'space-between'
-      }
+      start: 'relay-justify-start',
+      center: 'relay-justify-center',
+      end: 'relay-justify-end',
+      between: 'relay-justify-between'
     },
     direction: {
-      row: {
-        flexDirection: 'row'
-      },
-      column: {
-        flexDirection: 'column'
-      },
-      rowReverse: {
-        flexDirection: 'row-reverse'
-      },
-      columnReverse: {
-        flexDirection: 'column-reverse'
-      }
+      row: 'relay-flex-row',
+      column: 'relay-flex-col',
+      rowReverse: 'relay-flex-row-reverse',
+      columnReverse: 'relay-flex-col-reverse'
     },
     wrap: {
-      noWrap: {
-        flexWrap: 'nowrap'
-      },
-      wrap: {
-        flexWrap: 'wrap'
-      },
-      wrapReverse: {
-        flexWrap: 'wrap-reverse'
-      }
+      noWrap: 'relay-flex-nowrap',
+      wrap: 'relay-flex-wrap',
+      wrapReverse: 'relay-flex-wrap-reverse'
     }
   }
 })
 
-type FlexCssProps = Parameters<typeof FlexCss>['0']
+export type FlexVariantProps = VariantProps<typeof flexVariants>
 
 const Flex: FC<
-  { css?: Styles; style?: CSSProperties; id?: string } & FlexCssProps &
+  { className?: string; style?: CSSProperties; id?: string } & FlexVariantProps &
     PropsWithChildren &
     Omit<HTMLAttributes<HTMLDivElement>, 'className'>
 > = ({
-  css,
+  className,
   style,
   children,
   id,
@@ -96,10 +56,7 @@ const Flex: FC<
 }) => {
   return (
     <div
-      className={designCss(
-        FlexCss.raw({ align, justify, direction, wrap }),
-        designCss.raw(css)
-      )}
+      className={cn(flexVariants({ align, justify, direction, wrap }), className)}
       style={style}
       id={id}
       {...htmlProps}

@@ -167,11 +167,7 @@ const InnerDepositAddressModal: FC<InnerDepositAddressModalProps> = ({
       trigger={null}
       open={open}
       onOpenChange={onOpenChange}
-      css={{
-        overflow: 'hidden',
-        p: '4',
-        maxWidth: '412px !important'
-      }}
+      className="relay-overflow-hidden relay-p-4 !relay-max-w-[412px]"
       showCloseButton={true}
       onPointerDownOutside={(e) => {
         const dynamicModalElements = Array.from(
@@ -188,13 +184,9 @@ const InnerDepositAddressModal: FC<InnerDepositAddressModalProps> = ({
     >
       <Flex
         direction="column"
-        css={{
-          width: '100%',
-          height: '100%',
-          gap: isWaitingForDeposit ? '3' : '4'
-        }}
+        className={`relay-w-full relay-h-full ${isWaitingForDeposit ? 'relay-gap-3' : 'relay-gap-4'}`}
       >
-        <Text style="h6" css={{ mb: 8 }}>
+        <Text style="h6" className="relay-mb-2">
           {isWaitingForDeposit ? 'Manual Transfer' : 'Trade Details'}
         </Text>
 

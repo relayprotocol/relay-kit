@@ -39,7 +39,7 @@ const GasTopUpSection: FC<Props> = ({
   return (
     <Pill
       color="primary"
-      css={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+      className="relay-flex relay-items-center relay-cursor-pointer"
       onClick={() => {
         onGasTopUpEnabled(!gasTopUpEnabled)
       }}
@@ -48,10 +48,7 @@ const GasTopUpSection: FC<Props> = ({
         <>
           <Text
             style="subtitle2"
-            css={{
-              color: 'primary12',
-              mr: '2'
-            }}
+            className="relay-text-[color:var(--relay-colors-primary12)] relay-mr-2"
           >
             +
             {gasTopUpAmount
@@ -74,10 +71,7 @@ const GasTopUpSection: FC<Props> = ({
         <>
           <Text
             style="subtitle2"
-            css={{
-              color: 'primary12',
-              mr: '6px'
-            }}
+            className="relay-text-[color:var(--relay-colors-primary12)] relay-mr-[6px]"
           >
             Add Gas (Balance:{' '}
             {gasTopUpBalance

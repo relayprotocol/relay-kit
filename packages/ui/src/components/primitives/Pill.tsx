@@ -1,81 +1,44 @@
-import {
-  cva,
-  css as designCss,
-  type Styles
-} from '@relayprotocol/relay-design-system/css'
+import { cva, type VariantProps } from 'class-variance-authority'
 import type { FC, HTMLAttributes } from 'react'
-import type { FlexCss } from './Flex.js'
+import { cn } from '../../utils/cn.js'
 
-export const PillStyle = cva({
-  base: {
-    display: 'flex',
-    background: 'subtle-background-color',
-    px: '3',
-    py: '1',
-    gap: '1'
-  },
-  variants: {
-    color: {
-      red: {
-        background: 'red3',
-        color: 'red11'
+export const pillVariants = cva(
+  'relay-flex relay-bg-[var(--relay-colors-subtle-background-color)] relay-px-3 relay-py-1 relay-gap-1',
+  {
+    variants: {
+      color: {
+        red: 'relay-bg-[var(--relay-colors-red3)] relay-text-[color:var(--relay-colors-red11)]',
+        gray: 'relay-bg-[var(--relay-colors-gray2)] relay-text-[color:var(--relay-colors-gray8)]',
+        green: 'relay-bg-[var(--relay-colors-green3)] relay-text-[color:var(--relay-colors-green12)]',
+        amber: 'relay-bg-[var(--relay-colors-amber2)] relay-text-[color:var(--relay-colors-amber9)]',
+        transparent: 'relay-bg-transparent relay-text-[color:var(--relay-colors-gray12)]',
+        primary: 'relay-bg-[var(--relay-colors-primary3)] relay-text-[color:var(--relay-colors-primary12)]'
       },
-      gray: {
-        background: 'gray2',
-        color: 'gray8'
+      radius: {
+        pill: 'relay-rounded-[25px]',
+        rounded: 'relay-rounded-[12px]',
+        squared: 'relay-rounded-[8px]'
       },
-      green: {
-        background: 'green3',
-        color: 'green12'
-      },
-      amber: {
-        background: 'amber2',
-        color: 'amber9'
-      },
-      transparent: {
-        background: 'none',
-        color: 'gray12'
-      },
-      primary: {
-        background: 'primary3',
-        color: 'primary12'
+      bordered: {
+        true: 'relay-border relay-border-solid relay-border-[var(--relay-colors-gray-6)]'
       }
     },
-    radius: {
-      pill: {
-        borderRadius: 25
-      },
-      rounded: {
-        borderRadius: 12
-      },
-      squared: {
-        borderRadius: 8
-      }
-    },
-    bordered: {
-      true: {
-        '--borderColor': 'colors.gray.6',
-        border: '1px solid var(--borderColor)'
-      }
+    defaultVariants: {
+      radius: 'pill'
     }
-  },
-  defaultVariants: {
-    radius: 'pill'
   }
-})
+)
 
-type PillProps = Parameters<typeof PillStyle>['0']
+type PillVariantProps = VariantProps<typeof pillVariants>
 
 export const Pill: FC<
-  HTMLAttributes<HTMLDivElement> & {
-    css?: Parameters<(typeof FlexCss)['raw']>[0] & Styles
-  } & PillProps
-> = ({ css, ...props }) => {
+  HTMLAttributes<HTMLDivElement> & { className?: string } & PillVariantProps
+> = ({ className, color, radius, bordered, ...props }) => {
   return (
     <div
       {...props}
-      className={designCss(PillStyle.raw(props), designCss.raw(css))}
-    ></div>
+      className={cn(pillVariants({ color, radius, bordered }), className)}
+    />
   )
 }
 

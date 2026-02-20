@@ -100,26 +100,21 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
 
   // Return single container with all transactions
   return (
-    <Flex direction="column" css={{ gap: '3' }}>
+    <Flex direction="column" className="relay-gap-3">
       {transactions.map((transaction, idx) => (
-        <Flex justify="between" css={{ alignItems: 'center' }} key={idx}>
-          <Flex css={{ alignItems: 'center', gap: '2' }}>
+        <Flex justify="between" className="relay-items-center" key={idx}>
+          <Flex className="relay-items-center relay-gap-2">
             <Text style="subtitle2" color="subtle">
               {transaction.label}
             </Text>
             {transaction.isRefund ? (
               <Pill
                 color="gray"
-                css={{
-                  py: '1',
-                  px: '6px',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
+                className="relay-py-1 relay-px-[6px] relay-flex relay-items-center"
               >
                 <FontAwesomeIcon
                   icon={faRotateRight}
-                  style={{ width: 16, height: 16, marginRight: 4 }}
+                  className="relay-w-[16px] relay-h-[16px] relay-mr-[4px]"
                   color="#889096"
                 />{' '}
                 <Text style="subtitle3">Refunded</Text>
@@ -181,7 +176,7 @@ export const TransactionsByChain: FC<TransactionsByChainProps> = ({
           transaction.txHashes.length === 0 &&
           isSolverStatusTimeout ? (
             <Flex direction="column">
-              <Skeleton css={{ height: 20 }} />
+              <Skeleton className="relay-h-[20px]" />
             </Flex>
           ) : null}
         </Flex>

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Text } from '../primitives/index.js'
 import type { AxiosError } from 'axios'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
+import { cn } from '../../utils/cn.js'
 
 interface Props {
   error?: Error | null | AxiosError
@@ -45,39 +46,21 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
     typeof renderedErrorMessage === 'string' &&
     renderedErrorMessage.length > 280
 
-  // subtle scroll style
-  const scrollStyles = shouldScrollErrorMessage
-    ? {
-        maxHeight: 'min(36vh, 220px)',
-        overflowY: 'auto',
-        px: '1',
-        scrollbarWidth: 'thin' as const,
-        scrollbarColor: 'var(--relay-colors-gray5) transparent',
-        '&::-webkit-scrollbar': {
-          width: '6px',
-          background: 'transparent'
-        },
-        '&::-webkit-scrollbar-track': {
-          background: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: 'var(--relay-colors-gray5)',
-          borderRadius: '999px'
-        }
-      }
-    : {}
-
   return (
     <Text
       style="subtitle1"
-      css={{
-        my: '4',
-        textAlign: 'center',
-        width: '100%',
-        wordBreak: 'break-word',
-        overflowWrap: 'anywhere',
-        ...scrollStyles
-      }}
+      className={cn(
+        'relay-my-4 relay-text-center relay-w-full relay-break-words',
+        '[overflow-wrap:anywhere]',
+        shouldScrollErrorMessage && [
+          'relay-max-h-[min(36vh,220px)] relay-overflow-y-auto relay-px-1',
+          '[scrollbar-width:thin]',
+          '[scrollbar-color:var(--relay-colors-gray5)_transparent]',
+          '[&::-webkit-scrollbar]:relay-w-[6px] [&::-webkit-scrollbar]:relay-bg-transparent',
+          '[&::-webkit-scrollbar-track]:relay-bg-transparent',
+          '[&::-webkit-scrollbar-thumb]:relay-bg-[var(--relay-colors-gray5)] [&::-webkit-scrollbar-thumb]:relay-rounded-full'
+        ]
+      )}
     >
       {renderedErrorMessage}
     </Text>

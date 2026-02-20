@@ -1,6 +1,7 @@
 import { TabsContent } from '../../primitives/Tabs.js'
 import { Flex, Text } from '../../primitives/index.js'
 import AmountInput from '../../common/AmountInput.js'
+import { cn } from '../../../utils/cn.js'
 import {
   formatFixedLength,
   formatNumber,
@@ -8,7 +9,6 @@ import {
 } from '../../../utils/numbers.js'
 import { PriceImpact } from '../SwapWidget/PriceImpact.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
-import { Divider } from '@relayprotocol/relay-design-system/jsx'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import PaymentMethod from '../../common/TokenSelector/PaymentMethod.js'
 import { EventNames } from '../../../constants/events.js'
@@ -273,10 +273,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
   return (
     <TabsContent value="buy">
       <SectionContainer
-        css={{
-          border: { base: 'none', md: '1px solid' },
-          borderColor: { base: 'transparent', md: 'slate.4' }
-        }}
+        className="relay-border-none md:relay-border md:relay-border-solid md:relay-border-[var(--relay-colors-slate4)]"
         id={'buy-token-section'}
         isPaymentMethodOpen={isPaymentMethodOpen}
         paymentMethodMinHeight={paymentMethodMinHeight}
@@ -288,7 +285,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           onSlippageToleranceChange={onSlippageToleranceChange}
           onAnalyticEvent={onAnalyticEvent}
         />
-        <Flex align="center" justify="between" css={{ width: '100%' }}>
+        <Flex align="center" justify="between" className="relay-w-full">
           <AmountInput
             prefixSymbol={isUsdInputMode ? '$' : undefined}
             value={
@@ -322,42 +319,23 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             onClick={() => {
               onAnalyticEvent?.(EventNames.SWAP_OUTPUT_FOCUSED)
             }}
-            css={{
-              fontWeight: '700',
-              fontSize: 32,
-              lineHeight: '32px',
-              py: 0,
-              color:
-                isFetchingQuote && tradeType === 'EXACT_INPUT'
-                  ? 'text-subtle'
-                  : 'input-color',
-              _placeholder: {
-                color:
-                  isFetchingQuote && tradeType === 'EXACT_INPUT'
-                    ? 'text-subtle'
-                    : 'input-color'
-              },
-              _disabled: {
-                cursor: 'not-allowed',
-                _placeholder: {
-                  color: 'gray10'
-                },
-                color: 'gray10'
-              }
-            }}
+            className={cn(
+              'relay-font-bold relay-text-[32px] relay-leading-[32px] relay-py-0',
+              'disabled:relay-cursor-not-allowed disabled:relay-text-[color:var(--relay-colors-gray10)] disabled:placeholder:relay-text-[color:var(--relay-colors-gray10)]',
+              isFetchingQuote && tradeType === 'EXACT_INPUT'
+                ? 'relay-text-[color:var(--relay-colors-text-subtle)] placeholder:relay-text-[color:var(--relay-colors-text-subtle)]'
+                : 'relay-text-[color:var(--relay-colors-input-color)] placeholder:relay-text-[color:var(--relay-colors-input-color)]'
+            )}
           />
         </Flex>
         <Flex
           align="center"
           justify="between"
-          css={{ gap: '3', width: '100%' }}
+          className="relay-gap-3 relay-w-full"
         >
           <Flex
             align="center"
-            css={{
-              gap: '3',
-              minHeight: 18
-            }}
+            className="relay-gap-3 relay-min-h-[18px]"
           >
             <AmountModeToggle onToggle={toggleInputMode}>
               {isUsdInputMode
@@ -392,7 +370,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               quote={quote}
             />
           </Flex>
-          <Flex css={{ marginLeft: 'auto' }}>
+          <Flex className="relay-ml-auto">
             {toToken ? (
               <BalanceDisplay
                 hideBalanceLabel={false}
@@ -410,14 +388,14 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
                 size="sm"
               />
             ) : (
-              <Flex css={{ height: 18 }} />
+              <Flex style={{ height: 18 }} />
             )}
           </Flex>
         </Flex>
 
-        <Divider color="gray4" />
+        <hr className="relay-w-full relay-border-[var(--relay-colors-gray4)] relay-border-t relay-border-solid relay-border-b-0 relay-border-x-0" />
 
-        <Flex align="center" css={{ width: '100%', gap: '2' }}>
+        <Flex align="center" className="relay-w-full relay-gap-2">
           <Text style="subtitle2" color="subtle">
             Pay with
           </Text>
@@ -459,7 +437,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           ) : null}
         </Flex>
 
-        <Flex align="center" css={{ width: '100%', gap: '32px' }}>
+        <Flex align="center" className="relay-w-full relay-gap-8">
           <PaymentMethod
             address={address}
             isValidAddress={isValidFromAddress}
@@ -492,7 +470,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
               </div>
             }
           />
-          <Flex css={{ marginLeft: 'auto' }}>
+          <Flex className="relay-ml-auto">
             <FeeBreakdownInfo
               isLoading={Boolean(isLoadingPayWith)}
               amountUsd={currencyInAmountUsd}
@@ -505,9 +483,9 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           </Flex>
         </Flex>
 
-        <Divider color="gray4" />
+        <hr className="relay-w-full relay-border-[var(--relay-colors-gray4)] relay-border-t relay-border-solid relay-border-b-0 relay-border-x-0" />
 
-        <Flex direction="column" css={{ gap: '2', width: '100%' }}>
+        <Flex direction="column" className="relay-gap-2 relay-w-full">
           <DestinationWalletSelector
             label="Send to"
             isMultiWalletEnabled={multiWalletSupportEnabled}
@@ -575,11 +553,11 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
             toChainWalletVMSupported={toChainWalletVMSupported}
             recipientLinkedWallet={recipientLinkedWallet}
             toChainVmType={toChainVmType}
-            containerCss={{ width: '100%', marginBottom: 0 }}
+            containerClassName="relay-w-full relay-mb-0"
           />
         </Flex>
 
-        <Flex css={{ width: '100%' }}>
+        <Flex className="relay-w-full">
           <SwapButton
             context="Buy"
             transactionModalOpen={transactionModalOpen}
@@ -613,7 +591,7 @@ const BuyTabContent: FC<BuyTabContentProps> = ({
           />
         </Flex>
 
-        <Flex css={{ width: '100%', marginTop: '-8px' }}>
+        <Flex className="relay-w-full" style={{ marginTop: '-8px' }}>
           <TransactionDetailsFooter
             timeEstimate={timeEstimate}
             feeBreakdown={feeBreakdown}

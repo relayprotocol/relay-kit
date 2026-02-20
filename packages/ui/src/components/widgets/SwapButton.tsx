@@ -3,6 +3,7 @@ import { Button } from '../primitives/index.js'
 import { useMounted } from '../../hooks/index.js'
 import type { ChildrenProps } from './SwapWidgetRenderer.js'
 import { EventNames } from '../../constants/events.js'
+import { cn } from '../../utils/cn.js'
 
 type SwapButtonProps = {
   transactionModalOpen: boolean
@@ -95,13 +96,11 @@ const SwapButton: FC<SwapButtonProps> = ({
 
     return (
       <Button
-        css={{
-          justifyContent: 'center',
-          width: tokenWidgetMode ? '100%' : undefined,
-          ...(!tokenWidgetMode && {
-            textTransform: 'none'
-          })
-        }}
+        className={cn(
+          'relay-justify-center',
+          tokenWidgetMode ? 'relay-w-full' : '',
+          !tokenWidgetMode && 'relay-normal-case'
+        )}
         color={showHighPriceImpactWarning ? 'error' : 'primary'}
         aria-label={context}
         cta={true}
@@ -121,13 +120,11 @@ const SwapButton: FC<SwapButtonProps> = ({
   return (
     <Button
       cta={true}
-      css={{
-        justifyContent: 'center',
-        width: tokenWidgetMode ? '100%' : undefined,
-        ...(!tokenWidgetMode && {
-          textTransform: 'none'
-        })
-      }}
+      className={cn(
+        'relay-justify-center',
+        tokenWidgetMode ? 'relay-w-full' : '',
+        !tokenWidgetMode && 'relay-normal-case'
+      )}
       aria-label="Connect wallet"
       onClick={() => {
         if (!onConnectWallet) {

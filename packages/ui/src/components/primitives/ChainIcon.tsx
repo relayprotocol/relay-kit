@@ -1,21 +1,20 @@
 import { useContext, type FC } from 'react'
-import { Flex } from './index.js'
 import useRelayClient from '../../hooks/useRelayClient.js'
-import type { Styles } from '@relayprotocol/relay-design-system/css'
 import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
+import { cn } from '../../utils/cn.js'
 
 type Props = {
   chainId?: number
   height?: number
   width?: number
-  css?: Styles
+  className?: string
   square?: boolean
   borderRadius?: number
 }
 
 const ChainIcon: FC<Props> = ({
   chainId,
-  css = {},
+  className,
   height = 14,
   width = 14,
   square = true,
@@ -37,12 +36,8 @@ const ChainIcon: FC<Props> = ({
     square && icon ? icon.replace('/icons/', '/icons/square/') : icon
 
   return iconUrl ? (
-    <Flex
-      css={{
-        display: 'flex',
-        flexShrink: 0,
-        ...css
-      }}
+    <div
+      className={cn('relay-flex relay-shrink-0', className)}
       style={{
         height: height,
         width: width,
@@ -55,12 +50,12 @@ const ChainIcon: FC<Props> = ({
           alt={`Chain #${chainId}`}
           style={{
             borderRadius: square ? borderRadius : 0,
-            width: css && css.width ? Number(css.width) : '100%',
-            height: css && css.height ? Number(css.height) : '100%'
+            width: '100%',
+            height: '100%'
           }}
         />
       ) : null}
-    </Flex>
+    </div>
   ) : null
 }
 

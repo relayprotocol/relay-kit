@@ -45,23 +45,16 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
   const showDivider = timeEstimate && timeEstimate.time !== 0 && hasNetworkCost
 
   return (
-    <Flex justify="center" align="center" css={{ gap: '6px', width: '100%' }}>
+    <Flex justify="center" align="center" className="relay-gap-[6px] relay-w-full">
       {timeEstimate && timeEstimate.time !== 0 ? (
         <>
-          <Flex align="center" css={{ gap: '2' }}>
+          <Flex align="center" className="relay-gap-2">
             <Box
-              css={{
-                color: clockColor,
-                width: 14,
-                height: 14,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+              className={`relay-w-[14px] relay-h-[14px] relay-flex relay-items-center relay-justify-center relay-text-[color:var(--relay-colors-${clockColor})]`}
             >
               <FontAwesomeIcon icon={faClock} />
             </Box>
-            <Text style="subtitle3" css={{ lineHeight: 'normal' }}>
+            <Text style="subtitle3" className="relay-leading-normal">
               {timeLabel}
             </Text>
           </Flex>
@@ -69,7 +62,7 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
             <Flex
               justify="center"
               align="center"
-              css={{ color: 'gray6', height: 4 }}
+              className="relay-text-[color:var(--relay-colors-gray6)] relay-h-[4px]"
             >
               &#8226;
             </Flex>
@@ -77,20 +70,11 @@ const TransactionDetailsFooter: FC<TransactionDetailsFooterProps> = ({
         </>
       ) : null}
       {hasNetworkCost ? (
-        <Flex align="center" css={{ gap: '2' }}>
-          <Box
-            css={{
-              color: 'gray9',
-              width: 14,
-              height: 14,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
+        <Flex align="center" className="relay-gap-2">
+          <Box className="relay-text-[color:var(--relay-colors-gray9)] relay-w-[14px] relay-h-[14px] relay-flex relay-items-center relay-justify-center">
             <FontAwesomeIcon icon={faGasPump} />
           </Box>
-          <Text style="subtitle3" css={{ lineHeight: 'normal' }}>
+          <Text style="subtitle3" className="relay-leading-normal">
             {networkCostLabel}
           </Text>
         </Flex>

@@ -425,14 +425,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         }
         onOpenChange(open)
       }}
-      css={{
-        overflow: 'hidden',
-        p: '4',
-        maxWidth: '412px !important',
-        '@media(max-width: 520px)': {
-          maxWidth: 'unset !important'
-        }
-      }}
+      className="relay-overflow-hidden relay-p-4 !relay-max-w-[412px] max-[520px]:!relay-max-w-[unset]"
     >
       {step === OnrampStep.Confirming ? (
         <OnrampConfirmingStep
