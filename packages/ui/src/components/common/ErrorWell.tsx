@@ -41,6 +41,32 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
     return error?.message
   }, [error?.message, hasTxHashes])
 
+  const shouldScrollErrorMessage =
+    typeof renderedErrorMessage === 'string' &&
+    renderedErrorMessage.length > 280
+
+  // subtle scroll style
+  const scrollStyles = shouldScrollErrorMessage
+    ? {
+        maxHeight: 'min(36vh, 220px)',
+        overflowY: 'auto',
+        px: '1',
+        scrollbarWidth: 'thin' as const,
+        scrollbarColor: 'var(--relay-colors-gray5) transparent',
+        '&::-webkit-scrollbar': {
+          width: '6px',
+          background: 'transparent'
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'var(--relay-colors-gray5)',
+          borderRadius: '999px'
+        }
+      }
+    : {}
+
   return (
     <Text
       style="subtitle1"
@@ -48,7 +74,9 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
         my: '4',
         textAlign: 'center',
         width: '100%',
-        wordBreak: 'break-word'
+        wordBreak: 'break-word',
+        overflowWrap: 'anywhere',
+        ...scrollStyles
       }}
     >
       {renderedErrorMessage}
