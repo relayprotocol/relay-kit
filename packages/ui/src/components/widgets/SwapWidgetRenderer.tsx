@@ -39,7 +39,8 @@ import type { LinkedWallet } from '../../types/index.js'
 import {
   addressWithFallback,
   isValidAddress,
-  findSupportedWallet
+  findSupportedWallet,
+  isChainVmTypeSupported
 } from '../../utils/address.js'
 import { adaptViemWallet } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
@@ -252,11 +253,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   )
 
   const fromChainWalletVMSupported =
-    !fromChain?.vmType ||
-    supportedWalletVMs.includes(fromChain?.vmType) ||
+    isChainVmTypeSupported(fromChain?.vmType, supportedWalletVMs) ||
     fromChain?.id === 1337
   const toChainWalletVMSupported =
-    !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType)
+    isChainVmTypeSupported(toChain?.vmType, supportedWalletVMs)
 
   const defaultRecipient = useMemo(() => {
     const _linkedWallet = linkedWallets?.find(

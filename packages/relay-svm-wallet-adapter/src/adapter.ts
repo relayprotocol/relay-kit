@@ -15,6 +15,20 @@ import {
   type TransactionStepItem
 } from '@relayprotocol/relay-sdk'
 
+const BASE58_SIGNATURE_REGEX = /^[1-9A-HJ-NP-Za-km-z]+$/
+
+const assertBase58TransactionSignature = (
+  signature: TransactionSignature | undefined
+) => {
+  if (
+    typeof signature !== 'string' ||
+    signature.length === 0 ||
+    !BASE58_SIGNATURE_REGEX.test(signature)
+  ) {
+    throw new Error('Invalid Solana signature: expected base58.')
+  }
+}
+
 /**
  * Adapts a Solana wallet to work with the Relay SDK
  * @param walletAddress - The public key address of the Solana wallet
@@ -93,17 +107,20 @@ export const adaptSolanaWallet = (
         instructions,
         stepItem.data.instructions
       )
+      const transactionSignature = signature?.signature
+      assertBase58TransactionSignature(transactionSignature)
 
       client.log(
         ['Transaction Signature obtained', signature],
         LogLevel.Verbose
       )
 
-      return signature.signature
+      return transactionSignature
     },
     handleConfirmTransactionStep: async (txHash) => {
       // Solana doesn't have a concept of replaced transactions
       // So we don't need to handle onReplaced and onCancelled
+      assertBase58TransactionSignature(txHash)
 
       const { blockhash, lastValidBlockHeight } =
         await connection.getLatestBlockhash('confirmed')

@@ -30,7 +30,7 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
       !hasTxHashes ||
       error?.message?.includes('Deposit transaction with hash')
     ) {
-      return 'Oops, something went wrong while initiating the swap. Your request was not submitted. Please try again.'
+      return 'Oops, something went wrong while initiating the swap. Your request was not submitted. Please try again, and make sure your wallet is unlocked.'
     } else if (error?.message?.includes('solver status check')) {
       return 'This transaction is taking longer than usual to process. Please visit the transaction page for more details.'
     } else if (error?.message?.includes('OUT_OF_ENERGY')) {
@@ -41,6 +41,32 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
     return error?.message
   }, [error?.message, hasTxHashes])
 
+  const shouldScrollErrorMessage =
+    typeof renderedErrorMessage === 'string' &&
+    renderedErrorMessage.length > 280
+
+  // subtle scroll style
+  const scrollStyles = shouldScrollErrorMessage
+    ? {
+        maxHeight: 'min(36vh, 220px)',
+        overflowY: 'auto',
+        px: '1',
+        scrollbarWidth: 'thin' as const,
+        scrollbarColor: 'var(--relay-colors-gray5) transparent',
+        '&::-webkit-scrollbar': {
+          width: '6px',
+          background: 'transparent'
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'transparent'
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'var(--relay-colors-gray5)',
+          borderRadius: '999px'
+        }
+      }
+    : {}
+
   return (
     <Text
       style="subtitle1"
@@ -48,7 +74,9 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
         my: '4',
         textAlign: 'center',
         width: '100%',
-        wordBreak: 'break-word'
+        wordBreak: 'break-word',
+        overflowWrap: 'anywhere',
+        ...scrollStyles
       }}
     >
       {renderedErrorMessage}

@@ -1,5 +1,18 @@
 # @reservoir0x/relay-svm-wallet-adapter
 
+## 17.0.2
+
+### Patch Changes
+
+- 20db8bc: Add checks for base58 signature
+
+## 17.0.1
+
+### Patch Changes
+
+- Updated dependencies [f851b3c]
+  - @relayprotocol/relay-sdk@5.1.1
+
 ## 17.0.0
 
 ### Patch Changes
