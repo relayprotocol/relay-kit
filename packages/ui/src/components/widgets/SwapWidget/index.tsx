@@ -35,7 +35,10 @@ import { faArrowDown, faClipboard } from '@fortawesome/free-solid-svg-icons'
 import { TokenTrigger } from '../../common/TokenSelector/triggers/TokenTrigger.js'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
-import { findSupportedWallet } from '../../../utils/address.js'
+import {
+  findSupportedWallet,
+  isChainVmTypeSupported
+} from '../../../utils/address.js'
 import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
 import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
 import { findBridgableToken } from '../../../utils/tokens.js'
@@ -317,7 +320,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
           )
           if (
             newFromChain?.vmType &&
-            !supportedWalletVMs.includes(newFromChain?.vmType)
+            !isChainVmTypeSupported(newFromChain?.vmType, supportedWalletVMs)
           ) {
             setTradeType('EXACT_INPUT')
 
