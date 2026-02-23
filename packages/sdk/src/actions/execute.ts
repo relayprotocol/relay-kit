@@ -124,12 +124,12 @@ export function execute(data: ExecuteActionParameters): Promise<{
       )
         .then((data) => {
           resolve({ data, abortController })
-          void hydrateTransactionMetadataAndNotify({
+          enrichExecutionWithRequestMetadata({
             data,
             abortController,
             onProgress,
             onTransactionReceived
-          })
+          }).catch(() => undefined)
         })
         .catch(reject)
     })
@@ -146,7 +146,7 @@ export function execute(data: ExecuteActionParameters): Promise<{
   }
 }
 
-async function hydrateTransactionMetadataAndNotify({
+async function enrichExecutionWithRequestMetadata({
   data,
   abortController,
   onProgress,
@@ -163,7 +163,7 @@ async function hydrateTransactionMetadataAndNotify({
       return
     }
 
-    const transaction = await pollRequestById(requestId)
+    const transaction = await pollRequestMetadataById(requestId)
     if (!transaction) {
       return
     }
@@ -219,7 +219,7 @@ async function hydrateTransactionMetadataAndNotify({
   }
 }
 
-async function pollRequestById(
+async function pollRequestMetadataById(
   requestId: string
 ): Promise<RelayTransaction | undefined> {
   const client = getClient()
