@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.0
+
+### Minor Changes
+
+- 144f7a4: Add executeGaslessBatch action to support 7702 gasless flow
+
 ## 5.1.1
 
 ### Patch Changes
