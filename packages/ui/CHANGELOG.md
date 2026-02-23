@@ -1,5 +1,21 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.1.4
+
+### Patch Changes
+
+- 1ae288f: Make progress modal error scrollable
+- 3c9e0a1: Clearer error for locked wallet
+- Updated dependencies [144f7a4]
+  - @relayprotocol/relay-sdk@5.2.0
+  - @relayprotocol/relay-kit-hooks@3.0.9
+
+## 7.1.3
+
+### Patch Changes
+
+- 5b4830b: Enable multi wallet dropdown for hyperliquid
+
 ## 7.1.2
 
 ### Patch Changes
