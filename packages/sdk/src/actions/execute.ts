@@ -35,7 +35,7 @@ export type ExecuteActionParameters = {
  * @param data.depositGasLimit A gas limit to use in base units (wei, etc)
  * @param data.wallet Wallet object that adheres to the AdaptedWakket interface or a viem WalletClient
  * @param data.onProgress Callback to update UI state as execution progresses
- * @param data.onTransactionReceived Callback fired when /requests metadata is available
+ * @param data.onTransactionReceived Callback fired asynchronously when /requests metadata is available
  * @param abortController Optional AbortController to cancel the execution
  */
 export function execute(data: ExecuteActionParameters): Promise<{

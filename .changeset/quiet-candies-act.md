@@ -2,4 +2,4 @@
 '@relayprotocol/relay-sdk': patch
 ---
 
-Fix execute() to return settled currencyOut; add onTransactionReceived
+Add onTransactionReceived to execute() for settled request metadata
