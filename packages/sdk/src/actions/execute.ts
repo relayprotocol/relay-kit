@@ -168,16 +168,16 @@ async function enrichExecutionWithRequestMetadata({
       return
     }
 
-    onTransactionReceived?.(transaction)
-
     const metadata = transaction.data?.metadata
-    const existingCurrencyOut = data.details?.currencyOut
     const nextCurrencyOut = metadata?.currencyOut
 
     if (!nextCurrencyOut) {
       return
     }
 
+    onTransactionReceived?.(transaction)
+
+    const existingCurrencyOut = data.details?.currencyOut
     const amountChanged =
       nextCurrencyOut.amount !== existingCurrencyOut?.amount ||
       nextCurrencyOut.amountFormatted !== existingCurrencyOut?.amountFormatted ||
@@ -223,6 +223,10 @@ async function pollRequestMetadataById(
   requestId: string
 ): Promise<RelayTransaction | undefined> {
   const client = getClient()
+  const pollingInterval = client.pollingInterval ?? 5000
+  const maxAttempts =
+    client.maxPollingAttemptsBeforeTimeout ??
+    (2.5 * 60 * 1000) / pollingInterval
   const requestConfig = {
     url: `${client.baseApiUrl}/requests/v2`,
     method: 'get' as const,
@@ -239,8 +243,6 @@ async function pollRequestMetadataById(
     }
   }
 
-  const maxAttempts = 5
-  const pollingInterval = 1000
   let transaction: RelayTransaction | undefined = undefined
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -260,5 +262,5 @@ async function pollRequestMetadataById(
     }
   }
 
-  return transaction
+  return transaction?.data?.metadata?.currencyOut ? transaction : undefined
 }

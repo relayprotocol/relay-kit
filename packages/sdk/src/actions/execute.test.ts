@@ -178,7 +178,9 @@ describe('Should test the execute action.', () => {
 
   it('Should emit settled metadata through onProgress and onTransactionReceived', async () => {
     client = createClient({
-      baseApiUrl: MAINNET_RELAY_API
+      baseApiUrl: MAINNET_RELAY_API,
+      pollingInterval: 1,
+      maxPollingAttemptsBeforeTimeout: 3
     })
 
     const onProgress = vi.fn()
@@ -204,19 +206,91 @@ describe('Should test the execute action.', () => {
       }
     )
 
+    const axiosRequestSpy = vi
+      .spyOn(axios, 'request')
+      .mockResolvedValueOnce({
+        data: {
+          requests: [
+            {
+              id: '0xabc',
+              data: {
+                metadata: {}
+              }
+            }
+          ]
+        }
+      } as any)
+      .mockResolvedValueOnce({
+        data: {
+          requests: [
+            {
+              id: '0xabc',
+              data: {
+                metadata: {}
+              }
+            }
+          ]
+        }
+      } as any)
+      .mockResolvedValueOnce({
+        data: {
+          requests: [
+            {
+              id: '0xabc',
+              data: {
+                metadata: {
+                  currencyOut: {
+                    ...quote.details?.currencyOut,
+                    amount: settledAmount,
+                    amountFormatted: '0.001002'
+                  }
+                }
+              }
+            }
+          ]
+        }
+      } as any)
+
+    await client?.actions?.execute({
+      wallet,
+      quote,
+      onProgress,
+      onTransactionReceived
+    })
+
+    await vi.waitFor(() => {
+      expect(onTransactionReceived).toHaveBeenCalledTimes(1)
+    })
+
+    expect(onTransactionReceived).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: '0xabc'
+      })
+    )
+    expect(axiosRequestSpy).toHaveBeenCalledTimes(3)
+    expect(onProgress).toHaveBeenCalled()
+    expect(onProgress.mock.calls.at(-1)?.[0]?.details?.currencyOut?.amount).toBe(
+      settledAmount
+    )
+
+    axiosRequestSpy.mockRestore()
+  })
+
+  it('Should not emit onTransactionReceived when settled metadata is unavailable', async () => {
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      pollingInterval: 1,
+      maxPollingAttemptsBeforeTimeout: 1
+    })
+
+    const onTransactionReceived = vi.fn()
     const axiosRequestSpy = vi.spyOn(axios, 'request').mockResolvedValue({
       data: {
         requests: [
           {
             id: '0xabc',
             data: {
-              metadata: {
-                currencyOut: {
-                  ...quote.details?.currencyOut,
-                  amount: settledAmount,
-                  amountFormatted: '0.001002'
-                }
-              }
+              metadata: {}
             }
           }
         ]
@@ -226,21 +300,13 @@ describe('Should test the execute action.', () => {
     await client?.actions?.execute({
       wallet,
       quote,
-      onProgress,
       onTransactionReceived
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(onTransactionReceived).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: '0xabc'
-      })
-    )
-    expect(onProgress).toHaveBeenCalled()
-    expect(onProgress.mock.calls.at(-1)?.[0]?.details?.currencyOut?.amount).toBe(
-      settledAmount
-    )
+    await vi.waitFor(() => {
+      expect(axiosRequestSpy).toHaveBeenCalledTimes(1)
+    })
+    expect(onTransactionReceived).not.toHaveBeenCalled()
 
     axiosRequestSpy.mockRestore()
   })
