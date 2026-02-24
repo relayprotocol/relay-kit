@@ -694,7 +694,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       error_message: errorMessage,
       parameters: quoteParameters,
       quote_request_id: quoteRequestId,
-      status_code: e.response.status ?? e.status ?? ''
+      status_code: e?.response?.status ?? e?.status ?? ''
     })
   }
 
@@ -981,11 +981,11 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
       setWaitingForSteps(true)
 
       if (!executeSwap) {
-        throw 'Missing a quote'
+        throw new Error('Missing a quote')
       }
 
       if (!wallet && !walletClient.data) {
-        throw 'Missing a wallet'
+        throw new Error('Missing a wallet')
       }
 
       setSteps(quote?.steps as Execute['steps'])
