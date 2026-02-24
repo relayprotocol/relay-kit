@@ -622,7 +622,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         error_message: errorMessage,
         parameters: quoteParameters,
         quote_request_id: quoteRequestId,
-        status_code: e.response.status ?? e.status ?? ''
+        status_code: e?.response?.status ?? e?.status ?? ''
       })
     },
     undefined,
@@ -888,11 +888,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       setWaitingForSteps(true)
 
       if (!executeSwap) {
-        throw 'Missing a quote'
+        throw new Error('Missing a quote')
       }
 
       if (!wallet && !walletClient.data) {
-        throw 'Missing a wallet'
+        throw new Error('Missing a wallet')
       }
 
       setSteps(quote?.steps as Execute['steps'])
