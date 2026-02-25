@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.1
+
+### Patch Changes
+
+- 7b351ab: Fix async errors not caught
+
 ## 5.2.0
 
 ### Minor Changes
