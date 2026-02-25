@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.10
+
+### Patch Changes
+
+- 2f0d6de: Fix minor errors
+- 7b351ab: Fix async errors not caught
+- Updated dependencies [7b351ab]
+  - @relayprotocol/relay-sdk@5.2.1
+
 ## 3.0.9
 
 ### Patch Changes
