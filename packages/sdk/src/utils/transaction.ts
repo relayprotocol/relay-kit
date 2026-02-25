@@ -574,6 +574,12 @@ const postSameChainTransactionToSolver = async ({
             LogLevel.Verbose
           )
         })
+        .catch((e) => {
+          getClient()?.log(
+            ['Failed to post same chain transaction to solver', e],
+            LogLevel.Warn
+          )
+        })
     } catch (e) {
       getClient()?.log(
         ['Failed to post same chain transaction to solver', e],
@@ -626,6 +632,12 @@ const postTransactionToSolver = async ({
           getClient()?.log(
             ['Transaction notified to the solver'],
             LogLevel.Verbose
+          )
+        })
+        .catch((e) => {
+          getClient()?.log(
+            ['Failed to post transaction to solver', e],
+            LogLevel.Warn
           )
         })
     } catch (e) {
