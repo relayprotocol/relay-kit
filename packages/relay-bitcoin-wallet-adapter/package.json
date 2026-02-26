@@ -52,7 +52,7 @@
     "dependencies": {
         "@types/node": "^22.5.4",
         "axios": "^1.6.5",
-        "bitcoinjs-lib": "7.0.0-rc.0"
+        "bitcoinjs-lib": "7.0.1"
     },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
