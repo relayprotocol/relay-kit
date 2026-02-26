@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.11
+
+### Patch Changes
+
+- ad4f08c: Add default stale time to useTokenPrice hook
+
 ## 3.0.10
 
 ### Patch Changes
