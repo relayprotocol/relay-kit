@@ -1,5 +1,11 @@
 # @reservoir0x/relay-bitcoin-wallet-adapter
 
+## 17.0.2
+
+### Patch Changes
+
+- daaae5b: bump bitcoinjs-lib dep version
+
 ## 17.0.1
 
 ### Patch Changes
