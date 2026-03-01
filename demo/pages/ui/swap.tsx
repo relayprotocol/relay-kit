@@ -1,6 +1,6 @@
 import { NextPage, GetServerSideProps } from 'next'
 import {
-  SlippageToleranceConfig,
+  AdvancedSettings,
   SwapWidget
 } from '@relayprotocol/relay-kit-ui'
 import { Layout } from 'components/Layout'
@@ -87,6 +87,7 @@ const SwapWidgetPage: NextPage = () => {
   const [slippageTolerance, setSlippageTolerance] = useState<
     string | undefined
   >(undefined)
+  const [excludedSwapSources, setExcludedSwapSources] = useState<string[]>([])
 
   const linkedWallets = useMemo(() => {
     const _wallets = userWallets.reduce((linkedWallets, wallet) => {
@@ -194,8 +195,7 @@ const SwapWidgetPage: NextPage = () => {
     adaptWallet()
   }, [primaryWallet, primaryWallet?.address])
 
-  const [slippageToleranceConfigOpen, setSlippageToleranceConfigOpen] =
-    useState(false)
+  const [advancedSettingsOpen, setAdvancedSettingsOpen] = useState(false)
 
   return (
     <Layout
@@ -228,14 +228,15 @@ const SwapWidgetPage: NextPage = () => {
           <div
             style={{ width: '100%', display: 'flex', justifyContent: 'end' }}
           >
-            <SlippageToleranceConfig
+            <AdvancedSettings
               currentSlippageTolerance={slippageTolerance}
               setSlippageTolerance={setSlippageTolerance}
               onAnalyticEvent={(eventName, data) => {
                 console.log('Analytic Event', eventName, data)
               }}
-              open={slippageToleranceConfigOpen}
-              setOpen={setSlippageToleranceConfigOpen}
+              onExcludedSwapSourcesChange={setExcludedSwapSources}
+              open={advancedSettingsOpen}
+              setOpen={setAdvancedSettingsOpen}
             />
           </div>
           <SwapWidget
@@ -368,8 +369,9 @@ const SwapWidgetPage: NextPage = () => {
               console.log('onSwapSuccess Triggered', data)
             }}
             slippageTolerance={slippageTolerance}
+            excludedSwapSources={excludedSwapSources}
             onOpenSlippageConfig={() => {
-              setSlippageToleranceConfigOpen(true)
+              setAdvancedSettingsOpen(true)
             }}
           />
         </div>

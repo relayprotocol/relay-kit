@@ -29,8 +29,13 @@ export {
   default as useTrendingCurrencies,
   queryTrendingCurrencies
 } from './hooks/useTrendingCurrencies.js'
+export {
+  default as useSwapSources,
+  querySwapSources
+} from './hooks/useSwapSources.js'
 
 //types
 export type { CurrencyList, Currency } from './hooks/useTokenList.js'
 export type { QuoteResponse } from './hooks/useQuote.js'
 export type { DepositAddressStatusResponse } from './hooks/useDepositAddressStatus.js'
+export type { SwapSourcesResponse } from './hooks/useSwapSources.js'

@@ -16,7 +16,11 @@ export type { SwapWidgetProps } from './components/widgets/SwapWidget/index.js'
 //components
 export { default as TokenSelector } from './components/common/TokenSelector/TokenSelector.js'
 export { SlippageToleranceConfig } from './components/common/SlippageToleranceConfig.js'
+export { AdvancedSettings } from './components/common/AdvancedSettings.js'
 export { DepositAddressModal } from './components/common/TransactionModal/DepositAddressModal.js'
+
+//utils
+export { getExcludedSwapSources, getCustomRpcOverrides } from './utils/advancedSettings.js'
 
 //types
 export type { LinkedWallet, Token } from './types/index.js'

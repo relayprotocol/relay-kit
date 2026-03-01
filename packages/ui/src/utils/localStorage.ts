@@ -13,6 +13,8 @@ interface RelayUiKitData {
   acceptedUnverifiedTokens: string[]
   recentCustomAddresses?: string[]
   starredChainIds?: number[]
+  excludedSwapSources?: string[]
+  customRpcOverrides?: Record<number, string>
   genericCache?: { [key: string]: CacheEntry }
 }
 

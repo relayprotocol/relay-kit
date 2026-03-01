@@ -60,6 +60,7 @@ type BaseSwapWidgetProps = {
   defaultAmount?: string
   defaultTradeType?: 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
   slippageTolerance?: string
+  excludedSwapSources?: string[]
   lockToToken?: boolean
   lockFromToken?: boolean
   lockChainId?: number
@@ -108,6 +109,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   defaultAmount,
   defaultTradeType,
   slippageTolerance,
+  excludedSwapSources,
   onOpenSlippageConfig,
   lockToToken = false,
   lockFromToken = false,
@@ -190,6 +192,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
       fromToken={fromToken}
       setFromToken={setFromToken}
       slippageTolerance={slippageTolerance}
+      excludedSwapSources={excludedSwapSources}
       wallet={wallet}
       linkedWallets={linkedWallets}
       multiWalletSupportEnabled={multiWalletSupportEnabled}

@@ -65,6 +65,7 @@ type TokenWidgetRendererProps = {
   defaultAmount?: string
   defaultTradeType?: TradeType
   slippageTolerance?: string
+  excludedSwapSources?: string[]
   context: 'Swap' | 'Deposit' | 'Withdraw'
   wallet?: AdaptedWallet
   linkedWallets?: LinkedWallet[]
@@ -180,6 +181,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
   defaultAmount,
   defaultTradeType,
   slippageTolerance,
+  excludedSwapSources,
   context,
   wallet,
   multiWalletSupportEnabled = false,
@@ -602,6 +604,7 @@ const TokenWidgetRenderer: FC<TokenWidgetRendererProps> = ({
             !fromChainWalletVMSupported || fromToken?.chainId === 1337,
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
           slippageTolerance: slippageTolerance,
+          ...(excludedSwapSources && excludedSwapSources.length > 0 && { excludedSwapSources }),
           ...(linkedWallet?.vmType === 'bvm' && wallet?.metadata?.publicKey
             ? {
                 additionalData: {
