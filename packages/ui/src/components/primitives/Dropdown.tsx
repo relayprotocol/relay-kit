@@ -48,8 +48,8 @@ const DropdownMenuItem = forwardRef<
         'relay-bg-[var(--relay-colors-modal-background)]',
         'relay-p-2 relay-outline-none relay-cursor-pointer',
         'relay-transition-[background-color] relay-duration-150 relay-ease-linear',
-        'hover:relay-bg-[var(--relay-colors-gray-10)]/10',
-        'focus:relay-bg-[var(--relay-colors-gray-10)]/10',
+        'hover:relay-bg-[var(--relay-colors-gray3)]',
+        'focus:relay-bg-[var(--relay-colors-gray3)]',
         className
       )}
     >

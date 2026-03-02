@@ -121,7 +121,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
   const shouldShowEns = isEnsCapableVmType && Boolean(displayName)
 
   const dropdownItemClassName =
-    'relay-rounded-lg relay-gap-2 relay-cursor-pointer relay-p-2 relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear hover:relay-brightness-[0.98] relay-shrink-0 relay-content-center relay-w-full'
+    'relay-rounded-lg relay-gap-2 relay-cursor-pointer relay-p-2 relay-transition-[background-color] relay-duration-150 relay-ease-linear hover:relay-bg-[var(--relay-colors-gray3)] relay-shrink-0 relay-content-center relay-w-full'
 
   return (
     <Dropdown
@@ -174,7 +174,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
               <span style={{
                 color: !selectedWallet && selectedWalletAddress
                   ? 'var(--relay-colors-amber11)'
-                  : 'var(--relay-colors-primary9)'
+                  : 'var(--relay-colors-primary11)'
               }}>
                 {isSupportedSelectedWallet &&
                 selectedWalletAddress &&
@@ -192,7 +192,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
               style={{
                 color: !selectedWallet && selectedWalletAddress
                   ? 'var(--relay-colors-amber11)'
-                  : 'var(--relay-colors-primary9)'
+                  : 'var(--relay-colors-primary11)'
               }}
             >
               <FontAwesomeIcon icon={faChevronDown} width={14} height={14} />

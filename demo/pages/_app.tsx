@@ -3,7 +3,7 @@ import '../fonts.css'
 import '../global.css'
 
 import type { AppProps, AppContext } from 'next/app'
-import React, { ReactNode, FC, useState, useEffect } from 'react'
+import React, { ReactNode, FC, useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig, http, WagmiProvider } from 'wagmi'
 import { Chain, mainnet, optimism, base, zora } from 'wagmi/chains'
@@ -33,6 +33,7 @@ import { EclipseWalletConnectors } from '@dynamic-labs/eclipse'
 import { TronWalletConnectors } from '@dynamic-labs/tron'
 import { AbstractEvmWalletConnectors } from '@dynamic-labs-connectors/abstract-global-wallet-evm'
 import { MoonPayProvider } from 'context/MoonpayProvider'
+import { CustomizeProvider, useCustomize } from 'context/customizeContext'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
 import { RelayKitProviderWrapper } from 'components/providers/RelayKitProviderWrapper'
 import { Barlow, Chivo, Inter } from 'next/font/google'
@@ -73,14 +74,14 @@ const queryClient = new QueryClient()
 
 const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   const { walletFilter, setWalletFilter } = useWalletFilter()
+  const { relayApi, setRelayApi } = useCustomize()
   const router = useRouter()
-  const [relayApi, setRelayApi] = useState(MAINNET_RELAY_API)
 
   useEffect(() => {
     const isTestnet = router.query.api === 'testnets'
     const newApi = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
     if (relayApi !== newApi) {
-      setRelayApi(isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API)
+      setRelayApi(newApi)
     }
   }, [router.query.api])
 
@@ -130,7 +131,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   }, [])
 
   return (
-    <div>
+    <div style={{ fontFamily: 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif' }}>
       <ThemeProvider
         attribute="class"
         defaultTheme="light"
@@ -198,11 +199,13 @@ type MyAppProps = AppProps & {
 function MyApp({ Component, pageProps }: MyAppProps) {
   return (
     <WalletFilterProvider>
-      <QueryClientProvider client={queryClient}>
-        <AppWrapper dynamicChains={pageProps.dynamicChains}>
-          <Component {...pageProps} />
-        </AppWrapper>
-      </QueryClientProvider>
+      <CustomizeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AppWrapper dynamicChains={pageProps.dynamicChains}>
+            <Component {...pageProps} />
+          </AppWrapper>
+        </QueryClientProvider>
+      </CustomizeProvider>
     </WalletFilterProvider>
   )
 }

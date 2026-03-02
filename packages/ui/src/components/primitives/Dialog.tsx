@@ -34,7 +34,7 @@ const Overlay = forwardRef<
 
 const contentBase = [
   'relay-bg-[var(--relay-colors-modal-background)]',
-  'relay-rounded-modal',
+  'relay-rounded-[var(--relay-radii-modal-border-radius)]',
   'relay-border-modal',
   'relay-shadow-xl',
   'relay-fixed',

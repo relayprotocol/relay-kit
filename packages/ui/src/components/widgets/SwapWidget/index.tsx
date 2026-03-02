@@ -1034,7 +1034,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           aria-label="Swap Tokens Direction"
                           size="none"
                           color="white"
-                          className="relay-mt-[4px] relay-text-[color:var(--relay-colors-gray9)] relay-self-center relay-justify-center relay-w-full relay-h-full relay-z-10 relay-border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay-border-solid relay-border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay-rounded-swap-btn hover:relay-text-[color:var(--relay-colors-gray11)] hover:relay-bg-[var(--relay-colors-gray-2)]"
+                          className="relay-mt-[4px] relay-text-[color:var(--relay-colors-gray9)] relay-self-center relay-justify-center relay-w-full relay-h-full relay-z-10 relay-border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay-border-solid !relay-border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay-rounded-swap-btn hover:relay-text-[color:var(--relay-colors-gray11)] hover:relay-bg-[var(--relay-colors-gray-2)]"
                           onClick={() => {
                             if (fromToken || toToken) {
                               if (isUsdInputMode) {

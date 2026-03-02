@@ -215,6 +215,7 @@
   /* --- Fonts --- */
   --relay-fonts-body: var(--font-inter), sans-serif;
   --relay-fonts-heading: var(--font-inter), sans-serif;
+  --relay-fonts-button-cta-font-style: normal;
 
   /* --- Gradients --- */
   --relay-gradients-success: linear-gradient(to right, #30A46C, #0ADF79);
@@ -223,6 +224,7 @@
   --relay-radii-widget-border-radius: 16px;
   --relay-radii-widget-card-border-radius: 12px;
   --relay-radii-modal-border-radius: 16px;
+  --relay-radii-button-border-radius: 12px;
   --relay-radii-input-border-radius: 8px;
   --relay-radii-dropdown-border-radius: 8px;
   --relay-radii-widget-swap-currency-button-border-radius: 8px;
@@ -820,6 +822,17 @@
 
   /* RGB triplet for composable opacity (dark) */
   --relay-colors-gray-rgb: 112, 112, 112;
+
+  /* Widget selector (token trigger) */
+  --relay-colors-widget-selector-background: #202425;
+  --relay-colors-widget-selector-hover-background: #2a2d2e;
+
+  /* Dark mode borders — grey instead of purple/invisible */
+  --relay-borders-modal-border: 1px solid var(--relay-colors-gray5);
+  --relay-borders-widget-border: 1px solid var(--relay-colors-gray5);
+  --relay-borders-widget-card-border: 1px solid var(--relay-colors-gray5);
+  --relay-borders-dropdown-border: 1px solid var(--relay-colors-gray5);
+  --relay-colors-widget-swap-currency-button-border-color: var(--relay-colors-gray5);
 }
 
 } /* end @layer base */
@@ -841,6 +854,9 @@
   }
   .relay-border-dropdown {
     border: var(--relay-borders-dropdown-border);
+  }
+  .relay-cta-font-style:not(:disabled) {
+    font-style: var(--relay-fonts-button-cta-font-style);
   }
 }
 

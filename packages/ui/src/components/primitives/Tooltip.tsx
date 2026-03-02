@@ -31,7 +31,7 @@ const Tooltip = ({
         >
           <Popover.Arrow className="relay-fill-[var(--relay-colors-modal-background)]" />
           <div
-            className="relay-z-[10000004] relay-shadow-md relay-rounded-[8px] relay-overflow-hidden"
+            className="relay-z-[10000004] relay-shadow-md relay-rounded-[8px] relay-overflow-hidden relay-border-modal"
           >
             <div className="relay-bg-[var(--relay-colors-modal-background)] relay-p-2">
               {content}
@@ -62,7 +62,7 @@ const Tooltip = ({
         >
           <TooltipPrimitive.Arrow className="relay-fill-[var(--relay-colors-modal-background)]" />
           <div
-            className="relay-z-[10000004] relay-shadow-md relay-rounded-[8px] relay-overflow-hidden"
+            className="relay-z-[10000004] relay-shadow-md relay-rounded-[8px] relay-overflow-hidden relay-border-modal"
           >
             <div className="relay-bg-[var(--relay-colors-modal-background)] relay-p-2">
               {content}

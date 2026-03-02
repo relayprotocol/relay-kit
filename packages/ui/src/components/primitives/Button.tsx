@@ -53,7 +53,7 @@ const buttonVariants = cva(
       },
       corners: {
         square: 'relay-rounded-none',
-        rounded: 'relay-rounded-[12px]',
+        rounded: 'relay-rounded-[var(--relay-radii-button-border-radius)]',
         pill: 'relay-rounded-full',
         circle: 'relay-rounded-full relay-items-center relay-justify-center'
       },
@@ -69,7 +69,7 @@ const buttonVariants = cva(
           '[&:not(:disabled)]:relay-font-heading',
           '[&:not(:disabled)]:relay-font-bold',
           '[&:not(:disabled)]:relay-uppercase',
-          '[&:not(:disabled)]:relay-italic'
+          'relay-cta-font-style'
         ].join(' ')
       }
     },
@@ -85,9 +85,9 @@ export type ButtonVariantProps = VariantProps<typeof buttonVariants>
 
 const Button = forwardRef<
   HTMLButtonElement,
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'ref' | 'color'> &
-    ButtonVariantProps & { className?: string }
->(({ className, children, ...props }, forwardedRef) => {
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'ref' | 'color' | 'style'> &
+    ButtonVariantProps & { className?: string; style?: React.CSSProperties }
+>(({ className, children, style, ...props }, forwardedRef) => {
   const { color, size, corners, cta, ...buttonProps } = { ...props }
   return (
     <button
@@ -97,6 +97,7 @@ const Button = forwardRef<
         buttonVariants({ color, size, corners, cta }),
         className
       )}
+      style={style}
     >
       {children}
     </button>

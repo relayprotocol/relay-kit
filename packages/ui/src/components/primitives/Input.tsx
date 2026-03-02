@@ -55,7 +55,7 @@ const Input = forwardRef<
     const { size, ellipsify, style, ...inputProps } = props
 
     return (
-      <div className={cn('relay-flex', containerClassName)} style={style}>
+      <div className={cn('relay-flex relay-w-full', containerClassName)} style={style}>
         {icon && (
           <div className="relay-flex relay-relative">
             <div
