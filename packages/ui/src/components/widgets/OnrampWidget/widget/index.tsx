@@ -400,7 +400,8 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   <Button
                     color="white"
                     corners="pill"
-                    className="relay-min-h-[28px] relay-px-3 relay-py-1"
+                    size="none"
+                    className="relay-h-[30px] relay-px-[14px] relay-py-[4px] relay-text-[14px]"
                     onClick={() => {
                       setDisplayCurrency(false)
                       setInputValue('100', false)
@@ -411,7 +412,8 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   <Button
                     color="white"
                     corners="pill"
-                    className="relay-min-h-[28px] relay-px-3 relay-py-1"
+                    size="none"
+                    className="relay-h-[30px] relay-px-[14px] relay-py-[4px] relay-text-[14px]"
                     onClick={() => {
                       setDisplayCurrency(false)
                       setInputValue('300', false)
@@ -422,7 +424,8 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   <Button
                     color="white"
                     corners="pill"
-                    className="relay-min-h-[28px] relay-px-3 relay-py-1"
+                    size="none"
+                    className="relay-h-[30px] relay-px-[14px] relay-py-[4px] relay-text-[14px]"
                     onClick={() => {
                       setDisplayCurrency(false)
                       setInputValue('1000', false)
