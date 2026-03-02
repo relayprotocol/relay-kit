@@ -82,7 +82,7 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
             href="https://docs.relay.link/references/api/api_core_concepts/fees#relay-fees"
             target="_blank"
             rel="noopener noreferrer"
-            className="relay-text-[color:var(--relay-colors-primary11)] relay-text-[12px]"
+            className="relay-text-[color:var(--relay-colors-primary11)] !relay-text-[12px]"
           >
             Learn more about the fees
           </Anchor>

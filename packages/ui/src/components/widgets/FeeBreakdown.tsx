@@ -184,16 +184,7 @@ const FeeBreakdown: FC<Props> = ({
 
   return (
     <Flex
-      className={cn(
-        'relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)]',
-        'relay-border-widget-card relay-transition-[border-radius,border-bottom]',
-        isOpen && 'relay-rounded-b-none'
-      )}
-      style={{
-        borderBottom: isOpen ? 'none' : undefined,
-        transitionDuration: '300ms, 0s',
-        transitionDelay: isOpen ? '0s, 0s' : '0s, 300ms'
-      }}
+      className="relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)] relay-border-widget-card"
       direction="column"
     >
       <Flex justify="between" align="center" className="relay-p-3 relay-pb-0">
@@ -314,7 +305,7 @@ const FeeBreakdown: FC<Props> = ({
             </Flex>
           </Flex>
         </CollapsibleTrigger>
-        <CollapsibleContent className="relay-rounded-b-[12px]">
+        <CollapsibleContent>
           <Flex
             direction="column"
             className="relay-px-3 relay-pb-3 relay-pt-0 relay-gap-2 relay-bg-[var(--relay-colors-widget-background)]"
