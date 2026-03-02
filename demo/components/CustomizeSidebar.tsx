@@ -279,7 +279,9 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
   const sidebarText = isDark ? '#e5e5e5' : '#1a1a1a'
 
   return (
-    <div className="hidden md:contents">
+    <>
+      <style>{`.customize-sidebar { display: none; } @media (min-width: 768px) { .customize-sidebar { display: contents; } }`}</style>
+      <div className="customize-sidebar">
       {/* Toggle button */}
       <button
         onClick={() => setOpen(!open)}
@@ -726,6 +728,7 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
 
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
