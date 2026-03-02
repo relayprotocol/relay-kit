@@ -26,8 +26,8 @@ const AmountInput: FC<Props> = ({
       size="large"
       className={cn(
         'ph-no-capture',
-        'relay-w-full relay-bg-none relay-bg-transparent relay-font-semibold relay-text-[32px]',
-        '!relay-px-0 relay-py-1',
+        'relay-w-full relay-bg-none relay-bg-transparent relay-font-bold relay-text-[32px]',
+        '!relay-px-0 !relay-py-0',
         'focus:relay-shadow-none focus:relay-outline-none',
         'placeholder:relay-text-[color:var(--relay-colors-gray12)]',
         inputProps.className

@@ -169,33 +169,34 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
             ) : null}
             <Text
               style="subtitle2"
-              className={cn(
-                !selectedWallet && selectedWalletAddress
-                  ? 'relay-text-[color:var(--relay-colors-amber11)]'
-                  : 'relay-text-[color:var(--relay-colors-anchor-color)]',
-                'relay-whitespace-nowrap relay-overflow-hidden relay-text-ellipsis'
-              )}
+              className="relay-whitespace-nowrap relay-overflow-hidden relay-text-ellipsis"
             >
-              {isSupportedSelectedWallet &&
-              selectedWalletAddress &&
-              selectedWalletAddress != ''
-                ? shouldShowEns
-                  ? displayName
-                  : truncateAddress(selectedWalletAddress)
-                : 'Select wallet'}
+              <span style={{
+                color: !selectedWallet && selectedWalletAddress
+                  ? 'var(--relay-colors-amber11)'
+                  : 'var(--relay-colors-primary9)'
+              }}>
+                {isSupportedSelectedWallet &&
+                selectedWalletAddress &&
+                selectedWalletAddress != ''
+                  ? shouldShowEns
+                    ? displayName
+                    : truncateAddress(selectedWalletAddress)
+                  : 'Select wallet'}
+              </span>
             </Text>
           </Flex>
           {showDropdown && (
-            <Box
-              className={cn(
-                !selectedWallet && selectedWalletAddress
-                  ? 'relay-text-[color:var(--relay-colors-amber11)]'
-                  : 'relay-text-[color:var(--relay-colors-anchor-color)]',
-                'relay-shrink-0'
-              )}
+            <div
+              className="relay-shrink-0"
+              style={{
+                color: !selectedWallet && selectedWalletAddress
+                  ? 'var(--relay-colors-amber11)'
+                  : 'var(--relay-colors-primary9)'
+              }}
             >
               <FontAwesomeIcon icon={faChevronDown} width={14} height={14} />
-            </Box>
+            </div>
           )}
         </Button>
       }

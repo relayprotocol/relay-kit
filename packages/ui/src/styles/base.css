@@ -53,6 +53,26 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes scale-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes scale-out {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+}
+
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes overlay-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 /* ===================================================================
    CSS Reset (scoped to .relay-kit-reset)
    Wrapped in @layer base so it appears BEFORE @tailwind utilities
@@ -74,11 +94,7 @@
   font-family: var(--relay-fonts-body, var(--font-fallback));
 }
 
-.relay-kit-reset *,
-.relay-kit-reset ::before,
-.relay-kit-reset ::after,
-.relay-kit-reset ::backdrop,
-.relay-kit-reset ::file-selector-button {
+.relay-kit-reset :where(*, ::before, ::after, ::backdrop, ::file-selector-button) {
   margin: 0px;
   padding: 0px;
   box-sizing: border-box;
@@ -87,64 +103,36 @@
   border-color: currentColor;
 }
 
-.relay-kit-reset img,
-.relay-kit-reset svg,
-.relay-kit-reset video,
-.relay-kit-reset canvas,
-.relay-kit-reset audio,
-.relay-kit-reset iframe,
-.relay-kit-reset embed,
-.relay-kit-reset object {
+.relay-kit-reset :where(img, svg, video, canvas, audio, iframe, embed, object) {
   display: block;
   vertical-align: middle;
 }
 
-.relay-kit-reset img,
-.relay-kit-reset video {
+.relay-kit-reset :where(img, video) {
   max-width: 100%;
   height: auto;
 }
 
-.relay-kit-reset h1,
-.relay-kit-reset h2,
-.relay-kit-reset h3,
-.relay-kit-reset h4,
-.relay-kit-reset h5,
-.relay-kit-reset h6 {
+.relay-kit-reset :where(h1, h2, h3, h4, h5, h6) {
   text-wrap: balance;
   font-size: inherit;
   font-weight: inherit;
 }
 
-.relay-kit-reset p,
-.relay-kit-reset h1,
-.relay-kit-reset h2,
-.relay-kit-reset h3,
-.relay-kit-reset h4,
-.relay-kit-reset h5,
-.relay-kit-reset h6 {
+.relay-kit-reset :where(p, h1, h2, h3, h4, h5, h6) {
   overflow-wrap: break-word;
 }
 
-.relay-kit-reset ol,
-.relay-kit-reset ul,
-.relay-kit-reset menu {
+.relay-kit-reset :where(ol, ul, menu) {
   list-style: none;
 }
 
-.relay-kit-reset button,
-.relay-kit-reset input:where([type='button'], [type='reset'], [type='submit']),
-.relay-kit-reset ::file-selector-button {
+.relay-kit-reset :where(button, input:where([type='button'], [type='reset'], [type='submit']), ::file-selector-button) {
   appearance: button;
   -webkit-appearance: button;
 }
 
-.relay-kit-reset button,
-.relay-kit-reset input,
-.relay-kit-reset optgroup,
-.relay-kit-reset select,
-.relay-kit-reset textarea,
-.relay-kit-reset ::file-selector-button {
+.relay-kit-reset :where(button, input, optgroup, select, textarea, ::file-selector-button) {
   font: inherit;
   font-feature-settings: inherit;
   font-variation-settings: inherit;
@@ -153,67 +141,61 @@
   background: transparent;
 }
 
-.relay-kit-reset ::placeholder {
+.relay-kit-reset :where(::placeholder) {
   opacity: 1;
   color: color-mix(in srgb, currentColor 50%, transparent);
 }
 
-.relay-kit-reset textarea {
+.relay-kit-reset :where(textarea) {
   resize: vertical;
 }
 
-.relay-kit-reset table {
+.relay-kit-reset :where(table) {
   text-indent: 0px;
   border-collapse: collapse;
   border-color: inherit;
 }
 
-.relay-kit-reset summary {
+.relay-kit-reset :where(summary) {
   display: list-item;
 }
 
-.relay-kit-reset a {
+.relay-kit-reset :where(a) {
   color: inherit;
   text-decoration: inherit;
 }
 
-.relay-kit-reset abbr:where([title]) {
+.relay-kit-reset :where(abbr[title]) {
   text-decoration: underline dotted;
 }
 
-.relay-kit-reset code,
-.relay-kit-reset kbd,
-.relay-kit-reset samp,
-.relay-kit-reset pre {
+.relay-kit-reset :where(code, kbd, samp, pre) {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
   font-size: 1em;
 }
 
-.relay-kit-reset ::-webkit-search-decoration,
-.relay-kit-reset ::-webkit-search-cancel-button {
+.relay-kit-reset :where(::-webkit-search-decoration, ::-webkit-search-cancel-button) {
   -webkit-appearance: none;
 }
 
-.relay-kit-reset ::-webkit-inner-spin-button,
-.relay-kit-reset ::-webkit-outer-spin-button {
+.relay-kit-reset :where(::-webkit-inner-spin-button, ::-webkit-outer-spin-button) {
   height: auto;
 }
 
-.relay-kit-reset [hidden] {
+.relay-kit-reset :where([hidden]) {
   display: none !important;
 }
 
-.relay-kit-reset img {
+.relay-kit-reset :where(img) {
   border-style: none;
 }
 
-.relay-kit-reset small {
+.relay-kit-reset :where(small) {
   font-size: 80%;
 }
 
-.relay-kit-reset b,
-.relay-kit-reset strong {
+.relay-kit-reset :where(b, strong) {
   font-weight: bolder;
 }
 
@@ -643,6 +625,14 @@
   --relay-colors-amber11: var(--relay-colors-amber-11);
   --relay-colors-amber12: var(--relay-colors-amber-12);
 
+  --relay-colors-slate4: var(--relay-colors-slate-4);
+  --relay-colors-slate5: var(--relay-colors-slate-5);
+  --relay-colors-slate6: var(--relay-colors-slate-6);
+  --relay-colors-slate10: var(--relay-colors-slate-10);
+
+  /* RGB triplet for composable opacity */
+  --relay-colors-gray-rgb: 143, 143, 143;
+
   /* ===================================================================
      Primary Scale (semantic → violet)
      =================================================================== */
@@ -717,7 +707,7 @@
 /* ===================================================================
    Dark Mode Overrides
    =================================================================== */
-:where(.dark, [data-theme="dark"]) {
+.dark, [data-theme="dark"] {
   /* Primary → violet dark */
   --relay-colors-primary1: var(--relay-colors-violet-dark-1);
   --relay-colors-primary2: var(--relay-colors-violet-dark-2);
@@ -827,6 +817,9 @@
   --relay-colors-yellow-10: var(--relay-colors-yellow-dark-10);
   --relay-colors-yellow-11: var(--relay-colors-yellow-dark-11);
   --relay-colors-yellow-12: var(--relay-colors-yellow-dark-12);
+
+  /* RGB triplet for composable opacity (dark) */
+  --relay-colors-gray-rgb: 112, 112, 112;
 }
 
 } /* end @layer base */
@@ -849,4 +842,11 @@
   .relay-border-dropdown {
     border: var(--relay-borders-dropdown-border);
   }
+}
+
+/* High-specificity inset focus ring — matches old PandaCSS :not(#\#) pattern */
+.relay-focus-inset:is(:focus-visible, [data-focus]) {
+  box-shadow: inset 0 0 0 2px var(--relay-colors-focus-color) !important;
+  outline: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
 }

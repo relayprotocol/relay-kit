@@ -123,25 +123,25 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           className="relay-hidden max-[520px]:relay-flex max-[520px]:relay-w-full max-[520px]:relay-gap-2 max-[520px]:relay-mb-2"
         >
           <Button
-            color="ghost"
-            size="small"
-            className="relay-flex-1 relay-min-h-8 relay-bg-[var(--relay-colors-gray3)] relay-font-medium relay-text-sm relay-py-[2px] relay-rounded-[6px] relay-justify-center hover:relay-bg-[var(--relay-colors-gray5)]"
+            color="grey"
+            size="none"
+            className="relay-flex-1 relay-min-h-0 relay-h-[28px] relay-font-medium relay-text-sm relay-rounded-[6px] relay-justify-center"
             onClick={() => handleInputChange('1')}
           >
             1%
           </Button>
           <Button
-            color="ghost"
-            size="small"
-            className="relay-flex-1 relay-min-h-8 relay-bg-[var(--relay-colors-gray3)] relay-font-medium relay-text-sm relay-py-[2px] relay-rounded-[6px] relay-justify-center hover:relay-bg-[var(--relay-colors-gray5)]"
+            color="grey"
+            size="none"
+            className="relay-flex-1 relay-min-h-0 relay-h-[28px] relay-font-medium relay-text-sm relay-rounded-[6px] relay-justify-center"
             onClick={() => handleInputChange('2')}
           >
             2%
           </Button>
           <Button
-            color="ghost"
-            size="small"
-            className="relay-flex-1 relay-min-h-8 relay-bg-[var(--relay-colors-gray3)] relay-font-medium relay-text-sm relay-py-[2px] relay-rounded-[6px] relay-justify-center hover:relay-bg-[var(--relay-colors-gray5)]"
+            color="grey"
+            size="none"
+            className="relay-flex-1 relay-min-h-0 relay-h-[28px] relay-font-medium relay-text-sm relay-rounded-[6px] relay-justify-center"
             onClick={() => handleInputChange('5')}
           >
             5%
@@ -341,8 +341,11 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
         aria-label="Slippage Tolerance Configuration"
         color="ghost"
         size="none"
-        className="relay-items-center relay-justify-center relay-gap-1 relay-bg-[var(--relay-colors-subtle-background-color)] relay-p-2 relay-rounded-[12px] relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-h-9 relay-px-[10px]"
-        style={{ color: tokenToColor(slippageRatingColor) ?? 'var(--relay-colors-gray9)' }}
+        className="relay-items-center relay-justify-center relay-gap-1 relay-p-2 relay-rounded-[12px] relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-h-9 relay-px-[10px]"
+        style={{
+          color: tokenToColor(slippageRatingColor) ?? 'var(--relay-colors-gray9)',
+          backgroundColor: 'var(--relay-colors-widget-card-background)'
+        }}
       >
         {open === false && displayValue && (
           <Text style="subtitle2" className={slippageRatingColor ? `relay-text-[color:var(--relay-colors-${slippageRatingColor})]` : undefined}>
@@ -368,7 +371,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   }
 
   return (
-    <div className="relay-kit-reset">
+    <div className="relay-kit-reset relay-inline-flex">
       {isMobile ? (
         <Modal
           open={open}
@@ -405,7 +408,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
           contentProps={{
             align: 'end',
             sideOffset: 5,
-            className: 'relay-max-w-[188px] relay-mx-0',
+            className: 'relay-max-w-[188px] relay-mx-0 relay-p-3',
             avoidCollisions: false,
             onCloseAutoFocus: (e) => {
               e.preventDefault()

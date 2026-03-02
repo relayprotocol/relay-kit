@@ -49,10 +49,10 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   const isMobile = variant === 'mobile'
 
   const defaultButtonClassName = cn(
-    isMobile ? 'relay-text-[14px]' : 'relay-text-[12px]',
-    'relay-font-medium relay-px-1',
-    isMobile ? 'relay-py-[6px]' : 'relay-py-1',
-    isMobile ? '' : 'relay-min-h-[23px]',
+    'relay-font-medium',
+    isMobile ? 'relay-px-[4px] relay-py-[6px]' : 'relay-p-[4px]',
+    isMobile ? 'relay-h-[26px]' : 'relay-h-[23px]',
+    'relay-min-h-0',
     'relay-leading-none',
     'relay-bg-[var(--relay-colors-widget-selector-background)]',
     'relay-border-none',
@@ -61,6 +61,8 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
     'relay-justify-center',
     'hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]'
   )
+
+  const buttonFontSize = isMobile ? '14px' : '12px'
 
   const buttonClassName = customButtonClassName || defaultButtonClassName
 
@@ -123,6 +125,8 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
           aria-label={`${percent}%`}
           className={buttonClassName}
           color="white"
+          size="none"
+          style={{ fontSize: buttonFontSize }}
           disabled={!balance || balance === 0n}
           onClick={() => {
             if (balance && balance > 0n) {
@@ -139,6 +143,8 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
         aria-label="MAX"
         className={buttonClassName}
         color="white"
+        size="none"
+        style={{ fontSize: buttonFontSize }}
         disabled={!balance || balance === 0n}
         onMouseEnter={handleMaxMouseEnter}
         onClick={handleMaxClick}

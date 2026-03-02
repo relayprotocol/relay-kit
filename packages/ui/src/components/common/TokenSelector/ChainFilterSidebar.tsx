@@ -212,11 +212,10 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                         }}
                         ref={isSameChainSelected ? activeChainRef : null}
                         className={cn(
-                          'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-relative relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear focus:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
-                          isSameChainSelected
-                            ? 'relay-bg-[var(--relay-colors-gray6)] hover:relay-bg-[var(--relay-colors-gray6)]'
-                            : 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+                          'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-relative relay-transition-colors relay-duration-150 relay-outline-none relay-rounded-lg relay-focus-inset',
+                          !isSameChainSelected && 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
                         )}
+                        style={isSameChainSelected ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined}
                       >
                         <ChainIcon
                           chainId={sameChainOption.id}
@@ -404,11 +403,13 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           onClick={onClick}
           ref={isActive ? activeChainRef : null}
           className={cn(
-            'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-relative relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear focus:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
-            isActive
-              ? 'relay-bg-[var(--relay-colors-gray6)] hover:relay-bg-[var(--relay-colors-gray6)]'
-              : 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+            'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-relative relay-transition-colors relay-duration-150 relay-outline-none relay-rounded-lg relay-focus-inset',
+            !isActive && 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
           )}
+          style={{
+            ...(isActive ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined),
+            boxShadow: 'none'
+          }}
         >
           <AllChainsLogo style={{ width: 24, height: 24 }} />
           <Text style="subtitle1" ellipsify>
@@ -445,11 +446,10 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
             }
           }}
           className={cn(
-            'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-w-full relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear focus:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
-            isActive
-              ? 'relay-bg-[var(--relay-colors-gray6)] hover:relay-bg-[var(--relay-colors-gray6)]'
-              : 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+            'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-w-full relay-transition-colors relay-duration-150 relay-outline-none relay-rounded-lg relay-focus-inset',
+            !isActive && 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
           )}
+          style={isActive ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined}
         >
           <ChainIcon chainId={chain.id} square width={24} height={24} />
           <Text style="subtitle1" ellipsify>

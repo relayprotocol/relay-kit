@@ -181,7 +181,7 @@ export const CustomAddressModal: FC<Props> = ({
         <Text style="h6">To Address</Text>
         <Flex direction="column" className="relay-gap-2 relay-relative">
           <Flex
-            className="relay-relative relay-inline-block"
+            className="relay-relative relay-w-full"
           >
             <Input
               type="text"

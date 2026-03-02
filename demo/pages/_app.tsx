@@ -35,7 +35,7 @@ import { AbstractEvmWalletConnectors } from '@dynamic-labs-connectors/abstract-g
 import { MoonPayProvider } from 'context/MoonpayProvider'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
 import { RelayKitProviderWrapper } from 'components/providers/RelayKitProviderWrapper'
-import { Barlow, Chivo } from 'next/font/google'
+import { Barlow, Chivo, Inter } from 'next/font/google'
 import { Porto } from 'porto'
 
 Porto.create()
@@ -53,6 +53,13 @@ export const barlow = Barlow({
   display: 'swap',
   subsets: ['latin'],
   variable: '--font-barlow'
+})
+
+export const inter = Inter({
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-inter'
 })
 
 type AppWrapperProps = {
@@ -114,6 +121,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
         :root {
           --font-chivo: ${chivo.style.fontFamily};
           --font-barlow: ${barlow.style.fontFamily};
+          --font-inter: ${inter.style.fontFamily};
         }
       `
 

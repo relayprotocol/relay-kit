@@ -575,7 +575,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
             }
           }}
           trigger={trigger}
-          className="relay-p-4 relay-flex relay-flex-col relay-w-full relay-max-w-full sm:relay-max-w-full"
+          className="relay-p-2 relay-flex relay-flex-col relay-w-full relay-max-w-full sm:relay-max-w-full"
           contentStyle={{
             height: isDesktop ? 'min(85vh, 600px)' : '100%',
             maxHeight: isDesktop ? 'min(85vh, 600px)' : '100%',

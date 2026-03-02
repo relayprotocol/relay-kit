@@ -19,10 +19,11 @@ const DropdownMenuContent = forwardRef<
       {...props}
       ref={forwardedRef}
       className={cn(
-        'relay-mx-4 relay-p-3 relay-rounded-[8px] relay-z-[10000002]',
+        'relay-mx-4 relay-p-0 relay-rounded-[8px] relay-z-[10000002]',
         'relay-bg-[var(--relay-colors-modal-background)]',
-        'relay-shadow-[0px_0px_50px_0px_#0000001F]',
+        'relay-shadow-lg',
         'relay-border-dropdown',
+        'relay-animate-content-fade-in',
         className
       )}
     >
@@ -45,7 +46,7 @@ const DropdownMenuItem = forwardRef<
         'relay-flex relay-items-center relay-text-[16px]',
         'relay-text-[color:var(--relay-colors-text-default)]',
         'relay-bg-[var(--relay-colors-modal-background)]',
-        'relay-p-3 relay-outline-none relay-cursor-pointer',
+        'relay-p-2 relay-outline-none relay-cursor-pointer',
         'relay-transition-[background-color] relay-duration-150 relay-ease-linear',
         'hover:relay-bg-[var(--relay-colors-gray-10)]/10',
         'focus:relay-bg-[var(--relay-colors-gray-10)]/10',

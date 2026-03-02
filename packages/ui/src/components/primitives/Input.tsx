@@ -5,10 +5,11 @@ import { cn } from '../../utils/cn.js'
 
 const inputVariants = cva(
   [
-    'relay-px-4 relay-py-3 relay-rounded-input relay-font-body relay-text-[16px]',
+    'relay-w-full relay-px-4 relay-py-3 relay-rounded-input relay-font-body relay-text-[16px]',
     'relay-text-[color:var(--relay-colors-input-color)]',
     'relay-bg-[var(--relay-colors-input-background)]',
-    'placeholder:relay-text-[color:var(--relay-colors-gray10)]',
+    'placeholder:relay-text-[color:var(--relay-colors-gray9)]',
+    'relay-transition-shadow relay-duration-200',
     'focus:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus:relay-outline-none',
     'disabled:relay-cursor-not-allowed',
     '[&::-webkit-outer-spin-button]:relay-appearance-none [&::-webkit-inner-spin-button]:relay-appearance-none'
@@ -59,7 +60,7 @@ const Input = forwardRef<
           <div className="relay-flex relay-relative">
             <div
               className={cn(
-                'relay-absolute relay-top-[12px] relay-z-0',
+                'relay-absolute relay-top-[12px] relay-z-10',
                 iconPosition === 'right'
                   ? 'relay-right-4 relay-left-[unset]'
                   : 'relay-left-4 relay-right-[unset]',

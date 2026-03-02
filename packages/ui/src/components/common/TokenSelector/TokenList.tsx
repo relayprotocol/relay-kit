@@ -52,7 +52,7 @@ export const TokenList: FC<TokenListProps> = ({
             className="relay-gap-2 relay-p-2 relay-w-full"
           >
             <Skeleton
-              className="relay-w-[40px] relay-h-[40px] relay-rounded-[50%] relay-shrink-0"
+              className="relay-w-[40px] relay-h-[40px] !relay-rounded-full relay-shrink-0"
             />
             <Flex direction="column" className="relay-gap-[2px] relay-grow">
               <Skeleton className="relay-w-[60%] relay-h-[16px]" />
@@ -82,7 +82,8 @@ export const TokenList: FC<TokenListProps> = ({
             <AccessibleListItem value={value} key={value} asChild>
               <Button
                 color="ghost"
-                className="relay-gap-2 relay-cursor-pointer relay-px-2 relay-py-2 relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay-shrink-0 relay-content-center relay-flex relay-w-full focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] [&[data-state=on]]:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] active:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus-within:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay-snap-start"
+                size="none"
+                className="relay-gap-2 relay-cursor-pointer relay-p-3 relay-h-[58px] relay-rounded-lg relay-transition-colors relay-duration-150 hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay-shrink-0 relay-content-center relay-flex relay-w-full relay-outline-none relay-snap-start relay-focus-inset"
               >
                 <ChainTokenIcon
                   chainId={token.chainId}

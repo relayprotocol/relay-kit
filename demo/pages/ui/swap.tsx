@@ -200,7 +200,10 @@ const SwapWidgetPage: NextPage = () => {
   return (
     <Layout
       styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
+        background:
+          theme === 'light'
+            ? 'linear-gradient(135deg, rgba(245, 242, 255, 1) 0%, rgba(235, 230, 255, 1) 100%)'
+            : 'linear-gradient(135deg, #1c172b 0%, #0f0d1a 100%)'
       }}
     >
       <Head>
@@ -212,17 +215,20 @@ const SwapWidgetPage: NextPage = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          paddingTop: 50,
-          paddingInline: '10px',
-          gap: 20
+          justifyContent: 'flex-start',
+          paddingTop: 40,
+          paddingBottom: 40,
+          paddingInline: '16px',
+          gap: 24
         }}
       >
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 8
+            gap: 8,
+            width: '100%',
+            maxWidth: 420
           }}
         >
           <div
@@ -379,29 +385,38 @@ const SwapWidgetPage: NextPage = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          marginTop: '40px',
-          gap: '20px'
+          gap: '16px',
+          width: '100%',
+          maxWidth: 420,
+          marginTop: '8px',
+          padding: '20px',
+          borderRadius: '12px',
+          background: theme === 'light' ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.05)',
+          backdropFilter: 'blur(8px)',
+          border: theme === 'light' ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.08)',
+          fontSize: '14px'
         }}
       >
-        <div>
-          <label>Single Chain Mode: </label>
+        <div style={{ fontWeight: 600, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.5, width: '100%' }}>
+          Config
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
           <input
             type="checkbox"
+            id="single-chain"
             checked={singleChainMode}
             onChange={(e) => setSingleChainMode(e.target.checked)}
           />
+          <label htmlFor="single-chain">Single Chain Mode</label>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-            Supported Wallet VMs:
-          </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', width: '100%' }}>
           {WALLET_VM_TYPES.map((vm) => (
             <div
               key={vm}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <label htmlFor={`vm-${vm}`}>{vm.toUpperCase()}: </label>
               <input
                 id={`vm-${vm}`}
                 type="checkbox"
@@ -416,6 +431,7 @@ const SwapWidgetPage: NextPage = () => {
                   }
                 }}
               />
+              <label htmlFor={`vm-${vm}`} style={{ fontSize: '13px' }}>{vm.toUpperCase()}</label>
             </div>
           ))}
         </div>

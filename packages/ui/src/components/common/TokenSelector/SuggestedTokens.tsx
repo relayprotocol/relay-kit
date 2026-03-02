@@ -63,7 +63,8 @@ export const SuggestedTokens: FC<SuggestedTokensProps> = ({
             }}
             color="ghost"
             size="none"
-            className="relay-flex relay-shrink-0 relay-cursor-pointer relay-outline-none relay-p-1 relay-pr-2 relay-gap-[1px] relay-items-center relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-rounded-[100px] focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] [&[data-state=on]]:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] active:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus-within:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]"
+            corners="pill"
+            className="relay-flex relay-shrink-0 relay-cursor-pointer relay-outline-none relay-py-1 relay-pl-1 relay-pr-2 relay-gap-[1px] relay-items-center relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-focus-inset"
           >
             <ChainTokenIcon
               chainId={token.chainId}

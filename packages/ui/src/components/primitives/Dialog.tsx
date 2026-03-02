@@ -20,7 +20,12 @@ const Overlay = forwardRef<
     <DialogPrimitive.Overlay
       ref={forwardedRef}
       {...props}
-      className={cn('relay-fixed relay-inset-0', className, 'relay-kit-reset')}
+      className={cn(
+        'relay-fixed relay-inset-0 relay-bg-black/50 relay-backdrop-blur-sm',
+        'relay-animate-overlay-fade-in data-[state=closed]:relay-animate-overlay-fade-out',
+        className,
+        'relay-kit-reset'
+      )}
     >
       {children}
     </DialogPrimitive.Overlay>
@@ -31,9 +36,8 @@ const contentBase = [
   'relay-bg-[var(--relay-colors-modal-background)]',
   'relay-rounded-modal',
   'relay-border-modal',
-  'relay-fixed relay-left-1/2',
-  'relay-min-w-[90vw] relay-max-w-[100vw]',
-  'sm:relay-min-w-[400px] sm:relay-max-w-[532px]',
+  'relay-shadow-xl',
+  'relay-fixed',
   'relay-max-h-[85vh] relay-overflow-y-auto',
   'focus:relay-outline-none'
 ].join(' ')
@@ -61,19 +65,26 @@ const AnimatedContent = forwardRef<
 >(({ children, className, disableAnimation = false, ...props }, forwardedRef) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
   const isMobileSlideUp = isMobile && !disableAnimation
+  const isMobileFullScreen = isMobile && disableAnimation
 
-  const mobileClasses = [
-    'relay-bottom-0 relay-top-auto relay-left-0',
-    'relay-translate-x-0',
+  const mobileSlideUpClasses = [
+    'relay-bottom-0 relay-top-auto relay-left-0 relay-w-full',
     'relay-animate-dialog-slide-up',
     'data-[state=closed]:relay-animate-dialog-slide-down',
-    'max-[520px]:relay-rounded-b-none max-[520px]:relay-w-full'
+    'max-[520px]:relay-rounded-b-none'
+  ].join(' ')
+
+  const mobileFullScreenClasses = [
+    'relay-top-0 relay-left-0 relay-w-full relay-h-full',
+    'relay-max-h-full relay-rounded-none'
   ].join(' ')
 
   const desktopClasses = [
-    'relay-top-1/2 -relay-translate-x-1/2 -relay-translate-y-1/2',
-    'relay-animate-dialog-fade-in',
-    'data-[state=closed]:relay-animate-dialog-fade-out'
+    'relay-left-1/2 relay-top-1/2',
+    'relay-min-w-[90vw] relay-max-w-[100vw]',
+    'sm:relay-min-w-[400px] sm:relay-max-w-[532px]',
+    'relay-animate-scale-in',
+    'data-[state=closed]:relay-animate-scale-out'
   ].join(' ')
 
   return (
@@ -81,7 +92,11 @@ const AnimatedContent = forwardRef<
       ref={forwardedRef}
       className={cn(
         contentBase,
-        isMobileSlideUp ? mobileClasses : desktopClasses,
+        isMobileFullScreen
+          ? mobileFullScreenClasses
+          : isMobileSlideUp
+            ? mobileSlideUpClasses
+            : desktopClasses,
         className
       )}
       {...props}

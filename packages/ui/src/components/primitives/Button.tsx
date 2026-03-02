@@ -5,11 +5,13 @@ import { cn } from '../../utils/cn.js'
 const buttonVariants = cva(
   [
     'relay-cursor-pointer relay-outline-none relay-font-body relay-font-bold relay-text-[16px]',
-    'relay-transition-[background-color] relay-duration-[250ms] relay-ease-linear',
+    'relay-transition-all relay-duration-200 relay-ease-out relay-select-none',
     'relay-gap-2 relay-inline-flex relay-items-center relay-leading-[20px]',
-    'focus-visible:relay-shadow-[0_0_0_2px_var(--relay-colors-focus-color)]',
+    'focus-visible:relay-ring-2 focus-visible:relay-ring-[var(--relay-colors-focus-color)] focus-visible:relay-ring-offset-2',
+    'active:relay-scale-[0.98]',
     'disabled:relay-cursor-not-allowed disabled:relay-bg-[var(--relay-colors-button-disabled-background)] disabled:relay-text-[color:var(--relay-colors-button-disabled-color)]',
-    'disabled:hover:relay-bg-[var(--relay-colors-button-disabled-background)] disabled:hover:relay-text-[color:var(--relay-colors-button-disabled-color)]'
+    'disabled:hover:relay-bg-[var(--relay-colors-button-disabled-background)] disabled:hover:relay-text-[color:var(--relay-colors-button-disabled-color)]',
+    'disabled:active:relay-scale-100'
   ].join(' '),
   {
     variants: {

@@ -93,7 +93,7 @@ export const ChainShortcuts: FC<ChainShortcutsProps> = ({
   }
 
   return (
-    <Flex className="relay-gap-2 relay-w-full relay-overflow-x-auto relay-py-2">
+    <Flex className="relay-gap-2 relay-w-full relay-overflow-x-auto relay-py-2 relay-px-2 relay-rounded-[12px]" style={{ backgroundColor: 'var(--relay-colors-gray3)' }}>
       {shortcutChains.map((chain) => (
         <ChainShortcutButton
           key={chain.id?.toString() ?? 'all-chains'}

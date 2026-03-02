@@ -172,8 +172,8 @@ const FeeBreakdown: FC<Props> = ({
           id={'fee-breakdown-section'}
           className="relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-border-widget-card relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)]"
         >
-          <div className="relay-mt-0 relay-mb-0 relay-px-4 relay-py-3 relay-w-full relay-flex relay-justify-center">
-            <FetchingQuoteLoader isLoading={isFetchingQuote} />
+          <div className="relay-mt-0 relay-mb-0 relay-px-3 relay-py-[12px] relay-w-full relay-flex relay-justify-center">
+            <FetchingQuoteLoader isLoading={isFetchingQuote} containerClassName="!relay-my-0 !relay-py-0" />
           </div>
         </Box>
       )
@@ -202,7 +202,8 @@ const FeeBreakdown: FC<Props> = ({
           {isAutoSlippage ? (
             <Button
               aria-label="Auto"
-              className="relay-text-[12px] relay-font-medium relay-px-1 relay-py-1 relay-min-h-[23px] relay-leading-[100%] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
+              className="relay-font-medium relay-px-[6px] relay-py-[2px] relay-min-h-0 relay-leading-[100%] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
+              style={{ fontSize: '12px' }}
               color="white"
               size="none"
               onClick={(e) => {

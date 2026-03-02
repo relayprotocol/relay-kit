@@ -3,7 +3,7 @@ import type { FC, HTMLAttributes } from 'react'
 import { cn } from '../../utils/cn.js'
 
 export const pillVariants = cva(
-  'relay-flex relay-bg-[var(--relay-colors-subtle-background-color)] relay-px-3 relay-py-1 relay-gap-1',
+  'relay-flex relay-bg-[var(--relay-colors-subtle-background-color)] relay-px-3 relay-py-1 relay-gap-1 relay-transition-colors relay-duration-150',
   {
     variants: {
       color: {

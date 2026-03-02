@@ -116,13 +116,15 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
                 onDecline?.(data?.token, data?.context)
                 onOpenChange(false)
               }}
-              color="ghost"
-              className="relay-flex-1 relay-justify-center relay-bg-[var(--relay-colors-gray3)] hover:relay-bg-[var(--relay-colors-gray4)]"
+              color="grey"
+              size="small"
+              className="relay-flex-1 relay-justify-center relay-whitespace-nowrap"
             >
               Cancel
             </Button>
             <Button
               cta={true}
+              size="small"
               onClick={() => {
                 if (data?.token) {
                   const tokenIdentifier = `${data?.token.chainId}:${data?.token.address}`
@@ -144,7 +146,7 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
                 onAcceptToken(data?.token, data?.context)
               }}
               color="warning"
-              className="relay-flex-1 relay-justify-center relay-px-4"
+              className="relay-flex-1 relay-justify-center relay-px-4 relay-whitespace-nowrap"
             >
               I Understand
             </Button>

@@ -87,6 +87,22 @@ export default {
         'content-fade-in': {
           from: { opacity: '0', transform: 'translateY(4px)' },
           to: { opacity: '1', transform: 'translateY(0)' }
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'translate(-50%, -50%) scale(0.95)' },
+          to: { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' }
+        },
+        'scale-out': {
+          from: { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' },
+          to: { opacity: '0', transform: 'translate(-50%, -50%) scale(0.95)' }
+        },
+        'overlay-fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' }
+        },
+        'overlay-fade-out': {
+          from: { opacity: '1' },
+          to: { opacity: '0' }
         }
       },
       animation: {
@@ -101,7 +117,11 @@ export default {
         'dialog-slide-down': 'dialog-slide-down 200ms ease-in',
         'dialog-fade-in': 'dialog-fade-in 100ms linear',
         'dialog-fade-out': 'dialog-fade-out 100ms linear',
-        'content-fade-in': 'content-fade-in 300ms ease-out'
+        'content-fade-in': 'content-fade-in 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'scale-in': 'scale-in 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'scale-out': 'scale-out 150ms ease-in forwards',
+        'overlay-fade-in': 'overlay-fade-in 150ms ease-out',
+        'overlay-fade-out': 'overlay-fade-out 150ms ease-in'
       }
     }
   },

@@ -741,7 +741,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                 return (
                   <Flex
                     direction="column"
-                    className="relay-w-full relay-overflow-hidden relay-min-w-[320px] relay-max-w-[408px] relay-border-widget"
+                    className="relay-w-full relay-overflow-hidden relay-min-w-[320px] relay-max-w-[408px]"
                   >
                     <TokenSelectorContainer
                       className="relay-bg-[var(--relay-colors-widget-background)]"
@@ -952,7 +952,8 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               aria-label="Switch Input Mode"
                               size="none"
                               color="ghost"
-                              className="relay-text-[color:var(--relay-colors-gray11)] relay-self-center relay-justify-center relay-w-[20px] relay-h-[20px] relay-rounded-[100px] relay-p-[4px] relay-bg-[var(--relay-colors-gray3)]"
+                              className="relay-self-center relay-justify-center relay-w-[20px] relay-h-[20px] relay-rounded-[100px] relay-p-[4px]"
+                              style={{ color: 'var(--relay-colors-gray9)', backgroundColor: 'var(--relay-colors-gray3)' }}
                               onClick={toggleInputMode}
                             >
                               <SwitchIcon width={16} height={10} />
@@ -1033,7 +1034,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           aria-label="Swap Tokens Direction"
                           size="none"
                           color="white"
-                          className="relay-mt-[4px] relay-text-[color:var(--relay-colors-gray9)] relay-self-center relay-justify-center relay-w-full relay-h-full relay-z-10 relay-border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay-border-solid relay-border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay-rounded-swap-btn"
+                          className="relay-mt-[4px] relay-text-[color:var(--relay-colors-gray9)] relay-self-center relay-justify-center relay-w-full relay-h-full relay-z-10 relay-border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay-border-solid relay-border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay-rounded-swap-btn hover:relay-text-[color:var(--relay-colors-gray11)] hover:relay-bg-[var(--relay-colors-gray-2)]"
                           onClick={() => {
                             if (fromToken || toToken) {
                               if (isUsdInputMode) {
