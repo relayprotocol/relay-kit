@@ -1,11 +1,7 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useCustomize } from 'context/customizeContext'
 import { useTheme } from 'next-themes'
-import {
-  MAINNET_RELAY_API,
-  TESTNET_RELAY_API,
-  ChainVM
-} from '@relayprotocol/relay-sdk'
+import { ChainVM } from '@relayprotocol/relay-sdk'
 
 const WALLET_VM_TYPES = [
   'evm',
@@ -238,11 +234,7 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
   const {
     themeOverrides,
     updateThemeValue,
-    setThemeOverrides,
-    relayApi,
-    setRelayApi,
-    websocketsEnabled,
-    setWebsocketsEnabled
+    setThemeOverrides
   } = useCustomize()
 
   const getNestedValue = (path: string): string => {
@@ -732,44 +724,6 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
         >
           <SectionTitle>Global</SectionTitle>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, flex: 1 }}>API</span>
-            <select
-              value={
-                relayApi === TESTNET_RELAY_API ? 'testnets' : 'mainnets'
-              }
-              onChange={(e) => {
-                setRelayApi(
-                  e.target.value === 'testnets'
-                    ? TESTNET_RELAY_API
-                    : MAINNET_RELAY_API
-                )
-              }}
-              style={{
-                fontSize: 13,
-                padding: '4px 8px',
-                borderRadius: 6,
-                border: `1px solid ${sidebarBorder}`,
-                background: 'transparent',
-                color: sidebarText
-              }}
-            >
-              <option value="mainnets">Mainnet</option>
-              <option value="testnets">Testnet</option>
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              id="sidebar-websockets"
-              checked={websocketsEnabled}
-              onChange={(e) => setWebsocketsEnabled(e.target.checked)}
-            />
-            <label htmlFor="sidebar-websockets" style={{ fontSize: 13 }}>
-              WebSockets
-            </label>
-          </div>
         </div>
       </div>
     </>
