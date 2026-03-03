@@ -3,7 +3,7 @@ import type { FC, PropsWithChildren } from 'react'
 import { cn } from '../../utils/cn.js'
 
 const textVariants = cva(
-  'relay-text-[color:var(--relay-colors-text-default)] relay-font-body',
+  'relay-font-body',
   {
     variants: {
       style: {
@@ -23,6 +23,7 @@ const textVariants = cva(
           'relay-font-medium relay-text-[10px] relay-text-[color:var(--relay-colors-gray11)]'
       },
       color: {
+        default: 'relay-text-[color:var(--relay-colors-text-default)]',
         subtle: 'relay-text-[color:var(--relay-colors-text-subtle)]',
         subtleSecondary:
           'relay-text-[color:var(--relay-colors-text-subtle-secondary)]',
@@ -39,6 +40,9 @@ const textVariants = cva(
       ellipsify: {
         true: 'relay-text-ellipsis relay-overflow-hidden relay-whitespace-nowrap'
       }
+    },
+    defaultVariants: {
+      color: 'default'
     }
   }
 )

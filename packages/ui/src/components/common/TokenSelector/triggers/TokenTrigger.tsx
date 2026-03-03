@@ -63,7 +63,7 @@ export const TokenTrigger: FC<TokenTriggerProps> = ({
         </Flex>
       </Flex>
       {locked ? null : (
-        <Box className="relay-text-[color:var(--relay-colors-gray11)] relay-w-[14px] relay-shrink-0">
+        <Box className="relay-text-[color:var(--relay-colors-gray9)] relay-w-[14px] relay-shrink-0">
           <FontAwesomeIcon icon={faChevronRight} width={14} />
         </Box>
       )}

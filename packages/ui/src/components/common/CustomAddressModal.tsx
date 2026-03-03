@@ -210,7 +210,7 @@ export const CustomAddressModal: FC<Props> = ({
               <Button
                 color="ghost"
                 size="none"
-                className="relay-absolute relay-right-2 relay-top-1/2 -relay-translate-y-1/2 relay-w-6 relay-h-6 relay-min-w-[24px] relay-min-h-[24px] relay-p-0 relay-rounded relay-flex relay-items-center relay-justify-center relay-bg-[var(--relay-colors-gray3)] relay-text-[color:var(--relay-colors-gray8)]"
+                className="relay-absolute relay-right-[8px] relay-top-1/2 -relay-translate-y-1/2 !relay-w-[24px] !relay-h-[24px] !relay-min-w-0 !relay-min-h-0 !relay-leading-none relay-p-0 relay-rounded relay-flex relay-items-center relay-justify-center relay-bg-[var(--relay-colors-gray3)] !relay-text-[color:var(--relay-colors-gray8)]"
                 onMouseDown={(e) => {
                   e.preventDefault() // Prevent input from losing focus
                 }}

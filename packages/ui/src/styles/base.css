@@ -858,6 +858,11 @@
   .relay-cta-font-style:not(:disabled) {
     font-style: var(--relay-fonts-button-cta-font-style);
   }
+  .relay-placeholder-ellipsis::placeholder {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
 }
 
 /* High-specificity inset focus ring — matches old PandaCSS :not(#\#) pattern */

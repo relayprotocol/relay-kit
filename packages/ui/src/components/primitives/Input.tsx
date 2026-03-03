@@ -8,7 +8,7 @@ const inputVariants = cva(
     'relay-w-full relay-px-4 relay-py-3 relay-rounded-input relay-font-body relay-text-[16px]',
     'relay-text-[color:var(--relay-colors-input-color)]',
     'relay-bg-[var(--relay-colors-input-background)]',
-    'placeholder:relay-text-[color:var(--relay-colors-gray9)]',
+    'placeholder:relay-text-[color:var(--relay-colors-gray9)] relay-placeholder-ellipsis',
     'relay-transition-shadow relay-duration-200',
     'focus:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus:relay-outline-none',
     'disabled:relay-cursor-not-allowed',

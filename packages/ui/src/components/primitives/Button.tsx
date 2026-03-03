@@ -28,7 +28,7 @@ const buttonVariants = cva(
           'hover:relay-bg-[var(--relay-colors-secondary-button-hover-background)]',
           'hover:relay-text-[color:var(--relay-colors-secondary-button-hover-color)]'
         ].join(' '),
-        ghost: 'relay-text-[color:var(--relay-colors-text-default)] relay-bg-transparent',
+        ghost: 'relay-bg-transparent',
         white: [
           'relay-bg-[var(--relay-colors-widget-background)]',
           'relay-transition-[filter] relay-duration-[250ms] relay-ease-linear',

@@ -175,7 +175,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
               'relay-h-9 !relay-pr-7 relay-border-none relay-text-right relay-w-full',
               'max-[520px]:relay-bg-transparent max-[520px]:relay-border max-[520px]:relay-border-solid max-[520px]:relay-border-[var(--relay-colors-gray-5)]'
             )}
-            style={{ color: tokenToColor(slippageRatingColor) }}
+            inputStyle={{ color: tokenToColor(slippageRatingColor) }}
           />
           <Box
             className="relay-absolute relay-right-2 relay-top-1/2 -relay-translate-y-1/2"
@@ -185,12 +185,12 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
         </Flex>
 
         {slippageRating === 'very-high' ? (
-          <Text style="body3" className="relay-text-[color:var(--relay-colors-red11)]">
+          <Text style="body3" color="red">
             Very high slippage
           </Text>
         ) : null}
         {slippageRating === 'high' ? (
-          <Text style="body3" className="relay-text-[color:var(--relay-colors-amber11)]">
+          <Text style="body3" color="warningSecondary">
             High slippage
           </Text>
         ) : null}
@@ -348,7 +348,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
         }}
       >
         {open === false && displayValue && (
-          <Text style="subtitle2" className={slippageRatingColor ? `relay-text-[color:var(--relay-colors-${slippageRatingColor})]` : undefined}>
+          <Text style="subtitle2" color={slippageRatingColor === 'red11' ? 'red' : slippageRatingColor === 'amber11' ? 'warningSecondary' : undefined}>
             {displayValue}%
           </Text>
         )}

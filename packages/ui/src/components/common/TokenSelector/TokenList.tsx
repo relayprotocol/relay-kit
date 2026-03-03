@@ -184,9 +184,9 @@ export const TokenList: FC<TokenListProps> = ({
         {showMoreButton && (
           <Button
             color="grey"
-            size="small"
+            size="none"
             corners="pill"
-            className="relay-ml-auto relay-min-h-[24px] relay-px-2 relay-py-1"
+            className="relay-ml-auto relay-h-[24px] relay-px-2 relay-py-1"
             onClick={() => setTokensExpanded(!tokensExpanded)}
           >
             <Text style="subtitle3" color="subtle">
@@ -195,7 +195,7 @@ export const TokenList: FC<TokenListProps> = ({
             <Text
               style="body1"
               className={cn(
-                'relay-text-[color:var(--relay-colors-gray9)] relay-ml-auto relay-w-[12px]',
+                '!relay-text-[color:var(--relay-colors-gray9)] relay-ml-auto relay-w-[12px]',
                 tokensExpanded ? 'relay-rotate-180' : 'relay-rotate-0'
               )}
             >
