@@ -691,7 +691,7 @@
 
   /* Widget */
   --relay-colors-widget-background: white;
-  --relay-colors-widget-card-background: var(--relay-colors-gray-1);
+  --relay-colors-widget-card-background: white;
   --relay-colors-widget-selector-background: var(--relay-colors-gray-2);
   --relay-colors-widget-selector-hover-background: var(--relay-colors-gray-3);
   --relay-colors-widget-swap-currency-button-border-color: var(--relay-colors-primary4);
@@ -726,6 +726,7 @@
 
   /* Widget/Modal backgrounds */
   --relay-colors-widget-background: var(--relay-colors-gray-1);
+  --relay-colors-widget-card-background: var(--relay-colors-gray-1);
   --relay-colors-modal-background: var(--relay-colors-gray-1);
 
   /* Radix scale dark overrides */

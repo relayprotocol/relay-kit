@@ -131,7 +131,12 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   }, [])
 
   return (
-    <div style={{ fontFamily: 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif' }}>
+    <div
+      style={{
+        fontFamily:
+          'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif'
+      }}
+    >
       <ThemeProvider
         attribute="class"
         defaultTheme="light"

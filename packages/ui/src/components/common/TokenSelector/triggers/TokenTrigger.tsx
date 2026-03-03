@@ -34,7 +34,7 @@ export const TokenTrigger: FC<TokenTriggerProps> = ({
       corners="pill"
       size="none"
       disabled={locked}
-      className="relay-w-max relay-shrink-0 relay-overflow-hidden relay-px-3 relay-py-2 relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)] disabled:relay-bg-[var(--relay-colors-widget-selector-background)] relay-transition-colors relay-duration-150"
+      className="relay-w-max relay-h-[50px] relay-shrink-0 relay-overflow-hidden relay-px-3 relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)] disabled:relay-bg-[var(--relay-colors-widget-selector-background)] relay-transition-colors relay-duration-150"
       data-testid={testId}
     >
       <Flex align="center" className="relay-gap-2">
@@ -74,7 +74,7 @@ export const TokenTrigger: FC<TokenTriggerProps> = ({
       corners="pill"
       size="none"
       cta={true}
-      className="relay-w-max relay-shrink-0 relay-overflow-hidden relay-px-3 relay-py-2 relay-font-bold relay-text-[16px]"
+      className="relay-w-max relay-h-[50px] relay-shrink-0 relay-overflow-hidden relay-px-3 relay-font-bold relay-text-[16px]"
     >
       Select Token
       <Box className="relay-w-[14px]">

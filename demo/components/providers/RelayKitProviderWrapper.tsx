@@ -18,7 +18,7 @@ const DEFAULT_APP_FEES = [
 
 const BASE_THEME = {
   font: 'var(--font-inter), -apple-system, Helvetica, sans-serif',
-  fontHeading: 'var(--font-inter), -apple-system, Helvetica, sans-serif'
+  fontHeading: 'Chivo, -apple-system, Helvetica, sans-serif'
 }
 
 export const RelayKitProviderWrapper: FC<{
