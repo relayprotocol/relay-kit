@@ -167,7 +167,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   return isDelayedTx ? (
     <>
       <Flex direction="column" align="center" justify="between">
-        <div className="relay-animate-content-fade-in">
+        <div className="relay-animate-icon-pop-in">
           <Flex
             align="center"
             justify="center"
@@ -352,7 +352,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   ) : (
     <>
       <Flex direction="column" align="center" justify="between">
-        <div className="relay-animate-content-fade-in">
+        <div className="relay-animate-icon-pop-in">
           <Flex align="center">
             <RelayIcon />
             <Flex

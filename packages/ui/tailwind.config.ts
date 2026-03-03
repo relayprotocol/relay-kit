@@ -88,6 +88,13 @@ export default {
           from: { opacity: '0', transform: 'translateY(4px)' },
           to: { opacity: '1', transform: 'translateY(0)' }
         },
+        'icon-pop-in': {
+          '0%': { transform: 'scale(0)' },
+          '50%': { transform: 'scale(1.12)' },
+          '70%': { transform: 'scale(0.95)' },
+          '85%': { transform: 'scale(1.03)' },
+          '100%': { transform: 'scale(1)' }
+        },
         'scale-in': {
           from: { opacity: '0', transform: 'translate(-50%, -50%) scale(0.95)' },
           to: { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' }
@@ -118,6 +125,7 @@ export default {
         'dialog-fade-in': 'dialog-fade-in 100ms linear',
         'dialog-fade-out': 'dialog-fade-out 100ms linear',
         'content-fade-in': 'content-fade-in 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'icon-pop-in': 'icon-pop-in 600ms cubic-bezier(0.22, 1, 0.36, 1)',
         'scale-in': 'scale-in 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'scale-out': 'scale-out 150ms ease-in forwards',
         'overlay-fade-in': 'overlay-fade-in 150ms ease-out',

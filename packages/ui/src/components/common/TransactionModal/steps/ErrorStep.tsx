@@ -110,7 +110,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
       justify="between"
       className="relay-w-full"
     >
-      <div className="relay-animate-content-fade-in">
+      <div className="relay-animate-icon-pop-in">
         {isRefund ? (
           <Box className="relay-mr-2 relay-text-[color:var(--relay-colors-gray9)]">
             <FontAwesomeIcon icon={faRotateRight} className="relay-h-[40px]" />
