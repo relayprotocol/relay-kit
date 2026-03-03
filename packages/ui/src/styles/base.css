@@ -865,8 +865,10 @@
   }
 }
 
-/* High-specificity inset focus ring — matches old PandaCSS :not(#\#) pattern */
-.relay-focus-inset:is(:focus-visible, [data-focus]) {
+/* Inset focus ring for keyboard-navigable list items.
+   Uses :focus (not :focus-visible) for Firefox compatibility —
+   Firefox won't trigger :focus-visible on programmatic .focus() calls. */
+.relay-focus-inset:is(:focus, [data-focus]) {
   box-shadow: inset 0 0 0 2px var(--relay-colors-focus-color) !important;
   outline: none !important;
   --tw-ring-shadow: 0 0 #0000 !important;
