@@ -103,7 +103,7 @@ const FeeBreakdown: FC<Props> = ({
       value: (
         <Flex
           align="center"
-          className="relay-gap-1"
+          className="relay:gap-1"
           style={{
             color:
               timeEstimate && timeEstimate.time <= 30
@@ -119,11 +119,11 @@ const FeeBreakdown: FC<Props> = ({
     {
       title: 'Network cost',
       value: (
-        <Flex align="center" className="relay-gap-1">
+        <Flex align="center" className="relay:gap-1">
           <FontAwesomeIcon
             icon={faGasPump}
             width={16}
-            className="relay-text-[#C1C8CD]"
+            className="relay:text-[#C1C8CD]"
           />
           <Text style="subtitle2">{originGasFeeFormatted}</Text>
         </Flex>
@@ -140,13 +140,13 @@ const FeeBreakdown: FC<Props> = ({
             <div>
               <Flex
                 align="center"
-                className="relay-gap-1 relay-text-[color:var(--relay-colors-gray8)]"
+                className="relay:gap-1 relay:text-[color:var(--relay-colors-gray8)]"
               >
                 <Text
                   style="subtitle2"
                   className={cn(
                     isHighPriceImpact &&
-                      'relay-text-[color:var(--relay-colors-red11)]'
+                      'relay:text-[color:var(--relay-colors-red11)]'
                   )}
                 >
                   {feeBreakdown?.totalFees?.priceImpactPercentage}
@@ -155,7 +155,7 @@ const FeeBreakdown: FC<Props> = ({
                   icon={faInfoCircle}
                   width={14}
                   height={14}
-                  className="relay-inline-block relay-ml-[4px]"
+                  className="relay:inline-block relay:ml-[4px]"
                 />
               </Flex>
             </div>
@@ -170,10 +170,10 @@ const FeeBreakdown: FC<Props> = ({
       return (
         <Box
           id={'fee-breakdown-section'}
-          className="relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-border-widget-card relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)]"
+          className="relay:rounded-[var(--relay-radii-widget-card-border-radius)] relay:bg-[var(--relay-colors-widget-background)] relay:border-widget-card relay:overflow-hidden relay:mb-[var(--relay-spacing-widget-card-section-gutter)]"
         >
-          <div className="relay-mt-0 relay-mb-0 relay-px-3 relay-py-[12px] relay-w-full relay-flex relay-justify-center">
-            <FetchingQuoteLoader isLoading={isFetchingQuote} containerClassName="!relay-my-0 !relay-py-0" />
+          <div className="relay:mt-0 relay:mb-0 relay:px-3 relay:py-[12px] relay:w-full relay:flex relay:justify-center">
+            <FetchingQuoteLoader isLoading={isFetchingQuote} containerClassName="relay:!my-0 relay:!py-0" />
           </div>
         </Box>
       )
@@ -184,16 +184,16 @@ const FeeBreakdown: FC<Props> = ({
 
   return (
     <Flex
-      className="relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)] relay-border-widget-card"
+      className="relay:rounded-[var(--relay-radii-widget-card-border-radius)] relay:bg-[var(--relay-colors-widget-background)] relay:overflow-hidden relay:mb-[var(--relay-spacing-widget-card-section-gutter)] relay:border-widget-card"
       direction="column"
     >
-      <Flex justify="between" align="center" className="relay-p-3 relay-pb-0">
+      <Flex justify="between" align="center" className="relay:p-3 relay:pb-0">
         <Text style="subtitle2">Max Slippage</Text>
-        <Flex align="center" className="relay-gap-2">
+        <Flex align="center" className="relay:gap-2">
           {isAutoSlippage ? (
             <Button
               aria-label="Auto"
-              className="relay-font-medium relay-px-[6px] relay-py-[2px] relay-min-h-0 relay-leading-[100%] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
+              className="relay:font-medium relay:px-[6px] relay:py-[2px] relay:min-h-0 relay:leading-[20px] relay:bg-[var(--relay-colors-widget-selector-background)] relay:border-none relay:hover:bg-[var(--relay-colors-widget-selector-hover-background)]"
               style={{ fontSize: '12px' }}
               color="white"
               size="none"
@@ -210,7 +210,7 @@ const FeeBreakdown: FC<Props> = ({
             align="end"
             content={
               minimumAmountFormatted ? (
-                <Flex direction="row" className="relay-gap-2">
+                <Flex direction="row" className="relay:gap-2">
                   <Text style="subtitle2" color="subtle">
                     Min. received
                   </Text>
@@ -240,10 +240,10 @@ const FeeBreakdown: FC<Props> = ({
           <Flex
             justify="between"
             align="center"
-            className="relay-flex-row relay-gap-2 relay-w-full relay-p-3"
+            className="relay:flex-row relay:gap-2 relay:w-full relay:p-3"
           >
             <span
-              className="relay-cursor-pointer relay-shrink relay-overflow-hidden relay-h-[21px]"
+              className="relay:cursor-pointer relay:shrink relay:overflow-hidden relay:h-[21px]"
               onClick={(e) => {
                 setRateMode(rateMode === 'input' ? 'output' : 'input')
                 e.preventDefault()
@@ -258,7 +258,7 @@ const FeeBreakdown: FC<Props> = ({
             </span>
 
             <Flex
-              className="relay-gap-2 relay-shrink-0"
+              className="relay:gap-2 relay:shrink-0"
               style={{
                 color:
                   timeEstimate && timeEstimate.time <= 30
@@ -270,13 +270,13 @@ const FeeBreakdown: FC<Props> = ({
               {!isOpen && timeEstimate && timeEstimate?.time !== 0 ? (
                 <>
                   <FontAwesomeIcon icon={faClock} width={16} />
-                  <Text style="subtitle2" className="relay-shrink-0">
+                  <Text style="subtitle2" className="relay:shrink-0">
                     ~ {timeEstimate?.formattedTime}
                   </Text>
                   <Flex
                     justify="center"
                     align="center"
-                    className="relay-text-[color:var(--relay-colors-gray6)] relay-h-[4px]"
+                    className="relay:text-[color:var(--relay-colors-gray6)] relay:h-[4px]"
                   >
                     &#8226;
                   </Flex>
@@ -287,15 +287,15 @@ const FeeBreakdown: FC<Props> = ({
                   <FontAwesomeIcon
                     icon={faGasPump}
                     width={16}
-                    className="relay-text-[#C1C8CD]"
+                    className="relay:text-[#C1C8CD]"
                   />
-                  <Text style="subtitle2" className="relay-shrink-0">
+                  <Text style="subtitle2" className="relay:shrink-0">
                     {originGasFeeFormatted}
                   </Text>
                 </>
               )}
               <div
-                className="relay-ml-2 relay-transition-transform relay-duration-300 relay-text-[color:var(--relay-colors-gray9)]"
+                className="relay:ml-2 relay:transition-transform relay:duration-300 relay:text-[color:var(--relay-colors-gray9)]"
                 style={{
                   transform: isOpen ? 'rotate(-180deg)' : 'rotate(0)'
                 }}
@@ -308,7 +308,7 @@ const FeeBreakdown: FC<Props> = ({
         <CollapsibleContent>
           <Flex
             direction="column"
-            className="relay-px-3 relay-pb-3 relay-pt-0 relay-gap-2 relay-bg-[var(--relay-colors-widget-background)]"
+            className="relay:px-3 relay:pb-3 relay:pt-0 relay:gap-2 relay:bg-[var(--relay-colors-widget-background)]"
           >
             {breakdown.map((item) => {
               return (
@@ -316,12 +316,12 @@ const FeeBreakdown: FC<Props> = ({
                   <Flex
                     justify="between"
                     align="center"
-                    className="relay-w-full relay-gap-4"
+                    className="relay:w-full relay:gap-4"
                   >
                     <Text
                       style="subtitle2"
                       color={'subtle'}
-                      className="relay-self-start"
+                      className="relay:self-start"
                     >
                       {item.title}
                     </Text>
@@ -360,7 +360,7 @@ const ConversionRate: FC<ConversionRateProps> = ({
   const shouldShowTooltip = rateText.length > 22
 
   const content = (
-    <div className="relay-w-full relay-min-w-0">
+    <div className="relay:w-full relay:min-w-0">
       <Text style="subtitle2" ellipsify>
         {rateText}
       </Text>

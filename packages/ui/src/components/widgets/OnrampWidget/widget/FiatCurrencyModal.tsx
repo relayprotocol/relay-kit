@@ -89,17 +89,17 @@ const FiatCurrencyModal: FC<Props> = ({
         <Button
           color="white"
           corners="pill"
-          className="relay-h-[28px] relay-min-h-[28px] relay-w-max relay-shrink-0 relay-overflow-hidden relay-gap-1 relay-flex relay-items-center relay-py-1 relay-px-2 relay-bg-[var(--relay-colors-gray2)] relay-border-none hover:relay-bg-[var(--relay-colors-gray3)]"
+          className="relay:h-[28px] relay:min-h-[28px] relay:w-max relay:shrink-0 relay:overflow-hidden relay:gap-1 relay:flex relay:items-center relay:py-1 relay:px-2 relay:bg-[var(--relay-colors-gray2)] relay:border-none relay:hover:bg-[var(--relay-colors-gray3)]"
         >
           <img
             alt="currency-icon"
             src={fiatCurrency.icon}
-            className="relay-w-[16px] relay-h-[16px] relay-rounded-full"
+            className="relay:w-[16px] relay:h-[16px] relay:rounded-full"
           />
           <Text style="subtitle2" color="subtle">
             {fiatCurrency.code.toUpperCase()}
           </Text>
-          <Box className="relay-text-[color:var(--relay-colors-gray9)] relay-w-[14px]">
+          <Box className="relay:text-[color:var(--relay-colors-gray9)] relay:w-[14px]">
             <FontAwesomeIcon icon={faChevronDown} width={14} />
           </Box>
         </Button>
@@ -113,11 +113,11 @@ const FiatCurrencyModal: FC<Props> = ({
         }
         setOpen(open)
       }}
-      className="relay-overflow-hidden relay-p-4 relay-max-w-[100vw] !relay-max-h-[450px] relay-h-[450px] sm:!relay-max-w-[400px]"
+      className="relay:overflow-hidden relay:p-4 relay:max-w-[100vw] relay:!max-h-[450px] relay:h-[450px] sm:!relay-max-w-[400px]"
     >
       <Text
         style="h6"
-        className="relay-w-full relay-text-left"
+        className="relay:w-full relay:text-left"
       >
         Select a currency
       </Text>
@@ -133,16 +133,16 @@ const FiatCurrencyModal: FC<Props> = ({
             setOpen(false)
           }
         }}
-        className="relay-flex relay-flex-col relay-w-full relay-gap-1 relay-overflow-y-auto relay-h-[calc(100%-24px)] relay-scroll-pt-[40px]"
+        className="relay:flex relay:flex-col relay:w-full relay:gap-1 relay:overflow-y-auto relay:h-[calc(100%-24px)] relay:scroll-pt-[40px]"
       >
         <AccessibleListItem value="input" asChild>
           <Box
-            className="relay-sticky relay-py-2 relay-z-[1] relay-top-0 relay-bg-[var(--relay-colors-modal-background)]"
+            className="relay:sticky relay:py-2 relay:z-[1] relay:top-0 relay:bg-[var(--relay-colors-modal-background)]"
           >
             <Input
               placeholder="Search for a currency"
               icon={
-                <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+                <Box className="relay:flex relay:text-[color:var(--relay-colors-gray9)]">
                   <FontAwesomeIcon
                     icon={faMagnifyingGlass}
                     width={16}
@@ -150,9 +150,9 @@ const FiatCurrencyModal: FC<Props> = ({
                   />
                 </Box>
               }
-              containerClassName="relay-w-full"
+              containerClassName="relay:w-full"
               style={{ scrollSnapAlign: 'start' }}
-              className="relay-w-full relay-h-[40px]"
+              className="relay:w-full relay:h-[40px]"
               value={currencySearchInput}
               onChange={(e) => {
                 setCurrencySearchInput((e.target as HTMLInputElement).value)
@@ -172,29 +172,29 @@ const FiatCurrencyModal: FC<Props> = ({
                 color="ghost"
                 size="none"
                 className={cn(
-                  'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-relative',
-                  'relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear',
-                  'focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
-                  '[&[data-state=on]]:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
-                  'active:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
-                  !active && 'hover:relay-bg-[rgba(128,128,128,0.1)]',
-                  i + 1 < (fiatCurrencies?.length ?? 0) ? 'relay-mb-1' : ''
+                  'relay:p-2 relay:flex relay:items-center relay:gap-2 relay:relative',
+                  'relay:transition-[backdrop-filter] relay:duration-[250ms] relay:ease-linear',
+                  'relay:focus-visible:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
+                  'relay:[&[data-state=on]]:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
+                  'relay:active:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)]',
+                  !active && 'relay:hover:bg-[rgba(128,128,128,0.1)]',
+                  i + 1 < (fiatCurrencies?.length ?? 0) ? 'relay:mb-1' : ''
                 )}
                 style={{ scrollSnapAlign: 'start' }}
               >
                 {active ? (
                   <div
-                    className="relay-absolute relay-rounded-[8px] relay-top-0 relay-left-0 relay-w-full relay-h-full relay-opacity-[0.15] relay-z-[-1] relay-bg-[var(--relay-colors-primary-color)]"
+                    className="relay:absolute relay:rounded-[8px] relay:top-0 relay:left-0 relay:w-full relay:h-full relay:opacity-[0.15] relay:z-[-1] relay:bg-[var(--relay-colors-primary-color)]"
                   />
                 ) : null}
-                <Flex align="center" className="relay-gap-2">
+                <Flex align="center" className="relay:gap-2">
                   <img
                     src={currency.icon}
                     alt={`${currency.name} icon`}
-                    className="relay-w-[32px] relay-h-[32px] relay-rounded-full"
+                    className="relay:w-[32px] relay:h-[32px] relay:rounded-full"
                   />
                   <Flex
-                    className="relay-gap-[2px] relay-text-left"
+                    className="relay:gap-[2px] relay:text-left"
                     direction="column"
                   >
                     <Text style="subtitle2">{currency.name}</Text>
@@ -209,7 +209,7 @@ const FiatCurrencyModal: FC<Props> = ({
         })}
         {/* Empty State */}
         {filteredCurrencies.length === 0 ? (
-          <Text style="subtitle2" className="relay-text-center relay-py-5">
+          <Text style="subtitle2" className="relay:text-center relay:py-5">
             No results found.
           </Text>
         ) : null}

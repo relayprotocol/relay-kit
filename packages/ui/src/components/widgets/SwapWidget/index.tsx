@@ -741,16 +741,16 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                 return (
                   <Flex
                     direction="column"
-                    className="relay-w-full relay-overflow-hidden relay-min-w-[320px] relay-max-w-[408px]"
+                    className="relay:w-full relay:overflow-hidden relay:min-w-[320px] relay:max-w-[408px]"
                   >
                     <TokenSelectorContainer
-                      className="relay-bg-[var(--relay-colors-widget-background)]"
+                      className="relay:bg-[var(--relay-colors-widget-background)]"
                       id={'from-token-section'}
                     >
                       <Flex
                         align="center"
                         justify="between"
-                        className="relay-gap-2 relay-w-full"
+                        className="relay:gap-2 relay:w-full"
                       >
                         <Text style="subtitle2" color="subtle">
                           Sell
@@ -790,7 +790,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       <Flex
                         align="center"
                         justify="between"
-                        className="relay-gap-4 relay-w-full"
+                        className="relay:gap-4 relay:w-full"
                       >
                         <AmountInput
                           autoFocus={!disableInputAutoFocus}
@@ -827,10 +827,10 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             onAnalyticEvent?.(EventNames.SWAP_INPUT_FOCUSED)
                           }}
                           className={cn(
-                            'relay-font-bold relay-text-[32px] relay-leading-[36px] relay-py-0',
+                            'relay:font-bold relay:text-[32px] relay:leading-[36px] relay:py-0',
                             isFetchingQuote && tradeType === 'EXPECTED_OUTPUT'
-                              ? 'relay-text-[color:var(--relay-colors-text-subtle)] placeholder:relay-text-[color:var(--relay-colors-text-subtle)]'
-                              : 'relay-text-[color:var(--relay-colors-input-color)] placeholder:relay-text-[color:var(--relay-colors-input-color)]'
+                              ? 'relay:text-[color:var(--relay-colors-text-subtle)] relay:placeholder:text-[color:var(--relay-colors-text-subtle)]'
+                              : 'relay:text-[color:var(--relay-colors-input-color)] relay:placeholder:text-[color:var(--relay-colors-input-color)]'
                           )}
                         />
                         <TokenSelector
@@ -876,7 +876,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           }
                           popularChainIds={popularChainIds}
                           trigger={
-                            <div className="relay-w-max">
+                            <div className="relay:w-max">
                               <TokenTrigger
                                 token={fromToken}
                                 locked={lockFromToken}
@@ -889,16 +889,16 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       </Flex>
                       <Flex
                         direction="column"
-                        className="relay-gap-3 relay-w-full"
+                        className="relay:gap-3 relay:w-full"
                       >
                         <Flex
                           align="center"
                           justify="between"
-                          className="relay-gap-3 relay-w-full"
+                          className="relay:gap-3 relay:w-full"
                         >
                           <Flex
                             align="center"
-                            className="relay-gap-[4px] hover:relay-cursor-pointer"
+                            className="relay:gap-[4px] relay:hover:cursor-pointer"
                             onClick={() => {
                               toggleInputMode()
                             }}
@@ -906,7 +906,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             <Text
                               style="subtitle3"
                               color="subtleSecondary"
-                              className="relay-min-h-[18px] relay-flex relay-items-center"
+                              className="relay:min-h-[18px] relay:flex relay:items-center"
                             >
                               {isUsdInputMode ? (
                                 fromToken ? (
@@ -919,7 +919,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                       `${formatNumber(amountInputValue, 4, false)} ${fromToken.symbol}`
                                     ) : (
                                       <Box
-                                        className="relay-w-[45px] relay-h-[12px] relay-bg-[var(--relay-colors-gray7)] relay-rounded-[var(--relay-radii-widget-border-radius)]"
+                                        className="relay:w-[45px] relay:h-[12px] relay:bg-[var(--relay-colors-gray7)] relay:rounded-[var(--relay-radii-widget-border-radius)]"
                                       />
                                     )
                                   ) : (
@@ -937,7 +937,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                 amountInputValue &&
                                 Number(amountInputValue) > 0 ? (
                                 <Box
-                                  className="relay-w-[45px] relay-h-[12px] relay-bg-[var(--relay-colors-gray7)] relay-rounded-[var(--relay-radii-widget-border-radius)]"
+                                  className="relay:w-[45px] relay:h-[12px] relay:bg-[var(--relay-colors-gray7)] relay:rounded-[var(--relay-radii-widget-border-radius)]"
                                 />
                               ) : inputAmountUsd &&
                                 inputAmountUsd > 0 &&
@@ -952,7 +952,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               aria-label="Switch Input Mode"
                               size="none"
                               color="ghost"
-                              className="relay-self-center relay-justify-center relay-w-[20px] relay-h-[20px] relay-rounded-[100px] relay-p-[4px]"
+                              className="relay:self-center relay:justify-center relay:w-[20px] relay:h-[20px] relay:rounded-[100px] relay:p-[4px]"
                               style={{ color: 'var(--relay-colors-gray9)', backgroundColor: 'var(--relay-colors-gray3)' }}
                               onClick={toggleInputMode}
                             >
@@ -962,7 +962,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
 
                           <Flex
                             align="center"
-                            className="relay-gap-3 relay-ml-auto relay-h-[23px]"
+                            className="relay:gap-3 relay:ml-auto relay:h-[23px]"
                           >
                             {fromToken ? (
                               <BalanceDisplay
@@ -980,7 +980,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                 pending={fromBalancePending}
                               />
                             ) : (
-                              <Flex className="relay-h-[18px]" />
+                              <Flex className="relay:h-[18px]" />
                             )}
 
                             {/* Desktop Percentage Buttons - Hidden on Mobile */}
@@ -988,7 +988,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             (fromChain?.vmType === 'evm' ||
                               fromChain?.vmType === 'svm') ? (
                               <Box
-                                className="relay-hidden sm:relay-block"
+                                className="relay:hidden relay:sm:block"
                               >
                                 <PercentageButtons
                                   balance={fromBalance}
@@ -1009,7 +1009,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                         (fromChain?.vmType === 'evm' ||
                           fromChain?.vmType === 'svm') ? (
                           <Box
-                            className="relay-block sm:relay-hidden"
+                            className="relay:block relay:sm:hidden"
                           >
                             <PercentageButtons
                               balance={fromBalance}
@@ -1025,7 +1025,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       </Flex>
                     </TokenSelectorContainer>
                     <Box
-                      className="relay-relative relay-my-[-13px] relay-mx-auto relay-h-[32px] relay-w-[32px]"
+                      className="relay:relative relay:my-[-13px] relay:mx-auto relay:h-[32px] relay:w-[32px]"
                     >
                       {hasLockedToken ||
                       ((isSvmSwap || isBvmSwap) &&
@@ -1034,7 +1034,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           aria-label="Swap Tokens Direction"
                           size="none"
                           color="white"
-                          className="relay-mt-[4px] relay-text-[color:var(--relay-colors-gray9)] relay-self-center relay-justify-center relay-w-full relay-h-full relay-z-10 relay-border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay-border-solid !relay-border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay-rounded-swap-btn hover:relay-text-[color:var(--relay-colors-gray11)] hover:relay-bg-[var(--relay-colors-gray-2)]"
+                          className="relay:mt-[4px] relay:text-[color:var(--relay-colors-gray9)] relay:self-center relay:justify-center relay:w-full relay:h-full relay:z-10 relay:border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay:border-solid relay:!border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay:rounded-swap-btn relay:hover:text-[color:var(--relay-colors-gray11)] relay:hover:bg-[var(--relay-colors-gray-2)]"
                           onClick={() => {
                             if (fromToken || toToken) {
                               if (isUsdInputMode) {
@@ -1081,11 +1081,11 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       )}
                     </Box>
                     <TokenSelectorContainer
-                      className="relay-bg-[var(--relay-colors-widget-background)] relay-mb-[var(--relay-spacing-widget-card-section-gutter)]"
+                      className="relay:bg-[var(--relay-colors-widget-background)] relay:mb-[var(--relay-spacing-widget-card-section-gutter)]"
                       id={'to-token-section'}
                     >
                       <Flex
-                        className="relay-w-full"
+                        className="relay:w-full"
                         align="center"
                         justify="between"
                       >
@@ -1136,7 +1136,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             }
                             corners="pill"
                             size="none"
-                            className="relay-flex relay-items-center relay-px-2 relay-py-1"
+                            className="relay:flex relay:items-center relay:px-2 relay:py-1"
                             onClick={() => {
                               setAddressModalOpen(true)
                               onAnalyticEvent?.(
@@ -1147,7 +1147,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             {isValidToAddress &&
                             multiWalletSupportEnabled &&
                             !isRecipientLinked ? (
-                              <Box className="relay-text-[color:var(--relay-colors-amber11)]">
+                              <Box className="relay:text-[color:var(--relay-colors-amber11)]">
                                 <FontAwesomeIcon
                                   icon={faClipboard}
                                   width={16}
@@ -1161,8 +1161,8 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                 isValidToAddress &&
                                 multiWalletSupportEnabled &&
                                 !isRecipientLinked
-                                  ? 'relay-text-[color:var(--relay-colors-amber11)]'
-                                  : 'relay-text-[color:var(--relay-colors-anchor-color)]'
+                                  ? 'relay:text-[color:var(--relay-colors-amber11)]'
+                                  : 'relay:text-[color:var(--relay-colors-anchor-color)]'
                               )}
                             >
                               {!isValidToAddress
@@ -1176,7 +1176,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       <Flex
                         align="center"
                         justify="between"
-                        className="relay-gap-4 relay-w-full"
+                        className="relay:gap-4 relay:w-full"
                       >
                         <AmountInput
                           prefixSymbol={isUsdInputMode ? '$' : undefined}
@@ -1212,10 +1212,10 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             onAnalyticEvent?.(EventNames.SWAP_OUTPUT_FOCUSED)
                           }}
                           className={cn(
-                            'relay-font-bold relay-text-[32px] disabled:relay-cursor-not-allowed disabled:relay-text-[color:var(--relay-colors-gray10)] disabled:placeholder:relay-text-[color:var(--relay-colors-gray10)]',
+                            'relay:font-bold relay:text-[32px] relay:disabled:cursor-not-allowed relay:disabled:text-[color:var(--relay-colors-gray10)] relay:disabled:placeholder:text-[color:var(--relay-colors-gray10)]',
                             isFetchingQuote && tradeType === 'EXACT_INPUT'
-                              ? 'relay-text-[color:var(--relay-colors-text-subtle)] placeholder:relay-text-[color:var(--relay-colors-text-subtle)]'
-                              : 'relay-text-[color:var(--relay-colors-input-color)] placeholder:relay-text-[color:var(--relay-colors-input-color)]'
+                              ? 'relay:text-[color:var(--relay-colors-text-subtle)] relay:placeholder:text-[color:var(--relay-colors-text-subtle)]'
+                              : 'relay:text-[color:var(--relay-colors-input-color)] relay:placeholder:text-[color:var(--relay-colors-input-color)]'
                           )}
                         />
                         <TokenSelector
@@ -1243,7 +1243,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           context="to"
                           multiWalletSupportEnabled={multiWalletSupportEnabled}
                           trigger={
-                            <div className="relay-w-max">
+                            <div className="relay:w-max">
                               <TokenTrigger
                                 token={toToken}
                                 locked={lockToToken}
@@ -1293,11 +1293,11 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       <Flex
                         align="center"
                         justify="between"
-                        className="relay-gap-3 relay-w-full"
+                        className="relay:gap-3 relay:w-full"
                       >
                         <Flex
                           align="center"
-                          className="relay-gap-1 relay-min-h-[18px]"
+                          className="relay:gap-1 relay:min-h-[18px]"
                         >
                           <Text style="subtitle3" color="subtleSecondary">
                             {isUsdInputMode ? (
@@ -1310,7 +1310,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                     `${formatNumber(amountOutputValue, 4, false)} ${toToken.symbol}`
                                   ) : (
                                     <Box
-                                      className="relay-w-[45px] relay-h-[12px] relay-bg-[var(--relay-colors-gray7)] relay-rounded-[var(--relay-radii-widget-border-radius)]"
+                                      className="relay:w-[45px] relay:h-[12px] relay:bg-[var(--relay-colors-gray7)] relay:rounded-[var(--relay-radii-widget-border-radius)]"
                                     />
                                   )
                                 ) : (
@@ -1329,7 +1329,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               amountOutputValue &&
                               Number(amountOutputValue) > 0 ? (
                               <Box
-                                className="relay-w-[45px] relay-h-[12px] relay-bg-[var(--relay-colors-gray7)] relay-rounded-[var(--relay-radii-widget-border-radius)]"
+                                className="relay:w-[45px] relay:h-[12px] relay:bg-[var(--relay-colors-gray7)] relay:rounded-[var(--relay-radii-widget-border-radius)]"
                               />
                             ) : toToken &&
                               outputAmountUsd &&
@@ -1348,7 +1348,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             quote={quote}
                           />
                         </Flex>
-                        <Flex className="relay-ml-auto">
+                        <Flex className="relay:ml-auto">
                           {toToken ? (
                             <BalanceDisplay
                               isLoading={isLoadingToBalance}
@@ -1364,7 +1364,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               pending={toBalancePending}
                             />
                           ) : (
-                            <Flex className="relay-h-[18px]" />
+                            <Flex className="relay:h-[18px]" />
                           )}
                         </Flex>
                       </Flex>
@@ -1395,7 +1395,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                       isCapacityExceededError={isCapacityExceededError}
                       isCouldNotExecuteError={isCouldNotExecuteError}
                       relayerFeeProportion={relayerFeeProportion}
-                      containerClassName="relay-mb-[var(--relay-spacing-widget-card-section-gutter)]"
+                      containerClassName="relay:mb-[var(--relay-spacing-widget-card-section-gutter)]"
                       recipientWalletSupportsChain={
                         recipientWalletSupportsChain
                       }

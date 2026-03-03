@@ -235,7 +235,7 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
       trigger={null}
       open={open}
       onOpenChange={onOpenChange}
-      className="relay-overflow-hidden relay-p-4 !relay-max-w-[412px] max-[520px]:!relay-max-w-[unset]"
+      className="relay:overflow-hidden relay:p-4 relay:!max-w-[412px] max-[520px]:!relay-max-w-[unset]"
       showCloseButton={true}
       onPointerDownOutside={(e) => {
         const dynamicModalElements = Array.from(
@@ -252,9 +252,9 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
     >
       <Flex
         direction="column"
-        className="relay-w-full relay-h-full relay-gap-3"
+        className="relay:w-full relay:h-full relay:gap-3"
       >
-        <Text style="h6" className="relay-mb-2">
+        <Text style="h6" className="relay:mb-2">
           Transaction Details
         </Text>
         {progressStep === TransactionProgressStep.Confirmation ||

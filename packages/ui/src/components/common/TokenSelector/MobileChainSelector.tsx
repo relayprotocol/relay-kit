@@ -107,18 +107,18 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
   return (
     <Flex
       direction="column"
-      className="relay-w-full relay-h-full relay-gap-3"
+      className="relay:w-full relay:h-full relay:gap-3"
     >
       {/* Header with back button, search, and close */}
       <Flex
         align="center"
-        className="relay-gap-1 relay-w-full"
+        className="relay:gap-1 relay:w-full"
       >
         <Button
           color="ghost"
           size="none"
           onClick={onBack}
-          className="relay-p-2 relay-rounded-[8px] relay-flex relay-items-center relay-justify-center relay-min-w-[40px] relay-h-[40px] relay-text-[color:var(--relay-colors-gray9)]"
+          className="relay:p-2 relay:rounded-[8px] relay:flex relay:items-center relay:justify-center relay:min-w-[40px] relay:h-[40px] relay:text-[color:var(--relay-colors-gray9)]"
         >
           <FontAwesomeIcon icon={faArrowLeft} width={16} height={16} />
         </Button>
@@ -126,7 +126,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
         <Input
           placeholder="Search a chain"
           icon={
-            <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+            <Box className="relay:flex relay:text-[color:var(--relay-colors-gray9)]">
               <FontAwesomeIcon
                 icon={faMagnifyingGlass}
                 width={16}
@@ -134,8 +134,8 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
               />
             </Box>
           }
-          containerClassName="relay-flex-1 relay-h-[40px]"
-          className="relay-w-full [&::placeholder]:relay-text-ellipsis"
+          containerClassName="relay:flex-1 relay:h-[40px]"
+          className="relay:w-full relay:[&::placeholder]:text-ellipsis"
           value={chainSearchInput}
           onChange={(e) =>
             setChainSearchInput((e.target as HTMLInputElement).value)
@@ -146,7 +146,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
           color="ghost"
           size="none"
           onClick={onClose}
-          className="relay-p-2 relay-rounded-[8px] relay-flex relay-items-center relay-justify-center relay-min-w-[40px] relay-h-[40px] relay-text-[color:var(--relay-colors-gray9)]"
+          className="relay:p-2 relay:rounded-[8px] relay:flex relay:items-center relay:justify-center relay:min-w-[40px] relay:h-[40px] relay:text-[color:var(--relay-colors-gray9)]"
         >
           <FontAwesomeIcon icon={faXmark} width={16} height={16} />
         </Button>
@@ -182,7 +182,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
             }
           }
         }}
-        className="relay-flex relay-flex-col relay-w-full relay-flex-1 relay-overflow-y-auto [scrollbar-color:var(--relay-colors-gray5)_transparent]"
+        className="relay:flex relay:flex-col relay:w-full relay:flex-1 relay:overflow-y-auto [scrollbar-color:var(--relay-colors-gray5)_transparent]"
       >
         {filteredChains ? (
           // Show search results without sections
@@ -214,7 +214,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
                 <Button
                   color="ghost"
                   size="none"
-                  className="relay-py-3 relay-px-2 relay-flex relay-items-center relay-gap-2 relay-w-full relay-h-[56px] relay-rounded-[12px] hover:relay-bg-[var(--relay-colors-gray3)]"
+                  className="relay:py-3 relay:px-2 relay:flex relay:items-center relay:gap-2 relay:w-full relay:h-[56px] relay:rounded-[12px] relay:hover:bg-[var(--relay-colors-gray3)]"
                 >
                   <ChainIcon
                     chainId={sameChainOption.id}
@@ -229,8 +229,8 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
 
             {starredChains.length > 0 && (
               <>
-                <Flex align="center" className="relay-py-2 relay-gap-2">
-                  <Box className="relay-text-[color:var(--relay-colors-primary9)]">
+                <Flex align="center" className="relay:py-2 relay:gap-2">
+                  <Box className="relay:text-[color:var(--relay-colors-primary9)]">
                     <FontAwesomeIcon icon={faStar} width={16} height={16} />
                   </Box>
                   <Text style="subtitle1" color="subtle">
@@ -241,7 +241,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
                       <Text style="body3">Long-press to star a chain</Text>
                     }
                   >
-                    <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+                    <Box className="relay:text-[color:var(--relay-colors-gray9)]">
                       <FontAwesomeIcon
                         icon={faInfoCircle}
                         width={14}
@@ -267,7 +267,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
               </>
             )}
 
-            <Text style="subtitle1" color="subtle" className="relay-py-2">
+            <Text style="subtitle1" color="subtle" className="relay:py-2">
               Chains A-Z
             </Text>
             {alphabeticalChains.map((chain) => {
@@ -402,7 +402,7 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
         <Button
           color="ghost"
           size="none"
-          className="relay-py-3 relay-px-2 relay-flex relay-items-center relay-gap-2 relay-w-full relay-h-[56px] relay-rounded-[12px] hover:relay-bg-[var(--relay-colors-gray3)]"
+          className="relay:py-3 relay:px-2 relay:flex relay:items-center relay:gap-2 relay:w-full relay:h-[56px] relay:rounded-[12px] relay:hover:bg-[var(--relay-colors-gray3)]"
         >
           <AllChainsLogo style={{ width: 24, height: 24 }} />
           <Text style="subtitle1">{chain.name}</Text>
@@ -412,7 +412,7 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
   }
 
   return (
-    <div className="relay-relative relay-w-full">
+    <div className="relay:relative relay:w-full">
       <AccessibleListItem value={value} asChild>
         <Button
           color="ghost"
@@ -430,14 +430,14 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
           onTouchMove={handleTouchMove}
-          className="relay-py-3 relay-px-2 relay-flex relay-items-center relay-gap-2 relay-w-full relay-h-[56px] relay-rounded-[12px] relay-select-none hover:relay-bg-[var(--relay-colors-gray3)]"
+          className="relay:py-3 relay:px-2 relay:flex relay:items-center relay:gap-2 relay:w-full relay:h-[56px] relay:rounded-[12px] relay:select-none relay:hover:bg-[var(--relay-colors-gray3)]"
         >
           <ChainIcon chainId={chain.id} square width={24} height={24} />
-          <Text style="subtitle1" className="relay-flex-1 relay-text-left">
+          <Text style="subtitle1" className="relay:flex-1 relay:text-left">
             {('displayName' in chain && chain.displayName) || chain.name}
           </Text>
           {showStar && isStarred && (
-            <Box className="relay-text-[color:var(--relay-colors-primary9)]">
+            <Box className="relay:text-[color:var(--relay-colors-primary9)]">
               <FontAwesomeIcon icon={faStar} width={16} height={16} />
             </Box>
           )}
@@ -448,7 +448,7 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
       {dropdownOpen && (
         <div
           ref={dropdownRef}
-          className="relay-absolute relay-top-full relay-left-0 relay-mt-1 relay-min-w-[160px] relay-z-[999999]"
+          className="relay:absolute relay:top-full relay:left-0 relay:mt-1 relay:min-w-[160px] relay:z-[999999]"
           onClick={(e) => {
             e.stopPropagation()
             handleToggleStar()
@@ -457,18 +457,18 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
           onTouchStart={(e) => e.stopPropagation()}
         >
           <Flex
-            className="relay-items-center relay-gap-[8px] relay-p-[8px] relay-rounded-[12px] relay-cursor-pointer relay-bg-[var(--relay-colors-gray1)] relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] hover:relay-bg-[var(--relay-colors-gray2)]"
+            className="relay:items-center relay:gap-[8px] relay:p-[8px] relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-gray1)] relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:hover:bg-[var(--relay-colors-gray2)]"
           >
             <Box
               className={cn(
                 isStarred
-                  ? 'relay-text-[color:var(--relay-colors-gray8)]'
-                  : 'relay-text-[color:var(--relay-colors-primary9)]'
+                  ? 'relay:text-[color:var(--relay-colors-gray8)]'
+                  : 'relay:text-[color:var(--relay-colors-primary9)]'
               )}
             >
               <FontAwesomeIcon icon={faStar} width={16} height={16} />
             </Box>
-            <Text style="subtitle1" className="relay-leading-[20px]">
+            <Text style="subtitle1" className="relay:leading-[20px]">
               {isStarred ? 'Unstar chain' : 'Star chain'}
             </Text>
           </Flex>

@@ -37,7 +37,7 @@ const ChainIcon: FC<Props> = ({
 
   return iconUrl ? (
     <div
-      className={cn('relay-flex relay-shrink-0', className)}
+      className={cn('relay:flex relay:shrink-0', className)}
       style={{
         height: height,
         width: width,

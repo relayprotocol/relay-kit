@@ -108,27 +108,27 @@ export const ErrorStep: FC<ErrorStepProps> = ({
       direction="column"
       align="center"
       justify="between"
-      className="relay-w-full"
+      className="relay:w-full"
     >
-      <div className="relay-animate-icon-pop-in">
+      <div className="relay:animate-icon-pop-in">
         {isRefund ? (
-          <Box className="relay-mr-2 relay-text-[color:var(--relay-colors-gray9)]">
-            <FontAwesomeIcon icon={faRotateRight} className="relay-h-[40px]" />
+          <Box className="relay:mr-2 relay:text-[color:var(--relay-colors-gray9)]">
+            <FontAwesomeIcon icon={faRotateRight} style={{ height: 40 }} />
           </Box>
         ) : null}
 
         {!isRefund && isSolverStatusTimeout ? (
-          <Box className="relay-mr-2 relay-text-[color:var(--relay-colors-amber9)]">
+          <Box className="relay:mr-2 relay:text-[color:var(--relay-colors-amber9)]">
             <FontAwesomeIcon
               icon={faCircleExclamation}
-              className="relay-h-[40px]"
+              style={{ height: 40 }}
             />
           </Box>
         ) : null}
 
         {!isRefund && !isSolverStatusTimeout ? (
-          <Box className="relay-mr-2 relay-text-[color:var(--relay-colors-red9)]">
-            <FontAwesomeIcon icon={faCircleXmark} className="relay-h-[40px]" />
+          <Box className="relay:mr-2 relay:text-[color:var(--relay-colors-red9)]">
+            <FontAwesomeIcon icon={faCircleXmark} style={{ height: 40 }} />
           </Box>
         ) : null}
       </div>
@@ -138,9 +138,9 @@ export const ErrorStep: FC<ErrorStepProps> = ({
         !transaction?.data?.failReason ? (
           <Flex
             direction="column"
-            className="relay-my-4 relay-text-center relay-items-center"
+            className="relay:my-4 relay:text-center relay:items-center"
           >
-            <Text style="subtitle1" className="relay-mb-4">
+            <Text style="subtitle1" className="relay:mb-4">
               It looks like an unknown issue occurred during the transaction.
               {fromToken && fromAmountFormatted && fromChain
                 ? ` We've refunded ${fromAmountFormatted} ${fromToken.symbol} on ${fromChain.displayName}.`
@@ -148,11 +148,11 @@ export const ErrorStep: FC<ErrorStepProps> = ({
             </Text>
 
             {/* Transaction Pills */}
-            <Flex className="relay-items-center relay-gap-2">
+            <Flex className="relay:items-center relay:gap-2">
               {fromToken && fromChain ? (
                 <Pill
                   color="gray"
-                  className="relay-items-center relay-py-2 relay-px-3"
+                  className="relay:items-center relay:py-2 relay:px-3"
                 >
                   <ChainTokenIcon
                     chainId={fromChain.id}
@@ -160,7 +160,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                     tokenSymbol={fromToken.symbol}
                     size="base"
                   />
-                  <Text style="subtitle1" className="relay-ml-2">
+                  <Text style="subtitle1" className="relay:ml-2">
                     {fromAmountFormatted} {fromToken.symbol}
                   </Text>
                 </Pill>
@@ -168,14 +168,14 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                 <Text style="subtitle1">?</Text>
               )}
 
-              <Flex className="relay-items-center relay-justify-center relay-p-2">
-                <FontAwesomeIcon className="relay-w-[14px]" icon={faArrowRight} />
+              <Flex className="relay:items-center relay:justify-center relay:p-2">
+                <FontAwesomeIcon style={{ width: 14 }} icon={faArrowRight} />
               </Flex>
 
               {toToken && toChain ? (
                 <Pill
                   color="gray"
-                  className="relay-items-center relay-py-2 relay-px-3"
+                  className="relay:items-center relay:py-2 relay:px-3"
                 >
                   <ChainTokenIcon
                     chainId={toChain.id}
@@ -183,7 +183,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                     tokenSymbol={toToken.symbol}
                     size="base"
                   />
-                  <Text style="subtitle1" className="relay-ml-2">
+                  <Text style="subtitle1" className="relay:ml-2">
                     {toAmountFormatted} {toToken.symbol}
                   </Text>
                 </Pill>
@@ -193,7 +193,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
             </Flex>
           </Flex>
         ) : (
-          <Text style="subtitle2" className="relay-my-4 relay-text-center">
+          <Text style="subtitle2" className="relay:my-4 relay:text-center">
             <RefundReason reasonCode={transaction?.data?.failReason} />
             {refundDetails
               ? ` We've refunded ${refundDetails.amountFormatted} ${refundDetails.currency?.symbol} on ${refundChain?.displayName}.`
@@ -211,7 +211,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
         <>
           <Flex
             direction="column"
-            className="relay-p-3 relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] relay-gap-3 relay-w-full relay-rounded-[12px] relay-mb-6"
+            className="relay:p-3 relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:gap-3 relay:w-full relay:rounded-[12px] relay:mb-6"
           >
             <TransactionsByChain
               allTxHashes={allTxHashes}
@@ -223,7 +223,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
             />
           </Flex>
 
-          <Flex className="relay-gap-3 relay-w-full">
+          <Flex className="relay:gap-3 relay:w-full">
             <Button
               color="secondary"
               cta={true}
@@ -235,7 +235,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
                   '_blank'
                 )
               }}
-              className="relay-justify-center relay-whitespace-nowrap"
+              className="relay:justify-center relay:whitespace-nowrap"
             >
               View Details
             </Button>
@@ -244,7 +244,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
               onClick={() => {
                 onOpenChange(false)
               }}
-              className="relay-justify-center relay-w-full"
+              className="relay:justify-center relay:w-full"
             >
               Done
             </Button>
@@ -256,7 +256,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
           onClick={() => {
             onOpenChange(false)
           }}
-          className="relay-justify-center relay-w-full"
+          className="relay:justify-center relay:w-full"
         >
           Done
         </Button>

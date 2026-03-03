@@ -615,8 +615,8 @@ export const formatTransactionSteps = ({
     )
 
     result.push({
-      id: 'relay-processing',
-      action: getDisplayActionText('relay-processing'),
+      id: 'relay:processing',
+      action: getDisplayActionText('relay:processing'),
       isActive: Boolean(relayStepActive),
       isCompleted: Boolean(relayStepCompleted),
       isWalletAction: false,

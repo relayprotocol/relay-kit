@@ -30,7 +30,10 @@ import { UnverifiedTokenModal } from '../UnverifiedTokenModal.js'
 import { useEnhancedTokensList } from '../../../hooks/useEnhancedTokensList.js'
 import { TokenList } from './TokenList.js'
 import { UnsupportedDepositAddressChainIds } from '../../../constants/depositAddresses.js'
-import { getRelayUiKitData, getStarredChainIds } from '../../../utils/localStorage.js'
+import {
+  getRelayUiKitData,
+  getStarredChainIds
+} from '../../../utils/localStorage.js'
 import { isValidAddress as isValidAddressUtil } from '../../../utils/address.js'
 import {
   AccessibleList,
@@ -575,11 +578,13 @@ const TokenSelector: FC<TokenSelectorProps> = ({
             }
           }}
           trigger={trigger}
-          className="relay-p-2 relay-flex relay-flex-col relay-w-full relay-max-w-full sm:relay-max-w-full"
+          className="relay:p-4 relay:flex relay:flex-col relay:w-full relay:max-w-full relay:sm:max-w-full"
           contentStyle={{
             height: isDesktop ? 'min(85vh, 600px)' : '100%',
             maxHeight: isDesktop ? 'min(85vh, 600px)' : '100%',
-            borderRadius: isDesktop ? 'var(--relay-radii-modal-border-radius)' : '0px',
+            borderRadius: isDesktop
+              ? 'var(--relay-radii-modal-border-radius)'
+              : '0px',
             minWidth: isDesktop
               ? hasMultipleConfiguredChainIds
                 ? 660
@@ -612,11 +617,11 @@ const TokenSelector: FC<TokenSelectorProps> = ({
           ) : (
             <Flex
               direction="column"
-              className="relay-w-full relay-h-full relay-gap-3 relay-overflow-y-hidden"
+              className="relay:w-full relay:h-full relay:gap-3 relay:overflow-y-hidden"
             >
               {isDesktop && <Text style="h6">Select Token</Text>}
 
-              <Flex className="relay-flex-1 relay-gap-3 relay-overflow-hidden">
+              <Flex className="relay:flex-1 relay:gap-3 relay:overflow-hidden">
                 {/* Desktop Chain Filter Sidebar */}
                 {isDesktop &&
                 (!configuredChainIds || hasMultipleConfiguredChainIds) ? (
@@ -657,24 +662,21 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                       handleTokenSelection(selectedToken)
                     }
                   }}
-                  className="relay-flex relay-flex-col relay-w-full relay-min-w-0 relay-h-full"
+                  className="relay:flex relay:flex-col relay:w-full relay:min-w-0 relay:h-full"
                 >
                   {/* Search Input Section - Fixed */}
                   <Flex
                     direction="column"
                     align="start"
-                    className="relay-w-full relay-gap-2 relay-bg-[var(--relay-colors-modal-background)]"
+                    className="relay:w-full relay:gap-2 relay:bg-[var(--relay-colors-modal-background)]"
                   >
-                    <Flex
-                      align="center"
-                      className="relay-w-full relay-gap-2"
-                    >
+                    <Flex align="center" className="relay:w-full relay:gap-2">
                       <AccessibleListItem value="input" asChild>
                         <Input
                           ref={setTokenSearchInputElement}
                           placeholder="Search for a token or paste address"
                           icon={
-                            <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+                            <Box className="relay:flex relay:text-[color:var(--relay-colors-gray9)]">
                               <FontAwesomeIcon
                                 icon={faMagnifyingGlass}
                                 width={16}
@@ -682,8 +684,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                               />
                             </Box>
                           }
-                          containerClassName={`relay-w-full relay-h-[40px] ${isDesktop ? 'relay-mb-1' : 'relay-mb-0'}`}
-                          className="relay-w-full [&::placeholder]:relay-text-ellipsis"
+                          containerClassName={`relay:w-full relay:h-[40px] ${isDesktop ? 'relay:mb-1' : 'relay:mb-0'}`}
+                          className="relay:w-full relay:[&::placeholder]:text-ellipsis"
                           value={tokenSearchInput}
                           onChange={(e) => {
                             const value = (e.target as HTMLInputElement).value
@@ -708,7 +710,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                           color="ghost"
                           size="none"
                           onClick={() => onOpenChange(false)}
-                          className="relay-p-2 relay-rounded-[8px] relay-flex relay-items-center relay-justify-center relay-min-w-[40px] relay-h-[40px] relay-text-[color:var(--relay-colors-gray9)]"
+                          className="relay:p-2 relay:rounded-[8px] relay:flex relay:items-center relay:justify-center relay:min-w-[40px] relay:h-[40px] relay:text-[color:var(--relay-colors-gray9)]"
                         >
                           <FontAwesomeIcon
                             icon={faXmark}
@@ -736,7 +738,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                     {!isDesktop && chainFilter.id !== undefined ? (
                       <Flex
                         align="center"
-                        className="relay-gap-2 relay-pb-1 relay-w-full"
+                        className="relay:gap-2 relay:pb-1 relay:w-full"
                       >
                         <Text style="subtitle2" color="subtle">
                           Tokens on{' '}
@@ -752,8 +754,10 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                   <Flex
                     key={chainFilter.id ?? 'all'}
                     direction="column"
-                    className={`relay-flex-1 relay-overflow-y-auto relay-gap-3 ${!isDesktop && chainFilter.id !== undefined ? 'relay-pt-0' : 'relay-pt-2'}`}
-                    style={{ scrollbarColor: 'var(--relay-colors-gray5) transparent' }}
+                    className={`relay:flex-1 relay:overflow-y-auto relay:gap-3 ${!isDesktop && chainFilter.id !== undefined ? 'relay:pt-0' : 'relay:pt-2'}`}
+                    style={{
+                      scrollbarColor: 'var(--relay-colors-gray5) transparent'
+                    }}
                   >
                     {/* Suggested Tokens */}
                     {chainFilter.id &&
@@ -781,7 +785,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                         chainFilterId={chainFilter.id}
                       />
                     ) : (
-                      <Flex direction="column" className="relay-gap-3">
+                      <Flex direction="column" className="relay:gap-3">
                         {[
                           {
                             title: 'Your Tokens',
@@ -836,10 +840,10 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                       <Flex
                         direction="column"
                         align="center"
-                        className="relay-py-5 relay-max-w-[312px] relay-self-center"
+                        className="relay:py-5 relay:max-w-[312px] relay:self-center"
                       >
                         {!chainFilter?.id && isSearchTermValidAddress && (
-                          <Box className="relay-text-[color:var(--relay-colors-gray8)] relay-mb-2">
+                          <Box className="relay:text-[color:var(--relay-colors-gray8)] relay:mb-2">
                             <FontAwesomeIcon
                               icon={faFolderOpen}
                               size="xl"
@@ -851,7 +855,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                         <Text
                           color="subtle"
                           style="body2"
-                          className="relay-text-center"
+                          className="relay:text-center"
                         >
                           {!chainFilter?.id && isSearchTermValidAddress
                             ? 'No results. Switch to the desired chain to search by contract.'

@@ -1,6 +1,67 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme) prefix(relay);
+@import "tailwindcss/utilities.css" layer(utilities) prefix(relay);
+
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 900px;
+  --breakpoint-lg: 1200px;
+  --breakpoint-xl: 1400px;
+  --breakpoint-bp300: 300px;
+  --breakpoint-bp400: 400px;
+  --breakpoint-bp500: 500px;
+  --breakpoint-bp600: 600px;
+  --breakpoint-bp700: 700px;
+  --breakpoint-bp800: 800px;
+  --breakpoint-bp900: 900px;
+  --breakpoint-bp1000: 1000px;
+  --breakpoint-bp1100: 1100px;
+  --breakpoint-bp1200: 1200px;
+  --breakpoint-bp1300: 1300px;
+  --breakpoint-bp1400: 1400px;
+  --breakpoint-bp1500: 1500px;
+}
+
+@theme extend {
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 32px;
+  --spacing-6: 64px;
+  --spacing-widget-card-section-gutter: 6px;
+
+  --font-body: var(--relay-fonts-body);
+  --font-heading: var(--relay-fonts-heading);
+
+  --radius-widget: var(--relay-radii-widget-border-radius);
+  --radius-widget-card: var(--relay-radii-widget-card-border-radius);
+  --radius-modal: var(--relay-radii-modal-border-radius);
+  --radius-input: var(--relay-radii-input-border-radius);
+  --radius-dropdown: var(--relay-radii-dropdown-border-radius);
+  --radius-swap-btn: var(--relay-radii-widget-swap-currency-button-border-radius);
+
+  --shadow-widget: var(--relay-shadows-widget-box-shadow);
+
+  --animate-pulse: pulse 3s ease-in-out infinite;
+  --animate-pulse-shadow: pulse-shadow 1s ease-in-out infinite alternate;
+  --animate-spin: spin 1s linear infinite;
+  --animate-collapsible-down: collapsibleSlideDown 300ms cubic-bezier(0.87, 0, 0.13, 1);
+  --animate-collapsible-up: collapsibleSlideUp 300ms cubic-bezier(0.87, 0, 0.13, 1);
+  --animate-dialog-slide-up: dialog-slide-up 200ms ease-out;
+  --animate-dialog-slide-down: dialog-slide-down 200ms ease-in;
+  --animate-dialog-fade-in: dialog-fade-in 100ms linear;
+  --animate-dialog-fade-out: dialog-fade-out 100ms linear;
+  --animate-content-fade-in: content-fade-in 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-icon-pop-in: icon-pop-in 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-scale-in: scale-in 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-scale-out: scale-out 150ms ease-in forwards;
+  --animate-overlay-fade-in: overlay-fade-in 150ms ease-out;
+  --animate-overlay-fade-out: overlay-fade-out 150ms ease-in;
+}
 
 /* ===================================================================
    Keyframes
@@ -51,6 +112,14 @@
 @keyframes content-fade-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes icon-pop-in {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.12); }
+  70% { transform: scale(0.95); }
+  85% { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
 @keyframes scale-in {
@@ -843,23 +912,25 @@
    These CSS variables contain full border declarations (width + style + color)
    and must be applied via the `border` shorthand property, not `border-width`.
    =================================================================== */
-@layer utilities {
-  .relay-border-widget-card {
-    border: var(--relay-borders-widget-card-border);
-  }
-  .relay-border-widget {
-    border: var(--relay-borders-widget-border);
-  }
-  .relay-border-modal {
-    border: var(--relay-borders-modal-border);
-  }
-  .relay-border-dropdown {
-    border: var(--relay-borders-dropdown-border);
-  }
-  .relay-cta-font-style:not(:disabled) {
+@utility border-widget-card {
+  border: var(--relay-borders-widget-card-border);
+}
+@utility border-widget {
+  border: var(--relay-borders-widget-border);
+}
+@utility border-modal {
+  border: var(--relay-borders-modal-border);
+}
+@utility border-dropdown {
+  border: var(--relay-borders-dropdown-border);
+}
+@utility cta-font-style {
+  &:not(:disabled) {
     font-style: var(--relay-fonts-button-cta-font-style);
   }
-  .relay-placeholder-ellipsis::placeholder {
+}
+@utility placeholder-ellipsis {
+  &::placeholder {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -869,8 +940,9 @@
 /* Inset focus ring for keyboard-navigable list items.
    Uses :focus (not :focus-visible) for Firefox compatibility —
    Firefox won't trigger :focus-visible on programmatic .focus() calls. */
-.relay-focus-inset:is(:focus, [data-focus]) {
-  box-shadow: inset 0 0 0 2px var(--relay-colors-focus-color) !important;
-  outline: none !important;
-  --tw-ring-shadow: 0 0 #0000 !important;
+@utility focus-inset {
+  &:is(:focus, [data-focus]) {
+    box-shadow: inset 0 0 0 2px var(--relay-colors-focus-color) !important;
+    outline: none !important;
+  }
 }

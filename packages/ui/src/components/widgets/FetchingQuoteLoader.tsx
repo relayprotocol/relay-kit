@@ -17,11 +17,11 @@ const FetchingQuoteLoader: FC<Props> = ({ isLoading, containerClassName }) => {
     <Flex
       align="center"
       className={cn(
-        'relay-gap-[14px] relay-mb-3 relay-mt-1 relay-py-3 relay-mx-auto',
+        'relay:gap-[14px] relay:mb-3 relay:mt-1 relay:py-3 relay:mx-auto',
         containerClassName
       )}
     >
-      <LoadingSpinner className="relay-h-4 relay-w-4" />
+      <LoadingSpinner className="relay:h-4 relay:w-4" />
       <Text style="subtitle2">Fetching the best price</Text>
     </Flex>
   )

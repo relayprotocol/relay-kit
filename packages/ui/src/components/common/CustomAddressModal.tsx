@@ -172,23 +172,23 @@ export const CustomAddressModal: FC<Props> = ({
       trigger={null}
       open={open}
       onOpenChange={onOpenChange}
-      className="relay-overflow-hidden"
+      className="relay:overflow-hidden"
     >
       <Flex
         direction="column"
-        className="relay-w-full relay-h-full relay-gap-4 sm:relay-w-[386px]"
+        className="relay:w-full relay:h-full relay:gap-4 relay:sm:w-[386px]"
       >
         <Text style="h6">To Address</Text>
-        <Flex direction="column" className="relay-gap-2 relay-relative">
+        <Flex direction="column" className="relay:gap-2 relay:relative">
           <Flex
-            className="relay-relative relay-w-full"
+            className="relay:relative relay:w-full"
           >
             <Input
               type="text"
               inputMode="text"
               autoComplete="off"
               autoCorrect="off"
-              className="ph-no-capture relay-w-full relay-h-12"
+              className="ph-no-capture relay:w-full relay:h-12"
               inputStyle={{
                 paddingRight: input.length > 0 ? '42px' : '16px'
               }}
@@ -210,7 +210,7 @@ export const CustomAddressModal: FC<Props> = ({
               <Button
                 color="ghost"
                 size="none"
-                className="relay-absolute relay-right-[8px] relay-top-1/2 -relay-translate-y-1/2 !relay-w-[24px] !relay-h-[24px] !relay-min-w-0 !relay-min-h-0 !relay-leading-none relay-p-0 relay-rounded relay-flex relay-items-center relay-justify-center relay-bg-[var(--relay-colors-gray3)] !relay-text-[color:var(--relay-colors-gray8)]"
+                className="relay:absolute relay:right-[8px] relay:top-1/2 relay:-translate-y-1/2 relay:!w-[24px] relay:!h-[24px] relay:!min-w-0 relay:!min-h-0 relay:!leading-none relay:p-0 relay:rounded relay:flex relay:items-center relay:justify-center relay:bg-[var(--relay-colors-gray3)] relay:!text-[color:var(--relay-colors-gray8)]"
                 onMouseDown={(e) => {
                   e.preventDefault() // Prevent input from losing focus
                 }}
@@ -222,7 +222,7 @@ export const CustomAddressModal: FC<Props> = ({
               </Button>
             )}
             {isLoading && (
-              <div className="relay-absolute relay-right-2 relay-top-[12px]">
+              <div className="relay:absolute relay:right-2 relay:top-[12px]">
                 <LoadingSpinner />
               </div>
             )}
@@ -246,7 +246,7 @@ export const CustomAddressModal: FC<Props> = ({
 
           {didResolveLighterFromEvm && resolvedLighterIndex ? (
             <Flex
-              className="relay-bg-[var(--relay-colors-green2)] relay-p-2 relay-rounded-lg relay-gap-2"
+              className="relay:bg-[var(--relay-colors-green2)] relay:p-2 relay:rounded-lg relay:gap-2"
               align="center"
             >
               <FontAwesomeIcon
@@ -263,7 +263,7 @@ export const CustomAddressModal: FC<Props> = ({
 
           {!connectedAddressSet && address && isConnected ? (
             <Flex
-              className="relay-bg-[var(--relay-colors-amber2)] relay-p-2 relay-rounded-lg relay-gap-2"
+              className="relay:bg-[var(--relay-colors-amber2)] relay:p-2 relay:rounded-lg relay:gap-2"
               align="center"
             >
               <FontAwesomeIcon
@@ -271,7 +271,7 @@ export const CustomAddressModal: FC<Props> = ({
                 color="#FFA01C"
                 width={16}
                 height={16}
-                className="relay-shrink-0"
+                className="relay:shrink-0"
               />
               <Text style="subtitle3" color="warning">
                 This isn't the connected wallet address. Please ensure that the
@@ -283,7 +283,7 @@ export const CustomAddressModal: FC<Props> = ({
           {!multiWalletSupportEnabled && isConnected ? (
             connectedAddressSet ? (
               <Flex
-                className="relay-bg-[var(--relay-colors-green2)] relay-p-2 relay-rounded-lg relay-gap-2"
+                className="relay:bg-[var(--relay-colors-green2)] relay:p-2 relay:rounded-lg relay:gap-2"
                 align="center"
               >
                 <FontAwesomeIcon
@@ -309,14 +309,14 @@ export const CustomAddressModal: FC<Props> = ({
           {filteredRecentCustomAddresses.length > 0 ? (
             <>
               <Text style="subtitle2">Recent addresses</Text>
-              <Flex className="relay-gap-2 relay-flex-wrap" align="center">
+              <Flex className="relay:gap-2 relay:flex-wrap" align="center">
                 {filteredRecentCustomAddresses.map((address) => (
                   <Pill
                     key={address}
                     color="transparent"
                     bordered
                     radius="squared"
-                    className="relay-flex relay-items-center relay-gap-[6px] relay-cursor-pointer relay-px-2"
+                    className="relay:flex relay:items-center relay:gap-[6px] relay:cursor-pointer relay:px-2"
                     onClick={() => {
                       onConfirmed(address)
                       onOpenChange(false)
@@ -344,7 +344,7 @@ export const CustomAddressModal: FC<Props> = ({
           disabled={
             isLoading || !isValidAddress(toChain?.vmType, address, toChain?.id)
           }
-          className="relay-justify-center"
+          className="relay:justify-center"
           onClick={() => {
             if (isValidAddress(toChain?.vmType, address, toChain?.id)) {
               // Save the address to custom addresses if it's not a connected wallet address

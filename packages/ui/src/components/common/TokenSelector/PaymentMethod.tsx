@@ -494,20 +494,20 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   const paymentMethodContent = (
     <Flex
       direction="column"
-      className="relay-w-full relay-h-full relay-gap-3 relay-overflow-y-hidden relay-min-w-0 relay-max-w-full"
+      className="relay:w-full relay:h-full relay:gap-3 relay:overflow-y-hidden relay:min-w-0 relay:max-w-full"
     >
       {/* Header with back button */}
-      <Flex align="center" className="relay-gap-1">
+      <Flex align="center" className="relay:gap-1">
         <Button
           color="ghost"
           size="none"
           onClick={() => onOpenChange(false)}
-          className="relay-py-1 relay-px-0 relay-min-w-[auto] relay-text-[color:var(--relay-colors-gray9)] relay-cursor-pointer relay-rounded-[8px] relay-flex relay-items-center relay-gap-1 focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] min-[660px]:relay-p-0"
+          className="relay:py-1 relay:px-0 relay:min-w-[auto] relay:text-[color:var(--relay-colors-gray9)] relay:cursor-pointer relay:rounded-[8px] relay:flex relay:items-center relay:gap-1 relay:focus-visible:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay:min-[660px]:p-0"
         >
           <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
           <Text
             style="subtitle1"
-            className="relay-text-[color:var(--relay-colors-text-subtle)] min-[660px]:relay-text-[14px] min-[660px]:relay-text-[color:var(--relay-colors-text-default)] min-[660px]:relay-leading-[20px]"
+            className="relay:text-[color:var(--relay-colors-text-subtle)] relay:min-[660px]:text-[14px] relay:min-[660px]:text-[color:var(--relay-colors-text-default)] relay:min-[660px]:leading-[20px]"
           >
             {context === 'from' ? 'Pay with' : 'Sell to'}
           </Text>
@@ -515,7 +515,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       </Flex>
 
       <Flex
-        className="relay-flex-1 relay-gap-3 relay-overflow-hidden relay-min-w-0 relay-max-w-full"
+        className="relay:flex-1 relay:gap-3 relay:overflow-hidden relay:min-w-0 relay:max-w-full"
       >
         {/* Main Token Content */}
         <AccessibleList
@@ -538,29 +538,29 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               handleTokenSelection(selectedToken)
             }
           }}
-          className="relay-flex relay-flex-col relay-w-full relay-min-w-0 relay-max-w-full relay-h-full"
+          className="relay:flex relay:flex-col relay:w-full relay:min-w-0 relay:max-w-full relay:h-full"
         >
           {/* Search Input Section - Fixed */}
           <Flex
             direction="column"
             align="start"
-            className="relay-w-full relay-gap-2 relay-bg-[var(--relay-colors-modal-background)] relay-min-w-0 relay-max-w-full"
+            className="relay:w-full relay:gap-2 relay:bg-[var(--relay-colors-modal-background)] relay:min-w-0 relay:max-w-full"
           >
             {/* Search input and Chain Filter Button Row */}
             <Flex
               align="center"
-              className="relay-w-full relay-gap-2 relay-min-w-0 relay-items-center relay-h-[40px]"
+              className="relay:w-full relay:gap-2 relay:min-w-0 relay:items-center relay:h-[40px]"
             >
               <AccessibleListItem
                 value="input"
                 asChild
-                className="relay-flex-1 relay-min-w-0 relay-flex relay-items-center"
+                className="relay:flex-1 relay:min-w-0 relay:flex relay:items-center"
               >
                 <Input
                   ref={setTokenSearchInputElement}
                   placeholder="Search for a token"
                   icon={
-                    <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+                    <Box className="relay:flex relay:text-[color:var(--relay-colors-gray9)]">
                       <FontAwesomeIcon
                         icon={faMagnifyingGlass}
                         width={16}
@@ -568,8 +568,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                       />
                     </Box>
                   }
-                  containerClassName="relay-w-full relay-h-[40px]"
-                  className="relay-w-full [&::placeholder]:relay-text-ellipsis"
+                  containerClassName="relay:w-full relay:h-[40px]"
+                  className="relay:w-full relay:[&::placeholder]:text-ellipsis"
                   onChange={(e) => {
                     const value = (e.target as HTMLInputElement).value
 
@@ -607,7 +607,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           <Flex
             key={chainFilter.id ?? 'all'}
             direction="column"
-            className="relay-flex-1 relay-overflow-y-auto relay-gap-3 relay-pt-2 relay-min-w-0 relay-max-w-full"
+            className="relay:flex-1 relay:overflow-y-auto relay:gap-3 relay:pt-2 relay:min-w-0 relay:max-w-full"
             style={{ scrollbarColor: 'var(--relay-colors-gray5) transparent' }}
           >
             {/* Suggested Tokens */}
@@ -644,7 +644,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 chainFilterId={chainFilter.id}
               />
             ) : (
-              <Flex direction="column" className="relay-gap-3">
+              <Flex direction="column" className="relay:gap-3">
                 {(() => {
                   const hasLoadedBalanceData = Boolean(duneTokens)
                   const userTokensReady = !isLoadingUserTokens
@@ -723,10 +723,10 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               <Flex
                 direction="column"
                 align="center"
-                className="relay-py-5 relay-max-w-[312px] relay-self-center"
+                className="relay:py-5 relay:max-w-[312px] relay:self-center"
               >
                 {!chainFilter?.id && isSearchTermValidAddress && (
-                  <Box className="relay-text-[color:var(--relay-colors-gray8)] relay-mb-2">
+                  <Box className="relay:text-[color:var(--relay-colors-gray8)] relay:mb-2">
                     <FontAwesomeIcon
                       icon={faFolderOpen}
                       size="xl"
@@ -738,7 +738,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 <Text
                   color="subtle"
                   style="body2"
-                  className="relay-text-center"
+                  className="relay:text-center"
                 >
                   {!chainFilter?.id && isSearchTermValidAddress
                     ? 'No results. Switch to the desired chain to search by contract.'
@@ -760,7 +760,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           <div onClick={() => onOpenChange(true)}>{trigger}</div>
           {open && (
             <Box
-              className="relay-absolute relay-top-0 relay-left-0 relay-right-0 relay-bottom-0 relay-z-[100] relay-bg-[var(--relay-colors-widget-background)] relay-flex relay-flex-col relay-overflow-hidden"
+              className="relay:absolute relay:top-0 relay:left-0 relay:right-0 relay:bottom-0 relay:z-[100] relay:bg-[var(--relay-colors-widget-background)] relay:flex relay:flex-col relay:overflow-hidden"
             >
               {paymentMethodContent}
             </Box>
@@ -775,7 +775,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           onOpenChange={onOpenChange}
           showCloseButton={false}
           trigger={trigger}
-          className="relay-p-4 relay-flex relay-flex-col relay-min-w-0 relay-box-border"
+          className="relay:p-4 relay:flex relay:flex-col relay:min-w-0 relay:box-border"
           contentStyle={{
             height: 'min(85vh, 540px)',
             width: 'min(400px, 100vw)',

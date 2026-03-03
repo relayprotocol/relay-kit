@@ -49,14 +49,14 @@ export const TokenList: FC<TokenListProps> = ({
           <Flex
             key={index}
             align="center"
-            className="relay-gap-2 relay-p-2 relay-w-full"
+            className="relay:gap-2 relay:p-2 relay:w-full"
           >
             <Skeleton
-              className="relay-w-[40px] relay-h-[40px] !relay-rounded-full relay-shrink-0"
+              className="relay:w-[40px] relay:h-[40px] relay:!rounded-full relay:shrink-0"
             />
-            <Flex direction="column" className="relay-gap-[2px] relay-grow">
-              <Skeleton className="relay-w-[60%] relay-h-[16px]" />
-              <Skeleton className="relay-w-[40%] relay-h-[16px]" />
+            <Flex direction="column" className="relay:gap-[2px] relay:grow">
+              <Skeleton className="relay:w-[60%] relay:h-[16px]" />
+              <Skeleton className="relay:w-[40%] relay:h-[16px]" />
             </Flex>
           </Flex>
         ))}
@@ -66,7 +66,7 @@ export const TokenList: FC<TokenListProps> = ({
 
   if (tokens.length > 0)
     return (
-      <Flex direction="column" className="relay-gap-1 relay-w-full">
+      <Flex direction="column" className="relay:gap-1 relay:w-full">
         <Text style="subtitle2" color="subtle">
           {title}
         </Text>
@@ -83,7 +83,7 @@ export const TokenList: FC<TokenListProps> = ({
               <Button
                 color="ghost"
                 size="none"
-                className="relay-gap-2 relay-cursor-pointer relay-p-3 relay-h-[58px] relay-rounded-lg relay-transition-colors relay-duration-150 hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay-shrink-0 relay-content-center relay-flex relay-w-full relay-outline-none relay-snap-start relay-focus-inset"
+                className="relay:gap-2 relay:cursor-pointer relay:p-3 relay:h-[58px] relay:rounded-lg relay:transition-colors relay:duration-150 relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay:shrink-0 relay:content-center relay:flex relay:w-full relay:outline-none relay:snap-start relay:focus-inset"
               >
                 <ChainTokenIcon
                   chainId={token.chainId}
@@ -94,26 +94,26 @@ export const TokenList: FC<TokenListProps> = ({
                 <Flex
                   direction="column"
                   align="start"
-                  className="relay-gap-[2px] relay-max-w-full relay-min-w-0"
+                  className="relay:gap-[2px] relay:max-w-full relay:min-w-0"
                 >
-                  <Flex align="center" className="relay-gap-1 relay-max-w-full">
+                  <Flex align="center" className="relay:gap-1 relay:max-w-full">
                     <Text
                       style="h6"
                       ellipsify
-                      className="relay-gap-1 relay-items-center"
+                      className="relay:gap-1 relay:items-center"
                     >
                       {token.symbol}
                     </Text>
                     {token.isGasCurrency && chainFilterId && (
                       <Text
                         style="subtitle3"
-                        className="relay-px-[6px] relay-py-[4px] relay-rounded-[100px] relay-bg-[var(--relay-colors-gray3)] relay-whitespace-nowrap relay-shrink-0 relay-leading-[12px] [button:hover_&]:relay-bg-[var(--relay-colors-gray5)]"
+                        className="relay:px-[6px] relay:py-[4px] relay:rounded-[100px] relay:bg-[var(--relay-colors-gray3)] relay:whitespace-nowrap relay:shrink-0 relay:leading-[12px] relay:[button:hover_&]:bg-[var(--relay-colors-gray5)]"
                       >
                         Gas Token
                       </Text>
                     )}
                   </Flex>
-                  <Flex align="center" className="relay-gap-1 relay-max-w-full">
+                  <Flex align="center" className="relay:gap-1 relay:max-w-full">
                     <Text
                       style="subtitle3"
                       color={chainFilterId ? 'subtle' : undefined}
@@ -128,13 +128,13 @@ export const TokenList: FC<TokenListProps> = ({
                       style="subtitle3"
                       color="subtle"
                       ellipsify
-                      className="relay-whitespace-nowrap"
+                      className="relay:whitespace-nowrap"
                     >
                       {truncateAddress(token.address)}
                     </Text>
 
                     {!token.verified ? (
-                      <Box className="relay-text-[color:var(--relay-colors-gray8)]">
+                      <Box className="relay:text-[color:var(--relay-colors-gray8)]">
                         <FontAwesomeIcon
                           icon={faExclamationTriangle}
                           width={14}
@@ -149,12 +149,12 @@ export const TokenList: FC<TokenListProps> = ({
                   <Flex
                     direction="column"
                     align="end"
-                    className="relay-gap-[2px] relay-ml-auto relay-shrink-0"
+                    className="relay:gap-[2px] relay:ml-auto relay:shrink-0"
                   >
                     {isLoadingBalances ? (
                       <>
-                        <Skeleton className="relay-ml-auto relay-w-[60px]" />
-                        <Skeleton className="relay-ml-auto relay-w-[60px]" />
+                        <Skeleton className="relay:ml-auto relay:w-[60px]" />
+                        <Skeleton className="relay:ml-auto relay:w-[60px]" />
                       </>
                     ) : (
                       <>
@@ -186,7 +186,7 @@ export const TokenList: FC<TokenListProps> = ({
             color="grey"
             size="none"
             corners="pill"
-            className="relay-ml-auto relay-h-[24px] relay-px-2 relay-py-1"
+            className="relay:ml-auto relay:h-[24px] relay:px-2 relay:py-1"
             onClick={() => setTokensExpanded(!tokensExpanded)}
           >
             <Text style="subtitle3" color="subtle">
@@ -195,8 +195,8 @@ export const TokenList: FC<TokenListProps> = ({
             <Text
               style="body1"
               className={cn(
-                '!relay-text-[color:var(--relay-colors-gray9)] relay-ml-auto relay-w-[12px]',
-                tokensExpanded ? 'relay-rotate-180' : 'relay-rotate-0'
+                'relay:!text-[color:var(--relay-colors-gray9)] relay:ml-auto relay:w-[12px]',
+                tokensExpanded ? 'relay:rotate-180' : 'relay:rotate-0'
               )}
             >
               <FontAwesomeIcon icon={faChevronDown} />

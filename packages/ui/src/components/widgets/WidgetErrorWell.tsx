@@ -72,14 +72,14 @@ export const WidgetErrorWell: FC<Props> = ({
       <Flex
         align="center"
         justify="between"
-        className="relay-gap-2 relay-p-3 relay-w-full relay-rounded-[var(--relay-radii-widget-card-border-radius)] relay-bg-[var(--relay-colors-widget-background)] relay-border-widget-card relay-overflow-hidden relay-mb-[var(--relay-spacing-widget-card-section-gutter)]"
+        className="relay:gap-2 relay:p-3 relay:w-full relay:rounded-[var(--relay-radii-widget-card-border-radius)] relay:bg-[var(--relay-colors-widget-background)] relay:border-widget-card relay:overflow-hidden relay:mb-[var(--relay-spacing-widget-card-section-gutter)]"
       >
         <Text style="subtitle2">Route</Text>
-        <Flex align="center" className="relay-gap-1">
+        <Flex align="center" className="relay:gap-1">
           <Text style="subtitle2" color="subtle">
             No available routes
           </Text>
-          <Box className="relay-text-[color:var(--relay-colors-gray11)] relay-w-[14px] relay-shrink-0">
+          <Box className="relay:text-[color:var(--relay-colors-gray11)] relay:w-[14px] relay:shrink-0">
             <FontAwesomeIcon icon={faRoute} width={14} />
           </Box>
         </Flex>
@@ -106,12 +106,12 @@ export const WidgetErrorWell: FC<Props> = ({
       <Flex
         align="center"
         className={cn(
-          'relay-gap-2 relay-p-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          'relay:gap-2 relay:p-3 relay:bg-[var(--relay-colors-amber2)] relay:border relay:border-solid relay:border-[var(--relay-colors-amber4)] relay:rounded-[12px] relay:mb-3',
           containerClassName
         )}
         id={'widget-error-well-section'}
       >
-        <Box className="relay-text-[color:var(--relay-colors-amber9)]">
+        <Box className="relay:text-[color:var(--relay-colors-amber9)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
         <Text style="subtitle3" color="warning">
@@ -127,12 +127,12 @@ export const WidgetErrorWell: FC<Props> = ({
       <Flex
         align="center"
         className={cn(
-          'relay-gap-2 relay-p-3 relay-bg-[var(--relay-colors-red2)] relay-border relay-border-solid relay-border-[var(--relay-colors-red4)] relay-rounded-[12px] relay-mb-3',
+          'relay:gap-2 relay:p-3 relay:bg-[var(--relay-colors-red2)] relay:border relay:border-solid relay:border-[var(--relay-colors-red4)] relay:rounded-[12px] relay:mb-3',
           containerClassName
         )}
         id={'widget-error-well-section'}
       >
-        <Box className="relay-text-[color:var(--relay-colors-red10)]">
+        <Box className="relay:text-[color:var(--relay-colors-red10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
         <Text style="subtitle3" color="error">
@@ -153,7 +153,7 @@ export const WidgetErrorWell: FC<Props> = ({
         content={
           <Text
             style="subtitle3"
-            className="relay-max-w-[215px] relay-inline-block"
+            className="relay:max-w-[215px] relay:inline-block"
           >
             We recommend increasing the amount or waiting for the gas fee to be
             lower.
@@ -163,12 +163,12 @@ export const WidgetErrorWell: FC<Props> = ({
         <Flex
           align="center"
           className={cn(
-            'relay-gap-2 relay-py-3 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+            'relay:gap-2 relay:py-3 relay:px-3 relay:bg-[var(--relay-colors-amber2)] relay:border relay:border-solid relay:border-[var(--relay-colors-amber4)] relay:rounded-[12px] relay:mb-3',
             containerClassName
           )}
           id={'widget-error-well-section'}
         >
-          <Box className="relay-text-[color:var(--relay-colors-amber10)]">
+          <Box className="relay:text-[color:var(--relay-colors-amber10)]">
             <FontAwesomeIcon icon={faExclamationCircle} width={16} />
           </Box>
           <Text style="subtitle3" color="warning">
@@ -184,12 +184,12 @@ export const WidgetErrorWell: FC<Props> = ({
       <Flex
         align="center"
         className={cn(
-          'relay-gap-2 relay-py-2 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          'relay:gap-2 relay:py-2 relay:px-3 relay:bg-[var(--relay-colors-amber2)] relay:border relay:border-solid relay:border-[var(--relay-colors-amber4)] relay:rounded-[12px] relay:mb-3',
           containerClassName
         )}
         id={'widget-error-well-section'}
       >
-        <Box className="relay-text-[color:var(--relay-colors-amber10)]">
+        <Box className="relay:text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
         <Text style="subtitle3" color="warning">
@@ -205,12 +205,12 @@ export const WidgetErrorWell: FC<Props> = ({
       <Flex
         align="center"
         className={cn(
-          'relay-gap-2 relay-py-2 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          'relay:gap-2 relay:py-2 relay:px-3 relay:bg-[var(--relay-colors-amber2)] relay:border relay:border-solid relay:border-[var(--relay-colors-amber4)] relay:rounded-[12px] relay:mb-3',
           containerClassName
         )}
         id={'widget-error-well-section'}
       >
-        <Box className="relay-text-[color:var(--relay-colors-amber10)]">
+        <Box className="relay:text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
         <Text style="subtitle3" color="warning">
@@ -226,12 +226,12 @@ export const WidgetErrorWell: FC<Props> = ({
       <Flex
         align="center"
         className={cn(
-          'relay-gap-2 relay-py-3 relay-px-3 relay-bg-[var(--relay-colors-amber2)] relay-border relay-border-solid relay-border-[var(--relay-colors-amber4)] relay-rounded-[12px] relay-mb-3',
+          'relay:gap-2 relay:py-3 relay:px-3 relay:bg-[var(--relay-colors-amber2)] relay:border relay:border-solid relay:border-[var(--relay-colors-amber4)] relay:rounded-[12px] relay:mb-3',
           containerClassName
         )}
         id={'widget-error-well-section'}
       >
-        <Box className="relay-text-[color:var(--relay-colors-amber10)]">
+        <Box className="relay:text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
         <Text style="subtitle3" color="warning">

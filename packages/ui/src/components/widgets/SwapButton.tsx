@@ -97,8 +97,8 @@ const SwapButton: FC<SwapButtonProps> = ({
     return (
       <Button
         className={cn(
-          'relay-justify-center relay-w-full',
-          !tokenWidgetMode && 'relay-normal-case'
+          'relay:justify-center relay:w-full',
+          !tokenWidgetMode && 'relay:normal-case'
         )}
         color={showHighPriceImpactWarning ? 'error' : 'primary'}
         aria-label={context}
@@ -120,8 +120,8 @@ const SwapButton: FC<SwapButtonProps> = ({
     <Button
       cta={true}
       className={cn(
-        'relay-justify-center relay-w-full',
-        !tokenWidgetMode && 'relay-normal-case'
+        'relay:justify-center relay:w-full',
+        !tokenWidgetMode && 'relay:normal-case'
       )}
       aria-label="Connect wallet"
       onClick={() => {

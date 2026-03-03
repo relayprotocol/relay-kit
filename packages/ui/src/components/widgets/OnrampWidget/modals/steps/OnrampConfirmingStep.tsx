@@ -46,16 +46,16 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
   return (
     <Flex
       direction="column"
-      className="relay-w-full relay-h-full relay-gap-4"
+      className="relay:w-full relay:h-full relay:gap-4"
     >
       <Text style="h6">
         Buy {toToken?.symbol} ({toChain?.displayName})
       </Text>
       <Flex
         direction="column"
-        className="relay-w-full relay-overflow-hidden relay-p-4 relay-rounded-widget-card relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)]"
+        className="relay:w-full relay:overflow-hidden relay:p-4 relay:rounded-widget-card relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)]"
       >
-        <Flex align="center" className="relay-gap-2">
+        <Flex align="center" className="relay:gap-2">
           <ChainTokenIcon
             chainId={fromToken?.chainId}
             tokenlogoURI={fromToken?.logoURI}
@@ -67,9 +67,9 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
           </Text>
         </Flex>
         <div
-          className="relay-ml-[16px] relay-h-[24px] relay-w-px relay-bg-[var(--relay-colors-gray5)] relay-mt-[5px] relay-mb-[5px]"
+          className="relay:ml-[16px] relay:h-[24px] relay:w-px relay:bg-[var(--relay-colors-gray5)] relay:mt-[5px] relay:mb-[5px]"
         />
-        <Flex align="center" className="relay-gap-2">
+        <Flex align="center" className="relay:gap-2">
           <ChainTokenIcon
             chainId={toToken?.chainId}
             tokenlogoURI={toToken?.logoURI}
@@ -87,7 +87,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
         <Anchor
           href="https://support.relay.link/en/articles/10517947-fiat-on-ramps"
           target="_blank"
-          className="relay-ml-1"
+          className="relay:ml-1"
         >
           Learn more
         </Anchor>
@@ -95,7 +95,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
       <Button
         cta={true}
         disabled={!depositAddress || isFetchingQuote}
-        className="relay-justify-center"
+        className="relay:justify-center"
         onClick={(e) => {
           onAnalyticEvent?.(EventNames.ONRAMP_CTA_CLICKED, {
             recipient,
@@ -112,7 +112,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
       >
         {!depositAddress || isFetchingQuote ? (
           <LoadingSpinner
-            className="relay-h-[16px] relay-w-[16px] relay-fill-[var(--relay-colors-button-disabled-color)]"
+            className="relay:h-[16px] relay:w-[16px] relay:fill-[var(--relay-colors-button-disabled-color)]"
           />
         ) : (
           `Purchase ${fromToken?.symbol} (${fromChain?.displayName})`

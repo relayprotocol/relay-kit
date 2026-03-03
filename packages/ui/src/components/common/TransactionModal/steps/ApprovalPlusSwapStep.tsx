@@ -46,22 +46,22 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
         align="center"
         justify="between"
         direction="column"
-        className="relay-shrink-0 bp500:relay-flex-row"
+        className="relay:shrink-0 relay:bp500:flex-row"
       >
         <Flex
           direction="column"
-          className="relay-bg-[var(--relay-colors-subtle-background-color)] relay-rounded-[12px] relay-gap-1 relay-w-full relay-py-[12px] relay-px-[16px]"
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-1 relay:w-full relay:py-[12px] relay:px-[16px]"
         >
           <Flex
             direction="column"
             align="start"
-            className="relay-gap-1 relay-cursor-pointer"
+            className="relay:gap-1 relay:cursor-pointer"
           >
             <ChainTokenIcon
               chainId={fromToken?.chainId}
               tokenlogoURI={fromToken?.logoURI}
               tokenSymbol={fromToken?.symbol}
-              className="relay-h-[32px] relay-w-[32px]"
+              className="relay:h-[32px] relay:w-[32px]"
             />
             <Text style="h6" ellipsify>
               {fromAmountFormatted} {fromToken?.symbol}
@@ -74,24 +74,24 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
         <Text
           style="body1"
           color="subtle"
-          className="relay-px-4 relay-py-0 bp400Down:relay-rotate-90"
+          className="relay:px-4 relay:py-0 relay:bp400Down:rotate-90"
         >
           <FontAwesomeIcon icon={faArrowRight} width={16} />
         </Text>
         <Flex
           direction="column"
-          className="relay-bg-[var(--relay-colors-subtle-background-color)] relay-rounded-[12px] relay-gap-1 relay-w-full relay-py-[12px] relay-px-[16px]"
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-1 relay:w-full relay:py-[12px] relay:px-[16px]"
         >
           <Flex
             direction="column"
             align="start"
-            className="relay-gap-1 relay-cursor-pointer"
+            className="relay:gap-1 relay:cursor-pointer"
           >
             <ChainTokenIcon
               chainId={toToken?.chainId}
               tokenlogoURI={toToken?.logoURI}
               tokenSymbol={toToken?.symbol}
-              className="relay-h-[32px] relay-w-[32px]"
+              className="relay:h-[32px] relay:w-[32px]"
             />
             <Text style="h6" ellipsify>
               {toAmountFormatted} {toToken?.symbol}
@@ -104,7 +104,7 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
       </Flex>
       <Flex
         direction="column"
-        className="relay-border relay-border-solid relay-border-[var(--relay-colors-gray3)] relay-rounded-[12px] relay-p-3 relay-gap-2 relay-h-[260px]"
+        className="relay:border relay:border-solid relay:border-[var(--relay-colors-gray3)] relay:rounded-[12px] relay:p-3 relay:gap-2 relay:h-[260px]"
       >
         {steps?.map((step, index) => {
           const isCurrentStep =
@@ -132,36 +132,36 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
               <Flex
                 align="center"
                 justify="between"
-                className="relay-w-full relay-gap-3"
+                className="relay:w-full relay:gap-3"
               >
-                <Flex align="center" className="relay-gap-2 relay-h-[40px]">
+                <Flex align="center" className="relay:gap-2 relay:h-[40px]">
                   {step.id === 'approve' ? (
                     <ChainTokenIcon
                       chainId={fromToken?.chainId}
                       tokenlogoURI={fromToken?.logoURI}
                       tokenSymbol={fromToken?.symbol}
                       className={cn(
-                        'relay-rounded-full relay-shrink-0',
-                        !isCurrentStep && 'relay-grayscale'
+                        'relay:rounded-full relay:shrink-0',
+                        !isCurrentStep && 'relay:grayscale'
                       )}
                     />
                   ) : (
                     <Flex
                       className={cn(
-                        'relay-rounded-full relay-shrink-0 relay-items-center relay-justify-center relay-h-[32px] relay-w-[32px]',
+                        'relay:rounded-full relay:shrink-0 relay:items-center relay:justify-center relay:h-[32px] relay:w-[32px]',
                         isCurrentStep
-                          ? 'relay-bg-[var(--relay-colors-primary5)] relay-text-[color:var(--relay-colors-primary8)]'
-                          : 'relay-bg-[var(--relay-colors-gray5)] relay-text-[color:var(--relay-colors-gray9)]'
+                          ? 'relay:bg-[var(--relay-colors-primary5)] relay:text-[color:var(--relay-colors-primary8)]'
+                          : 'relay:bg-[var(--relay-colors-gray5)] relay:text-[color:var(--relay-colors-gray9)]'
                       )}
                     >
                       <FontAwesomeIcon icon={faRepeat} width={16} />
                     </Flex>
                   )}
-                  <Flex direction="column" className="relay-gap-[2px]">
+                  <Flex direction="column" className="relay:gap-[2px]">
                     <Text style="subtitle2">{stepTitle}</Text>
                     {isApproveStep && !hasTxHash && (
                       <Anchor
-                        className="relay-text-[12px]"
+                        className="relay:text-[12px]"
                         href="https://support.relay.link/en/articles/10371133-why-do-i-have-to-approve-a-token"
                         target="_blank"
                       >
@@ -180,7 +180,7 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
                             key={txHash}
                             href={txUrl}
                             target="_blank"
-                            className="relay-text-[12px]"
+                            className="relay:text-[12px]"
                           >
                             View Tx: {truncateAddress(txHash, '...', 6, 4)}
                           </Anchor>
@@ -192,12 +192,12 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
                 <Flex>
                   {isCurrentStep && hasTxHash ? (
                     <LoadingSpinner
-                      className="relay-h-4 relay-w-4 relay-fill-[var(--relay-colors-gray9)]"
+                      className="relay:h-4 relay:w-4 relay:fill-[var(--relay-colors-gray9)]"
                     />
                   ) : step?.items?.every(
                       (item) => item.status === 'complete'
                     ) ? (
-                    <Box className="relay-text-[color:var(--relay-colors-green9)]">
+                    <Box className="relay:text-[color:var(--relay-colors-green9)]">
                       <FontAwesomeIcon icon={faCheck} width={16} />
                     </Box>
                   ) : null}
@@ -205,8 +205,8 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
               </Flex>
 
               {index !== (steps?.length || 0) - 1 && (
-                <Box className="relay-pl-4 relay-h-[14px] relay-mt-3">
-                  <Box className="relay-h-full relay-w-px relay-bg-[var(--relay-colors-gray11)]" />
+                <Box className="relay:pl-4 relay:h-[14px] relay:mt-3">
+                  <Box className="relay:h-full relay:w-px relay:bg-[var(--relay-colors-gray11)]" />
                 </Box>
               )}
             </Box>

@@ -51,14 +51,14 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
           <Flex
             key={index}
             align="center"
-            className="relay-gap-2 relay-py-2 relay-px-0 relay-w-full min-[660px]:relay-px-2"
+            className="relay:gap-2 relay:py-2 relay:px-0 relay:w-full relay:min-[660px]:px-2"
           >
             <Skeleton
-              className="relay-w-[40px] relay-h-[40px] relay-rounded-[50%] relay-shrink-0"
+              className="relay:w-[40px] relay:h-[40px] relay:rounded-[50%] relay:shrink-0"
             />
-            <Flex direction="column" className="relay-gap-[2px] relay-grow">
-              <Skeleton className="relay-w-[60%] relay-h-[16px]" />
-              <Skeleton className="relay-w-[40%] relay-h-[16px]" />
+            <Flex direction="column" className="relay:gap-[2px] relay:grow">
+              <Skeleton className="relay:w-[60%] relay:h-[16px]" />
+              <Skeleton className="relay:w-[40%] relay:h-[16px]" />
             </Flex>
           </Flex>
         ))}
@@ -68,7 +68,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
 
   if (tokens.length > 0)
     return (
-      <Flex direction="column" className="relay-gap-1 relay-w-full">
+      <Flex direction="column" className="relay:gap-1 relay:w-full">
         <Text style="subtitle2" color="subtle">
           {title}
         </Text>
@@ -84,7 +84,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
             <AccessibleListItem value={value} key={value} asChild>
               <Button
                 color="ghost"
-                className="relay-gap-2 relay-cursor-pointer relay-px-0 relay-py-2 relay-transition-[backdrop-filter] relay-duration-[250ms] relay-ease-linear min-[660px]:relay-px-2 hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay-shrink-0 relay-content-center relay-flex relay-w-full focus-visible:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] [&[data-state=on]]:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] active:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus-within:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay-snap-start"
+                className="relay:gap-2 relay:cursor-pointer relay:px-0 relay:py-2 relay:transition-[backdrop-filter] relay:duration-[250ms] relay:ease-linear relay:min-[660px]:px-2 relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay:shrink-0 relay:content-center relay:flex relay:w-full relay:focus-visible:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay:[&[data-state=on]]:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay:active:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay:focus-within:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay:snap-start"
                 style={{ opacity }}
               >
                 <ChainTokenIcon
@@ -96,26 +96,26 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                 <Flex
                   direction="column"
                   align="start"
-                  className="relay-gap-[2px] relay-max-w-full relay-min-w-0"
+                  className="relay:gap-[2px] relay:max-w-full relay:min-w-0"
                 >
-                  <Flex align="center" className="relay-gap-1 relay-max-w-full">
+                  <Flex align="center" className="relay:gap-1 relay:max-w-full">
                     <Text
                       style="h6"
                       ellipsify
-                      className="relay-gap-1 relay-items-center"
+                      className="relay:gap-1 relay:items-center"
                     >
                       {token.symbol}
                     </Text>
                     {token.isGasCurrency && chainFilterId && (
                       <Text
                         style="subtitle3"
-                        className="relay-px-[6px] relay-py-[4px] relay-rounded-[100px] relay-bg-[var(--relay-colors-gray3)] relay-whitespace-nowrap relay-shrink-0 relay-leading-[12px] [button:hover_&]:relay-bg-[var(--relay-colors-gray5)]"
+                        className="relay:px-[6px] relay:py-[4px] relay:rounded-[100px] relay:bg-[var(--relay-colors-gray3)] relay:whitespace-nowrap relay:shrink-0 relay:leading-[12px] relay:[button:hover_&]:bg-[var(--relay-colors-gray5)]"
                       >
                         Gas Token
                       </Text>
                     )}
                   </Flex>
-                  <Flex align="center" className="relay-gap-1 relay-max-w-full">
+                  <Flex align="center" className="relay:gap-1 relay:max-w-full">
                     <Text style="subtitle3" color="subtle" ellipsify>
                       {token.chain?.displayName ||
                         token.chain?.name ||
@@ -123,7 +123,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                     </Text>
 
                     {!token.verified ? (
-                      <Box className="relay-text-[color:var(--relay-colors-gray8)]">
+                      <Box className="relay:text-[color:var(--relay-colors-gray8)]">
                         <FontAwesomeIcon
                           icon={faExclamationTriangle}
                           width={14}
@@ -138,12 +138,12 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
                   <Flex
                     direction="column"
                     align="end"
-                    className="relay-gap-[2px] relay-ml-auto relay-shrink-0"
+                    className="relay:gap-[2px] relay:ml-auto relay:shrink-0"
                   >
                     {isLoadingBalances ? (
                       <>
-                        <Skeleton className="relay-ml-auto relay-w-[60px]" />
-                        <Skeleton className="relay-ml-auto relay-w-[60px]" />
+                        <Skeleton className="relay:ml-auto relay:w-[60px]" />
+                        <Skeleton className="relay:ml-auto relay:w-[60px]" />
                       </>
                     ) : (
                       <>
@@ -175,7 +175,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
             color="grey"
             size="small"
             corners="pill"
-            className="relay-ml-auto relay-min-h-[24px] relay-px-2 relay-py-1"
+            className="relay:ml-auto relay:min-h-[24px] relay:px-2 relay:py-1"
             onClick={() => setTokensExpanded(!tokensExpanded)}
           >
             <Text style="subtitle3" color="subtle">
@@ -184,8 +184,8 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
             <Text
               style="body1"
               className={cn(
-                'relay-text-[color:var(--relay-colors-gray9)] relay-ml-auto relay-w-[12px]',
-                tokensExpanded ? 'relay-rotate-180' : 'relay-rotate-0'
+                'relay:text-[color:var(--relay-colors-gray9)] relay:ml-auto relay:w-[12px]',
+                tokensExpanded ? 'relay:rotate-180' : 'relay:rotate-0'
               )}
             >
               <FontAwesomeIcon icon={faChevronDown} />

@@ -17,9 +17,9 @@ const CollapsibleContent = forwardRef<
       ref={forwardedRef}
       {...props}
       className={cn(
-        'relay-overflow-hidden',
-        'data-[state=open]:relay-animate-collapsible-down',
-        'data-[state=closed]:relay-animate-collapsible-up',
+        'relay:overflow-hidden',
+        'relay:data-[state=open]:animate-collapsible-down',
+        'relay:data-[state=closed]:animate-collapsible-up',
         className
       )}
     >
@@ -37,7 +37,7 @@ const CollapsibleRoot = forwardRef<
     <Collapsible.Root
       ref={forwardedRef}
       {...props}
-      className={cn('relay-w-full', className)}
+      className={cn('relay:w-full', className)}
     >
       {children}
     </Collapsible.Root>
@@ -54,7 +54,7 @@ const CollapsibleTrigger = forwardRef<
       ref={forwardedRef}
       {...props}
       className={cn(
-        'relay-w-full relay-flex relay-items-center relay-justify-between relay-cursor-pointer',
+        'relay:w-full relay:flex relay:items-center relay:justify-between relay:cursor-pointer',
         className
       )}
     >

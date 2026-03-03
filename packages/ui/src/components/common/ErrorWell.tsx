@@ -50,15 +50,15 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
     <Text
       style="subtitle1"
       className={cn(
-        'relay-my-4 relay-text-center relay-w-full relay-break-words',
+        'relay:my-4 relay:text-center relay:w-full relay:break-words',
         '[overflow-wrap:anywhere]',
         shouldScrollErrorMessage && [
-          'relay-max-h-[min(36vh,220px)] relay-overflow-y-auto relay-px-1',
+          'relay:max-h-[min(36vh,220px)] relay:overflow-y-auto relay:px-1',
           '[scrollbar-width:thin]',
           '[scrollbar-color:var(--relay-colors-gray5)_transparent]',
-          '[&::-webkit-scrollbar]:relay-w-[6px] [&::-webkit-scrollbar]:relay-bg-transparent',
-          '[&::-webkit-scrollbar-track]:relay-bg-transparent',
-          '[&::-webkit-scrollbar-thumb]:relay-bg-[var(--relay-colors-gray5)] [&::-webkit-scrollbar-thumb]:relay-rounded-full'
+          'relay:[&::-webkit-scrollbar]:w-[6px] relay:[&::-webkit-scrollbar]:bg-transparent',
+          'relay:[&::-webkit-scrollbar-track]:bg-transparent',
+          'relay:[&::-webkit-scrollbar-thumb]:bg-[var(--relay-colors-gray5)] relay:[&::-webkit-scrollbar-thumb]:rounded-full'
         ]
       )}
     >

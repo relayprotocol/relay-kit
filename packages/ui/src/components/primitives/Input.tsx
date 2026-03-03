@@ -5,22 +5,22 @@ import { cn } from '../../utils/cn.js'
 
 const inputVariants = cva(
   [
-    'relay-w-full relay-px-4 relay-py-3 relay-rounded-input relay-font-body relay-text-[16px]',
-    'relay-text-[color:var(--relay-colors-input-color)]',
-    'relay-bg-[var(--relay-colors-input-background)]',
-    'placeholder:relay-text-[color:var(--relay-colors-gray9)] relay-placeholder-ellipsis',
-    'relay-transition-shadow relay-duration-200',
-    'focus:relay-shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] focus:relay-outline-none',
-    'disabled:relay-cursor-not-allowed',
-    '[&::-webkit-outer-spin-button]:relay-appearance-none [&::-webkit-inner-spin-button]:relay-appearance-none'
+    'relay:w-full relay:px-4 relay:py-3 relay:rounded-input relay:font-body relay:text-[16px]',
+    'relay:text-[color:var(--relay-colors-input-color)]',
+    'relay:bg-[var(--relay-colors-input-background)]',
+    'relay:placeholder:text-[color:var(--relay-colors-gray9)] relay:placeholder-ellipsis',
+    'relay:transition-shadow relay:duration-200',
+    'relay:focus:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay:focus:outline-none',
+    'relay:disabled:cursor-not-allowed',
+    'relay:[&::-webkit-outer-spin-button]:appearance-none relay:[&::-webkit-inner-spin-button]:appearance-none'
   ].join(' '),
   {
     variants: {
       size: {
-        large: 'relay-text-[32px] relay-leading-[42px]'
+        large: 'relay:text-[32px] relay:leading-[42px]'
       },
       ellipsify: {
-        true: 'relay-text-ellipsis relay-overflow-hidden relay-whitespace-nowrap'
+        true: 'relay:text-ellipsis relay:overflow-hidden relay:whitespace-nowrap'
       }
     }
   }
@@ -55,15 +55,15 @@ const Input = forwardRef<
     const { size, ellipsify, style, ...inputProps } = props
 
     return (
-      <div className={cn('relay-flex relay-w-full', containerClassName)} style={style}>
+      <div className={cn('relay:flex relay:w-full', containerClassName)} style={style}>
         {icon && (
-          <div className="relay-flex relay-relative">
+          <div className="relay:flex relay:relative">
             <div
               className={cn(
-                'relay-absolute relay-top-[12px] relay-z-10',
+                'relay:absolute relay:top-[12px] relay:z-10 relay:flex relay:items-center',
                 iconPosition === 'right'
-                  ? 'relay-right-4 relay-left-[unset]'
-                  : 'relay-left-4 relay-right-[unset]',
+                  ? 'relay:right-4 relay:left-[unset]'
+                  : 'relay:left-4 relay:right-[unset]',
                 iconClassName
               )}
             >

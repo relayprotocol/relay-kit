@@ -60,7 +60,7 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
     <>
       <Flex
         direction="column"
-        className="relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] relay-rounded-[8px] relay-px-2 relay-py-3 relay-mb-3 relay-gap-2"
+        className="relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:rounded-[8px] relay:px-2 relay:py-3 relay:mb-3 relay:gap-2"
       >
         <Text style="body2">
           Transfer funds manually from your {fromChain?.displayName} wallet to
@@ -73,29 +73,29 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
           Learn More
         </Anchor>
       </Flex>
-      <Flex className="relay-gap-1">
-        <Flex className="relay-gap-1 relay-w-full" direction="column">
+      <Flex className="relay:gap-1">
+        <Flex className="relay:gap-1 relay:w-full" direction="column">
           <Text style="subtitle2">Network</Text>
           <Pill
             color="gray"
-            className="relay-flex relay-items-center relay-py-2"
+            className="relay:flex relay:items-center relay:py-2"
             radius="squared"
           >
             <ChainIcon chainId={fromChain?.id} height={20} width={20} />
             <Text style="h6">{fromChain?.displayName}</Text>
           </Pill>
         </Flex>
-        <Flex className="relay-gap-1 relay-w-full" direction="column">
+        <Flex className="relay:gap-1 relay:w-full" direction="column">
           <Text style="subtitle2">Amount to transfer</Text>
           <Pill
             color="gray"
-            className="relay-flex relay-items-center relay-py-2"
+            className="relay:flex relay:items-center relay:py-2"
             radius="squared"
           >
             {fromAmountFormatted ? (
               <>
                 {' '}
-                <Text style="h6" className="relay-font-medium relay-mr-1">
+                <Text style="h6" className="relay:font-medium relay:mr-1">
                   {fromAmountFormatted}
                 </Text>
                 <img
@@ -103,12 +103,12 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
                   src={fromToken?.logoURI}
                   width={20}
                   height={20}
-                  className="relay-rounded-full"
+                  className="relay:rounded-full"
                 />
                 <Text style="h6">{fromToken?.symbol}</Text>
               </>
             ) : (
-              <Skeleton className="relay-h-[24px] relay-w-full" />
+              <Skeleton className="relay:h-[24px] relay:w-full" />
             )}{' '}
           </Pill>
         </Flex>
@@ -117,22 +117,22 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
       <Pill
         radius="rounded"
         color="gray"
-        className="relay-flex relay-items-center relay-gap-3 relay-p-3"
+        className="relay:flex relay:items-center relay:gap-3 relay:p-3"
       >
         {isFetchingQuote ? (
-          <Skeleton className="relay-h-[21px] relay-w-full" />
+          <Skeleton className="relay:h-[21px] relay:w-full" />
         ) : (
           <>
-            <Text style="subtitle2" className="relay-mr-auto">
+            <Text style="subtitle2" className="relay:mr-auto">
               {truncateAddress(depositAddress, '...', 28, 4)}
             </Text>
             {qrcodeUrl ? (
               <Popover>
-                <PopoverTrigger className="relay-cursor-pointer">
-                  <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+                <PopoverTrigger className="relay:cursor-pointer">
+                  <Box className="relay:text-[color:var(--relay-colors-gray9)]">
                     <FontAwesomeIcon
                       icon={faQrcode}
-                      className="relay-w-[16px] relay-h-[16px]"
+                      className="relay:w-[16px] relay:h-[16px]"
                     />
                   </Box>
                 </PopoverTrigger>
@@ -196,7 +196,7 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
                               chainId={fromChain?.id}
                               height={14}
                               width={14}
-                              className="relay-absolute relay-bottom-0 relay-right-0 relay-border relay-border-solid relay-border-white"
+                              className="relay:absolute relay:bottom-0 relay:right-0 relay:border relay:border-solid relay:border-white"
                               borderRadius={4}
                             />
                           </div>
@@ -213,10 +213,10 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
       </Pill>
       <Button
         disabled={true}
-        className="relay-text-[color:var(--relay-colors-button-disabled-color)_!important] relay-mt-2 relay-justify-center"
+        className="relay:text-[color:var(--relay-colors-button-disabled-color)_!important] relay:mt-2 relay:justify-center"
       >
         <LoadingSpinner
-          className="relay-h-4 relay-w-4 relay-fill-[var(--relay-colors-button-disabled-color)]"
+          className="relay:h-4 relay:w-4 relay:fill-[var(--relay-colors-button-disabled-color)]"
         />
         Waiting for you to transfer funds
       </Button>

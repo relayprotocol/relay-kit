@@ -52,48 +52,46 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
       onCloseButtonClicked={() => {
         onDecline?.(data?.token, data?.context)
       }}
-      className="relay-overflow-hidden relay-z-[10000001]"
+      className="relay:overflow-hidden relay:z-[10000001]"
       overlayZIndex={10000001}
     >
       <Flex
         direction="column"
-        className="relay-w-full relay-h-full relay-gap-4 sm:relay-w-[370px]"
+        className="relay:w-full relay:h-full relay:gap-4 relay:sm:w-[370px]"
       >
         <Text style="h6">Unverified Token</Text>
-        <Flex align="center" direction="column" className="relay-gap-4">
+        <Flex align="center" direction="column" className="relay:gap-4">
           <Flex align="center" justify="center">
             {isValidTokenLogo ? (
               <img
                 src={data?.token.logoURI}
                 alt={data?.token?.name}
-                className="relay-w-[48px] relay-h-[48px] relay-rounded-full"
+                className="relay:w-[48px] relay:h-[48px] relay:rounded-full"
               />
             ) : null}
             <Flex
               align="center"
               className={cn(
-                'relay-w-12 relay-h-12 relay-bg-[var(--relay-colors-amber3)] relay-rounded-full relay-p-3',
-                isValidTokenLogo ? '-relay-ml-5' : 'relay-ml-0'
+                'relay:w-12 relay:h-12 relay:bg-[var(--relay-colors-amber3)] relay:rounded-full relay:p-3',
+                isValidTokenLogo ? 'relay:-ml-5' : 'relay:ml-0'
               )}
             >
-              <Box className="relay-text-[color:var(--relay-colors-amber9)]">
+              <Box className="relay:flex relay:text-[color:var(--relay-colors-amber9)]">
                 <FontAwesomeIcon
                   icon={faExclamationTriangle}
-                  width={24}
-                  height={24}
-                  className="relay-w-[24px] relay-h-[24px]"
+                  style={{ width: 24, height: 24 }}
                 />
               </Box>
             </Flex>
           </Flex>
-          <Text style="subtitle2" color="subtle" className="relay-text-center">
+          <Text style="subtitle2" color="subtle" className="relay:text-center">
             This token isn't traded on leading U.S. centralized exchanges or
             frequently swapped on major DEXes. Always conduct your own research
             before trading.
           </Text>
           <Flex
             align="center"
-            className="relay-gap-3 relay-p-3 relay-bg-[var(--relay-colors-gray2)] relay-rounded-[12px] relay-w-full"
+            className="relay:gap-3 relay:p-3 relay:bg-[var(--relay-colors-gray2)] relay:rounded-[12px] relay:w-full"
           >
             <Text style="subtitle2" ellipsify>
               {data?.token?.address}
@@ -103,14 +101,14 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
             <Anchor
               href={`${chain?.explorerUrl}/token/${data?.token?.address}`}
               target="_blank"
-              className="relay-h-[14px]"
+              className="relay:h-[14px]"
             >
-              <Box className="relay-text-[color:var(--relay-colors-gray9)] hover:relay-text-[color:var(--relay-colors-gray11)]">
+              <Box className="relay:flex relay:text-[color:var(--relay-colors-gray9)] relay:hover:text-[color:var(--relay-colors-gray11)]">
                 <FontAwesomeIcon icon={faExternalLink} />
               </Box>
             </Anchor>
           </Flex>
-          <Flex className="relay-gap-3 relay-w-full">
+          <Flex className="relay:gap-3 relay:w-full">
             <Button
               onClick={() => {
                 onDecline?.(data?.token, data?.context)
@@ -118,7 +116,7 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
               }}
               color="grey"
               size="small"
-              className="relay-flex-1 relay-justify-center relay-whitespace-nowrap"
+              className="relay:flex-1 relay:justify-center relay:whitespace-nowrap"
             >
               Cancel
             </Button>
@@ -146,7 +144,7 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
                 onAcceptToken(data?.token, data?.context)
               }}
               color="warning"
-              className="relay-flex-1 relay-justify-center relay-px-4 relay-whitespace-nowrap"
+              className="relay:flex-1 relay:justify-center relay:px-4 relay:whitespace-nowrap"
             >
               I Understand
             </Button>

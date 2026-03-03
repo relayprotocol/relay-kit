@@ -39,7 +39,7 @@ export const StepIcon: FC<StepIconProps> = ({ stepId, chainId }) => {
 
   return (
     <Flex
-      className="relay-rounded-[100px] relay-p-2 relay-w-8 relay-h-8 relay-gap-2"
+      className="relay:rounded-[100px] relay:p-2 relay:w-8 relay:h-8 relay:gap-2"
     >
       {getIconForStep()}
     </Flex>

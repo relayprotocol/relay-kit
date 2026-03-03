@@ -112,7 +112,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
   return (
     <Flex
       direction="column"
-      className="relay-max-w-[212px] relay-shrink-0 relay-gap-1 relay-bg-[var(--relay-colors-gray3)] relay-rounded-[12px] relay-p-3"
+      className="relay:max-w-[212px] relay:shrink-0 relay:gap-1 relay:bg-[var(--relay-colors-gray3)] relay:rounded-[12px] relay:p-3"
     >
       <AccessibleList
         onSelect={(selectedValue) => {
@@ -144,7 +144,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
             }
           }
         }}
-        className="relay-flex relay-flex-col relay-w-full relay-h-full"
+        className="relay:flex relay:flex-col relay:w-full relay:h-full"
       >
         <AccessibleListItem value="input" asChild>
           <ChainSearchInput
@@ -157,7 +157,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
 
         <Flex
           direction="column"
-          className="relay-flex-1 relay-overflow-y-auto relay-gap-1"
+          className="relay:flex-1 relay:overflow-y-auto relay:gap-1"
           style={{ scrollbarColor: 'var(--relay-colors-gray5) transparent' }}
         >
           {filteredChains ? (
@@ -212,8 +212,8 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                         }}
                         ref={isSameChainSelected ? activeChainRef : null}
                         className={cn(
-                          'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-relative relay-transition-colors relay-duration-150 relay-outline-none relay-rounded-lg relay-focus-inset',
-                          !isSameChainSelected && 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+                          'relay:p-2 relay:flex relay:items-center relay:gap-2 relay:relative relay:transition-colors relay:duration-150 relay:outline-none relay:rounded-lg relay:focus-inset',
+                          !isSameChainSelected && 'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
                         )}
                         style={isSameChainSelected ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined}
                       >
@@ -234,8 +234,8 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Flex align="center" className="relay-px-2 relay-py-1 relay-gap-1">
-                    <Box className="relay-text-[color:var(--relay-colors-primary9)]">
+                  <Flex align="center" className="relay:px-2 relay:py-1 relay:gap-1">
+                    <Box className="relay:text-[color:var(--relay-colors-primary9)]">
                       <FontAwesomeIcon icon={faStar} width={12} height={12} />
                     </Box>
                     <Text style="subtitle2" color="subtle">
@@ -246,7 +246,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                         <Text style="body3">Right-click to star a chain</Text>
                       }
                     >
-                      <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+                      <Box className="relay:text-[color:var(--relay-colors-gray9)]">
                         <FontAwesomeIcon
                           icon={faInfoCircle}
                           width={12}
@@ -282,7 +282,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                 </>
               )}
 
-              <Text style="subtitle2" color="subtle" className="relay-px-2 relay-py-1">
+              <Text style="subtitle2" color="subtle" className="relay:px-2 relay:py-1">
                 Chains A-Z
               </Text>
               {alphabeticalChains.map((chain) => {
@@ -403,8 +403,8 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           onClick={onClick}
           ref={isActive ? activeChainRef : null}
           className={cn(
-            'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-relative relay-transition-colors relay-duration-150 relay-outline-none relay-rounded-lg relay-focus-inset',
-            !isActive && 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+            'relay:p-2 relay:flex relay:items-center relay:gap-2 relay:relative relay:transition-colors relay:duration-150 relay:outline-none relay:rounded-lg relay:focus-inset',
+            !isActive && 'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
           )}
           style={{
             ...(isActive ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined),
@@ -421,7 +421,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   }
 
   return (
-    <Flex className="relay-relative relay-w-full">
+    <Flex className="relay:relative relay:w-full">
       <AccessibleListItem value={value} asChild>
         <Button
           color="ghost"
@@ -446,8 +446,8 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
             }
           }}
           className={cn(
-            'relay-p-2 relay-flex relay-items-center relay-gap-2 relay-w-full relay-transition-colors relay-duration-150 relay-outline-none relay-rounded-lg relay-focus-inset',
-            !isActive && 'hover:relay-bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+            'relay:p-2 relay:flex relay:items-center relay:gap-2 relay:w-full relay:transition-colors relay:duration-150 relay:outline-none relay:rounded-lg relay:focus-inset',
+            !isActive && 'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
           )}
           style={isActive ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined}
         >
@@ -456,7 +456,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
             {('displayName' in chain && chain.displayName) || chain.name}
           </Text>
           {showStar && isStarred && (
-            <Box className="relay-text-[color:var(--relay-colors-primary9)]">
+            <Box className="relay:text-[color:var(--relay-colors-primary9)]">
               <FontAwesomeIcon icon={faStar} width={16} height={16} />
             </Box>
           )}
@@ -467,7 +467,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
       {dropdownOpen && (
         <div
           ref={dropdownRef}
-          className="relay-absolute relay-top-full relay-left-0 relay-mt-1 relay-min-w-[140px] relay-z-[9999]"
+          className="relay:absolute relay:top-full relay:left-0 relay:mt-1 relay:min-w-[140px] relay:z-[9999]"
           onClick={(e) => {
             e.stopPropagation()
             handleToggleStar()
@@ -476,18 +476,18 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           onTouchStart={(e) => e.stopPropagation()}
         >
           <Flex
-            className="relay-flex relay-items-center relay-gap-[6px] relay-p-3 relay-rounded-[12px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] hover:relay-bg-[var(--relay-colors-gray2)]"
+            className="relay:flex relay:items-center relay:gap-[6px] relay:p-3 relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray2)]"
           >
             <Box
               className={cn(
                 isStarred
-                  ? 'relay-text-[color:var(--relay-colors-gray8)]'
-                  : 'relay-text-[color:var(--relay-colors-primary9)]'
+                  ? 'relay:text-[color:var(--relay-colors-gray8)]'
+                  : 'relay:text-[color:var(--relay-colors-primary9)]'
               )}
             >
               <FontAwesomeIcon icon={faStar} width={16} height={16} />
             </Box>
-            <Text style="subtitle1" className="relay-leading-[20px]">
+            <Text style="subtitle1" className="relay:leading-[20px]">
               {isStarred ? 'Unstar chain' : 'Star chain'}
             </Text>
           </Flex>

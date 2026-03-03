@@ -11,7 +11,7 @@ const TokenSelectorContainer: FC<
       justify="between"
       id={id}
       className={cn(
-        'relay-w-full relay-flex relay-flex-col relay-items-start relay-bg-[var(--relay-colors-widget-card-background)] relay-border-widget-card relay-gap-3 relay-p-3 relay-rounded-[var(--relay-radii-widget-card-border-radius)]',
+        'relay:w-full relay:flex relay:flex-col relay:items-start relay:bg-[var(--relay-colors-widget-card-background)] relay:border-widget-card relay:gap-3 relay:p-3 relay:rounded-[var(--relay-radii-widget-card-border-radius)]',
         className
       )}
     >

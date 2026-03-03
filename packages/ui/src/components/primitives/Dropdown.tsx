@@ -19,11 +19,11 @@ const DropdownMenuContent = forwardRef<
       {...props}
       ref={forwardedRef}
       className={cn(
-        'relay-mx-4 relay-p-0 relay-rounded-[8px] relay-z-[10000002]',
-        'relay-bg-[var(--relay-colors-modal-background)]',
-        'relay-shadow-lg',
-        'relay-border-dropdown',
-        'relay-animate-content-fade-in',
+        'relay:mx-4 relay:p-0 relay:rounded-[8px] relay:z-[10000002]',
+        'relay:bg-[var(--relay-colors-modal-background)]',
+        'relay:shadow-lg',
+        'relay:border-dropdown',
+        'relay:animate-content-fade-in',
         className
       )}
     >
@@ -43,13 +43,13 @@ const DropdownMenuItem = forwardRef<
       {...props}
       ref={forwardedRef}
       className={cn(
-        'relay-flex relay-items-center relay-text-[16px]',
-        'relay-text-[color:var(--relay-colors-text-default)]',
-        'relay-bg-[var(--relay-colors-modal-background)]',
-        'relay-p-2 relay-outline-none relay-cursor-pointer',
-        'relay-transition-[background-color] relay-duration-150 relay-ease-linear',
-        'hover:relay-bg-[var(--relay-colors-gray3)]',
-        'focus:relay-bg-[var(--relay-colors-gray3)]',
+        'relay:flex relay:items-center relay:text-[16px]',
+        'relay:text-[color:var(--relay-colors-text-default)]',
+        'relay:bg-[var(--relay-colors-modal-background)]',
+        'relay:p-2 relay:outline-none relay:cursor-pointer',
+        'relay:transition-[background-color] relay:duration-150 relay:ease-linear',
+        'relay:hover:bg-[var(--relay-colors-gray3)]',
+        'relay:focus:bg-[var(--relay-colors-gray3)]',
         className
       )}
     >

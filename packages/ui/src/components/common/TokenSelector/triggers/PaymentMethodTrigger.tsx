@@ -78,47 +78,47 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
     <Button
       color="white"
       corners="pill"
-      className="relay-h-[50px] relay-min-h-[50px] relay-w-[220px] relay-shrink-0 relay-overflow-hidden relay-rounded-[12px] relay-p-[12px] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
+      className="relay:h-[50px] relay:min-h-[50px] relay:w-[220px] relay:shrink-0 relay:overflow-hidden relay:rounded-[12px] relay:p-[12px] relay:bg-[var(--relay-colors-widget-selector-background)] relay:border-none relay:hover:bg-[var(--relay-colors-widget-selector-hover-background)]"
       data-testid={testId}
     >
-      <Flex align="center" justify="between" className="relay-w-full">
-        <Flex align="center" className="relay-gap-2">
+      <Flex align="center" justify="between" className="relay:w-full">
+        <Flex align="center" className="relay:gap-2">
           <ChainTokenIcon
             chainId={token.chainId}
             tokenlogoURI={token.logoURI}
             tokenSymbol={token.symbol}
             chainIconSize={14}
-            className="relay-w-[32px] relay-h-[32px]"
+            className="relay:w-[32px] relay:h-[32px]"
           />
           <Flex
             direction="column"
             align="start"
-            className="relay-max-w-[150px] relay-min-w-[60px] relay-flex-1 relay-gap-[4px]"
+            className="relay:max-w-[150px] relay:min-w-[60px] relay:flex-1 relay:gap-[4px]"
           >
             <Text
               style="h6"
               ellipsify
-              className="relay-max-w-full relay-leading-normal"
+              className="relay:max-w-full relay:leading-normal"
             >
               {token.symbol}
             </Text>
             {showSkeleton ? (
               <Skeleton
-                className="relay-w-[70px] relay-h-[12px] relay-rounded-[4px]"
+                className="relay:w-[70px] relay:h-[12px] relay:rounded-[4px]"
               />
             ) : (
               <Text
                 style="subtitle3"
                 color="subtle"
                 ellipsify
-                className="relay-leading-normal relay-max-w-full"
+                className="relay:leading-normal relay:max-w-full"
               >
                 {balanceText}
               </Text>
             )}
           </Flex>
         </Flex>
-        <Box className="relay-text-[color:var(--relay-colors-gray9)] relay-w-[14px] relay-shrink-0">
+        <Box className="relay:text-[color:var(--relay-colors-gray9)] relay:w-[14px] relay:shrink-0">
           <FontAwesomeIcon icon={faChevronRight} width={14} />
         </Box>
       </Flex>
@@ -127,12 +127,12 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
     <Button
       color="white"
       corners="pill"
-      className="relay-h-[50px] relay-min-h-[50px] relay-w-[220px] relay-shrink-0 relay-overflow-hidden relay-rounded-[12px] relay-p-[12px] relay-bg-[var(--relay-colors-widget-selector-background)] relay-border-none hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]"
+      className="relay:h-[50px] relay:min-h-[50px] relay:w-[220px] relay:shrink-0 relay:overflow-hidden relay:rounded-[12px] relay:p-[12px] relay:bg-[var(--relay-colors-widget-selector-background)] relay:border-none relay:hover:bg-[var(--relay-colors-widget-selector-hover-background)]"
       data-testid={testId}
     >
-      <Flex align="center" justify="between" className="relay-w-full">
+      <Flex align="center" justify="between" className="relay:w-full">
         <Text style="h6">Select a token</Text>
-        <Box className="relay-text-[color:var(--relay-colors-gray9)] relay-w-[14px] relay-shrink-0">
+        <Box className="relay:text-[color:var(--relay-colors-gray9)] relay:w-[14px] relay:shrink-0">
           <FontAwesomeIcon icon={faChevronRight} width={14} />
         </Box>
       </Flex>

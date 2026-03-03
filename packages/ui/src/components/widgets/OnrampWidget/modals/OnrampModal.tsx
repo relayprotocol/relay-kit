@@ -425,7 +425,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         }
         onOpenChange(open)
       }}
-      className="relay-overflow-hidden relay-p-4 !relay-max-w-[412px] max-[520px]:!relay-max-w-[unset]"
+      className="relay:overflow-hidden relay:p-4 relay:!max-w-[412px] max-[520px]:!relay-max-w-[unset]"
     >
       {step === OnrampStep.Confirming ? (
         <OnrampConfirmingStep

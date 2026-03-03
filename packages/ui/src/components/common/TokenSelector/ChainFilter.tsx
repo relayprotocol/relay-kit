@@ -91,15 +91,15 @@ const ChainFilter: FC<Props> = ({
           aria-label={`Chain filter`}
           color="ghost"
           size="none"
-          className="relay-gap-2 relay-h-[40px] relay-w-full !relay-px-4 relay-cursor-pointer relay-flex relay-content-center relay-leading-[20px] relay-bg-[var(--relay-colors-dropdown-background)] relay-rounded-dropdown"
+          className="relay:gap-2 relay:h-[40px] relay:w-full relay:!px-4 relay:cursor-pointer relay:flex relay:content-center relay:leading-[20px] relay:bg-[var(--relay-colors-dropdown-background)] relay:rounded-dropdown"
         >
-          <Flex align="center" className="relay-gap-2">
+          <Flex align="center" className="relay:gap-2">
             {value.id ? (
               <ChainIcon
                 chainId={value.id}
                 width={20}
                 height={20}
-                className="relay-rounded-[4px] relay-overflow-hidden"
+                className="relay:rounded-[4px] relay:overflow-hidden"
               />
             ) : (
               <AllChainsLogo style={{ width: 20, height: 20 }} />
@@ -111,8 +111,8 @@ const ChainFilter: FC<Props> = ({
           <Text
             style="body1"
             className={cn(
-              'relay-text-[color:var(--relay-colors-gray9)] relay-ml-auto relay-w-[12px]',
-              open ? 'relay-rotate-180' : 'relay-rotate-0'
+              'relay:text-[color:var(--relay-colors-gray9)] relay:ml-auto relay:w-[12px]',
+              open ? 'relay:rotate-180' : 'relay:rotate-0'
             )}
           >
             <FontAwesomeIcon icon={faChevronDown} />
@@ -122,14 +122,14 @@ const ChainFilter: FC<Props> = ({
       contentProps={{
         align: 'start',
         avoidCollisions: false,
-        className: 'relay-p-0 relay-mx-0',
+        className: 'relay:p-0 relay:mx-0',
         style: {
           width: 'var(--radix-popper-anchor-width)',
           minWidth: 'var(--radix-popper-anchor-width)'
         }
       }}
     >
-      <Flex direction="column" className="relay-p-2">
+      <Flex direction="column" className="relay:p-2">
         <ChainSearchInput
           value={chainSearchInput}
           onChange={setChainSearchInput}
@@ -137,7 +137,7 @@ const ChainFilter: FC<Props> = ({
         />
         <Flex
           direction="column"
-          className="relay-overflow-y-auto relay-rounded-[8px] relay-max-h-[290px]"
+          className="relay:overflow-y-auto relay:rounded-[8px] relay:max-h-[290px]"
           style={{ scrollbarColor: 'var(--relay-colors-gray5) transparent' }}
         >
           {filteredChains ? (
@@ -152,7 +152,7 @@ const ChainFilter: FC<Props> = ({
                       onSelect(chain)
                       setChainSearchInput('')
                     }}
-                    className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] hover:relay-bg-[var(--relay-colors-gray3)]"
+                    className="relay:p-[8px] relay:rounded-[4px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray3)]"
                   >
                     <ChainFilterRow
                       chain={chain}
@@ -164,7 +164,7 @@ const ChainFilter: FC<Props> = ({
                 )
               })
             ) : (
-              <Text style="body1" className="relay-p-2 relay-text-center">
+              <Text style="body1" className="relay:p-2 relay:text-center">
                 No results.
               </Text>
             )
@@ -177,7 +177,7 @@ const ChainFilter: FC<Props> = ({
                     onSelect(allChainsOption)
                     setChainSearchInput('')
                   }}
-                  className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] hover:relay-bg-[var(--relay-colors-gray3)]"
+                  className="relay:p-[8px] relay:rounded-[4px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray3)]"
                 >
                   <ChainFilterRow
                     chain={allChainsOption}
@@ -188,8 +188,8 @@ const ChainFilter: FC<Props> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Flex align="center" className="relay-px-2 relay-py-1 relay-gap-1">
-                    <Box className="relay-text-[color:var(--relay-colors-primary9)]">
+                  <Flex align="center" className="relay:px-2 relay:py-1 relay:gap-1">
+                    <Box className="relay:text-[color:var(--relay-colors-primary9)]">
                       <FontAwesomeIcon icon={faStar} width={12} height={12} />
                     </Box>
                     <Text style="subtitle2" color="subtle">
@@ -200,7 +200,7 @@ const ChainFilter: FC<Props> = ({
                         <Text style="body3">Long-press to star a chain</Text>
                       }
                     >
-                      <Box className="relay-text-[color:var(--relay-colors-gray9)]">
+                      <Box className="relay:text-[color:var(--relay-colors-gray9)]">
                         <FontAwesomeIcon
                           icon={faInfoCircle}
                           width={12}
@@ -219,7 +219,7 @@ const ChainFilter: FC<Props> = ({
                           onSelect(chain)
                           setChainSearchInput('')
                         }}
-                        className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] hover:relay-bg-[var(--relay-colors-gray3)]"
+                        className="relay:p-[8px] relay:rounded-[4px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray3)]"
                       >
                         <ChainFilterRow
                           chain={chain}
@@ -234,7 +234,7 @@ const ChainFilter: FC<Props> = ({
                 </>
               )}
 
-              <Text style="subtitle2" color="subtle" className="relay-px-2 relay-py-1">
+              <Text style="subtitle2" color="subtle" className="relay:px-2 relay:py-1">
                 Chains A-Z
               </Text>
               {alphabeticalChains.map((chain) => {
@@ -247,7 +247,7 @@ const ChainFilter: FC<Props> = ({
                       onSelect(chain)
                       setChainSearchInput('')
                     }}
-                    className="relay-p-[8px] relay-rounded-[4px] relay-cursor-pointer relay-bg-[var(--relay-colors-modal-background)] hover:relay-bg-[var(--relay-colors-gray3)]"
+                    className="relay:p-[8px] relay:rounded-[4px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray3)]"
                   >
                     <ChainFilterRow
                       chain={chain}
@@ -371,7 +371,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
     return (
       <Flex
         align="center"
-        className="relay-gap-2 relay-cursor-pointer relay-shrink-0 relay-content-center relay-w-full"
+        className="relay:gap-2 relay:cursor-pointer relay:shrink-0 relay:content-center relay:w-full"
       >
         <AllChainsLogo style={{ width: 24, height: 24 }} />
         <Text style="subtitle2">{chain.name}</Text>
@@ -380,7 +380,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   }
 
   return (
-    <div className="relay-relative relay-w-full">
+    <div className="relay:relative relay:w-full">
       <Flex
         align="center"
         onContextMenu={(e) => {
@@ -396,14 +396,14 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchMove={handleTouchMove}
-        className="relay-gap-2 relay-cursor-pointer relay-shrink-0 relay-content-center relay-w-full relay-relative relay-select-none"
+        className="relay:gap-2 relay:cursor-pointer relay:shrink-0 relay:content-center relay:w-full relay:relative relay:select-none"
       >
         <ChainIcon chainId={chain.id} square width={24} height={24} />
         <Text style="subtitle2">
           {('displayName' in chain && chain.displayName) || chain.name}
         </Text>
         {showStar && isStarred && (
-          <Box className="relay-text-[color:var(--relay-colors-primary9)]">
+          <Box className="relay:text-[color:var(--relay-colors-primary9)]">
             <FontAwesomeIcon icon={faStar} width={12} height={12} />
           </Box>
         )}
@@ -413,7 +413,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
       {dropdownOpen && (
         <div
           ref={dropdownRef}
-          className="relay-absolute relay-top-full relay-left-0 relay-mt-1 relay-min-w-[160px] relay-z-[999999]"
+          className="relay:absolute relay:top-full relay:left-0 relay:mt-1 relay:min-w-[160px] relay:z-[999999]"
           onClick={(e) => {
             e.stopPropagation()
             handleToggleStar()
@@ -422,18 +422,18 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           onTouchStart={(e) => e.stopPropagation()}
         >
           <Flex
-            className="relay-items-center relay-gap-[8px] relay-p-[8px] relay-rounded-[12px] relay-cursor-pointer relay-bg-[var(--relay-colors-gray1)] relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] hover:relay-bg-[var(--relay-colors-gray2)]"
+            className="relay:items-center relay:gap-[8px] relay:p-[8px] relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-gray1)] relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:hover:bg-[var(--relay-colors-gray2)]"
           >
             <Box
               className={cn(
                 isStarred
-                  ? 'relay-text-[color:var(--relay-colors-gray8)]'
-                  : 'relay-text-[color:var(--relay-colors-primary9)]'
+                  ? 'relay:text-[color:var(--relay-colors-gray8)]'
+                  : 'relay:text-[color:var(--relay-colors-primary9)]'
               )}
             >
               <FontAwesomeIcon icon={faStar} width={16} height={16} />
             </Box>
-            <Text style="subtitle1" className="relay-leading-[20px]">
+            <Text style="subtitle1" className="relay:leading-[20px]">
               {isStarred ? 'Unstar chain' : 'Star chain'}
             </Text>
           </Flex>

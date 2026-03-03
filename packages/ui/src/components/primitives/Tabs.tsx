@@ -17,8 +17,8 @@ const TabsList = forwardRef<
       {...props}
       ref={forwardedRef}
       className={cn(
-        'relay-flex relay-items-center relay-rounded-[8px] relay-p-1',
-        'relay-bg-[var(--relay-colors-gray2)] relay-border-none',
+        'relay:flex relay:items-center relay:rounded-[8px] relay:p-1',
+        'relay:bg-[var(--relay-colors-gray2)] relay:border-none',
         className
       )}
     >
@@ -38,12 +38,12 @@ const TabsTrigger = forwardRef<
       {...props}
       ref={forwardedRef}
       className={cn(
-        'relay-w-full relay-font-medium relay-text-[14px] relay-cursor-pointer',
-        'relay-py-[2px] relay-text-[color:var(--relay-colors-gray12)]',
-        'relay-rounded-[8px] relay-bg-transparent',
-        'relay-border relay-border-solid relay-border-transparent',
-        'data-[state=active]:relay-bg-[var(--relay-colors-subtle-background-color)]',
-        'data-[state=active]:relay-border-[var(--relay-colors-gray-5)]',
+        'relay:w-full relay:font-medium relay:text-[14px] relay:cursor-pointer',
+        'relay:py-[2px] relay:text-[color:var(--relay-colors-gray12)]',
+        'relay:rounded-[8px] relay:bg-transparent',
+        'relay:border relay:border-solid relay:border-transparent',
+        'relay:data-[state=active]:bg-[var(--relay-colors-subtle-background-color)]',
+        'relay:data-[state=active]:border-[var(--relay-colors-gray-5)]',
         className
       )}
     >

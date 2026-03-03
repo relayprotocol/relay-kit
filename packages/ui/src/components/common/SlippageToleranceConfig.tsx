@@ -82,22 +82,22 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           setDisplayValue(undefined)
         }
       }}
-      className="relay-flex relay-flex-col relay-w-full relay-gap-3 sm:relay-gap-2"
+      className="relay:flex relay:flex-col relay:w-full relay:gap-3 relay:sm:gap-2"
     >
-      <TabsList className="relay-w-full">
-        <TabsTrigger value="Auto" className="relay-w-1/2">
+      <TabsList className="relay:w-full">
+        <TabsTrigger value="Auto" className="relay:w-1/2">
           Auto
         </TabsTrigger>
-        <TabsTrigger value="Custom" className="relay-w-1/2">
+        <TabsTrigger value="Custom" className="relay:w-1/2">
           Custom
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="Auto" className="relay-w-full">
+      <TabsContent value="Auto" className="relay:w-full">
         <Text
           style="body2"
           color="subtle"
-          className="relay-leading-[14px] sm:relay-text-xs"
+          className="relay:leading-[14px] relay:sm:text-xs"
         >
           We'll set the slippage automatically to minimize the failure rate.
         </Text>
@@ -105,16 +105,16 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
 
       <TabsContent
         value="Custom"
-        className="relay-flex relay-w-full relay-overflow-hidden relay-flex-col relay-gap-1"
+        className="relay:flex relay:w-full relay:overflow-hidden relay:flex-col relay:gap-1"
       >
         {/* Mobile shortcut buttons */}
         <Flex
-          className="relay-hidden max-[520px]:relay-flex max-[520px]:relay-w-full max-[520px]:relay-gap-2 max-[520px]:relay-mb-2"
+          className="relay:hidden relay:max-[520px]:flex relay:max-[520px]:w-full relay:max-[520px]:gap-2 relay:max-[520px]:mb-2"
         >
           <Button
             color="grey"
             size="none"
-            className="relay-flex-1 relay-min-h-0 relay-h-[28px] relay-font-medium relay-text-sm relay-rounded-[6px] relay-justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
             onClick={() => handleInputChange('1')}
           >
             1%
@@ -122,7 +122,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay-flex-1 relay-min-h-0 relay-h-[28px] relay-font-medium relay-text-sm relay-rounded-[6px] relay-justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
             onClick={() => handleInputChange('2')}
           >
             2%
@@ -130,14 +130,14 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay-flex-1 relay-min-h-0 relay-h-[28px] relay-font-medium relay-text-sm relay-rounded-[6px] relay-justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
             onClick={() => handleInputChange('5')}
           >
             5%
           </Button>
         </Flex>
 
-        <Flex className="relay-flex relay-w-full relay-relative">
+        <Flex className="relay:flex relay:w-full relay:relative">
           <Input
             ref={inputRef}
             value={displayValue || ''}
@@ -159,15 +159,15 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
               }
             }}
             placeholder="2"
-            containerClassName="relay-w-full"
+            containerClassName="relay:w-full"
             className={cn(
-              'relay-h-9 !relay-pr-7 relay-border-none relay-text-right relay-w-full',
-              'max-[520px]:relay-bg-transparent max-[520px]:relay-border max-[520px]:relay-border-solid max-[520px]:relay-border-[var(--relay-colors-gray-5)]'
+              'relay:h-9 relay:!pr-7 relay:border-none relay:text-right relay:w-full',
+              'relay:max-[520px]:bg-transparent relay:max-[520px]:border relay:max-[520px]:border-solid relay:max-[520px]:border-[var(--relay-colors-gray-5)]'
             )}
             inputStyle={{ color: tokenToColor(slippageRatingColor) }}
           />
           <Box
-            className="relay-absolute relay-right-2 relay-top-1/2 -relay-translate-y-1/2"
+            className="relay:absolute relay:right-2 relay:top-1/2 relay:-translate-y-1/2"
           >
             <span style={{ color: tokenToColor(slippageRatingColor) }}>%</span>
           </Box>
@@ -314,7 +314,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
       aria-label="Slippage Tolerance Configuration"
       color="ghost"
       size="none"
-      className="relay-items-center relay-justify-center relay-gap-1 relay-p-2 relay-rounded-[12px] relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-h-9 relay-px-[10px]"
+      className="relay:items-center relay:justify-center relay:gap-1 relay:p-2 relay:rounded-[12px] relay:border relay:border-solid relay:border-[var(--relay-colors-gray5)] relay:h-9 relay:px-[10px]"
       style={{
         color: tokenToColor(slippageRatingColor) ?? 'var(--relay-colors-gray9)',
         backgroundColor: 'var(--relay-colors-widget-card-background)'
@@ -343,7 +343,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   }
 
   return (
-    <div className="relay-kit-reset relay-inline-flex">
+    <div className="relay-kit-reset relay:inline-flex">
       {isMobile ? (
         <Modal
           open={open}
@@ -354,9 +354,9 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
             }
           }}
           trigger={triggerButton}
-          className="relay-w-full relay-min-h-[262px] relay-max-h-[90vh]"
+          className="relay:w-full relay:min-h-[262px] relay:max-h-[90vh]"
         >
-          <Flex direction="column" className="relay-w-full relay-gap-4">
+          <Flex direction="column" className="relay:w-full relay:gap-4">
             <Text style="h6">Max Slippage</Text>
 
             <Text style="body3" color="subtle">
@@ -380,7 +380,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
           contentProps={{
             align: 'end',
             sideOffset: 5,
-            className: 'relay-max-w-[188px] relay-mx-0 relay-p-3',
+            className: 'relay:max-w-[188px] relay:mx-0 relay:p-3',
             avoidCollisions: false,
             onCloseAutoFocus: (e) => {
               e.preventDefault()
@@ -389,22 +389,22 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
         >
           <Flex
             direction="column"
-            className="relay-w-full relay-gap-2 relay-max-w-[188px]"
+            className="relay:w-full relay:gap-2 relay:max-w-[188px]"
           >
-            <Flex direction="row" className="relay-gap-1 relay-items-center">
+            <Flex direction="row" className="relay:gap-1 relay:items-center">
               <Text style="subtitle3">Max Slippage</Text>
               <Tooltip
                 content={
                   <Text
                     style="tiny"
-                    className="relay-inline-block relay-max-w-[190px]"
+                    className="relay:inline-block relay:max-w-[190px]"
                   >
                     If the price exceeds the maximum slippage percentage, the
                     transaction will revert.
                   </Text>
                 }
               >
-                <Box className="relay-text-[color:var(--relay-colors-gray8)]">
+                <Box className="relay:text-[color:var(--relay-colors-gray8)]">
                   <FontAwesomeIcon icon={faInfoCircle} width={14} height={14} />
                 </Box>
               </Tooltip>

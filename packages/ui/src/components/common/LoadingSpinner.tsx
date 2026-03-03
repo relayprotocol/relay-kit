@@ -34,7 +34,7 @@ export const LoadingSpinner: FC<{ className?: string }> = ({ className }) => {
   return (
     <SpinnerSVG
       className={cn(
-        'relay-animate-spin relay-fill-[var(--relay-colors-primary-color)]',
+        'relay:animate-spin relay:fill-[var(--relay-colors-primary-color)]',
         className
       )}
     />

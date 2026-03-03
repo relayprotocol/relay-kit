@@ -121,7 +121,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
   const shouldShowEns = isEnsCapableVmType && Boolean(displayName)
 
   const dropdownItemClassName =
-    'relay-rounded-lg relay-gap-2 relay-cursor-pointer relay-p-2 relay-transition-[background-color] relay-duration-150 relay-ease-linear hover:relay-bg-[var(--relay-colors-gray3)] relay-shrink-0 relay-content-center relay-w-full'
+    'relay:rounded-lg relay:gap-2 relay:cursor-pointer relay:p-2 relay:transition-[background-color] relay:duration-150 relay:ease-linear relay:hover:bg-[var(--relay-colors-gray3)] relay:shrink-0 relay:content-center relay:w-full'
 
   return (
     <Dropdown
@@ -153,23 +153,23 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
           }}
           size="none"
           corners="pill"
-          className="relay-gap-2 !relay-px-2 relay-py-1 relay-cursor-pointer relay-flex relay-content-center"
+          className="relay:gap-2 relay:!px-2 relay:py-1 relay:cursor-pointer relay:flex relay:content-center"
           data-testid={testId}
         >
-          <Flex align="center" className="relay-gap-1 relay-shrink relay-min-w-0">
+          <Flex align="center" className="relay:gap-1 relay:shrink relay:min-w-0">
             {isSupportedSelectedWallet && selectedWallet?.walletLogoUrl ? (
               <img
                 src={selectedWallet.walletLogoUrl}
-                className="relay-w-[16px] relay-h-[16px] relay-rounded-[4px] relay-shrink-0"
+                className="relay:w-[16px] relay:h-[16px] relay:rounded-[4px] relay:shrink-0"
               />
             ) : selectedWalletAddress && !selectedWallet ? (
-              <Box className="relay-text-[color:var(--relay-colors-amber11)] relay-shrink-0">
+              <Box className="relay:text-[color:var(--relay-colors-amber11)] relay:shrink-0">
                 <FontAwesomeIcon icon={faClipboard} width={16} height={16} />
               </Box>
             ) : null}
             <Text
               style="subtitle2"
-              className="relay-whitespace-nowrap relay-overflow-hidden relay-text-ellipsis"
+              className="relay:whitespace-nowrap relay:overflow-hidden relay:text-ellipsis"
             >
               <span style={{
                 color: !selectedWallet && selectedWalletAddress
@@ -188,7 +188,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
           </Flex>
           {showDropdown && (
             <div
-              className="relay-shrink-0"
+              className="relay:shrink-0"
               style={{
                 color: !selectedWallet && selectedWalletAddress
                   ? 'var(--relay-colors-amber11)'
@@ -204,10 +204,10 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
         sideOffset: 12,
         alignOffset: -12,
         align: 'end',
-        className: 'relay-max-w-[248px] relay-p-0'
+        className: 'relay:max-w-[248px] relay:p-0'
       }}
     >
-      <Flex direction="column" className="relay-rounded-[12px] relay-p-1 relay-gap-1">
+      <Flex direction="column" className="relay:rounded-[12px] relay:p-1 relay:gap-1">
         {filteredWallets.map((wallet, idx) => {
           return (
             <DropdownMenuItem
@@ -225,13 +225,13 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
               }}
               className={cn(
                 dropdownItemClassName,
-                'relay-border relay-border-solid relay-border-[var(--relay-colors-gray-6)]'
+                'relay:border relay:border-solid relay:border-[var(--relay-colors-gray-6)]'
               )}
             >
               {wallet.walletLogoUrl ? (
                 <img
                   src={wallet.walletLogoUrl}
-                  className="relay-w-[16px] relay-h-[16px] relay-rounded-[4px]"
+                  className="relay:w-[16px] relay:h-[16px] relay:rounded-[4px]"
                 />
               ) : null}
 

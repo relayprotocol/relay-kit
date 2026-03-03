@@ -44,7 +44,7 @@ export const CopyToClipBoard: FC<CopyToClipBoardProps> = ({ text }) => {
         style={{ color: 'var(--relay-colors-gray9)' }}
         className="hover:!relay-text-[color:var(--relay-colors-gray11)]"
       >
-        <span className="relay-inline-flex relay-transition-transform relay-duration-150">
+        <span className="relay:inline-flex relay:transition-transform relay:duration-150">
           {isCopied ? (
             <FontAwesomeIcon icon={faCheck} width={16} height={16} />
           ) : (

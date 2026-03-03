@@ -30,9 +30,9 @@ const Tooltip = ({
           {...props}
         >
           <div
-            className="relay-z-[10000004] relay-shadow-[0_2px_12px_rgba(0,0,0,0.12)] relay-rounded-[8px] relay-overflow-hidden relay-border-modal"
+            className="relay:z-[10000004] relay:shadow-[0_2px_12px_rgba(0,0,0,0.12)] relay:rounded-[8px] relay:overflow-hidden relay:border-modal"
           >
-            <div className="relay-bg-[var(--relay-colors-modal-background)] relay-p-2">
+            <div className="relay:bg-[var(--relay-colors-modal-background)] relay:p-2">
               {content}
             </div>
           </div>
@@ -56,13 +56,13 @@ const Tooltip = ({
           side="bottom"
           align="center"
           style={{ zIndex: 10000003 }}
-          className="relay-animate-content-fade-in"
+          className="relay:animate-content-fade-in"
           {...props}
         >
           <div
-            className="relay-z-[10000004] relay-shadow-[0_2px_12px_rgba(0,0,0,0.12)] relay-rounded-[8px] relay-overflow-hidden relay-border-modal"
+            className="relay:z-[10000004] relay:shadow-[0_2px_12px_rgba(0,0,0,0.12)] relay:rounded-[8px] relay:overflow-hidden relay:border-modal"
           >
-            <div className="relay-bg-[var(--relay-colors-modal-background)] relay-p-2">
+            <div className="relay:bg-[var(--relay-colors-modal-background)] relay:p-2">
               {content}
             </div>
           </div>

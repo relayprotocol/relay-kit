@@ -23,15 +23,15 @@ export const DepositAddressValidatingStep: FC<
     <>
       <Flex direction="column" align="center" justify="between">
         <LoadingSpinner
-          className="relay-h-10 relay-w-10 relay-fill-[var(--relay-colors-primary-color)]"
+          className="relay:h-10 relay:w-10 relay:fill-[var(--relay-colors-primary-color)]"
         />
-        <Text style="subtitle2" className="relay-mt-4 relay-mb-2 relay-text-center">
+        <Text style="subtitle2" className="relay:mt-4 relay:mb-2 relay:text-center">
           Funds received. Your transaction is now in progress.
         </Text>
         <Text
           color="subtle"
           style="body2"
-          className="relay-mt-3 relay-text-center"
+          className="relay:mt-3 relay:text-center"
         >
           Feel free to leave at any time, you can track your progress within the{' '}
           <Anchor
@@ -47,10 +47,10 @@ export const DepositAddressValidatingStep: FC<
       </Flex>
       <Button
         disabled={true}
-        className="relay-text-[color:var(--relay-colors-button-disabled-color)_!important] relay-mt-2 relay-justify-center"
+        className="relay:text-[color:var(--relay-colors-button-disabled-color)_!important] relay:mt-2 relay:justify-center"
       >
         <LoadingSpinner
-          className="relay-h-4 relay-w-4 relay-fill-[var(--relay-colors-button-disabled-color)]"
+          className="relay:h-4 relay:w-4 relay:fill-[var(--relay-colors-button-disabled-color)]"
         />
         Validating Transaction
       </Button>

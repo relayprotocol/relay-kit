@@ -7,32 +7,32 @@ import type {
 } from 'react'
 import { cn } from '../../utils/cn.js'
 
-export const flexVariants = cva('relay-flex', {
+export const flexVariants = cva('relay:flex', {
   variants: {
     align: {
-      start: 'relay-items-start',
-      center: 'relay-items-center',
-      end: 'relay-items-end',
-      stretch: 'relay-items-stretch',
-      baseline: 'relay-items-baseline',
-      normal: 'relay-items-[normal]'
+      start: 'relay:items-start',
+      center: 'relay:items-center',
+      end: 'relay:items-end',
+      stretch: 'relay:items-stretch',
+      baseline: 'relay:items-baseline',
+      normal: 'relay:items-[normal]'
     },
     justify: {
-      start: 'relay-justify-start',
-      center: 'relay-justify-center',
-      end: 'relay-justify-end',
-      between: 'relay-justify-between'
+      start: 'relay:justify-start',
+      center: 'relay:justify-center',
+      end: 'relay:justify-end',
+      between: 'relay:justify-between'
     },
     direction: {
-      row: 'relay-flex-row',
-      column: 'relay-flex-col',
-      rowReverse: 'relay-flex-row-reverse',
-      columnReverse: 'relay-flex-col-reverse'
+      row: 'relay:flex-row',
+      column: 'relay:flex-col',
+      rowReverse: 'relay:flex-row-reverse',
+      columnReverse: 'relay:flex-col-reverse'
     },
     wrap: {
-      noWrap: 'relay-flex-nowrap',
-      wrap: 'relay-flex-wrap',
-      wrapReverse: 'relay-flex-wrap-reverse'
+      noWrap: 'relay:flex-nowrap',
+      wrap: 'relay:flex-wrap',
+      wrapReverse: 'relay:flex-wrap-reverse'
     }
   }
 })

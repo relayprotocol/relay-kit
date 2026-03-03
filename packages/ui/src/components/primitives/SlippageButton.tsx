@@ -31,7 +31,7 @@ export const SlippageButton: FC<SlippageButtonProps> = ({
       aria-label="Slippage Settings"
       size="none"
       color="ghost"
-      className="relay-flex relay-rounded-[8px] relay-items-center relay-gap-[4px] relay-justify-center relay-p-1 hover:relay-bg-[var(--relay-colors-gray2)] relay-bg-[var(--relay-colors-gray3)] relay-px-[6px] relay-py-[4px]"
+      className="relay:flex relay:rounded-[8px] relay:items-center relay:gap-[4px] relay:justify-center relay:p-1 relay:hover:bg-[var(--relay-colors-gray2)] relay:bg-[var(--relay-colors-gray3)] relay:px-[6px] relay:py-[4px]"
       onClick={() => {
         onOpenSlippageConfig?.()
       }}

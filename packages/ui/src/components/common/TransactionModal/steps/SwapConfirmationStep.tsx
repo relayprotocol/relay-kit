@@ -81,23 +81,23 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
         align="center"
         justify="between"
         direction="column"
-        className="relay-shrink-0 bp500:relay-flex-row"
+        className="relay:shrink-0 relay:bp500:flex-row"
       >
         <Flex
           direction="row"
-          className="relay-bg-[var(--relay-colors-subtle-background-color)] relay-rounded-[12px] relay-gap-2 relay-w-full relay-items-center bp500:relay-flex-col bp500:relay-gap-1 bp500:relay-items-start relay-py-[12px] relay-px-[16px]"
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-2 relay:w-full relay:items-center relay:bp500:flex-col relay:bp500:gap-1 relay:bp500:items-start relay:py-[12px] relay:px-[16px]"
         >
           <ChainTokenIcon
             chainId={fromToken?.chainId}
             tokenlogoURI={fromToken?.logoURI}
             tokenSymbol={fromToken?.symbol}
-            className="relay-h-[32px] relay-w-[32px]"
+            className="relay:h-[32px] relay:w-[32px]"
           />
-          <Flex direction="column" align="start" className="relay-gap-1">
+          <Flex direction="column" align="start" className="relay:gap-1">
             <Text color="subtle" style="subtitle2">
               {fromChain?.displayName}
             </Text>
-            <Text style="h6" ellipsify className="relay-leading-[20px]">
+            <Text style="h6" ellipsify className="relay:leading-[20px]">
               {fromAmountFormatted} {fromToken?.symbol}
             </Text>
           </Flex>
@@ -105,25 +105,25 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
         <Text
           style="body1"
           color="subtle"
-          className="relay-px-3 relay-py-0 bp400Down:relay-rotate-90 bp400Down:relay-py-3 bp400Down:relay-px-0"
+          className="relay:px-3 relay:py-0 relay:bp400Down:rotate-90 relay:bp400Down:py-3 relay:bp400Down:px-0"
         >
           <FontAwesomeIcon icon={faArrowRight} width={16} />
         </Text>
         <Flex
           direction="row"
-          className="relay-bg-[var(--relay-colors-subtle-background-color)] relay-rounded-[12px] relay-gap-2 relay-w-full relay-items-center bp500:relay-flex-col bp500:relay-gap-1 bp500:relay-items-start relay-py-[12px] relay-px-[16px]"
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-2 relay:w-full relay:items-center relay:bp500:flex-col relay:bp500:gap-1 relay:bp500:items-start relay:py-[12px] relay:px-[16px]"
         >
           <ChainTokenIcon
             chainId={toToken?.chainId}
             tokenlogoURI={toToken?.logoURI}
             tokenSymbol={toToken?.symbol}
-            className="relay-h-[32px] relay-w-[32px]"
+            className="relay:h-[32px] relay:w-[32px]"
           />
-          <Flex direction="column" align="start" className="relay-gap-1">
+          <Flex direction="column" align="start" className="relay:gap-1">
             <Text color="subtle" style="subtitle2">
               {toChain?.displayName}
             </Text>
-            <Text style="h6" ellipsify className="relay-leading-[20px]">
+            <Text style="h6" ellipsify className="relay:leading-[20px]">
               {toAmountFormatted} {toToken?.symbol}
             </Text>
           </Flex>
@@ -133,7 +133,7 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
         <Flex
           direction="row"
           justify="between"
-          className="relay-bg-[var(--relay-colors-subtle-background-color)] relay-rounded-[12px] relay-gap-2 relay-w-full relay-items-center relay-py-[12px] relay-px-[16px]"
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-2 relay:w-full relay:items-center relay:py-[12px] relay:px-[16px]"
         >
           <Text style="subtitle2" color="subtle">
             Additional Gas
@@ -145,15 +145,15 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
       ) : null}
       <Flex
         direction="column"
-        className="relay-border relay-border-solid relay-border-[var(--relay-colors-gray3)] relay-rounded-[12px] relay-px-3 relay-py-2 relay-gap-1"
+        className="relay:border relay:border-solid relay:border-[var(--relay-colors-gray3)] relay:rounded-[12px] relay:px-3 relay:py-2 relay:gap-1"
       >
         {formattedSteps.map((step, index) => (
           <Box key={step.id}>
             <StepRow {...step} />
 
             {index !== formattedSteps.length - 1 && (
-              <Box className="relay-pl-3 relay-h-[14px] relay-mt-[4px]">
-                <Box className="relay-h-full relay-w-px relay-bg-[var(--relay-colors-gray7)]" />
+              <Box className="relay:pl-3 relay:h-[14px] relay:mt-[4px]">
+                <Box className="relay:h-full relay:w-px relay:bg-[var(--relay-colors-gray7)]" />
               </Box>
             )}
           </Box>
@@ -193,17 +193,17 @@ export const StepRow: FC<StepRowProps> = ({
   const relayClient = useRelayClient()
   const chains = relayClient?.chains
   return (
-    <Flex align="center" justify="between" className="relay-w-full relay-gap-3">
-      <Flex align="center" className="relay-gap-3 relay-h-[40px]">
+    <Flex align="center" justify="between" className="relay:w-full relay:gap-3">
+      <Flex align="center" className="relay:gap-3 relay:h-[40px]">
         <Flex
           data-active={isActive && !isCompleted}
           className={cn(
-            'relay-shrink-0 relay-items-center relay-justify-center relay-rounded-full relay-h-[30px] relay-w-[30px]',
+            'relay:shrink-0 relay:items-center relay:justify-center relay:rounded-full relay:h-[30px] relay:w-[30px]',
             isCompleted
-              ? 'relay-bg-[var(--relay-colors-green3)]'
+              ? 'relay:bg-[var(--relay-colors-green3)]'
               : isActive
-                ? 'relay-bg-[var(--relay-colors-primary6)]'
-                : 'relay-bg-[var(--relay-colors-gray5)]'
+                ? 'relay:bg-[var(--relay-colors-primary6)]'
+                : 'relay:bg-[var(--relay-colors-gray5)]'
           )}
           style={{
             color: isActive && !isCompleted
@@ -225,13 +225,13 @@ export const StepRow: FC<StepRowProps> = ({
             <StepIcon stepId={id} chainId={chainId} />
           )}
         </Flex>
-        <Flex direction="column" className="relay-gap-[2px]">
+        <Flex direction="column" className="relay:gap-[2px]">
           <Text style="subtitle2" color={isActive ? undefined : 'subtle'}>
             {action}
           </Text>
 
           {subText && (
-            <Flex align="center" className="relay-gap-[6px]">
+            <Flex align="center" className="relay:gap-[6px]">
               {(() => {
                 // Handle "Success: txhash" case with split colors and link
                 if (subText.startsWith('Success:')) {
@@ -244,7 +244,7 @@ export const StepRow: FC<StepRowProps> = ({
                       : undefined
 
                   return (
-                    <Flex align="center" className="relay-gap-[4px]">
+                    <Flex align="center" className="relay:gap-[4px]">
                       <Text
                         style="subtitle3"
                         color="green"
@@ -257,7 +257,7 @@ export const StepRow: FC<StepRowProps> = ({
                             href={txUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="relay-no-underline"
+                            className="relay:no-underline"
                           >
                             <Text
                               style="subtitle3"
@@ -293,7 +293,7 @@ export const StepRow: FC<StepRowProps> = ({
                       : undefined
 
                   return (
-                    <Flex align="center" className="relay-gap-[4px]">
+                    <Flex align="center" className="relay:gap-[4px]">
                       <Text
                         style="subtitle3"
                         color="primary"
@@ -306,7 +306,7 @@ export const StepRow: FC<StepRowProps> = ({
                             href={txUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="relay-no-underline"
+                            className="relay:no-underline"
                           >
                             <Text
                               style="subtitle3"
@@ -345,7 +345,7 @@ export const StepRow: FC<StepRowProps> = ({
                 )
               })()}
               {showSubTextSpinner && (
-                <LoadingSpinner className="relay-h-3 relay-w-3" />
+                <LoadingSpinner className="relay:h-3 relay:w-3" />
               )}
             </Flex>
           )}

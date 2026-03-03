@@ -49,17 +49,17 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   const isMobile = variant === 'mobile'
 
   const defaultButtonClassName = cn(
-    'relay-font-medium',
-    isMobile ? 'relay-px-[4px] relay-py-[6px]' : 'relay-p-[4px]',
-    isMobile ? 'relay-h-[26px]' : 'relay-h-[23px]',
-    'relay-min-h-0',
-    'relay-leading-none',
-    'relay-bg-[var(--relay-colors-widget-selector-background)]',
-    'relay-border-none',
-    isMobile ? 'relay-rounded-[6px]' : 'relay-rounded-[12px]',
-    isMobile ? 'relay-flex-1' : '',
-    'relay-justify-center',
-    'hover:relay-bg-[var(--relay-colors-widget-selector-hover-background)]'
+    'relay:font-medium',
+    isMobile ? 'relay:px-[4px] relay:py-[6px]' : 'relay:p-[4px]',
+    isMobile ? 'relay:h-[26px]' : 'relay:h-[23px]',
+    'relay:min-h-0',
+    'relay:leading-none',
+    'relay:bg-[var(--relay-colors-widget-selector-background)]',
+    'relay:border-none',
+    isMobile ? 'relay:rounded-[6px]' : 'relay:rounded-[12px]',
+    isMobile ? 'relay:flex-1' : '',
+    'relay:justify-center',
+    'relay:hover:bg-[var(--relay-colors-widget-selector-hover-background)]'
   )
 
   const buttonFontSize = isMobile ? '14px' : '12px'
@@ -114,9 +114,9 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   return (
     <Flex
       className={cn(
-        'relay-gap-1',
-        isMobile ? 'relay-w-full' : 'relay-w-auto',
-        isMobile ? 'relay-mb-1' : 'relay-mb-0'
+        'relay:gap-1',
+        isMobile ? 'relay:w-full' : 'relay:w-auto',
+        isMobile ? 'relay:mb-1' : 'relay:mb-0'
       )}
     >
       {percentages.map((percent) => (

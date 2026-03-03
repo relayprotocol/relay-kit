@@ -21,8 +21,8 @@ const Overlay = forwardRef<
       ref={forwardedRef}
       {...props}
       className={cn(
-        'relay-fixed relay-inset-0 relay-bg-black/50 relay-backdrop-blur-sm',
-        'relay-animate-overlay-fade-in data-[state=closed]:relay-animate-overlay-fade-out',
+        'relay:fixed relay:inset-0 relay:bg-black/50 relay:backdrop-blur-sm',
+        'relay:animate-overlay-fade-in relay:data-[state=closed]:animate-overlay-fade-out',
         className,
         'relay-kit-reset'
       )}
@@ -33,13 +33,13 @@ const Overlay = forwardRef<
 })
 
 const contentBase = [
-  'relay-bg-[var(--relay-colors-modal-background)]',
-  'relay-rounded-[var(--relay-radii-modal-border-radius)]',
-  'relay-border-modal',
-  'relay-shadow-xl',
-  'relay-fixed',
-  'relay-max-h-[85vh] relay-overflow-y-auto',
-  'focus:relay-outline-none'
+  'relay:bg-[var(--relay-colors-modal-background)]',
+  'relay:rounded-[var(--relay-radii-modal-border-radius)]',
+  'relay:border-modal',
+  'relay:shadow-xl',
+  'relay:fixed',
+  'relay:max-h-[85vh] relay:overflow-y-auto',
+  'relay:focus:outline-none'
 ].join(' ')
 
 const Content = forwardRef<
@@ -51,7 +51,7 @@ const Content = forwardRef<
     <DialogPrimitive.DialogContent
       ref={forwardedRef}
       {...props}
-      className={cn(contentBase, 'relay-top-full')}
+      className={cn(contentBase, 'relay:top-full')}
     >
       {children}
     </DialogPrimitive.DialogContent>
@@ -68,23 +68,23 @@ const AnimatedContent = forwardRef<
   const isMobileFullScreen = isMobile && disableAnimation
 
   const mobileSlideUpClasses = [
-    'relay-bottom-0 relay-top-auto relay-left-0 relay-w-full',
-    'relay-animate-dialog-slide-up',
-    'data-[state=closed]:relay-animate-dialog-slide-down',
-    'max-[520px]:relay-rounded-b-none'
+    'relay:bottom-0 relay:top-auto relay:left-0 relay:w-full',
+    'relay:animate-dialog-slide-up',
+    'relay:data-[state=closed]:animate-dialog-slide-down',
+    'relay:max-[520px]:rounded-b-none'
   ].join(' ')
 
   const mobileFullScreenClasses = [
-    'relay-top-0 relay-left-0 relay-w-full relay-h-full',
-    'relay-max-h-full relay-rounded-none'
+    'relay:top-0 relay:left-0 relay:w-full relay:h-full',
+    'relay:max-h-full relay:rounded-none'
   ].join(' ')
 
   const desktopClasses = [
-    'relay-left-1/2 relay-top-1/2',
-    'relay-min-w-[90vw] relay-max-w-[100vw]',
-    'sm:relay-min-w-[400px] sm:relay-max-w-[532px]',
-    'relay-animate-scale-in',
-    'data-[state=closed]:relay-animate-scale-out'
+    'relay:left-1/2 relay:top-1/2',
+    'relay:min-w-[90vw] relay:max-w-[100vw]',
+    'relay:sm:min-w-[400px] relay:sm:max-w-[532px]',
+    'relay:animate-scale-in',
+    'relay:data-[state=closed]:animate-scale-out'
   ].join(' ')
 
   return (

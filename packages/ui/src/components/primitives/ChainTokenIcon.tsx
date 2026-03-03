@@ -50,7 +50,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   return chainId ? (
     <div
       className={cn(
-        'relay-relative relay-shrink-0 relay-overflow-hidden',
+        'relay:relative relay:shrink-0 relay:overflow-hidden',
         className
       )}
       style={{
@@ -72,7 +72,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
         />
       ) : tokenSymbol ? (
         <div
-          className="relay-rounded-[50%] relay-bg-[var(--relay-colors-primary4)] relay-text-[color:var(--relay-colors-primary8)] relay-flex relay-items-center relay-justify-center"
+          className="relay:rounded-[50%] relay:bg-[var(--relay-colors-primary4)] relay:text-[color:var(--relay-colors-primary8)] relay:flex relay:items-center relay:justify-center"
           style={{
             width: dimensions.token,
             height: dimensions.token
@@ -86,7 +86,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
         width={chainSize}
         height={chainSize}
         borderRadius={chainRadius}
-        className="relay-absolute relay-right-0 relay-bottom-0 relay-overflow-hidden relay-border relay-border-solid relay-border-[var(--relay-colors-modal-background)] relay-bg-[var(--relay-colors-modal-background)]"
+        className="relay:absolute relay:right-0 relay:bottom-0 relay:overflow-hidden relay:border relay:border-solid relay:border-[var(--relay-colors-modal-background)] relay:bg-[var(--relay-colors-modal-background)]"
       />
     </div>
   ) : null

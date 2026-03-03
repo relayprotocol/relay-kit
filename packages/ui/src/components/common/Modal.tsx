@@ -47,12 +47,12 @@ export const Modal: FC<
         <DialogPortal forceMount>
           <Overlay
             forceMount
-            className="relay-fixed relay-inset-0 relay-bg-[var(--relay-colors-blackA10)]"
+            className="relay:fixed relay:inset-0 relay:bg-[var(--relay-colors-blackA10)]"
             style={{ zIndex: overlayZIndex }}
           >
             <AnimatedContent
               forceMount
-              className={`relay-border relay-border-solid relay-border-[var(--relay-colors-subtle-border-color)] relay-p-4 ${className ?? ''}`}
+              className={`relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:p-4 ${className ?? ''}`}
               style={contentStyle}
               disableAnimation={disableAnimation}
               onPointerDownOutside={props.onPointerDownOutside}
@@ -61,12 +61,12 @@ export const Modal: FC<
               {showCloseButton ? (
                 <DialogClose
                   asChild
-                  className="relay-absolute relay-right-[10px] relay-top-[12px] relay-z-10"
+                  className="relay:absolute relay:right-[10px] relay:top-[12px] relay:z-10"
                 >
                   <Button
                     color="ghost"
                     size="none"
-                    className="relay-text-[color:var(--relay-colors-gray9)] relay-p-2"
+                    className="relay:text-[color:var(--relay-colors-gray9)] relay:p-2"
                     onClick={(e) => {
                       props.onCloseButtonClicked?.(e)
                     }}

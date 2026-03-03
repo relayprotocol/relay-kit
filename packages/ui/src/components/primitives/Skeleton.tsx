@@ -9,7 +9,7 @@ const Skeleton: FC<SkeletonProps> = ({ className }) => {
   return (
     <div
       className={cn(
-        'relay-flex relay-animate-pulse relay-bg-[var(--relay-colors-skeleton-background)] relay-rounded-[8px] relay-w-[100px] relay-h-[12px]',
+        'relay:flex relay:animate-pulse relay:bg-[var(--relay-colors-skeleton-background)] relay:rounded-[8px] relay:w-[100px] relay:h-[12px]',
         className
       )}
     />

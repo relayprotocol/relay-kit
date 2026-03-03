@@ -18,7 +18,7 @@ export const AccessibleList: FC<AccessibleListProps> = ({
       type="single"
       loop={false}
       onValueChange={onSelect}
-      className={cn('relay-flex relay-flex-col', className)}
+      className={cn('relay:flex relay:flex-col', className)}
     >
       {children}
     </ToggleGroup.Root>
@@ -40,7 +40,7 @@ export const AccessibleListItem = forwardRef<
     <ToggleGroup.Item
       value={value}
       className={cn(
-        'relay-flex relay-items-center relay-relative relay-select-none relay-cursor-pointer',
+        'relay:flex relay:items-center relay:relative relay:select-none relay:cursor-pointer',
         className
       )}
       asChild={asChild}
