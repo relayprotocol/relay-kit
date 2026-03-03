@@ -104,11 +104,11 @@ export default function (
   const executeQuote = useCallback(
     (onProgress: onProgress) => {
       if (!wallet) {
-        throw 'Missing a valid wallet'
+        throw new Error('Missing a valid wallet')
       }
 
       if (!response.data) {
-        throw 'Missing a quote'
+        throw new Error('Missing a quote')
       }
 
       const promise = client?.actions?.execute({

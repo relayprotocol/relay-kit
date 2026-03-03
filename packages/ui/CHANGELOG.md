@@ -1,5 +1,32 @@
 # @reservoir0x/relay-kit-ui
 
+## 7.1.6
+
+### Patch Changes
+
+- Updated dependencies [ad4f08c]
+  - @relayprotocol/relay-kit-hooks@3.0.11
+
+## 7.1.5
+
+### Patch Changes
+
+- 2f0d6de: Fix minor errors
+- Updated dependencies [2f0d6de]
+- Updated dependencies [7b351ab]
+  - @relayprotocol/relay-kit-hooks@3.0.10
+  - @relayprotocol/relay-sdk@5.2.1
+
+## 7.1.4
+
+### Patch Changes
+
+- 1ae288f: Make progress modal error scrollable
+- 3c9e0a1: Clearer error for locked wallet
+- Updated dependencies [144f7a4]
+  - @relayprotocol/relay-sdk@5.2.0
+  - @relayprotocol/relay-kit-hooks@3.0.9
+
 ## 7.1.3
 
 ### Patch Changes

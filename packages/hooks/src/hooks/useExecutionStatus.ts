@@ -73,9 +73,11 @@ export default function (
     queryFn: () => {
       onRequest?.()
       const promise = queryExecutionStatus(client?.baseApiUrl, options)
-      promise.then((response: any) => {
-        onResponse?.(response)
-      })
+      promise
+        .then((response: any) => {
+          onResponse?.(response)
+        })
+        .catch(() => {})
       return promise
     },
     enabled: client !== undefined && options !== undefined,

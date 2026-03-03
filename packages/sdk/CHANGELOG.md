@@ -1,5 +1,17 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.1
+
+### Patch Changes
+
+- 7b351ab: Fix async errors not caught
+
+## 5.2.0
+
+### Minor Changes
+
+- 144f7a4: Add executeGaslessBatch action to support 7702 gasless flow
+
 ## 5.1.1
 
 ### Patch Changes

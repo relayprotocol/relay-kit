@@ -46,6 +46,7 @@ export default function (
     queryKey: ['useTokenPrice', options],
     queryFn: () => queryTokenPrice(baseApiUrl, options),
     retry: false,
+    staleTime: 60_000,
     ...queryOptions
   })
 
