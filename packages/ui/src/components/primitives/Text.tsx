@@ -32,7 +32,11 @@ const textVariants = cva(
         blue: 'relay-text-[color:var(--relay-colors-blue12)]',
         success: 'relay-text-[color:var(--relay-colors-text-success)]',
         warning: 'relay-text-[color:var(--relay-colors-amber12)]',
-        warningSecondary: 'relay-text-[color:var(--relay-colors-amber11)]'
+        warningSecondary: 'relay-text-[color:var(--relay-colors-amber11)]',
+        primary: 'relay-text-[color:var(--relay-colors-primary11)]',
+        primary12: 'relay-text-[color:var(--relay-colors-primary12)]',
+        green: 'relay-text-[color:var(--relay-colors-green11)]',
+        slate: 'relay-text-[color:var(--relay-colors-slate10)]'
       },
       italic: {
         true: 'relay-italic'

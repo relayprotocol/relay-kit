@@ -104,7 +104,8 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
         </Flex>
         <Text
           style="body1"
-          className="relay-text-[color:var(--relay-colors-gray9)] relay-px-3 relay-py-0 bp400Down:relay-rotate-90 bp400Down:relay-py-3 bp400Down:relay-px-0"
+          color="subtle"
+          className="relay-px-3 relay-py-0 bp400Down:relay-rotate-90 bp400Down:relay-py-3 bp400Down:relay-px-0"
         >
           <FontAwesomeIcon icon={faArrowRight} width={16} />
         </Text>
@@ -246,7 +247,7 @@ export const StepRow: FC<StepRowProps> = ({
                     <Flex align="center" className="relay-gap-[4px]">
                       <Text
                         style="subtitle3"
-                        className="relay-text-[color:var(--relay-colors-green11)]"
+                        color="green"
                       >
                         {successText}:
                       </Text>
@@ -256,11 +257,11 @@ export const StepRow: FC<StepRowProps> = ({
                             href={txUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="relay-text-[color:var(--colors-primary11)] relay-no-underline"
+                            className="relay-no-underline"
                           >
                             <Text
                               style="subtitle3"
-                              className="relay-text-[color:var(--relay-colors-primary11)]"
+                              color="primary"
                             >
                               {hashPart}
                             </Text>
@@ -268,7 +269,7 @@ export const StepRow: FC<StepRowProps> = ({
                         ) : (
                           <Text
                             style="subtitle3"
-                            className="relay-text-[color:var(--relay-colors-primary11)]"
+                            color="primary"
                           >
                             {hashPart}
                           </Text>
@@ -295,7 +296,7 @@ export const StepRow: FC<StepRowProps> = ({
                     <Flex align="center" className="relay-gap-[4px]">
                       <Text
                         style="subtitle3"
-                        className="relay-text-[color:var(--relay-colors-primary11)]"
+                        color="primary"
                       >
                         {labelText}:
                       </Text>
@@ -305,11 +306,11 @@ export const StepRow: FC<StepRowProps> = ({
                             href={txUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="relay-text-[color:var(--colors-primary11)] relay-no-underline"
+                            className="relay-no-underline"
                           >
                             <Text
                               style="subtitle3"
-                              className="relay-text-[color:var(--relay-colors-primary11)]"
+                              color="primary"
                             >
                               {hashPart}
                             </Text>
@@ -317,7 +318,7 @@ export const StepRow: FC<StepRowProps> = ({
                         ) : (
                           <Text
                             style="subtitle3"
-                            className="relay-text-[color:var(--relay-colors-primary11)]"
+                            color="primary"
                           >
                             {hashPart}
                           </Text>
@@ -329,15 +330,15 @@ export const StepRow: FC<StepRowProps> = ({
                 return (
                   <Text
                     style="subtitle3"
-                    className={cn(
+                    color={
                       subTextColor === 'slate10'
-                        ? 'relay-text-[color:var(--relay-colors-slate10)]'
+                        ? 'slate'
                         : subTextColor === 'subtle'
-                          ? 'relay-text-[color:var(--relay-colors-text-subtle)]'
+                          ? 'subtle'
                           : subTextColor === 'green11'
-                            ? 'relay-text-[color:var(--relay-colors-green11)]'
-                            : 'relay-text-[color:var(--relay-colors-primary11)]'
-                    )}
+                            ? 'green'
+                            : 'primary'
+                    }
                   >
                     {subText}
                   </Text>

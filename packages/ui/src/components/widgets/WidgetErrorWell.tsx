@@ -114,7 +114,7 @@ export const WidgetErrorWell: FC<Props> = ({
         <Box className="relay-text-[color:var(--relay-colors-amber9)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
+        <Text style="subtitle3" color="warning">
           Your selected wallet doesn't support the destination chain. Please
           choose a different wallet.
         </Text>
@@ -135,7 +135,7 @@ export const WidgetErrorWell: FC<Props> = ({
         <Box className="relay-text-[color:var(--relay-colors-red10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-red12)]">
+        <Text style="subtitle3" color="error">
           {fetchQuoteErrorMessage}
         </Text>
       </Flex>
@@ -171,7 +171,7 @@ export const WidgetErrorWell: FC<Props> = ({
           <Box className="relay-text-[color:var(--relay-colors-amber10)]">
             <FontAwesomeIcon icon={faExclamationCircle} width={16} />
           </Box>
-          <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
+          <Text style="subtitle3" color="warning">
             Fees exceed 40% of the received amount.
           </Text>
         </Flex>
@@ -192,7 +192,7 @@ export const WidgetErrorWell: FC<Props> = ({
         <Box className="relay-text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
+        <Text style="subtitle3" color="warning">
           The price impact is currently high (
           {quote?.details?.totalImpact?.percent}%).
         </Text>
@@ -213,7 +213,7 @@ export const WidgetErrorWell: FC<Props> = ({
         <Box className="relay-text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
+        <Text style="subtitle3" color="warning">
           Unable to detect token price. Please confirm expected output before
           submitting.
         </Text>
@@ -234,7 +234,7 @@ export const WidgetErrorWell: FC<Props> = ({
         <Box className="relay-text-[color:var(--relay-colors-amber10)]">
           <FontAwesomeIcon icon={faExclamationCircle} width={16} />
         </Box>
-        <Text style="subtitle3" className="relay-text-[color:var(--relay-colors-amber12)]">
+        <Text style="subtitle3" color="warning">
           Due to high demand, Relayer fees have temporarily been increased.
         </Text>
       </Flex>

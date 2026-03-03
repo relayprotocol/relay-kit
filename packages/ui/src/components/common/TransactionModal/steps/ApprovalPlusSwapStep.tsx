@@ -73,7 +73,8 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
         </Flex>
         <Text
           style="body1"
-          className="relay-text-[color:var(--relay-colors-gray9)] relay-px-4 relay-py-0 bp400Down:relay-rotate-90"
+          color="subtle"
+          className="relay-px-4 relay-py-0 bp400Down:relay-rotate-90"
         >
           <FontAwesomeIcon icon={faArrowRight} width={16} />
         </Text>
