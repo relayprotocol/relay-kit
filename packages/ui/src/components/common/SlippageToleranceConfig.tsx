@@ -45,7 +45,6 @@ type SlippageToleranceConfigProps = {
   onOpenSlippageConfig?: () => void
   showGearIcon?: boolean
   showLabel?: boolean
-  widgetType?: 'token' | 'swap'
 }
 
 type SlippageTabsProps = {
@@ -59,7 +58,6 @@ type SlippageTabsProps = {
   slippageRating: string | undefined
   slippageRatingColor: string | undefined
   inputRef: React.RefObject<HTMLInputElement | null>
-  widgetType?: 'token' | 'swap'
 }
 
 const SlippageTabs: FC<SlippageTabsProps> = ({
@@ -72,11 +70,9 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
   handleClose,
   slippageRating,
   slippageRatingColor,
-  inputRef,
-  widgetType
+  inputRef
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
-  const isTokenWidget = widgetType === 'token'
   return (
     <TabsRoot
       value={mode}
@@ -86,10 +82,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           setDisplayValue(undefined)
         }
       }}
-      className={cn(
-        'relay-flex relay-flex-col relay-w-full',
-        isTokenWidget ? 'relay-gap-1' : 'relay-gap-3 sm:relay-gap-2'
-      )}
+      className="relay-flex relay-flex-col relay-w-full relay-gap-3 sm:relay-gap-2"
     >
       <TabsList className="relay-w-full">
         <TabsTrigger value="Auto" className="relay-w-1/2">
@@ -102,13 +95,9 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
 
       <TabsContent value="Auto" className="relay-w-full">
         <Text
-          style={isTokenWidget ? 'body3' : 'body2'}
+          style="body2"
           color="subtle"
-          className={cn(
-            isTokenWidget
-              ? 'relay-leading-normal relay-text-xs'
-              : 'relay-leading-[14px] sm:relay-text-xs'
-          )}
+          className="relay-leading-[14px] sm:relay-text-xs"
         >
           We'll set the slippage automatically to minimize the failure rate.
         </Text>
@@ -209,8 +198,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   label = 'Slippage',
   onOpenSlippageConfig,
   showGearIcon = true,
-  showLabel = false,
-  widgetType
+  showLabel = false
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
   const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
@@ -321,40 +309,25 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     })
   }
 
-  const triggerButton =
-    widgetType === 'token' ? (
-      <Button
-        aria-label="Slippage Tolerance Configuration"
-        color="ghost"
-        size="none"
-        className="relay-flex relay-items-center relay-justify-center relay-gap-1 relay-rounded-lg relay-px-[6px] relay-py-1 relay-bg-[var(--relay-colors-gray3)]"
-      >
-        <Text style="subtitle3" color="subtle">
-          Slippage
+  const triggerButton = (
+    <Button
+      aria-label="Slippage Tolerance Configuration"
+      color="ghost"
+      size="none"
+      className="relay-items-center relay-justify-center relay-gap-1 relay-p-2 relay-rounded-[12px] relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-h-9 relay-px-[10px]"
+      style={{
+        color: tokenToColor(slippageRatingColor) ?? 'var(--relay-colors-gray9)',
+        backgroundColor: 'var(--relay-colors-widget-card-background)'
+      }}
+    >
+      {open === false && displayValue && (
+        <Text style="subtitle2" color={slippageRatingColor === 'red11' ? 'red' : slippageRatingColor === 'amber11' ? 'warningSecondary' : undefined}>
+          {displayValue}%
         </Text>
-        <Text style="subtitle3">
-          {displayValue ? `${displayValue}%` : 'Auto'}
-        </Text>
-      </Button>
-    ) : (
-      <Button
-        aria-label="Slippage Tolerance Configuration"
-        color="ghost"
-        size="none"
-        className="relay-items-center relay-justify-center relay-gap-1 relay-p-2 relay-rounded-[12px] relay-border relay-border-solid relay-border-[var(--relay-colors-gray5)] relay-h-9 relay-px-[10px]"
-        style={{
-          color: tokenToColor(slippageRatingColor) ?? 'var(--relay-colors-gray9)',
-          backgroundColor: 'var(--relay-colors-widget-card-background)'
-        }}
-      >
-        {open === false && displayValue && (
-          <Text style="subtitle2" color={slippageRatingColor === 'red11' ? 'red' : slippageRatingColor === 'amber11' ? 'warningSecondary' : undefined}>
-            {displayValue}%
-          </Text>
-        )}
-        <FontAwesomeIcon icon={faGear} />
-      </Button>
-    )
+      )}
+      <FontAwesomeIcon icon={faGear} />
+    </Button>
+  )
 
   const slippageTabsProps = {
     mode,
@@ -366,8 +339,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     handleClose,
     slippageRating,
     slippageRatingColor,
-    inputRef,
-    widgetType
+    inputRef
   }
 
   return (
