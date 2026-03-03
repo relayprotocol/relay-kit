@@ -171,7 +171,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       })
       queryQuote(relayClient?.baseApiUrl, quoteParameters, {
         headers: {
-          'relay:sdk-version': relayClient?.version ?? 'unknown',
+          'relay-sdk-version': relayClient?.version ?? 'unknown',
           'relay-kit-ui-version': relayClient?.uiVersion ?? 'unknown'
         }
       })

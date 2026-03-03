@@ -107,7 +107,7 @@ export const ChainShortcuts: FC<ChainShortcutsProps> = ({
         color="ghost"
         size="none"
         onClick={onMoreClick}
-        className="relay:flex relay:items-center relay:gap-1 relay:px-2 relay:rounded-[8px] relay:!bg-[var(--relay-colors-gray3)] relay:text-[color:var(--relay-colors-gray9)] hover:!relay-bg-[var(--relay-colors-gray4)] relay:h-[40px]"
+        className="relay:flex relay:items-center relay:gap-1 relay:px-2 relay:rounded-[8px] relay:!bg-[var(--relay-colors-gray3)] relay:text-[color:var(--relay-colors-gray9)] relay:hover:!bg-[var(--relay-colors-gray4)] relay:h-[40px]"
       >
         <Text style="subtitle1" color="subtle">
           More
@@ -137,8 +137,8 @@ const ChainShortcutButton: FC<ChainShortcutButtonProps> = ({
       className={cn(
         'relay:flex relay:flex-col relay:items-center relay:gap-1 relay:py-2 relay:px-3 relay:rounded-[12px]',
         isSelected
-          ? 'relay:!bg-[var(--relay-colors-gray5)] hover:!relay-bg-[var(--relay-colors-gray5)]'
-          : 'relay:!bg-[var(--relay-colors-gray3)] hover:!relay-bg-[var(--relay-colors-gray4)]'
+          ? 'relay:!bg-[var(--relay-colors-gray5)] relay:hover:!bg-[var(--relay-colors-gray5)]'
+          : 'relay:!bg-[var(--relay-colors-gray3)] relay:hover:!bg-[var(--relay-colors-gray4)]'
       )}
     >
       {chain.id ? (
