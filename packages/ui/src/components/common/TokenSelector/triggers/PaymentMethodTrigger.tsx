@@ -9,7 +9,7 @@ import {
   Skeleton
 } from '../../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { useCurrencyBalance } from '../../../../hooks/index.js'
 import { formatBN } from '../../../../utils/numbers.js'

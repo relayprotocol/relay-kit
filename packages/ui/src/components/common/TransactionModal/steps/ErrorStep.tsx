@@ -8,10 +8,8 @@ import ErrorWell from '../../ErrorWell.js'
 import { type Address } from 'viem'
 import { type TxHashes } from '../TransactionModalRenderer.js'
 import { useRelayClient } from '../../../../hooks/index.js'
-import {
-  faCircleXmark,
-  faRotateRight
-} from '@fortawesome/free-solid-svg-icons/index.js'
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons/faCircleXmark'
+import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import type { useRequests } from '@relayprotocol/relay-kit-hooks'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'

@@ -8,7 +8,8 @@ import type {
 import { useEffect, useRef, useState } from 'react'
 import { Dropdown } from '../primitives/Dropdown.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGear, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { faGear } from '@fortawesome/free-solid-svg-icons/faGear'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons/faInfoCircle'
 import { Button, Flex, Input, Text, Box } from '../primitives/index.js'
 import Tooltip from '../primitives/Tooltip.js'
 import {
