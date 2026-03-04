@@ -83,7 +83,7 @@ export const TokenList: FC<TokenListProps> = ({
               <Button
                 color="ghost"
                 size="none"
-                className="relay:gap-2 relay:cursor-pointer relay:p-3 relay:h-[58px] relay:rounded-lg relay:transition-colors relay:duration-150 relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay:shrink-0 relay:content-center relay:flex relay:w-full relay:outline-none relay:snap-start relay:focus-inset"
+                className="relay:gap-2 relay:cursor-pointer relay:p-2 relay:h-[58px] relay:rounded-lg relay:transition-colors relay:duration-150 relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)] relay:shrink-0 relay:content-center relay:flex relay:w-full relay:outline-none relay:snap-start relay:focus-inset"
               >
                 <ChainTokenIcon
                   chainId={token.chainId}
