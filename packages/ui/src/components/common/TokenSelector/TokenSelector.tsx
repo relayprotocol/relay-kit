@@ -685,7 +685,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                             </Box>
                           }
                           containerClassName={`relay:w-full relay:h-[40px] ${isDesktop ? 'relay:mb-1' : 'relay:mb-0'}`}
-                          className="relay:w-full relay:[&::placeholder]:text-ellipsis"
+                          className="relay:w-full relay:cursor-text relay:[&::placeholder]:text-ellipsis"
                           value={tokenSearchInput}
                           onChange={(e) => {
                             const value = (e.target as HTMLInputElement).value

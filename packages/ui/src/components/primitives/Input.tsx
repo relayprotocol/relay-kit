@@ -5,7 +5,7 @@ import { cn } from '../../utils/cn.js'
 
 const inputVariants = cva(
   [
-    'relay:w-full relay:px-4 relay:py-3 relay:rounded-input relay:font-body relay:text-[16px]',
+    'relay:w-full relay:px-4 relay:py-3 relay:rounded-input relay:font-body relay:text-[16px] relay:cursor-text',
     'relay:text-[color:var(--relay-colors-input-color)]',
     'relay:bg-[var(--relay-colors-input-background)]',
     'relay:placeholder:text-[color:var(--relay-colors-gray9)] relay:placeholder-ellipsis',
