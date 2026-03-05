@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.2
+
+### Patch Changes
+
+- 26b2fc7: Fix CSS layer scoping and priority for host app compatibility
+
 ## 8.0.1
 
 ### Patch Changes
