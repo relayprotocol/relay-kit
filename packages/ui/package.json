@@ -1,12 +1,16 @@
 {
   "name": "@relayprotocol/relay-kit-ui",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
   "types": "./_types/src/index.d.ts",
   "typings": "./_types/src/index.d.ts",
-  "sideEffects": ["./dist/styles.css", "./_esm/src/styles.css", "./_cjs/src/styles.css"],
+  "sideEffects": [
+    "./dist/styles.css",
+    "./_esm/src/styles.css",
+    "./_cjs/src/styles.css"
+  ],
   "files": [
     "./_cjs",
     "./_esm",
