@@ -6,7 +6,8 @@ import {
 import { RelayKitProvider } from '@relayprotocol/relay-kit-ui'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
-import { FC, ReactNode, useEffect, useState } from 'react'
+import { FC, ReactNode, useMemo } from 'react'
+import { useCustomize } from 'context/customizeContext'
 
 const DEFAULT_APP_FEES = [
   {
@@ -15,6 +16,11 @@ const DEFAULT_APP_FEES = [
   }
 ]
 
+const BASE_THEME = {
+  font: 'var(--font-inter), -apple-system, Helvetica, sans-serif',
+  fontHeading: 'Chivo, -apple-system, Helvetica, sans-serif'
+}
+
 export const RelayKitProviderWrapper: FC<{
   relayApi?: string
   dynamicChains: RelayChain[]
@@ -22,16 +28,16 @@ export const RelayKitProviderWrapper: FC<{
 }> = ({ relayApi, dynamicChains, children }) => {
   const { theme } = useTheme()
   const router = useRouter()
-  const [websocketsEnabled, setWebsocketsEnabled] = useState(false)
+  const { themeOverrides, websocketsEnabled } = useCustomize()
   const appFeesEnabled = router.query.appFees === 'true'
 
-  // Handle websocket configuration from query params
-  useEffect(() => {
-    const websocketParam = router.query.websockets as string
-    if (websocketParam !== undefined) {
-      setWebsocketsEnabled(websocketParam === 'true')
-    }
-  }, [router.query.websockets])
+  const mergedTheme = useMemo(
+    () => ({
+      ...BASE_THEME,
+      ...themeOverrides
+    }),
+    [themeOverrides]
+  )
 
   return (
     <RelayKitProvider
@@ -68,15 +74,7 @@ export const RelayKitProviderWrapper: FC<{
           console.log('message', message, level)
         }
       }}
-      theme={{
-        font: 'Barlow, -apple-system, Helvetica, sans-serif',
-        fontHeading: 'Chivo, -apple-system, Helvetica, sans-serif',
-        buttons: {
-          cta: {
-            fontStyle: 'italic'
-          }
-        }
-      }}
+      theme={mergedTheme}
     >
       {children}
     </RelayKitProvider>

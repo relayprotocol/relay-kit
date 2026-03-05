@@ -1,3 +1,5 @@
+.claude/worktrees
+
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
 
 # Logs
@@ -179,10 +181,5 @@ dist
 _cjs
 _esm
 _types
-## Panda
-styled-system
-styled-system-studio
 dist
-design-system
-!design-system/package.json
 **/src/version.ts

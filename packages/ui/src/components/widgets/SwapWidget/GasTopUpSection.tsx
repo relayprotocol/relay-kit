@@ -40,7 +40,7 @@ const GasTopUpSection: FC<Props> = ({
   return (
     <Pill
       color="primary"
-      css={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+      className="relay:flex relay:items-center relay:cursor-pointer relay:self-start"
       onClick={() => {
         onGasTopUpEnabled(!gasTopUpEnabled)
       }}
@@ -49,10 +49,8 @@ const GasTopUpSection: FC<Props> = ({
         <>
           <Text
             style="subtitle2"
-            css={{
-              color: 'primary12',
-              mr: '2'
-            }}
+            className="relay:mr-2"
+            color="primary12"
           >
             +
             {gasTopUpAmount
@@ -66,7 +64,7 @@ const GasTopUpSection: FC<Props> = ({
             size="sm"
             chainRadius={2}
           />
-          <Text style="subtitle2" ellipsify>
+          <Text style="subtitle2" color="primary12" ellipsify>
             {toChain?.currency?.symbol}
           </Text>
           <FontAwesomeIcon icon={faClose} />
@@ -75,10 +73,8 @@ const GasTopUpSection: FC<Props> = ({
         <>
           <Text
             style="subtitle2"
-            css={{
-              color: 'primary12',
-              mr: '6px'
-            }}
+            className="relay:mr-[6px]"
+            color="primary12"
           >
             Add Gas (Balance:{' '}
             {gasTopUpBalance

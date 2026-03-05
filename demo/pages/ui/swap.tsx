@@ -35,6 +35,7 @@ import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 import Head from 'next/head'
 import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
+import { CustomizeSidebar } from 'components/CustomizeSidebar'
 
 const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm', 'tvm', 'hypevm'] as const
 
@@ -200,7 +201,7 @@ const SwapWidgetPage: NextPage = () => {
   return (
     <Layout
       styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
+        background: theme === 'light' ? '#F7F8FF' : '#000'
       }}
     >
       <Head>
@@ -212,17 +213,20 @@ const SwapWidgetPage: NextPage = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          paddingTop: 50,
-          paddingInline: '10px',
-          gap: 20
+          justifyContent: 'flex-start',
+          paddingTop: 40,
+          paddingBottom: 40,
+          paddingInline: '16px',
+          gap: 24
         }}
       >
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 8
+            gap: 8,
+            width: '100%',
+            maxWidth: 400
           }}
         >
           <div
@@ -374,52 +378,12 @@ const SwapWidgetPage: NextPage = () => {
           />
         </div>
       </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: '40px',
-          gap: '20px'
-        }}
-      >
-        <div>
-          <label>Single Chain Mode: </label>
-          <input
-            type="checkbox"
-            checked={singleChainMode}
-            onChange={(e) => setSingleChainMode(e.target.checked)}
-          />
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-            Supported Wallet VMs:
-          </div>
-          {WALLET_VM_TYPES.map((vm) => (
-            <div
-              key={vm}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
-            >
-              <label htmlFor={`vm-${vm}`}>{vm.toUpperCase()}: </label>
-              <input
-                id={`vm-${vm}`}
-                type="checkbox"
-                checked={supportedWalletVMs.includes(vm)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSupportedWalletVMs((prev) => [...prev, vm])
-                  } else {
-                    setSupportedWalletVMs((prev) =>
-                      prev.filter((item) => item !== vm)
-                    )
-                  }
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      <CustomizeSidebar
+        singleChainMode={singleChainMode}
+        setSingleChainMode={setSingleChainMode}
+        supportedWalletVMs={supportedWalletVMs}
+        setSupportedWalletVMs={setSupportedWalletVMs}
+      />
     </Layout>
   )
 }

@@ -85,6 +85,7 @@ export const themeOverrides: ThemeOverridesMap = {
     success: '--relay-colors-text-success'
   },
   buttons: {
+    borderRadius: '--relay-radii-button-border-radius',
     primary: {
       color: '--relay-colors-primary-button-color',
       background: '--relay-colors-primary-button-background',

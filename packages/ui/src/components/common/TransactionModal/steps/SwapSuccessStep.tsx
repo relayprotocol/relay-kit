@@ -9,7 +9,6 @@ import {
   Skeleton,
   Anchor
 } from '../../../primitives/index.js'
-import { motion } from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { type TxHashes } from '../TransactionModalRenderer.js'
 import { type Token } from '../../../../types/index.js'
@@ -169,28 +168,14 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   return isDelayedTx ? (
     <>
       <Flex direction="column" align="center" justify="between">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{
-            type: 'spring',
-            stiffness: 260,
-            damping: 20
-          }}
-        >
+        <div className="relay:animate-icon-pop-in">
           <Flex
             align="center"
             justify="center"
-            css={{
-              height: 80,
-              width: 78,
-              position: 'relative',
-              backgroundColor: 'amber2',
-              borderRadius: '999999px'
-            }}
+            className="relay:relative relay:rounded-full relay:h-[80px] relay:w-[78px] relay:bg-[var(--relay-colors-amber2)]"
           >
             <svg
-              style={{ position: 'absolute', top: 7, left: 0, zIndex: 0 }}
+              className="relay:absolute relay:top-[7px] relay:left-0 relay:z-0"
               width="76"
               height="80"
               viewBox="0 0 64 54"
@@ -209,21 +194,26 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
               />
             </svg>
 
-            <Box css={{ color: 'amber9', mr: '$2', zIndex: 1 }}>
+            <Box
+              className="relay:z-[1] relay:text-[color:var(--relay-colors-amber9)] relay:mr-2"
+            >
               <FontAwesomeIcon icon={faClockFour} style={{ height: 32 }} />
             </Box>
           </Flex>
-        </motion.div>
+        </div>
 
-        <Text style="subtitle1" css={{ my: '4', textAlign: 'center' }}>
+        <Text
+          style="subtitle1"
+          className="relay:my-4 relay:text-center"
+        >
           {isBitcoinOrigin || isBitcoinDestination
             ? `Bitcoin confirmation takes ${estimatedMinutes} minutes. Track progress on the transaction page.`
             : `Processing bridge, this will take ~${estimatedMinutes} ${estimatedMinutes === 1 ? 'min' : 'mins'}.`}
         </Text>
 
-        <Flex align="center" css={{ gap: '2', mb: 24 }}>
+        <Flex align="center" className="relay:gap-2 relay:mb-[24px]">
           {fromChain ? (
-            <Pill color="gray" css={{ alignItems: 'center', py: '2', px: '3' }}>
+            <Pill color="gray" className="relay:items-center relay:py-2 relay:px-3">
               <ChainTokenIcon
                 chainId={fromChain.id}
                 tokenlogoURI={fromTokenLogoUri}
@@ -231,20 +221,18 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 size="sm"
                 chainRadius={2.5}
               />
-              <Text style="subtitle1" css={{ ml: '2' }}>
+              <Text style="subtitle1" className="relay:ml-2">
                 {_fromAmountFormatted} {_fromToken?.symbol}
               </Text>
             </Pill>
           ) : (
             <Text style="subtitle1">?</Text>
           )}
-          <Flex
-            css={{ alignItems: 'center', justifyContent: 'center', p: '2' }}
-          >
+          <Flex className="relay:items-center relay:justify-center relay:p-2">
             <FontAwesomeIcon style={{ width: 14 }} icon={faArrowRight} />
           </Flex>
           {toChain ? (
-            <Pill color="gray" css={{ alignItems: 'center', py: '2', px: '3' }}>
+            <Pill color="gray" className="relay:items-center relay:py-2 relay:px-3">
               <ChainTokenIcon
                 chainId={toChain.id}
                 tokenlogoURI={toTokenLogoUri}
@@ -252,7 +240,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 size="sm"
                 chainRadius={2.5}
               />
-              <Text style="subtitle1" css={{ ml: '2' }}>
+              <Text style="subtitle1" className="relay:ml-2">
                 {_toAmountFormatted} {_toToken?.symbol}
               </Text>
             </Pill>
@@ -261,13 +249,8 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           )}
         </Flex>
         <Text
-          css={{
-            background: 'gray2',
-            p: '4',
-            borderRadius: 12,
-            textAlign: 'center'
-          }}
           style="body2"
+          className="relay:rounded-[12px] relay:text-center relay:p-4 relay:bg-[var(--relay-colors-gray2)]"
         >
           You can close this modal while it finalizes on the blockchain. The
           transaction will continue in the background.
@@ -288,7 +271,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                 <Anchor
                   href={txUrl}
                   target="_blank"
-                  css={{ mt: '12px', textAlign: 'center', fontSize: '14px' }}
+                  className="relay:text-center relay:text-[14px] relay:mt-[12px]"
                 >
                   View Refund Tx: {truncatedHash}
                 </Anchor>
@@ -299,7 +282,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
               <Text
                 style="body3"
                 color="subtle"
-                css={{ mt: '12px', textAlign: 'center' }}
+                className="relay:text-center relay:mt-3"
               >
                 Fetching refund transaction...
               </Text>
@@ -318,7 +301,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
               <Anchor
                 href={txUrl}
                 target="_blank"
-                css={{ mt: '12px', textAlign: 'center', fontSize: '14px' }}
+                className="relay:text-center relay:text-[14px] relay:mt-[12px]"
               >
                 View Tx: {truncatedHash}
               </Anchor>
@@ -332,14 +315,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
       {!delayedTxUrl ? (
         <Flex
           direction="column"
-          css={{
-            p: '3',
-            '--borderColor': 'colors.subtle-border-color',
-            border: '1px solid var(--borderColor)',
-            gap: '3',
-            width: '100%',
-            borderRadius: 12
-          }}
+          className="relay:p-3 relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:gap-3 relay:w-full relay:rounded-[12px]"
         >
           <TransactionsByChain
             allTxHashes={allTxHashes}
@@ -350,29 +326,23 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         </Flex>
       ) : null}
 
-      <Flex css={{ width: '100%', mt: 8, gap: '3' }}>
+      <Flex className="relay:w-full relay:gap-3 relay:mt-[8px]">
         <Button
           cta={true}
           color={'secondary'}
           onClick={() => {
             onOpenChange(false)
           }}
-          css={{
-            justifyContent: 'center',
-            width: '100%'
-          }}
+          className="relay:justify-center relay:w-full"
         >
           Done
         </Button>
         {delayedTxUrl ? (
-          <a href={delayedTxUrl} style={{ width: '100%' }} target="_blank">
+          <a href={delayedTxUrl} className="relay:w-full" target="_blank">
             <Button
               cta={true}
               color={'primary'}
-              css={{
-                justifyContent: 'center',
-                width: 'max-content'
-              }}
+              className="relay:justify-center relay:w-max"
             >
               Track Progress
             </Button>
@@ -383,48 +353,25 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   ) : (
     <>
       <Flex direction="column" align="center" justify="between">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{
-            type: 'spring',
-            stiffness: 260,
-            damping: 20
-          }}
-        >
+        <div className="relay:animate-icon-pop-in">
           <Flex align="center">
             <RelayIcon />
             <Flex
               align="center"
               justify="center"
-              css={{
-                width: 40,
-                height: 40,
-                backgroundColor: 'green9',
-                color: 'white',
-                borderRadius: '100px',
-                '--borderColor': 'white',
-                border: '2px solid var(--borderColor)',
-                ml: '-8px'
-              }}
+              className="relay:rounded-full relay:border-2 relay:border-solid relay:border-white relay:w-[40px] relay:h-[40px] relay:bg-[var(--relay-colors-green9)] relay:text-white relay:ml-[-8px]"
             >
               <FontAwesomeIcon
                 icon={faCheck}
-                style={{ height: 20, color: 'white' }}
+                className="relay:h-[20px] relay:text-white"
               />
             </Flex>
           </Flex>
-        </motion.div>
+        </div>
 
         <Text
           style="h6"
-          css={{
-            my: '12px',
-            textAlign: 'center',
-            '& .green-time': {
-              color: 'green11'
-            }
-          }}
+          className="relay:text-center relay:my-3 relay:[&_.green-time]:text-[color:var(--relay-colors-green11)]"
         >
           {fillTime && fillTime !== '-' ? (
             <>
@@ -437,22 +384,15 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
 
         <Flex
           direction="column"
-          css={{
-            gap: '3',
-            padding: '3',
-            '--borderColor': 'colors.slate.5',
-            border: '1px solid var(--borderColor)',
-            borderRadius: 12,
-            width: '100%'
-          }}
+          className="relay:gap-3 relay:p-3 relay:border relay:border-solid relay:border-[var(--relay-colors-slate-5)] relay:rounded-[12px] relay:w-full"
         >
           {_fromToken ? (
-            <Flex direction="column" css={{ gap: '4px' }}>
+            <Flex direction="column" className="relay:gap-[4px]">
               <Text style="subtitle2" color="subtle">
                 Sent
               </Text>
               <Flex justify="between">
-                <Flex align="center" css={{ gap: '4px' }}>
+                <Flex align="center" className="relay:gap-[4px]">
                   <ChainTokenIcon
                     size="sm"
                     chainId={_fromToken.chainId}
@@ -462,7 +402,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
-                      css={{ height: 24, width: 60, background: 'gray5' }}
+                      className="relay:h-[24px] relay:w-[60px] relay:bg-[var(--relay-colors-gray5)]"
                     />
                   ) : (
                     <Text style="h6">
@@ -482,7 +422,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                       <Anchor
                         href={txUrl}
                         target="_blank"
-                        css={{ color: 'primary11', fontSize: '14px' }}
+                        className="relay:text-[color:var(--relay-colors-primary11)] relay:text-[14px]"
                       >
                         {truncateAddress(txHash, '...', 6, 4)}
                       </Anchor>
@@ -495,12 +435,12 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           )}
 
           {_toToken ? (
-            <Flex direction="column" css={{ gap: '4px' }}>
+            <Flex direction="column" className="relay:gap-[4px]">
               <Text style="subtitle2" color="subtle">
                 Received
               </Text>
               <Flex justify="between">
-                <Flex align="center" css={{ gap: '4px' }}>
+                <Flex align="center" className="relay:gap-[4px]">
                   <ChainTokenIcon
                     size="sm"
                     chainId={_toToken.chainId}
@@ -510,7 +450,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                   />
                   {isLoadingTransaction ? (
                     <Skeleton
-                      css={{ height: 24, width: 60, background: 'gray5' }}
+                      className="relay:h-[24px] relay:w-[60px] relay:bg-[var(--relay-colors-gray5)]"
                     />
                   ) : (
                     <Text style="h6">
@@ -529,7 +469,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                       <Anchor
                         href={txUrl}
                         target="_blank"
-                        css={{ color: 'primary11', fontSize: '14px' }}
+                        className="relay:text-[color:var(--relay-colors-primary11)] relay:text-[14px]"
                       >
                         {truncateAddress(txHash, '...', 6, 4)}
                       </Anchor>
@@ -539,7 +479,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
 
               {/* Additional Gas - positioned below transaction hash with 8px spacing */}
               {formattedGasTopUpAmount && gasTopUpAmountCurrency ? (
-                <Flex align="center" css={{ gap: '4px', mt: '4px' }}>
+                <Flex align="center" className="relay:gap-[4px] relay:mt-[4px]">
                   <ChainTokenIcon
                     size="sm"
                     chainId={gasTopUpAmountCurrency.chainId}
@@ -562,11 +502,11 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         </Flex>
       </Flex>
 
-      <Flex css={{ width: '100%', gap: '3' }}>
+      <Flex className="relay:w-full relay:gap-3">
         {requestId ? (
           <a
             href={`${baseTransactionUrl}/transaction/${requestId}`}
-            style={{ width: '100%' }}
+            className="relay:w-full"
             target="_blank"
             onClick={(e) => {
               e.stopPropagation()
@@ -575,10 +515,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
             <Button
               color="secondary"
               cta={true}
-              css={{
-                justifyContent: 'center',
-                width: 'max-content'
-              }}
+              className="relay:justify-center relay:w-max"
             >
               View Details
             </Button>
@@ -589,10 +526,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           onClick={() => {
             onOpenChange(false)
           }}
-          css={{
-            justifyContent: 'center',
-            width: '100%'
-          }}
+          className="relay:justify-center relay:w-full"
         >
           Done
         </Button>
