@@ -9,10 +9,8 @@ import {
   Button
 } from '../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faChevronDown,
-  faExclamationTriangle
-} from '@fortawesome/free-solid-svg-icons'
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons/faExclamationTriangle'
 import { formatBN, formatDollar } from '../../../utils/numbers.js'
 import type { EnhancedToken } from '../../../hooks/useEnhancedTokensList.js'
 

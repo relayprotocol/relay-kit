@@ -12,12 +12,10 @@ import { isENSName } from '../../utils/ens.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
 import { EventNames } from '../../constants/events.js'
 import type { Token } from '../../types/index.js'
-import {
-  faCircleCheck,
-  faTriangleExclamation,
-  faClipboard,
-  faCircleXmark
-} from '@fortawesome/free-solid-svg-icons'
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons/faCircleCheck'
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons/faTriangleExclamation'
+import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons/faCircleXmark'
 import { AnchorButton } from '../primitives/Anchor.js'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'

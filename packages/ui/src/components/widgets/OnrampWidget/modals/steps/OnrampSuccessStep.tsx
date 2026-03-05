@@ -11,7 +11,8 @@ import {
   Text
 } from '../../../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faUpRightFromSquare } from '@fortawesome/free-solid-svg-icons'
+import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
+import { faUpRightFromSquare } from '@fortawesome/free-solid-svg-icons/faUpRightFromSquare'
 import { truncateAddress } from '../../../../../utils/truncate.js'
 import type { Token } from '../../../../../types/index.js'
 
