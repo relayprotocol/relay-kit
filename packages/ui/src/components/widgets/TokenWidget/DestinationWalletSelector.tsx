@@ -5,7 +5,7 @@ import {
   type MultiWalletDropdownProps
 } from '../../common/MultiWalletDropdown.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboard } from '@fortawesome/free-solid-svg-icons'
+import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
 
 type DestinationWalletSelectorProps = {
   label: string

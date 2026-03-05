@@ -7,7 +7,7 @@ import {
   Text
 } from '../../../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUpRightFromSquare } from '@fortawesome/free-solid-svg-icons'
+import { faUpRightFromSquare } from '@fortawesome/free-solid-svg-icons/faUpRightFromSquare'
 import type { Token } from '../../../../../types/index.js'
 import { LoadingSpinner } from '../../../../common/LoadingSpinner.js'
 import MoonPayLogo from '../../../../../img/MoonPayLogo.js'

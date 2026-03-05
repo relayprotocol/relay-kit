@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
 import { Modal } from '../../../../components/common/Modal.js'
 import type { FiatCurrency } from '../../../../types/index.js'
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass'
 import Fuse from 'fuse.js'
 import useMoonPayCurrencies, {
   type MoonPayFiatCurrency

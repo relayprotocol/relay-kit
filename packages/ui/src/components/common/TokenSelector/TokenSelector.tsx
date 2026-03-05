@@ -9,11 +9,9 @@ import {
 import { Flex, Text, Input, Box, Button } from '../../primitives/index.js'
 import { Modal } from '../Modal.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faMagnifyingGlass,
-  faFolderOpen,
-  faXmark
-} from '@fortawesome/free-solid-svg-icons'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass'
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons/faFolderOpen'
+import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark'
 import type { Token } from '../../../types/index.js'
 import { type ChainFilterValue } from './ChainFilter.js'
 import useRelayClient from '../../../hooks/useRelayClient.js'

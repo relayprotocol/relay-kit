@@ -12,7 +12,8 @@ import {
   CollapsibleRoot,
   CollapsibleTrigger
 } from '../primitives/Collapsible.js'
-import { faClock, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { faClock } from '@fortawesome/free-solid-svg-icons/faClock'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons/faInfoCircle'
 import { PriceImpactTooltip } from './PriceImpactTooltip.js'
 import { getSlippageRating, ratingToColor } from '../../utils/slippage.js'
 import Tooltip from '../primitives/Tooltip.js'

@@ -10,11 +10,9 @@ import { Dropdown } from '../../primitives/Dropdown.js'
 import { Button, Flex, Text, Box } from '../../primitives/index.js'
 import ChainIcon from '../../primitives/ChainIcon.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faChevronDown,
-  faInfoCircle,
-  faStar
-} from '@fortawesome/free-solid-svg-icons'
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons/faInfoCircle'
+import { faStar } from '@fortawesome/free-solid-svg-icons/faStar'
 import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
 import AllChainsLogo from '../../../img/AllChainsLogo.js'
 import { TagPill } from './TagPill.js'
