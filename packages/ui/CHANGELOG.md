@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.1
+
+### Patch Changes
+
+- 887f0e0: Fix CSS being tree-shaken in production builds by declaring styles.css as
+
 ## 8.0.0
 
 ### Major Changes
