@@ -4,10 +4,8 @@ import type { Token } from '../../types/index.js'
 import { Anchor, Box, Button, Flex, Text } from '../primitives/index.js'
 import { CopyToClipBoard } from './CopyToClipBoard.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faExclamationTriangle,
-  faExternalLink
-} from '@fortawesome/free-solid-svg-icons'
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons/faExclamationTriangle'
+import { faExternalLink } from '@fortawesome/free-solid-svg-icons/faExternalLink'
 import useRelayClient from '../../hooks/useRelayClient.js'
 import {
   alreadyAcceptedToken,

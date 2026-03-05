@@ -10,7 +10,7 @@ import { useMediaQuery } from 'usehooks-ts'
 import { cn } from '../../utils/cn.js'
 import type { QuoteResponse } from '@relayprotocol/relay-kit-hooks'
 import type { LinkedWallet } from '../../types/index.js'
-import { faRoute } from '@fortawesome/free-solid-svg-icons'
+import { faRoute } from '@fortawesome/free-solid-svg-icons/faRoute'
 
 type Props = {
   error: any

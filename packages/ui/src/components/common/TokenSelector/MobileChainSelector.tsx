@@ -17,13 +17,11 @@ import {
   AccessibleListItem
 } from '../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faArrowLeft,
-  faInfoCircle,
-  faMagnifyingGlass,
-  faStar,
-  faXmark
-} from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons/faInfoCircle'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass'
+import { faStar } from '@fortawesome/free-solid-svg-icons/faStar'
+import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark'
 import Fuse from 'fuse.js'
 import type { ChainFilterValue } from './ChainFilter.js'
 import { EventNames } from '../../../constants/events.js'

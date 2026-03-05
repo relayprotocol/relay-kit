@@ -3,7 +3,8 @@ import type { FC } from 'react'
 import { Text, Pill, ChainTokenIcon } from '../../primitives/index.js'
 import { formatBN, formatDollar } from '../../../utils/numbers.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faClose } from '@fortawesome/free-solid-svg-icons/faClose'
+import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus'
 import { ASSETS_RELAY_API } from '@relayprotocol/relay-sdk'
 
 type Props = {

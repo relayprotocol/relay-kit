@@ -4,12 +4,10 @@ import { Box, Button, Flex, Text } from '../../../primitives/index.js'
 import AmountInput from '../../../common/AmountInput.js'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faArrowDownLong,
-  faArrowUpLong,
-  faClipboard,
-  faCreditCard
-} from '@fortawesome/free-solid-svg-icons'
+import { faArrowDownLong } from '@fortawesome/free-solid-svg-icons/faArrowDownLong'
+import { faArrowUpLong } from '@fortawesome/free-solid-svg-icons/faArrowUpLong'
+import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
+import { faCreditCard } from '@fortawesome/free-solid-svg-icons/faCreditCard'
 import TokenSelector from '../../../common/TokenSelector/TokenSelector.js'
 import { EventNames } from '../../../../constants/events.js'
 import { TokenTrigger } from '../../../common/TokenSelector/triggers/TokenTrigger.js'

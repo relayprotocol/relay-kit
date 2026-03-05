@@ -8,7 +8,7 @@ import {
   ChainTokenIcon
 } from '../../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 
 type TokenTriggerProps = {

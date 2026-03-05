@@ -15,7 +15,7 @@ import { type Token } from '../../../../types/index.js'
 import { getDeadAddress, type RelayChain } from '@relayprotocol/relay-sdk'
 import { CopyToClipBoard } from '../../CopyToClipBoard.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faQrcode } from '@fortawesome/free-solid-svg-icons'
+import { faQrcode } from '@fortawesome/free-solid-svg-icons/faQrcode'
 import { QRCodeCanvas } from 'qrcode.react'
 import { generateQrWalletDeeplink } from '../../../../utils/qrcode.js'
 import {

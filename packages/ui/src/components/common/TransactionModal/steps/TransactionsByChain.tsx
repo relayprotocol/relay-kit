@@ -10,7 +10,7 @@ import {
 } from '../../../primitives/index.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import { truncateAddress } from '../../../../utils/truncate.js'
-import { faRotateRight } from '@fortawesome/free-solid-svg-icons'
+import { faRotateRight } from '@fortawesome/free-solid-svg-icons/faRotateRight'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import type { useRequests } from '@relayprotocol/relay-kit-hooks'

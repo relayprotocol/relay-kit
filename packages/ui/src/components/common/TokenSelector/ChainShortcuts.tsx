@@ -1,7 +1,7 @@
 import { type FC, useMemo } from 'react'
 import { Flex, Button, Text, ChainIcon } from '../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
 import type { ChainFilterValue } from './ChainFilter.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { groupChains } from '../../../utils/tokenSelector.js'

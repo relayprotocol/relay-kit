@@ -9,11 +9,9 @@ import {
   Button
 } from '../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faChevronDown,
-  faChevronUp,
-  faExclamationTriangle
-} from '@fortawesome/free-solid-svg-icons'
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
+import { faChevronUp } from '@fortawesome/free-solid-svg-icons/faChevronUp'
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons/faExclamationTriangle'
 import { formatBN, formatDollar } from '../../../utils/numbers.js'
 import { truncateAddress } from '../../../utils/truncate.js'
 import type { EnhancedToken } from '../../../hooks/useEnhancedTokensList.js'
