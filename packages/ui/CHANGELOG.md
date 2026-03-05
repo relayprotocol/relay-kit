@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.0
+
+### Major Changes
+
+- 4c6d8d2: Migrate styling system from Panda CSS to Tailwind CSS
+
+### Patch Changes
+
+- 0e44e49: Optimize Font Awesome imports to use individual icon paths
+
 ## 7.1.6
 
 ### Patch Changes
