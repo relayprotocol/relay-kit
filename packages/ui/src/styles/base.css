@@ -1,6 +1,6 @@
-@layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme) prefix(relay);
-@import "tailwindcss/utilities.css" layer(utilities) prefix(relay);
+@layer reset, base, tokens, recipes, utilities, theme, components, relay-theme, relay-base, relay-components, relay-utilities;
+@import "tailwindcss/theme.css" layer(relay-theme) prefix(relay);
+@import "tailwindcss/utilities.css" layer(relay-utilities) prefix(relay);
 
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
@@ -144,10 +144,10 @@
 
 /* ===================================================================
    CSS Reset (scoped to .relay-kit-reset)
-   Wrapped in @layer base so it appears BEFORE @tailwind utilities
+   Wrapped in @layer relay-base so it appears BEFORE @tailwind utilities
    in the output. This ensures utility classes always win over the reset.
    =================================================================== */
-@layer base {
+@layer relay-base {
 
 .relay-kit-reset {
   --font-fallback: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,

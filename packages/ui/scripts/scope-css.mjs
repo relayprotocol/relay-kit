@@ -4,7 +4,7 @@
  * library from polluting the consuming app's global CSS namespace.
  *
  * Tailwind v4 generates:
- * 1. @layer theme { :root, :host { --relay-* } }
+ * 1. @layer relay-theme { :root, :host { --relay-* } }
  *    → Scope :root,:host to .relay-kit-reset
  * 2. @property --tw-* { ... }
  *    → Cannot be scoped (global by CSS spec). Low risk since
@@ -22,10 +22,10 @@ const cssPath = resolve(__dirname, '../dist/styles.css')
 let css = readFileSync(cssPath, 'utf-8')
 
 // 1. Scope the theme layer's `:root, :host` block.
-// Pattern: `@layer theme { :root, :host { ... } }`
+// Pattern: `@layer relay-theme { :root, :host { ... } }`
 // We scope each selector to `.relay-kit-reset`.
 css = css.replace(
-  /(@layer\s+theme\s*\{)\s*(:root\s*,\s*:host)\s*\{/,
+  /(@layer\s+relay-theme\s*\{)\s*(:root\s*,\s*:host)\s*\{/,
   '$1\n  .relay-kit-reset {'
 )
 
@@ -33,7 +33,7 @@ css = css.replace(
 // Pattern: `*, ::before, ::after, ::backdrop { --tw-*: ...; }`
 // This is inside @layer properties { @supports(...) { ... } }
 css = css.replace(
-  /(\*\s*,\s*::before\s*,\s*::after\s*,\s*::backdrop)\s*\{([^}]*--tw-[^}]*)\}/g,
+  /(\*\s*,\s*:?:before\s*,\s*:?:after\s*,\s*::backdrop)\s*\{([^}]*--tw-[^}]*)\}/g,
   (match, selector, body) => {
     const declarations = body.split(';').map((d) => d.trim()).filter(Boolean)
     const allTwVars = declarations.every((d) => d.startsWith('--tw-'))
