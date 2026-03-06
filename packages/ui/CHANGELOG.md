@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.3
+
+### Patch Changes
+
+- d5bea75: Namespace keyframes with relay- prefix to prevent collisions with host apps
+
 ## 8.0.2
 
 ### Patch Changes
