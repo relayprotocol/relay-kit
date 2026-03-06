@@ -122,24 +122,35 @@ export const adaptSolanaWallet = (
       // So we don't need to handle onReplaced and onCancelled
       assertBase58TransactionSignature(txHash)
 
-      const { blockhash, lastValidBlockHeight } =
-        await connection.getLatestBlockhash('confirmed')
+      const POLL_INTERVAL_MS = 200
+      const MAX_POLL_DURATION_MS = 120_000
+      const start = Date.now()
 
-      const result = await connection.confirmTransaction({
-        blockhash: blockhash,
-        lastValidBlockHeight: lastValidBlockHeight,
-        signature: txHash
-      })
+      while (Date.now() - start < MAX_POLL_DURATION_MS) {
+        const { value } = await connection.getSignatureStatuses([txHash])
+        const status = value?.[0]
 
-      if (result.value.err) {
-        throw new Error(`Transaction failed: ${result.value.err}`)
+        if (status?.err) {
+          throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`)
+        }
+
+        if (
+          status?.confirmationStatus === 'confirmed' ||
+          status?.confirmationStatus === 'finalized'
+        ) {
+          return {
+            blockHash: status.slot.toString(),
+            blockNumber: status.slot,
+            txHash
+          }
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
       }
 
-      return {
-        blockHash: result.context.slot.toString(),
-        blockNumber: result.context.slot,
-        txHash
-      }
+      throw new Error(
+        `Transaction confirmation timeout: ${txHash} was not confirmed within ${MAX_POLL_DURATION_MS / 1000}s`
+      )
     },
     switchChain: (chainId: number) => {
       _chainId = chainId
