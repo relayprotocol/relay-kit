@@ -344,8 +344,8 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   const handleTouchStart = (_e: React.TouchEvent) => {
     if (!chain.id) return
     const timer = setTimeout(() => {
-      haptic('heavy')
       setDropdownOpen(true)
+      requestAnimationFrame(() => haptic('heavy'))
     }, 500) // 500ms long press
     setLongPressTimer(timer)
   }
