@@ -4,10 +4,12 @@ import {
   RelayChain
 } from '@relayprotocol/relay-sdk'
 import { RelayKitProvider } from '@relayprotocol/relay-kit-ui'
+import type { HapticEventType } from '@relayprotocol/relay-kit-ui'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
-import { FC, ReactNode, useMemo } from 'react'
+import { FC, ReactNode, useCallback, useMemo } from 'react'
 import { useCustomize } from 'context/customizeContext'
+import { useWebHaptics } from 'web-haptics/react'
 
 const DEFAULT_APP_FEES = [
   {
@@ -30,6 +32,19 @@ export const RelayKitProviderWrapper: FC<{
   const router = useRouter()
   const { themeOverrides, websocketsEnabled } = useCustomize()
   const appFeesEnabled = router.query.appFees === 'true'
+  const { trigger } = useWebHaptics({
+    // enables audio feedback for testing on desktop
+    // debug: true
+  })
+
+  // web-haptics presets match our HapticEventType names exactly
+  const onHapticEvent = useCallback(
+    (type: HapticEventType) => {
+      console.log(`[haptic] ${type}`)
+      trigger(type)
+    },
+    [trigger]
+  )
 
   const mergedTheme = useMemo(
     () => ({
@@ -62,6 +77,7 @@ export const RelayKitProviderWrapper: FC<{
         },
         secureBaseUrl: process.env.NEXT_PUBLIC_RELAY_SECURE_API_URL,
         appFees: appFeesEnabled ? DEFAULT_APP_FEES : undefined,
+        onHapticEvent,
         logger: (message, level) => {
           window.dispatchEvent(
             new CustomEvent('relay-kit-logger', {

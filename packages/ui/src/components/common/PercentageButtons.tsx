@@ -59,7 +59,8 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
     isMobile ? 'relay:rounded-[6px]' : 'relay:rounded-[12px]',
     isMobile ? 'relay:flex-1' : '',
     'relay:justify-center',
-    'relay:hover:bg-[var(--relay-colors-widget-selector-hover-background)]'
+    'relay:hover:bg-[var(--relay-colors-widget-selector-hover-background)]',
+    'relay:active:bg-[var(--relay-colors-gray5)]'
   )
 
   const buttonFontSize = isMobile ? '14px' : '12px'

@@ -11,6 +11,7 @@ import { OnrampStep } from '../OnrampModal.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import { LoadingSpinner } from '../../../../common/LoadingSpinner.js'
 import { EventNames } from '../../../../../constants/events.js'
+import { useHapticEvent } from '../../../../../providers/RelayKitProvider.js'
 
 type OnrampConfirmingStepProps = {
   toToken: Token
@@ -43,6 +44,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
   onAnalyticEvent,
   setStep
 }) => {
+  const haptic = useHapticEvent()
   return (
     <Flex
       direction="column"
@@ -97,6 +99,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
         disabled={!depositAddress || isFetchingQuote}
         className="relay:justify-center"
         onClick={(e) => {
+          haptic('medium')
           onAnalyticEvent?.(EventNames.ONRAMP_CTA_CLICKED, {
             recipient,
             depositAddress,

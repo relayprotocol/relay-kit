@@ -10,6 +10,7 @@ import { Modal } from '../Modal.js'
 import { Flex, Text } from '../../primitives/index.js'
 import { ErrorStep } from './steps/ErrorStep.js'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { type Token } from '../../../types/index.js'
 import { SwapSuccessStep } from './steps/SwapSuccessStep.js'
 import { formatBN } from '../../../utils/numbers.js'
@@ -51,6 +52,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
     onAnalyticEvent,
     onSuccess
   } = depositAddressModalProps
+  const haptic = useHapticEvent()
 
   useEffect(() => {
     onOpenChange(open)
@@ -90,6 +92,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
         const quoteId = quote
           ? extractQuoteId(quote?.steps as Execute['steps'])
           : undefined
+        haptic('success')
         onAnalyticEvent?.(EventNames.SWAP_SUCCESS, {
           ...extraData,
           chain_id_in: fromToken?.chainId,

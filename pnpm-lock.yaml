@@ -137,6 +137,9 @@ importers:
       wagmi:
         specifier: ^2.15.6
         version: 2.15.6(@tanstack/query-core@5.66.4)(@tanstack/react-query@5.66.9(react@19.1.1))(@types/react@19.1.11)(bufferutil@4.0.9)(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
+      web-haptics:
+        specifier: ^0.0.6
+        version: 0.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     devDependencies:
       '@dynamic-labs/types':
         specifier: 4.10.4
@@ -6554,6 +6557,23 @@ packages:
       viem: 2.x
     peerDependenciesMeta:
       typescript:
+        optional: true
+
+  web-haptics@0.0.6:
+    resolution: {integrity: sha512-eCzcf1LDi20+Fr0x9V3OkX92k0gxEQXaHajmhXHitsnk6SxPeshv8TBtBRqxyst8HI1uf2FyFVE7QS3jo1gkrw==}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+      svelte: '>=4'
+      vue: '>=3'
+    peerDependenciesMeta:
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      svelte:
+        optional: true
+      vue:
         optional: true
 
   web-streams-polyfill@3.3.3:
@@ -15851,6 +15871,11 @@ snapshots:
       - uploadthing
       - utf-8-validate
       - zod
+
+  web-haptics@0.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+    optionalDependencies:
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
 
   web-streams-polyfill@3.3.3: {}
 

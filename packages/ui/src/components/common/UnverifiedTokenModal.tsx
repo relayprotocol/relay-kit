@@ -14,6 +14,7 @@ import {
 } from '../../utils/localStorage.js'
 import { EventNames } from '../../constants/events.js'
 import { cn } from '../../utils/cn.js'
+import { useHapticEvent } from '../../providers/RelayKitProvider.js'
 
 type UnverifiedTokenModalProps = {
   open: boolean
@@ -32,6 +33,7 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
   onDecline,
   onAnalyticEvent
 }) => {
+  const haptic = useHapticEvent()
   const client = useRelayClient()
   const chain = client?.chains?.find(
     (chain) => chain.id === data?.token?.chainId
@@ -134,6 +136,7 @@ export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
                       ]
                     })
                   }
+                  haptic('light')
                   onAnalyticEvent?.(EventNames.UNVERIFIED_TOKEN_ACCEPTED, {
                     token: data?.token,
                     context: data?.context

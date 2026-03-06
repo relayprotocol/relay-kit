@@ -26,7 +26,10 @@ import { TransactionsByChain } from './TransactionsByChain.js'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
 import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { RelayIcon, XIcon } from '../../../../icons/index.js'
-import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../../../providers/RelayKitProvider.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import { truncateAddress } from '../../../../utils/truncate.js'
 
@@ -66,6 +69,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   currentCheckStatus
 }) => {
   const relayClient = useRelayClient()
+  const haptic = useHapticEvent()
   const isWrap = details?.operation === 'wrap'
   const isUnwrap = details?.operation === 'unwrap'
   const providerOptionsContext = useContext(ProviderOptionsContext)
@@ -331,6 +335,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
           cta={true}
           color={'secondary'}
           onClick={() => {
+            haptic('light')
             onOpenChange(false)
           }}
           className="relay:justify-center relay:w-full"
@@ -524,6 +529,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         <Button
           cta={true}
           onClick={() => {
+            haptic('light')
             onOpenChange(false)
           }}
           className="relay:justify-center relay:w-full"
