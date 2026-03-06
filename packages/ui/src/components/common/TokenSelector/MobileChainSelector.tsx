@@ -374,9 +374,6 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
       if (!chain.id) return
       const timer = setTimeout(() => {
         setDropdownOpen(true)
-        // Fire haptic after state update to prevent web-haptics' synthetic click
-        // from being caught by the click-outside close listener
-        requestAnimationFrame(() => haptic('heavy'))
       }, 500) // 500ms long press
       setLongPressTimer(timer)
     },

@@ -345,7 +345,6 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
     if (!chain.id) return
     const timer = setTimeout(() => {
       setDropdownOpen(true)
-      requestAnimationFrame(() => haptic('heavy'))
     }, 500) // 500ms long press
     setLongPressTimer(timer)
   }
