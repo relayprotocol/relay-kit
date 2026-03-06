@@ -21,7 +21,10 @@ import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
 import { truncateAddress } from '../../utils/truncate.js'
 import { isValidAddress } from '../../utils/address.js'
-import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../providers/RelayKitProvider.js'
 import {
   addCustomAddress,
   getCustomAddresses
@@ -56,6 +59,7 @@ export const CustomAddressModal: FC<Props> = ({
   onConfirmed,
   onClear
 }) => {
+  const haptic = useHapticEvent()
   const connectedAddress = useWalletAddress(wallet, linkedWallets)
   const [address, setAddress] = useState('')
   const [input, setInput] = useState('')
@@ -316,6 +320,7 @@ export const CustomAddressModal: FC<Props> = ({
                     radius="squared"
                     className="relay:flex relay:items-center relay:gap-[6px] relay:cursor-pointer relay:px-2"
                     onClick={() => {
+                      haptic('light')
                       onConfirmed(address)
                       onOpenChange(false)
                       onAnalyticEvent?.(EventNames.ADDRESS_MODAL_CONFIRMED, {
@@ -354,6 +359,7 @@ export const CustomAddressModal: FC<Props> = ({
                 setRecentCustomAddresses(getCustomAddresses())
               }
 
+              haptic('light')
               onConfirmed(address)
               onAnalyticEvent?.(EventNames.ADDRESS_MODAL_CONFIRMED, {
                 address: address,

@@ -20,6 +20,7 @@ import {
 } from '../../../utils/localStorage.js'
 import { EventNames } from '../../../constants/events.js'
 import { cn } from '../../../utils/cn.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 
 export type ChainFilterRowProps = {
   chain: ChainFilterValue
@@ -38,6 +39,7 @@ export const ChainFilterRow: FC<ChainFilterRowProps> = ({
   onAnalyticEvent,
   children
 }) => {
+  const haptic = useHapticEvent()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const isStarred = chain.id ? isChainStarred(chain.id) : false
@@ -75,6 +77,7 @@ export const ChainFilterRow: FC<ChainFilterRowProps> = ({
     if (chain.id) {
       const previouslyStarred = isStarred
       toggleStarredChain(chain.id)
+      haptic('light')
       const eventName = previouslyStarred
         ? EventNames.CHAIN_UNSTARRED
         : EventNames.CHAIN_STARRED

@@ -25,6 +25,7 @@ import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark'
 import Fuse from 'fuse.js'
 import type { ChainFilterValue } from './ChainFilter.js'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import AllChainsLogo from '../../../img/AllChainsLogo.js'
 import { TagPill } from './TagPill.js'
@@ -70,6 +71,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
   onChainStarToggle,
   starredChainIds
 }) => {
+  const haptic = useHapticEvent()
   const [chainSearchInput, setChainSearchInput] = useState('')
   const chainFuse = new Fuse(options, fuseSearchOptions)
 
@@ -164,6 +166,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
                     (chain) => chain.id?.toString() === selectedValue
                   )
             if (chain) {
+              haptic('selection')
               const fromStarredList =
                 !isSameChainSelection &&
                 chain.id !== undefined &&
@@ -305,6 +308,7 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
   showStar = true,
   onAnalyticEvent
 }) => {
+  const haptic = useHapticEvent()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [longPressTimer, setLongPressTimer] = useState<number | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -351,6 +355,7 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
     if (chain.id) {
       const previouslyStarred = isStarred
       toggleStarredChain(chain.id)
+      haptic('light')
       const eventName = previouslyStarred
         ? EventNames.CHAIN_UNSTARRED
         : EventNames.CHAIN_STARRED
@@ -368,10 +373,7 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
     (e: React.TouchEvent) => {
       if (!chain.id) return
       const timer = setTimeout(() => {
-        // Provide haptic feedback on long press
-        if ('vibrate' in navigator) {
-          navigator.vibrate(50) // Short 50ms vibration
-        }
+        haptic('heavy')
         setDropdownOpen(true)
       }, 500) // 500ms long press
       setLongPressTimer(timer)

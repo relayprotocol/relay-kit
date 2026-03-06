@@ -29,6 +29,7 @@ const tokenToColor = (token: string | undefined): string | undefined => {
   return `var(--relay-colors-${token})`
 }
 import { EventNames } from '../../constants/events.js'
+import { useHapticEvent } from '../../providers/RelayKitProvider.js'
 import { useDebounceValue, useMediaQuery } from 'usehooks-ts'
 import useFallbackState from '../../hooks/useFallbackState.js'
 import { Modal } from './Modal.js'
@@ -73,11 +74,13 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
   slippageRatingColor,
   inputRef
 }) => {
+  const haptic = useHapticEvent()
   const isMobile = useMediaQuery('(max-width: 520px)')
   return (
     <TabsRoot
       value={mode}
       onValueChange={(value) => {
+        haptic('selection')
         setMode(value as SlippageToleranceMode)
         if (value === 'Auto') {
           setDisplayValue(undefined)

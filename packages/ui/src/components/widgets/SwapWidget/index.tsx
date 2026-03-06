@@ -42,7 +42,10 @@ import {
   isChainVmTypeSupported
 } from '../../../utils/address.js'
 import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
-import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../../providers/RelayKitProvider.js'
 import { findBridgableToken } from '../../../utils/tokens.js'
 import { isChainLocked } from '../../../utils/tokenSelector.js'
 import TokenSelector from '../../common/TokenSelector/TokenSelector.js'
@@ -144,6 +147,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
     [_onAnalyticEvent]
   )
   const relayClient = useRelayClient()
+  const haptic = useHapticEvent()
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
   const [transactionModalOpen, setTransactionModalOpen] = useState(false)
@@ -293,6 +297,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
             setTradeType('EXACT_INPUT')
             debouncedAmountOutputControls.cancel()
             debouncedAmountInputControls.flush()
+            haptic('light')
             onAnalyticEvent?.(EventNames.MAX_AMOUNT_CLICKED, {
               percent: percent,
               bufferAmount: bufferAmount ? bufferAmount.toString() : '0',
@@ -1037,6 +1042,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           color="white"
                           className="relay:mt-[4px] relay:text-[color:var(--relay-colors-gray9)] relay:self-center relay:justify-center relay:w-full relay:h-full relay:z-10 relay:border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay:border-solid relay:!border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay:rounded-swap-btn relay:hover:text-[color:var(--relay-colors-gray11)] relay:hover:bg-[var(--relay-colors-gray-2)]"
                           onClick={() => {
+                            haptic('light')
                             if (fromToken || toToken) {
                               if (isUsdInputMode) {
                                 // In USD mode, switch the tokens and values
@@ -1279,6 +1285,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                         gasTopUpEnabled={gasTopUpEnabled}
                         onGasTopUpEnabled={(enabled) => {
                           setGasTopUpEnabled(enabled)
+                          haptic('light')
                           onAnalyticEvent?.(EventNames.GAS_TOP_UP_TOGGLE, {
                             enabled,
                             amount: gasTopUpAmount,
@@ -1491,6 +1498,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               linkedWallet?.connector,
                               quoteParameters
                             )
+                            haptic('medium')
                             onAnalyticEvent?.(
                               EventNames.SWAP_CTA_CLICKED,
                               swapEventData
@@ -1524,6 +1532,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
               }}
               onAcceptToken={(token, context) => {
                 if (token) {
+                  haptic('light')
                   if (context === 'to') {
                     onAnalyticEvent?.(EventNames.SWAP_TOKEN_SELECT, {
                       direction: 'output',

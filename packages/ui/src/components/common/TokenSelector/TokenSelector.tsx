@@ -24,6 +24,7 @@ import {
   useTrendingCurrencies
 } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { UnverifiedTokenModal } from '../UnverifiedTokenModal.js'
 import { useEnhancedTokensList } from '../../../hooks/useEnhancedTokensList.js'
 import { TokenList } from './TokenList.js'
@@ -90,6 +91,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   setToken,
   onAnalyticEvent
 }) => {
+  const haptic = useHapticEvent()
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
 
@@ -489,6 +491,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
 
   const handleTokenSelection = useCallback(
     (selectedToken: Token) => {
+      haptic('light')
       const isVerified = selectedToken.verified
       const direction = context === 'from' ? 'input' : 'output'
       let position = undefined
@@ -539,6 +542,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
       onOpenChange(false)
     },
     [
+      haptic,
       setToken,
       onOpenChange,
       resetState,

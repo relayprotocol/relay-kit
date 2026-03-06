@@ -4,6 +4,7 @@ import { useMounted } from '../../hooks/index.js'
 import type { ChildrenProps } from './SwapWidgetRenderer.js'
 import { EventNames } from '../../constants/events.js'
 import { cn } from '../../utils/cn.js'
+import { useHapticEvent } from '../../providers/RelayKitProvider.js'
 
 type SwapButtonProps = {
   transactionModalOpen: boolean
@@ -59,6 +60,7 @@ const SwapButton: FC<SwapButtonProps> = ({
   isFetchingQuote
 }) => {
   const isMounted = useMounted()
+  const haptic = useHapticEvent()
 
   if (isMounted && (address || !fromChainWalletVMSupported)) {
     const invalidAmount =
@@ -129,6 +131,7 @@ const SwapButton: FC<SwapButtonProps> = ({
           throw 'Missing onWalletConnect function'
         }
 
+        haptic('medium')
         onConnectWallet()
         onAnalyticEvent?.(EventNames.CONNECT_WALLET_CLICKED, {
           context

@@ -21,6 +21,7 @@ import { useMultiWalletBalances } from '../../../hooks/useMultiWalletBalances.js
 import { useMediaQuery } from 'usehooks-ts'
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { UnverifiedTokenModal } from '../UnverifiedTokenModal.js'
 import { useEnhancedTokensList } from '../../../hooks/useEnhancedTokensList.js'
 import { TokenList } from './TokenList.js'
@@ -81,6 +82,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   onAnalyticEvent,
   onPaymentMethodOpenChange
 }) => {
+  const haptic = useHapticEvent()
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
 
@@ -416,6 +418,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 
   const handleTokenSelection = useCallback(
     (selectedToken: Token) => {
+      haptic('light')
       const isVerified = selectedToken.verified
       const direction = context === 'from' ? 'input' : 'output'
       let position = undefined
@@ -466,6 +469,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       onOpenChange(false)
     },
     [
+      haptic,
       setToken,
       onOpenChange,
       resetState,
