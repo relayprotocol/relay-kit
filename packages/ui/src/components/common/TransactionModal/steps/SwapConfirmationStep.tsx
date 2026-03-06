@@ -215,7 +215,7 @@ export const StepRow: FC<StepRowProps> = ({
                   : 'var(--relay-colors-gray9)',
             animation:
               isActive && !isCompleted
-                ? 'pulse-shadow 1s infinite alternate-reverse'
+                ? 'relay-pulse-shadow 1s infinite alternate-reverse'
                 : 'none'
           }}
         >
