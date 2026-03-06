@@ -32,7 +32,10 @@ export const RelayKitProviderWrapper: FC<{
   const router = useRouter()
   const { themeOverrides, websocketsEnabled } = useCustomize()
   const appFeesEnabled = router.query.appFees === 'true'
-  const { trigger } = useWebHaptics({ debug: true })
+  const { trigger } = useWebHaptics({
+    // enables audio feedback for testing on desktop
+    // debug: true
+  })
 
   // web-haptics presets match our HapticEventType names exactly
   const onHapticEvent = useCallback(
