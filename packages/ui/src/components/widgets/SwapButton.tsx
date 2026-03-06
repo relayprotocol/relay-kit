@@ -109,6 +109,7 @@ const SwapButton: FC<SwapButtonProps> = ({
         data-testid={tokenWidgetMode ? 'token-action-button' : 'swap-button'}
         onClick={() => {
           if (!buttonDisabled) {
+            haptic('medium')
             onClick()
           }
         }}

@@ -1498,7 +1498,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               linkedWallet?.connector,
                               quoteParameters
                             )
-                            haptic('medium')
                             onAnalyticEvent?.(
                               EventNames.SWAP_CTA_CLICKED,
                               swapEventData
