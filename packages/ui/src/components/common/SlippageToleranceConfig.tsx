@@ -118,7 +118,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('1')}
           >
             1%
@@ -126,7 +126,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('2')}
           >
             2%
@@ -134,7 +134,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('5')}
           >
             5%
