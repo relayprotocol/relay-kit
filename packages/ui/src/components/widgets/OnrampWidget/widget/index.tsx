@@ -19,7 +19,10 @@ import { useAccount } from 'wagmi'
 import { OnrampModal } from '../modals/OnrampModal.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { findSupportedWallet } from '../../../../utils/address.js'
-import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../../../providers/RelayKitProvider.js'
 
 type BaseOnrampWidgetProps = {
   defaultWalletAddress?: string
@@ -92,6 +95,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
   const [onrampModalOpen, setOnrampModalOpen] = useState(false)
   const { isConnected } = useAccount()
   const providerOptionsContext = useContext(ProviderOptionsContext)
+  const haptic = useHapticEvent()
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
 
   return (
@@ -533,6 +537,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
               className="relay:w-full relay:justify-center"
               disabled={notEnoughFiat}
               onClick={() => {
+                haptic('medium')
                 if (!recipient && toChainWalletVMSupported) {
                   if (!linkedWallets || linkedWallets.length === 0) {
                     onConnectWallet?.()

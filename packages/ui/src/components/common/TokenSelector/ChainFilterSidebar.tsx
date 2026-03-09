@@ -21,6 +21,7 @@ import { faStar } from '@fortawesome/free-solid-svg-icons/faStar'
 import Fuse from 'fuse.js'
 import type { ChainFilterValue } from './ChainFilter.js'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
 import AllChainsLogo from '../../../img/AllChainsLogo.js'
 import { TagPill } from './TagPill.js'
@@ -69,6 +70,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
   onChainStarToggle,
   starredChainIds
 }) => {
+  const haptic = useHapticEvent()
   const [chainSearchInput, setChainSearchInput] = useState('')
   const chainFuse = new Fuse(options, fuseSearchOptions)
   const activeChainRef = useRef<HTMLButtonElement | null>(null)
@@ -129,6 +131,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                     (chain) => chain.id?.toString() === selectedValue
                   )
             if (chain) {
+              haptic('selection')
               onSelect(chain)
               const fromStarredList =
                 !isSameChainSelection &&
@@ -340,6 +343,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   showStar = true,
   onAnalyticEvent
 }) => {
+  const haptic = useHapticEvent()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const isStarred = chain.id ? isChainStarred(chain.id) : false
@@ -382,6 +386,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
     if (chain.id) {
       const previouslyStarred = isStarred
       toggleStarredChain(chain.id)
+      haptic('light')
       const eventName = previouslyStarred
         ? EventNames.CHAIN_UNSTARRED
         : EventNames.CHAIN_STARRED

@@ -24,6 +24,7 @@ import {
 } from '../../../utils/localStorage.js'
 import Tooltip from '../../../components/primitives/Tooltip.js'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { ChainSearchInput } from './ChainFilterRow.js'
 import { cn } from '../../../utils/cn.js'
 
@@ -279,6 +280,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   showStar = true,
   onAnalyticEvent
 }) => {
+  const haptic = useHapticEvent()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [longPressTimer, setLongPressTimer] = useState<number | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -325,6 +327,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
     if (chain.id) {
       const previouslyStarred = isStarred
       toggleStarredChain(chain.id)
+      haptic('light')
       const eventName = previouslyStarred
         ? EventNames.CHAIN_UNSTARRED
         : EventNames.CHAIN_STARRED
@@ -341,10 +344,6 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
   const handleTouchStart = (_e: React.TouchEvent) => {
     if (!chain.id) return
     const timer = setTimeout(() => {
-      // Provide haptic feedback on long press
-      if ('vibrate' in navigator) {
-        navigator.vibrate(50) // Short 50ms vibration
-      }
       setDropdownOpen(true)
     }, 500) // 500ms long press
     setLongPressTimer(timer)

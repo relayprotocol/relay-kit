@@ -29,6 +29,7 @@ const tokenToColor = (token: string | undefined): string | undefined => {
   return `var(--relay-colors-${token})`
 }
 import { EventNames } from '../../constants/events.js'
+import { useHapticEvent } from '../../providers/RelayKitProvider.js'
 import { useDebounceValue, useMediaQuery } from 'usehooks-ts'
 import useFallbackState from '../../hooks/useFallbackState.js'
 import { Modal } from './Modal.js'
@@ -73,11 +74,13 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
   slippageRatingColor,
   inputRef
 }) => {
+  const haptic = useHapticEvent()
   const isMobile = useMediaQuery('(max-width: 520px)')
   return (
     <TabsRoot
       value={mode}
       onValueChange={(value) => {
+        haptic('selection')
         setMode(value as SlippageToleranceMode)
         if (value === 'Auto') {
           setDisplayValue(undefined)
@@ -115,7 +118,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('1')}
           >
             1%
@@ -123,7 +126,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('2')}
           >
             2%
@@ -131,7 +134,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
           <Button
             color="grey"
             size="none"
-            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('5')}
           >
             5%

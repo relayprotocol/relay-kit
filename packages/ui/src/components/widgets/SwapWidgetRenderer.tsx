@@ -32,7 +32,10 @@ import {
 } from '../../utils/quote.js'
 import { useQuote, useTokenPrice } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../constants/events.js'
-import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../providers/RelayKitProvider.js'
 import type { DebouncedState } from 'usehooks-ts'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
@@ -185,6 +188,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   onAnalyticEvent,
   onSwapError
 }) => {
+  const haptic = useHapticEvent()
   const [fromToken, setFromToken] = useFallbackState(
     _setFromToken ? _fromToken : undefined,
     _setFromToken
@@ -872,6 +876,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         onAnalyticEvent?.(EventNames.SWAP_ERROR, swapEventData)
       }
 
+      haptic('error')
       setSwapError(errorMessage)
       onSwapError?.(errorMessage, { ...quote, steps: currentSteps } as Execute)
     }
