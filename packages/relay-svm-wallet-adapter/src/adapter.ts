@@ -122,12 +122,16 @@ export const adaptSolanaWallet = (
       // So we don't need to handle onReplaced and onCancelled
       assertBase58TransactionSignature(txHash)
 
-      const POLL_INTERVAL_MS = 200
+      const INITIAL_INTERVAL_MS = 200
+      const MAX_INTERVAL_MS = 1000
       const MAX_POLL_DURATION_MS = 120_000
       const start = Date.now()
+      let attempt = 0
 
       while (Date.now() - start < MAX_POLL_DURATION_MS) {
-        const { value } = await connection.getSignatureStatuses([txHash])
+        const { value } = await connection.getSignatureStatuses([txHash], {
+          searchTransactionHistory: attempt >= 5
+        })
         const status = value?.[0]
 
         if (status?.err) {
@@ -145,7 +149,12 @@ export const adaptSolanaWallet = (
           }
         }
 
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+        const interval = Math.min(
+          INITIAL_INTERVAL_MS * Math.pow(2, attempt),
+          MAX_INTERVAL_MS
+        )
+        await new Promise((resolve) => setTimeout(resolve, interval))
+        attempt++
       }
 
       throw new Error(
