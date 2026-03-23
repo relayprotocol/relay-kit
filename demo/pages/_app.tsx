@@ -103,7 +103,30 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
             http()
           ])
         } else {
-          transportsConfig[chain.id] = http()
+          const rpcUrl = chain.rpcUrls?.default?.http?.[0]
+          if (rpcUrl) {
+            try {
+              const url = new URL(rpcUrl)
+              if (url.username || url.password) {
+                const credentials = btoa(`${url.username}:${url.password}`)
+                url.username = ''
+                url.password = ''
+                transportsConfig[chain.id] = http(url.toString(), {
+                  fetchOptions: {
+                    headers: {
+                      Authorization: `Basic ${credentials}`
+                    }
+                  }
+                })
+              } else {
+                transportsConfig[chain.id] = http()
+              }
+            } catch {
+              transportsConfig[chain.id] = http()
+            }
+          } else {
+            transportsConfig[chain.id] = http()
+          }
         }
         return transportsConfig
       },
