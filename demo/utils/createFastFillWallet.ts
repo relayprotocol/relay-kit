@@ -1,20 +1,31 @@
 import type { AdaptedWallet, Execute, SignatureStepItem, TransactionStepItem } from '@relayprotocol/relay-sdk'
 
+type FastFillAuth =
+  | { password: string; apiKey?: undefined }
+  | { apiKey: string; password?: undefined }
+
 /**
  * Creates a fast-fill wallet adapter that wraps any AdaptedWallet
- * and intercepts transaction steps to call the fast-fill API
+ * and intercepts transaction steps to call the fast-fill API.
+ *
+ * Supports two auth modes:
+ * - Password: authenticates via the server proxy's password check
+ * - API key: passes the key directly (skips password auth)
  */
 export const createFastFillWallet = (
   originalWallet: AdaptedWallet,
-  password: string,
+  auth: FastFillAuth,
   solverInputCurrencyAmount?: string
 ): AdaptedWallet => {
   const callFastFillAPI = async (requestId: string) => {
     try {
       console.log('Calling fastFill proxy for requestId:', requestId)
-      const body: { requestId: string; password: string; solverInputCurrencyAmount?: string } = {
-        requestId,
-        password
+      const body: Record<string, string> = { requestId }
+      if (auth.password) {
+        body.password = auth.password
+      }
+      if (auth.apiKey) {
+        body.apiKey = auth.apiKey
       }
       if (solverInputCurrencyAmount) {
         body.solverInputCurrencyAmount = solverInputCurrencyAmount
