@@ -1,0 +1,29 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  claude-review:
+    uses: relayprotocol/agents-config/.github/workflows/reusable-code-review.yml@main
+    with:
+      runner: blacksmith-4vcpu-ubuntu-2404
+      review_guidelines: |
+        - New code files must start with a 2-line `// ABOUTME:` comment.
+        - No mock modes or fake data -- real APIs and data only.
+        - Code naming must be evergreen (no "new", "improved", "enhanced", "v2" etc.).
+        - Comments must be evergreen -- no temporal references like "recently refactored".
+        - Code comments must not be removed unless provably false.
+        - No unrelated changes bundled into the PR.
+        - Match existing style and formatting conventions.
+        - Use options objects instead of overloaded parameters.
+        - Avoid fallback defaults on critical values (decimals, chain IDs, addresses) -- better to throw.
+        - Do NOT flag the ABOUTME convention on files that already existed and were only partially modified.
+    secrets: inherit
