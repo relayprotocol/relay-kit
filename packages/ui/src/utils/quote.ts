@@ -1,10 +1,4 @@
-import type {
-  Execute,
-  ExecuteStep,
-  ExecuteStepItem,
-  paths,
-  RelayChain
-} from '@relayprotocol/relay-sdk'
+import type { Execute, paths, RelayChain } from '@relayprotocol/relay-sdk'
 import { formatBN, formatDollar } from './numbers.js'
 import type { BridgeFee } from '../types/index.js'
 import { formatSeconds, get15MinuteInterval } from './time.js'
@@ -243,9 +237,7 @@ export const appendMetadataToRequest = (
   }
 }
 
-export const getCurrentStep = (
-  steps?: Execute['steps'] | null
-): { step: ExecuteStep | null | undefined; stepItem: ExecuteStepItem | null | undefined } => {
+export const getCurrentStep = (steps?: Execute['steps'] | null) => {
   if (!steps) {
     return { step: null, stepItem: null }
   }

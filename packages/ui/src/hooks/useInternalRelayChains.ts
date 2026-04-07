@@ -10,7 +10,7 @@ const DEFAULT_CACHE_OPTIONS = {
   refetchOnWindowFocus: false
 } as const
 
-export const useInternalRelayChains = (): ReturnType<typeof useRelayChains> => {
+export const useInternalRelayChains = () => {
   const relayClient = useRelayClient()
   const providerOptions = useContext(ProviderOptionsContext)
 
