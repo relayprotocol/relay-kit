@@ -235,7 +235,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
     {
       enabled: depositAddress !== undefined && open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending']
+        const observableStates = ['waiting', 'pending', 'depositing']
 
         if (
           !query.state.data?.status ||
@@ -284,7 +284,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       }
       setProgressStep(TransactionProgressStep.Success)
       invalidateBalanceQueries()
-    } else if (executionStatus?.status === 'pending') {
+    } else if (executionStatus?.status === 'pending' || executionStatus?.status === 'depositing') {
       const timeEstimateMs =
         ((quote?.details?.timeEstimate ?? 0) +
           (fromChain && fromChain.id === bitcoin.id ? 600 : 0)) *
