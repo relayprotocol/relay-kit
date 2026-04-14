@@ -46,6 +46,7 @@ const PERPS_USDC_ADDRESS = '0x00000000000000000000000000000000'
 
 // Map currency addresses to Hyperliquid spot coin symbols and decimals
 const SPOT_TOKEN_CONFIG: Record<string, { coin: string; decimals: number }> = {
+  '0x6d1e7cde53ba9467b783cb7c530ce054': { coin: 'USDC', decimals: 8 },
   '0x2e6d84f2d7ca82e6581e03523e4389f7': { coin: 'USDe', decimals: 2 },
   '0x54e00a5988577cb0b0c9ab0cb6ef7f4b': { coin: 'USDH', decimals: 2 }
 }
