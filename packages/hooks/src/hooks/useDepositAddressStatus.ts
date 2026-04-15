@@ -8,7 +8,7 @@ import { MAINNET_RELAY_API } from '@relayprotocol/relay-sdk'
 import { queryRequests } from './useRequests.js'
 
 export type DepositAddressStatusResponse = {
-  status?: 'refund' | 'waiting' | 'failure' | 'pending' | 'success'
+  status?: 'refund' | 'waiting' | 'depositing' | 'failure' | 'pending' | 'success'
   details?: string
   txHashes?: string[]
   inTxHashes?: string[]
