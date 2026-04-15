@@ -1,5 +1,13 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.12
+
+### Patch Changes
+
+- 8d8aa50: Sync api types and add depositing step to deposit address status
+- Updated dependencies [8d8aa50]
+  - @relayprotocol/relay-sdk@5.2.2
+
 ## 3.0.11
 
 ### Patch Changes

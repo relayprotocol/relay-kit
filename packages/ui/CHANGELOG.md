@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.4
+
+### Patch Changes
+
+- 8d8aa50: Sync api types and add depositing step to deposit address status
+- 38dabc0: Use spotClearinghouseState for Spot USDC and unified Hyperliquid accounts. Adds a new useHyperliquidAccountMode hook to detect the user's account abstraction mode, and routes balance queries through spotClearinghouseState for unified/portfolio-margin accounts where the Perps USDC balance is reported under spot.
+- Updated dependencies [8d8aa50]
+  - @relayprotocol/relay-kit-hooks@3.0.12
+  - @relayprotocol/relay-sdk@5.2.2
+
 ## 8.0.3
 
 ### Patch Changes
