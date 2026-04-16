@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.2
+
+### Patch Changes
+
+- 8d8aa50: Sync api types and add depositing step to deposit address status
+
 ## 5.2.1
 
 ### Patch Changes
