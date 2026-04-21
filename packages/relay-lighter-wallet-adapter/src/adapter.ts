@@ -162,12 +162,23 @@ export const adaptLighterWallet = (
     if (cachedAccountIndex !== null) return cachedAccountIndex
     const apiClient = new ApiClient({ host: apiUrl })
     const accountApi = new AccountApi(apiClient)
-    const lighterAccount = await accountApi.getAccount({
+    // The SDK's `getAccount` is typed to return a single Account, but the
+    // underlying `/api/v1/account` endpoint actually returns an envelope:
+    //   { code, total, accounts: [{ index, l1_address, ... }] }
+    // Coerce through `unknown` so we can safely read the real shape.
+    const response = (await accountApi.getAccount({
       by: 'l1_address',
       value: normalizedL1Address
-    })
-    const index = Number(lighterAccount.index)
-    if (!Number.isFinite(index)) {
+    })) as unknown as {
+      code?: number
+      total?: number
+      accounts?: Array<{ index?: number | string }>
+    }
+    const firstAccount = response?.accounts?.[0]
+    const rawIndex = firstAccount?.index
+    const index =
+      typeof rawIndex === 'number' ? rawIndex : Number(rawIndex)
+    if (!firstAccount || !Number.isFinite(index)) {
       throw new Error(
         `Lighter adapter: could not resolve accountIndex for ${l1Address}. ` +
           'Has the user created a Lighter account via an L1 deposit?'

@@ -57,7 +57,7 @@ export const RelayKitProviderWrapper: FC<{
   return (
     <RelayKitProvider
       options={{
-        baseApiUrl: relayApi,
+        baseApiUrl: 'https://api.dev.relay.link',
         source: 'relay-demo',
         logLevel: LogLevel.Verbose,
         duneConfig: {

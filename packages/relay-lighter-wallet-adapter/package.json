@@ -52,7 +52,7 @@
         "rimraf": "^5.0.5"
     },
     "dependencies": {
-        "@reservoir0x/lighter-ts-sdk": "1.0.7-alpha16",
+        "@reservoir0x/lighter-ts-sdk": "1.0.7-alpha17",
         "@types/node": "^22.5.4"
     },
     "peerDependencies": {

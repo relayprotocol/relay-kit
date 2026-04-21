@@ -44,26 +44,11 @@ By default the adapter regenerates the API key every page load — the key never
 
 ```ts
 adaptLighterWallet({
-  walletClient,
+  l1Address,
+  signL1Message,
   storage: {
     get: (k) => localStorage.getItem(k),
     set: (k, v) => localStorage.setItem(k, v)
   }
 })
-```
-
-#### Bundler note (Next.js / webpack)
-
-`@reservoir0x/lighter-ts-sdk` imports `fs` at module load for its Node-only WASM branch. Browser bundlers need to stub it:
-
-```js
-// next.config.mjs
-export default {
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = { ...config.resolve.fallback, fs: false }
-    }
-    return config
-  }
-}
 ```

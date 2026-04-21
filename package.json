@@ -43,5 +43,10 @@
     "semi": false,
     "singleQuote": true,
     "trailingComma": "none"
+  },
+  "pnpm": {
+    "overrides": {
+      "@reservoir0x/lighter-ts-sdk": "file:./local-packages/reservoir0x-lighter-ts-sdk-1.0.7-alpha18.tgz"
+    }
   }
 }
