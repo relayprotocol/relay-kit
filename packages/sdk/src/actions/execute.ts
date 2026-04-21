@@ -7,7 +7,10 @@ import {
   safeStructuredClone
 } from '../utils/index.js'
 import { type WalletClient } from 'viem'
-import { isViemWalletClient } from '../utils/viemWallet.js'
+import {
+  isViemWalletClient,
+  type AdaptViemWalletOptions
+} from '../utils/viemWallet.js'
 import { isDeadAddress } from '../constants/address.js'
 
 export type ExecuteActionParameters = {
@@ -15,7 +18,7 @@ export type ExecuteActionParameters = {
   wallet: AdaptedWallet | WalletClient
   depositGasLimit?: string
   onProgress?: (data: ProgressData) => any
-}
+} & AdaptViemWalletOptions
 
 /**
  * Execute crosschain using Relay
@@ -31,7 +34,8 @@ export function execute(data: ExecuteActionParameters): Promise<{
 }> & {
   abortController: AbortController
 } {
-  const { quote, wallet, depositGasLimit, onProgress } = data
+  const { quote, wallet, depositGasLimit, onProgress, disableCapabilitiesCheck } =
+    data
   const client = getClient()
 
   if (!client.baseApiUrl || !client.baseApiUrl.length) {
@@ -41,7 +45,7 @@ export function execute(data: ExecuteActionParameters): Promise<{
   let adaptedWallet: AdaptedWallet | undefined
   if (wallet) {
     adaptedWallet = isViemWalletClient(wallet)
-      ? adaptViemWallet(wallet as WalletClient)
+      ? adaptViemWallet(wallet as WalletClient, { disableCapabilitiesCheck })
       : wallet
   }
 

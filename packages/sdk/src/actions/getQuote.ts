@@ -9,7 +9,10 @@ import {
   getApiKeyHeader,
   type SimulateContractRequest
 } from '../utils/index.js'
-import { isViemWalletClient } from '../utils/viemWallet.js'
+import {
+  isViemWalletClient,
+  type AdaptViemWalletOptions
+} from '../utils/viemWallet.js'
 import { getClient, RelayClient } from '../client.js'
 import type { AdaptedWallet, Execute, paths } from '../types/index.js'
 import { getDeadAddress } from '../constants/address.js'
@@ -39,7 +42,7 @@ export type GetQuoteParameters = {
   recipient?: string
   options?: Omit<Partial<QuoteBodyOptions>, 'source' | 'txs' | 'tradeType'>
   txs?: (NonNullable<QuoteBody['txs']>[0] | SimulateContractRequest)[]
-}
+} & AdaptViemWalletOptions
 
 const getDefaultQuoteParameters = async (
   client: RelayClient,
@@ -91,7 +94,8 @@ export async function getQuote(
     recipient,
     options,
     txs,
-    user
+    user,
+    disableCapabilitiesCheck
   } = parameters
 
   const client = getClient()
@@ -103,7 +107,7 @@ export async function getQuote(
   let adaptedWallet: AdaptedWallet | undefined
   if (wallet) {
     adaptedWallet = isViemWalletClient(wallet)
-      ? adaptViemWallet(wallet as WalletClient)
+      ? adaptViemWallet(wallet as WalletClient, { disableCapabilitiesCheck })
       : wallet
   }
 
