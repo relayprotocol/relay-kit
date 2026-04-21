@@ -6,7 +6,11 @@ packages:
 # Require packages to be published for at least 7 days before install.
 minimumReleaseAge: 10080
 
-# pnpm 10 blocks postinstall scripts by default; esbuild needs its postinstall
-# to fetch its platform-specific binary (used by vite/vitest).
 onlyBuiltDependencies:
   - esbuild
+  - sharp
+  - '@parcel/watcher'
+  - bufferutil
+  - utf-8-validate
+  - keccak
+  - bigint-buffer
