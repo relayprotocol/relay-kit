@@ -1,4 +1,9 @@
-import type { SvmReceipt, SuiReceipt, TronReceipt } from '../types/index.js'
+import type {
+  SvmReceipt,
+  SuiReceipt,
+  TronReceipt,
+  LvmReceipt
+} from '../types/index.js'
 import type { paths } from './api.js'
 import type { AxiosRequestConfig } from 'axios'
 import type { TransactionReceipt } from 'viem'
@@ -45,7 +50,12 @@ export type Execute = {
     depositAddress?: string
     items: {
       status: 'complete' | 'incomplete'
-      receipt?: TransactionReceipt | SvmReceipt | SuiReceipt | TronReceipt
+      receipt?:
+        | TransactionReceipt
+        | SvmReceipt
+        | SuiReceipt
+        | TronReceipt
+        | LvmReceipt
       checkStatus?:
         | 'refund'
         | 'waiting'
