@@ -29,7 +29,9 @@ const FastFillPage: NextPage = () => {
   const [progress, setProgress] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [authMode, setAuthMode] = useState<'password' | 'apiKey'>('password')
   const [fastFillPassword, setFastFillPassword] = useState<string>('')
+  const [fastFillApiKey, setFastFillApiKey] = useState<string>('')
   const [solverInputCurrencyAmount, setSolverInputCurrencyAmount] = useState<string>('')
   const [adaptedWallet, setAdaptedWallet] = useState<AdaptedWallet | null>(null)
 
@@ -136,17 +138,21 @@ const FastFillPage: NextPage = () => {
     setProgress(null)
     setLoading(true)
 
-    if (!fastFillPassword) {
-      setError('Fast fill password is required')
+    const authValue = authMode === 'password' ? fastFillPassword : fastFillApiKey
+    if (!authValue) {
+      setError(authMode === 'password' ? 'Fast fill password is required' : 'API key is required')
       setLoading(false)
       return
     }
 
     try {
       // Wrap the adapted wallet with our fastFill wrapper
+      const auth = authMode === 'password'
+        ? { password: fastFillPassword }
+        : { apiKey: fastFillApiKey }
       const fastFillWallet = createFastFillWallet(
         adaptedWallet,
-        fastFillPassword,
+        auth,
         solverInputCurrencyAmount || undefined
       )
 
@@ -326,21 +332,69 @@ const FastFillPage: NextPage = () => {
 
       <div style={{ width: '100%' }}>
         <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-          Fast Fill Password:
+          Authentication Mode:
         </label>
-        <input
-          type="password"
-          value={fastFillPassword}
-          onChange={(e) => setFastFillPassword(e.target.value)}
-          placeholder="Enter fast fill password"
-          style={{
-            width: '100%',
-            padding: 12,
-            fontSize: 14,
-            border: '1px solid #ccc',
-            borderRadius: 8
-          }}
-        />
+        <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="authMode"
+              value="password"
+              checked={authMode === 'password'}
+              onChange={() => setAuthMode('password')}
+            />
+            Password (server API key)
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="authMode"
+              value="apiKey"
+              checked={authMode === 'apiKey'}
+              onChange={() => setAuthMode('apiKey')}
+            />
+            API Key (direct)
+          </label>
+        </div>
+        {authMode === 'password' ? (
+          <>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
+              Fast Fill Password:
+            </label>
+            <input
+              type="password"
+              value={fastFillPassword}
+              onChange={(e) => setFastFillPassword(e.target.value)}
+              placeholder="Enter fast fill password"
+              style={{
+                width: '100%',
+                padding: 12,
+                fontSize: 14,
+                border: '1px solid #ccc',
+                borderRadius: 8
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
+              API Key:
+            </label>
+            <input
+              type="password"
+              value={fastFillApiKey}
+              onChange={(e) => setFastFillApiKey(e.target.value)}
+              placeholder="Enter your Relay API key"
+              style={{
+                width: '100%',
+                padding: 12,
+                fontSize: 14,
+                border: '1px solid #ccc',
+                borderRadius: 8
+              }}
+            />
+          </>
+        )}
       </div>
 
       <div style={{ width: '100%' }}>
@@ -375,7 +429,7 @@ const FastFillPage: NextPage = () => {
           cursor: 'pointer',
           width: '100%'
         }}
-        disabled={!adaptedWallet || !quote || loading || !fastFillPassword.trim()}
+        disabled={!adaptedWallet || !quote || loading || !(authMode === 'password' ? fastFillPassword : fastFillApiKey).trim()}
         onClick={handleExecute}
       >
         {loading ? 'Executing with Fast Fill...' : 'Execute with Fast Fill'}

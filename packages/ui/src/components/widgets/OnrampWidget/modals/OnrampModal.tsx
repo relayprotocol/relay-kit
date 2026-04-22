@@ -9,6 +9,7 @@ import { Modal } from '../../../common/Modal.js'
 import type { FiatCurrency, Token } from '../../../../types/index.js'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { EventNames } from '../../../../constants/events.js'
+import { useHapticEvent } from '../../../../providers/RelayKitProvider.js'
 import {
   useDepositAddressStatus,
   useQuote,
@@ -96,6 +97,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   onError,
   onOpenChange
 }) => {
+  const haptic = useHapticEvent()
   const [swapError, setSwapError] = useState<Error | null>(null)
   const [step, setStep] = useState<OnrampStep>(OnrampStep.Confirming)
   const [processingStep, setProcessingStep] = useState<
@@ -298,6 +300,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     }
     if (executionStatus?.status === 'success') {
       setStep(OnrampStep.Success)
+      haptic('success')
       onAnalyticEvent?.(EventNames.ONRAMP_SUCCESS, {
         chain_id_in: fromToken?.chainId,
         currency_in: fromToken?.symbol,
@@ -387,6 +390,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         onError?.(error.message, quote as Execute, moonPayRequestId)
       }
       setStep(OnrampStep.Error)
+      haptic('error')
       onAnalyticEvent?.(EventNames.ONRAMP_ERROR, {
         error_message: errorMsg,
         wallet_connector: connector?.name,
@@ -425,14 +429,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         }
         onOpenChange(open)
       }}
-      css={{
-        overflow: 'hidden',
-        p: '4',
-        maxWidth: '412px !important',
-        '@media(max-width: 520px)': {
-          maxWidth: 'unset !important'
-        }
-      }}
+      className="relay:overflow-hidden relay:p-4 relay:!max-w-[412px] max-[520px]:!relay-max-w-[unset]"
     >
       {step === OnrampStep.Confirming ? (
         <OnrampConfirmingStep

@@ -10,6 +10,7 @@ import { Modal } from '../Modal.js'
 import { Flex, Text } from '../../primitives/index.js'
 import { ErrorStep } from './steps/ErrorStep.js'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { type Token } from '../../../types/index.js'
 import { SwapSuccessStep } from './steps/SwapSuccessStep.js'
 import { formatBN } from '../../../utils/numbers.js'
@@ -51,6 +52,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
     onAnalyticEvent,
     onSuccess
   } = depositAddressModalProps
+  const haptic = useHapticEvent()
 
   useEffect(() => {
     onOpenChange(open)
@@ -90,6 +92,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
         const quoteId = quote
           ? extractQuoteId(quote?.steps as Execute['steps'])
           : undefined
+        haptic('success')
         onAnalyticEvent?.(EventNames.SWAP_SUCCESS, {
           ...extraData,
           chain_id_in: fromToken?.chainId,
@@ -167,11 +170,7 @@ const InnerDepositAddressModal: FC<InnerDepositAddressModalProps> = ({
       trigger={null}
       open={open}
       onOpenChange={onOpenChange}
-      css={{
-        overflow: 'hidden',
-        p: '4',
-        maxWidth: '412px !important'
-      }}
+      className="relay:overflow-hidden relay:p-4 relay:!max-w-[412px]"
       showCloseButton={true}
       onPointerDownOutside={(e) => {
         const dynamicModalElements = Array.from(
@@ -188,13 +187,9 @@ const InnerDepositAddressModal: FC<InnerDepositAddressModalProps> = ({
     >
       <Flex
         direction="column"
-        css={{
-          width: '100%',
-          height: '100%',
-          gap: isWaitingForDeposit ? '3' : '4'
-        }}
+        className={`relay:w-full relay:h-full ${isWaitingForDeposit ? 'relay:gap-3' : 'relay:gap-4'}`}
       >
-        <Text style="h6" css={{ mb: 8 }}>
+        <Text style="h6" className="relay:mb-2">
           {isWaitingForDeposit ? 'Manual Transfer' : 'Trade Details'}
         </Text>
 

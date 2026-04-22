@@ -1,4 +1,4 @@
-import { createContext, useMemo } from 'react'
+import { createContext, useCallback, useContext, useMemo } from 'react'
 import type { FC, ReactElement, ReactNode } from 'react'
 import { RelayClientProvider } from './RelayClientProvider.js'
 import type { RelayClientOptions, paths } from '@relayprotocol/relay-sdk'
@@ -7,6 +7,26 @@ import { generateCssVars } from '../utils/theme.js'
 
 export type AppFees =
   paths['/quote/v2']['post']['requestBody']['content']['application/json']['appFees']
+
+/**
+ * Haptic feedback intensity/type for UI interactions.
+ *
+ * - `light` — Subtle tap for minor interactions: token selection, chain starring, toggle switches, max button clicks
+ * - `medium` — Noticeable tap for deliberate actions: swap CTA button press
+ * - `heavy` — Strong tap for emphatic interactions: long-press actions
+ * - `selection` — Ultra-light discrete tick for picker-like interactions: tab switches, chain filter selection
+ * - `success` — Distinct success pattern: swap completed, onramp completed
+ * - `error` — Distinct error pattern: swap failed, approval failed, onramp failed
+ * - `warning` — Alert pattern: unverified token modal shown
+ */
+export type HapticEventType =
+  | 'light'
+  | 'medium'
+  | 'heavy'
+  | 'selection'
+  | 'success'
+  | 'error'
+  | 'warning'
 
 type RelayKitProviderOptions = {
   /**
@@ -57,6 +77,35 @@ type RelayKitProviderOptions = {
    * Currently only relevant for the quote api in the SwapWidget
    */
   secureBaseUrl?: string
+  /**
+   * Optional callback for haptic feedback on UI interactions.
+   * Relay Kit does not bundle any haptics library — integrators provide their own implementation.
+   *
+   * @example
+   * ```tsx
+   * import { useWebHaptics } from 'web-haptics/react'
+   *
+   * function App() {
+   *   const { trigger } = useWebHaptics()
+   *
+   *   return (
+   *     <RelayKitProvider
+   *       options={{
+   *         ...otherOptions,
+   *         onHapticEvent: (type) => {
+   *           // Map Relay Kit types to your haptics library
+   *           const map = { light: 'nudge', medium: 'buzz', heavy: 'buzz', success: 'success', error: 'error', warning: 'error' }
+   *           trigger(map[type] ?? type)
+   *         }
+   *       }}
+   *     >
+   *       <SwapWidget />
+   *     </RelayKitProvider>
+   *   )
+   * }
+   * ```
+   */
+  onHapticEvent?: (type: HapticEventType) => void
 }
 
 export interface RelayKitProviderProps {
@@ -85,6 +134,7 @@ export const themeOverrides: ThemeOverridesMap = {
     success: '--relay-colors-text-success'
   },
   buttons: {
+    borderRadius: '--relay-radii-button-border-radius',
     primary: {
       color: '--relay-colors-primary-button-color',
       background: '--relay-colors-primary-button-background',
@@ -181,7 +231,8 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
       privateChainIds: options.privateChainIds,
       themeScheme: options.themeScheme,
       loader: options.loader,
-      secureBaseUrl: options.secureBaseUrl
+      secureBaseUrl: options.secureBaseUrl,
+      onHapticEvent: options.onHapticEvent
     }),
     [options]
   )
@@ -205,5 +256,23 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
         {children}
       </RelayClientProvider>
     </ProviderOptionsContext.Provider>
+  )
+}
+
+/**
+ * Hook that returns a stable haptic event callback from the RelayKitProvider context.
+ * Wraps the integrator's callback in a try-catch to prevent haptic errors from breaking the UI.
+ */
+export function useHapticEvent() {
+  const { onHapticEvent } = useContext(ProviderOptionsContext)
+  return useCallback(
+    (type: HapticEventType) => {
+      try {
+        onHapticEvent?.(type)
+      } catch (e) {
+        console.error('Error in onHapticEvent', type, e)
+      }
+    },
+    [onHapticEvent]
   )
 }

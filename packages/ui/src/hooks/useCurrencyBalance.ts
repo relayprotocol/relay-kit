@@ -18,6 +18,7 @@ import useRelayClient from './useRelayClient.js'
 import useEclipseBalance from '../hooks/useEclipseBalance.js'
 import { eclipse } from '../utils/solana.js'
 import useHyperliquidBalance from './useHyperliquidBalance.js'
+import useHyperliquidAccountMode from './useHyperliquidAccountMode.js'
 import useTronBalance from '../hooks/useTronBalance.js'
 
 type UseBalanceProps = {
@@ -168,14 +169,27 @@ const useCurrencyBalance = ({
     )
   })
 
+  const isHypevm = chain?.vmType === 'hypevm'
+
+  const { data: hyperliquidAccountMode } = useHyperliquidAccountMode(
+    address,
+    Boolean(
+      !adaptedWalletBalanceIsEnabled &&
+        isHypevm &&
+        address &&
+        _isValidAddress &&
+        enabled
+    )
+  )
+
   const hyperliquidBalance = useHyperliquidBalance(
     address,
     currency as string,
+    hyperliquidAccountMode,
     {
       enabled: Boolean(
         !adaptedWalletBalanceIsEnabled &&
-          chain &&
-          chain.vmType === 'hypevm' &&
+          isHypevm &&
           address &&
           _isValidAddress &&
           enabled

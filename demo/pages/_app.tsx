@@ -3,7 +3,7 @@ import '../fonts.css'
 import '../global.css'
 
 import type { AppProps, AppContext } from 'next/app'
-import React, { ReactNode, FC, useState, useEffect } from 'react'
+import React, { ReactNode, FC, useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig, http, WagmiProvider } from 'wagmi'
 import { Chain, mainnet, optimism, base, zora } from 'wagmi/chains'
@@ -33,9 +33,10 @@ import { EclipseWalletConnectors } from '@dynamic-labs/eclipse'
 import { TronWalletConnectors } from '@dynamic-labs/tron'
 import { AbstractEvmWalletConnectors } from '@dynamic-labs-connectors/abstract-global-wallet-evm'
 import { MoonPayProvider } from 'context/MoonpayProvider'
+import { CustomizeProvider, useCustomize } from 'context/customizeContext'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
 import { RelayKitProviderWrapper } from 'components/providers/RelayKitProviderWrapper'
-import { Barlow, Chivo } from 'next/font/google'
+import { Barlow, Chivo, Inter } from 'next/font/google'
 import { Porto } from 'porto'
 
 Porto.create()
@@ -55,6 +56,13 @@ export const barlow = Barlow({
   variable: '--font-barlow'
 })
 
+export const inter = Inter({
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  subsets: ['latin'],
+  variable: '--font-inter'
+})
+
 type AppWrapperProps = {
   children: ReactNode
   dynamicChains: RelayChain[]
@@ -68,6 +76,7 @@ const queryClient = new QueryClient()
 
 const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   const { walletFilter, setWalletFilter } = useWalletFilter()
+  const { relayApi, setRelayApi } = useCustomize()
   const router = useRouter()
   const [relayApi, setRelayApi] = useState(DEV_RELAY_API)
 
@@ -97,7 +106,30 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
             http()
           ])
         } else {
-          transportsConfig[chain.id] = http()
+          const rpcUrl = chain.rpcUrls?.default?.http?.[0]
+          if (rpcUrl) {
+            try {
+              const url = new URL(rpcUrl)
+              if (url.username || url.password) {
+                const credentials = btoa(`${url.username}:${url.password}`)
+                url.username = ''
+                url.password = ''
+                transportsConfig[chain.id] = http(url.toString(), {
+                  fetchOptions: {
+                    headers: {
+                      Authorization: `Basic ${credentials}`
+                    }
+                  }
+                })
+              } else {
+                transportsConfig[chain.id] = http()
+              }
+            } catch {
+              transportsConfig[chain.id] = http()
+            }
+          } else {
+            transportsConfig[chain.id] = http()
+          }
         }
         return transportsConfig
       },
@@ -116,6 +148,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
         :root {
           --font-chivo: ${chivo.style.fontFamily};
           --font-barlow: ${barlow.style.fontFamily};
+          --font-inter: ${inter.style.fontFamily};
         }
       `
 
@@ -124,7 +157,12 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   }, [])
 
   return (
-    <div>
+    <div
+      style={{
+        fontFamily:
+          'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif'
+      }}
+    >
       <ThemeProvider
         attribute="class"
         defaultTheme="light"
@@ -192,11 +230,13 @@ type MyAppProps = AppProps & {
 function MyApp({ Component, pageProps }: MyAppProps) {
   return (
     <WalletFilterProvider>
-      <QueryClientProvider client={queryClient}>
-        <AppWrapper dynamicChains={pageProps.dynamicChains}>
-          <Component {...pageProps} />
-        </AppWrapper>
-      </QueryClientProvider>
+      <CustomizeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AppWrapper dynamicChains={pageProps.dynamicChains}>
+            <Component {...pageProps} />
+          </AppWrapper>
+        </QueryClientProvider>
+      </CustomizeProvider>
     </WalletFilterProvider>
   )
 }

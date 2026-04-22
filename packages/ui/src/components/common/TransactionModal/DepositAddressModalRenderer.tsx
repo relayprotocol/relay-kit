@@ -27,6 +27,7 @@ import {
 } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '../../../hooks/index.js'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
 import { useAccount } from 'wagmi'
 import {
@@ -105,6 +106,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
   onAnalyticEvent,
   onSwapError
 }) => {
+  const haptic = useHapticEvent()
   const [quoteData, setQuoteData] = useState<Execute | null>(null)
   const [fetchingQuote, setFetchingQuote] = useState(false)
   const [quoteError, setQuoteError] = useState<Error | null>(null)
@@ -233,7 +235,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
     {
       enabled: depositAddress !== undefined && open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending']
+        const observableStates = ['waiting', 'pending', 'depositing']
 
         if (
           !query.state.data?.status ||
@@ -261,6 +263,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
         onSwapError?.(swapError.message, quote as Execute)
       }
       setProgressStep(TransactionProgressStep.Error)
+      haptic('error')
       onAnalyticEvent?.(EventNames.DEPOSIT_ADDRESS_SWAP_ERROR, {
         error_message: errorToJSON(executionStatus?.details ?? quoteError),
         wallet_connector: connector?.name,
@@ -281,7 +284,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       }
       setProgressStep(TransactionProgressStep.Success)
       invalidateBalanceQueries()
-    } else if (executionStatus?.status === 'pending') {
+    } else if (executionStatus?.status === 'pending' || executionStatus?.status === 'depositing') {
       const timeEstimateMs =
         ((quote?.details?.timeEstimate ?? 0) +
           (fromChain && fromChain.id === bitcoin.id ? 600 : 0)) *

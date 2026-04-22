@@ -23,6 +23,7 @@ export interface RelayKitTheme {
     success?: string
   }
   buttons?: {
+    borderRadius?: string
     primary?: Button
     secondary?: Button
     disabled?: {
