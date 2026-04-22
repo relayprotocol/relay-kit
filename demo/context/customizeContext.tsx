@@ -35,9 +35,7 @@ export const useCustomize = () => useContext(CustomizeContext)
 export const CustomizeProvider: FC<{ children: ReactNode }> = ({
   children
 }) => {
-  const [themeOverrides, setThemeOverrides] = useState<
-    Partial<RelayKitTheme>
-  >({
+  const [themeOverrides, setThemeOverrides] = useState<Partial<RelayKitTheme>>({
     buttons: {
       cta: {
         fontStyle: 'italic'

@@ -7,7 +7,8 @@ import type {
   paths,
   SvmReceipt,
   SuiReceipt,
-  TronReceipt
+  TronReceipt,
+  LvmReceipt
 } from '../types/index.js'
 import { axios } from '../utils/axios.js'
 import type {
@@ -51,7 +52,12 @@ export async function sendTransactionSafely(
   isValidating?: (res?: AxiosResponse<any, any>) => void,
   details?: Execute['details'],
   setReceipt?: (
-    receipt: TransactionReceipt | SvmReceipt | SuiReceipt | TronReceipt
+    receipt:
+      | TransactionReceipt
+      | SvmReceipt
+      | SuiReceipt
+      | TronReceipt
+      | LvmReceipt
   ) => void,
   setCheckStatus?: (
     checkStatus: NonNullable<Execute['steps'][0]['items']>[0]['checkStatus']
@@ -80,6 +86,7 @@ export async function sendTransactionSafely(
     | SvmReceipt
     | SuiReceipt
     | TronReceipt
+    | LvmReceipt
     | undefined
   let transactionCancelled = false
   let confirmationError = false

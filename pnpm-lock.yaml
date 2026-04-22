@@ -86,6 +86,9 @@ importers:
       '@relayprotocol/relay-kit-ui':
         specifier: workspace:*
         version: link:../packages/ui
+      '@relayprotocol/relay-lighter-wallet-adapter':
+        specifier: workspace:*
+        version: link:../packages/relay-lighter-wallet-adapter
       '@relayprotocol/relay-sdk':
         specifier: workspace:*
         version: link:../packages/sdk
@@ -254,6 +257,25 @@ importers:
       viem:
         specifier: '>=2.26.0'
         version: 2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+    devDependencies:
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.10
+
+  packages/relay-lighter-wallet-adapter:
+    dependencies:
+      '@relayprotocol/relay-sdk':
+        specifier: workspace:*
+        version: link:../sdk
+      '@reservoir0x/lighter-ts-sdk':
+        specifier: 1.0.7-alpha18
+        version: 1.0.7-alpha18(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)
+      '@types/node':
+        specifier: ^22.5.4
+        version: 22.13.4
+      viem:
+        specifier: '>=2.26.0'
+        version: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@4.0.5)
     devDependencies:
       rimraf:
         specifier: ^5.0.5
@@ -2339,6 +2361,12 @@ packages:
   '@reown/appkit@1.7.8':
     resolution: {integrity: sha512-51kTleozhA618T1UvMghkhKfaPcc9JlKwLJ5uV+riHyvSoWPKPRIa5A6M1Wano5puNyW0s3fwywhyqTHSilkaA==}
 
+  '@reservoir0x/lighter-ts-sdk@1.0.7-alpha18':
+    resolution: {integrity: sha512-sgGWHyZnRwROyTfymWSQI9wcqyJDpJ5Kf2M6AhU6V99UpgKxb9JmSZZjNFvuDK1VrCW6IVXEJFNi8BIYVbrt5A==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      typescript: '>=4.5.0'
+
   '@rollup/rollup-android-arm-eabi@4.34.8':
     resolution: {integrity: sha512-q217OSE8DTp8AFHuNHXo0Y86e1wtlfVrXiAlwkIvGRQv9zbc6mE3sjIVfwI8sYUyNxwOg0j/Vm1RKM04JcWLJw==}
     cpu: [arm]
@@ -3963,6 +3991,10 @@ packages:
   doctrine@3.0.0:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
     engines: {node: '>=6.0.0'}
+
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
+    engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -9819,6 +9851,18 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@reservoir0x/lighter-ts-sdk@1.0.7-alpha18(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)':
+    dependencies:
+      axios: 1.12.2
+      dotenv: 17.4.2
+      ethers: 6.13.5(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      typescript: 5.4.5
+      ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+
   '@rollup/rollup-android-arm-eabi@4.34.8':
     optional: true
 
@@ -12822,6 +12866,8 @@ snapshots:
   doctrine@3.0.0:
     dependencies:
       esutils: 2.0.3
+
+  dotenv@17.4.2: {}
 
   dunder-proto@1.0.1:
     dependencies:
