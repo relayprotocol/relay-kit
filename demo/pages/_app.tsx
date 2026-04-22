@@ -78,7 +78,6 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   const { walletFilter, setWalletFilter } = useWalletFilter()
   const { relayApi, setRelayApi } = useCustomize()
   const router = useRouter()
-  const [relayApi, setRelayApi] = useState(DEV_RELAY_API)
 
   useEffect(() => {
     const isTestnet = router.query.api === 'testnets'
