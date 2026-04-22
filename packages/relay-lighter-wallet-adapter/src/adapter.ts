@@ -1,7 +1,8 @@
 import {
   AccountApi,
   ApiClient,
-  SignerClient
+  SignerClient,
+  TransactionApi
 } from '@reservoir0x/lighter-ts-sdk'
 import {
   getClient,
@@ -12,13 +13,16 @@ import {
 
 export const LIGHTER_CHAIN_ID = 3586256
 
+// The chain id baked into L2 signatures by the Lighter WASM signer. This is
+// different from `LIGHTER_CHAIN_ID` — it's the value Lighter's zk circuit
+// validates against on mainnet.
+const LIGHTER_CIRCUIT_CHAIN_ID = 304
+
 const DEFAULT_API_URL = 'https://mainnet.zklighter.elliot.ai'
 const DEFAULT_API_KEY_INDEX = 2
 
-// WASM assets hosted on jsDelivr. Browser bundlers don't serve
-// `node_modules/@reservoir0x/lighter-ts-sdk/wasm/*` automatically, so we
-// default to a public CDN. Override via `options.wasmConfig` if you'd
-// rather self-host.
+// WASM assets hosted on jsDelivr.
+// Override via `options.wasmConfig` if you'd rather self-host.
 const LIGHTER_SDK_VERSION = '1.0.7-alpha16'
 const DEFAULT_WASM_PATH = `https://cdn.jsdelivr.net/npm/@reservoir0x/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/lighter-signer.wasm`
 const DEFAULT_WASM_EXEC_PATH = `https://cdn.jsdelivr.net/npm/@reservoir0x/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/wasm_exec.js`
@@ -41,6 +45,91 @@ const LIGHTER_TX_STATUS = {
 type LighterEthSignerParam = Parameters<
   SignerClient['transfer']
 >[0]['ethSigner']
+
+type LighterTx = Awaited<ReturnType<SignerClient['getTransaction']>>
+
+const coerceLighterStatus = (
+  status: LighterTx['status']
+): (typeof LIGHTER_TX_STATUS)[keyof typeof LIGHTER_TX_STATUS] => {
+  if (typeof status === 'number') {
+    return status as (typeof LIGHTER_TX_STATUS)[keyof typeof LIGHTER_TX_STATUS]
+  }
+  switch (status) {
+    case 'confirmed':
+      return LIGHTER_TX_STATUS.EXECUTED
+    case 'failed':
+      return LIGHTER_TX_STATUS.FAILED
+    case 'pending':
+    default:
+      return LIGHTER_TX_STATUS.PENDING
+  }
+}
+
+/**
+ * Polls Lighter's `/api/v1/tx` endpoint via the supplied SignerClient
+ * until the transaction reaches the desired stage, a terminal failure,
+ * or the timeout elapses.
+ *
+ *   - `waitFor: 'findable'` resolves as soon as the tx is indexed (any
+ *     non-failed status). Used by `handleConfirmTransactionStep` — the
+ *     Relay solver does its own end-to-end confirmation.
+ *   - `waitFor: 'committed'` resolves only when status is COMMITTED or
+ *     EXECUTED. Used in the session bootstrap after `changeApiKey`, so
+ *     subsequent signed transfers don't race the key rotation.
+ */
+const pollLighterTransaction = async (
+  signerClient: SignerClient,
+  txHash: string,
+  options: {
+    pollIntervalMs: number
+    timeoutMs: number
+    waitFor: 'findable' | 'committed'
+  }
+): Promise<LighterTx> => {
+  const { pollIntervalMs, timeoutMs, waitFor } = options
+  const maxAttempts = Math.max(1, Math.ceil(timeoutMs / pollIntervalMs))
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    let tx: LighterTx | undefined
+    try {
+      tx = await signerClient.getTransaction(txHash)
+    } catch {
+      // Transient fetch / indexing errors — retry below.
+    }
+
+    if (tx && tx.hash) {
+      const numericStatus = coerceLighterStatus(tx.status)
+
+      if (
+        numericStatus === LIGHTER_TX_STATUS.FAILED ||
+        numericStatus === LIGHTER_TX_STATUS.REJECTED
+      ) {
+        const label =
+          numericStatus === LIGHTER_TX_STATUS.FAILED ? 'failed' : 'rejected'
+        throw new Error(
+          `Lighter transaction ${label}: ${tx.message ?? 'unknown error'}`
+        )
+      }
+
+      if (waitFor === 'findable') {
+        return tx
+      }
+
+      if (
+        numericStatus === LIGHTER_TX_STATUS.COMMITTED ||
+        numericStatus === LIGHTER_TX_STATUS.EXECUTED
+      ) {
+        return tx
+      }
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+  }
+
+  throw new Error(
+    `Lighter transaction ${txHash} did not reach '${waitFor}' within ${timeoutMs}ms`
+  )
+}
 
 /**
  * Optional per-origin persistent storage for the generated API key. If
@@ -67,22 +156,44 @@ export type AdaptLighterWalletOptions = {
    * Callback that signs an L1 authorization message with the user's
    * connected wallet. Typically a thin wrapper around a viem
    * `WalletClient.signMessage` call.
+   *
+   * Not invoked when `apiKey` is supplied (no bootstrap = no L1
+   * signature needed, only the per-transfer authorization).
    */
   signL1Message: LighterSignL1Message
-  /** Lighter HTTP API base URL. Default: mainnet. */
+  //Lighter HTTP API base URL. Default: mainnet. Recommended to host a proxy.
   apiUrl?: string
-  /** API key slot to (re)register. Default: 2. */
+  //API key slot to (re)register. Default: 2.
   apiKeyIndex?: number
-  /** Override the reported chain id. Default: 3586256 (Lighter mainnet). */
-  chainId?: number
   /** Paths to the Lighter WASM signer + Go runtime shim. Default: jsDelivr CDN. */
   wasmConfig?: {
     wasmPath?: string
     wasmExecPath?: string
   }
   /**
+   * Pre-registered Lighter API key. When supplied, the adapter skips the
+   * `generateAPIKey` + `changeApiKey` bootstrap entirely — no signature
+   * prompt, no on-chain key-rotation wait — and uses this key directly
+   * for the `SignerClient`.
+   *
+   * The caller is responsible for:
+   *   - Having already registered the corresponding public key on the
+   *     user's Lighter account at `apiKeyIndex`
+   *   - Storing the private key securely
+   *
+   * Use this when you've built your own API-key lifecycle (e.g. a
+   * backend service that provisions keys, or a wallet-level integration
+   * that manages keys outside this adapter). Mutually exclusive with
+   * `storage` — if both are set, `apiKey` wins and `storage` is ignored.
+   */
+  apiKey?: {
+    /** Hex-encoded private key (with or without `0x` prefix). */
+    privateKey: string
+  }
+  /**
    * Optional API-key persistence. When provided, the adapter reuses the
    * stored key across sessions instead of re-running `changeApiKey`.
+   * Ignored when `apiKey` is supplied.
    */
   storage?: LighterKeyStorage
   /** Confirmation poll interval. Default: 2000ms. */
@@ -123,10 +234,6 @@ type SessionState = {
  *
  * Subsequent transactions reuse the cached session (in-memory at minimum).
  *
- * Bundler note: `@reservoir0x/lighter-ts-sdk` imports `fs` at module load
- * for its Node WASM branch. When bundling for the browser (Next.js,
- * webpack, etc.) add `resolve.fallback.fs = false` to your config — the
- * runtime code path doesn't touch `fs` in browsers.
  */
 export const adaptLighterWallet = (
   options: AdaptLighterWalletOptions
@@ -136,8 +243,8 @@ export const adaptLighterWallet = (
     signL1Message,
     apiUrl = DEFAULT_API_URL,
     apiKeyIndex = DEFAULT_API_KEY_INDEX,
-    chainId = LIGHTER_CHAIN_ID,
     wasmConfig,
+    apiKey,
     storage,
     pollIntervalMs = 2_000,
     timeoutMs = 120_000
@@ -176,8 +283,7 @@ export const adaptLighterWallet = (
     }
     const firstAccount = response?.accounts?.[0]
     const rawIndex = firstAccount?.index
-    const index =
-      typeof rawIndex === 'number' ? rawIndex : Number(rawIndex)
+    const index = typeof rawIndex === 'number' ? rawIndex : Number(rawIndex)
     if (!firstAccount || !Number.isFinite(index)) {
       throw new Error(
         `Lighter adapter: could not resolve accountIndex for ${l1Address}. ` +
@@ -196,50 +302,87 @@ export const adaptLighterWallet = (
 
     sessionPromise = (async () => {
       const accountIndex = await resolveAccountIndex()
+
+      // Precedence: explicit `apiKey` > persisted via `storage` > fresh
+      // bootstrap. The first two both bypass the `changeApiKey` prompt.
+      const preRegisteredPrivateKey = apiKey?.privateKey
       const storageKey = `lighter-api-key:${normalizedL1Address}:${apiKeyIndex}`
 
-      // Re-hydrate a persisted API key if available
-      let storedPrivateKey: string | null = null
-      if (storage) {
+      let hydratedPrivateKey: string | null = preRegisteredPrivateKey ?? null
+      if (!hydratedPrivateKey && storage) {
         const stored = await storage.get(storageKey)
-        storedPrivateKey = stored ?? null
+        hydratedPrivateKey = stored ?? null
       }
 
-      if (storedPrivateKey) {
+      if (hydratedPrivateKey) {
         const signerClient = new SignerClient({
           url: apiUrl,
-          privateKey: storedPrivateKey,
+          privateKey: hydratedPrivateKey,
           accountIndex,
           apiKeyIndex,
-          chainId,
+          chainId: LIGHTER_CIRCUIT_CHAIN_ID,
           wasmConfig: resolvedWasmConfig
         })
         await signerClient.initialize()
+        await signerClient.ensureWasmClient()
         return { signerClient, accountIndex }
       }
 
-      // No stored key — run a throwaway SignerClient through
-      // `generateAPIKey` + `changeApiKey`.
-      const bootstrap = new SignerClient({
+      // No stored key — generate one and register it.
+      //
+      // Step 1: keygen-only client. A dummy private key is fine because
+      // `generateAPIKey` is a stateless WASM call that doesn't use the
+      // current signing context. We deliberately DO NOT call
+      // `ensureWasmClient` here — doing so would lock the WASM's signing
+      // context to the dummy key, and the ChangePubKey `Sig` (which proves
+      // ownership of the new key) would be produced with the dummy key
+      // instead of the freshly generated one, causing Lighter to reject
+      // the tx as "invalid signature".
+      const keygenClient = new SignerClient({
         url: apiUrl,
         privateKey: DUMMY_PRIVATE_KEY,
         accountIndex,
         apiKeyIndex,
-        chainId,
+        chainId: LIGHTER_CIRCUIT_CHAIN_ID,
         wasmConfig: resolvedWasmConfig
       })
-      await bootstrap.initialize()
-
-      const keypair = await bootstrap.generateAPIKey()
+      await keygenClient.initialize()
+      const keypair = await keygenClient.generateAPIKey()
       if (!keypair) {
         throw new Error('Lighter adapter: failed to generate an API keypair')
       }
 
-      const [, changeKeyTxHash, changeKeyError] = await bootstrap.changeApiKey({
-        ethSigner: ethSignerShim as unknown as LighterEthSignerParam,
-        newPubkey: keypair.publicKey,
-        newApiKeyIndex: apiKeyIndex
+      // Step 2: the real client, backed by the newly generated key. Calling
+      // `ensureWasmClient` now registers that key as the signing context
+      // for the target slot, so `changeApiKey` produces a valid ownership
+      // proof for the pubkey it's registering.
+      const signerClient = new SignerClient({
+        url: apiUrl,
+        privateKey: keypair.privateKey,
+        accountIndex,
+        apiKeyIndex,
+        chainId: LIGHTER_CIRCUIT_CHAIN_ID,
+        wasmConfig: resolvedWasmConfig
       })
+      await signerClient.initialize()
+      await signerClient.ensureWasmClient()
+      const nonceApiClient = new ApiClient({ host: apiUrl })
+      const transactionApi = new TransactionApi(nonceApiClient)
+      const nextNonceResponse = (await transactionApi.getNextNonce(
+        accountIndex,
+        apiKeyIndex
+      )) as unknown as { nonce?: number | string }
+      const rawNonce = nextNonceResponse?.nonce
+      const nonceForChangeKey =
+        typeof rawNonce === 'number' ? rawNonce : Number(rawNonce ?? 0)
+
+      const [, changeKeyTxHash, changeKeyError] =
+        await signerClient.changeApiKey({
+          ethSigner: ethSignerShim as unknown as LighterEthSignerParam,
+          newPubkey: keypair.publicKey,
+          newApiKeyIndex: apiKeyIndex,
+          nonce: Number.isFinite(nonceForChangeKey) ? nonceForChangeKey : 0
+        })
       if (changeKeyError) {
         throw new Error(`Lighter changeApiKey failed: ${changeKeyError}`)
       }
@@ -247,17 +390,11 @@ export const adaptLighterWallet = (
         throw new Error('Lighter changeApiKey returned no transaction hash')
       }
 
-      await bootstrap.waitForTransaction(changeKeyTxHash)
-
-      const signerClient = new SignerClient({
-        url: apiUrl,
-        privateKey: keypair.privateKey,
-        accountIndex,
-        apiKeyIndex,
-        chainId,
-        wasmConfig: resolvedWasmConfig
+      await pollLighterTransaction(signerClient, changeKeyTxHash, {
+        pollIntervalMs,
+        timeoutMs,
+        waitFor: 'committed'
       })
-      await signerClient.initialize()
 
       if (storage) {
         await storage.set(storageKey, keypair.privateKey)
@@ -276,7 +413,7 @@ export const adaptLighterWallet = (
 
   return {
     vmType: 'lvm',
-    getChainId: async () => chainId,
+    getChainId: async () => LIGHTER_CHAIN_ID,
     address: async () => (await resolveAccountIndex()).toString(),
     handleSignMessageStep: async () => {
       throw new Error('Message signing not implemented for Lighter')
@@ -301,7 +438,8 @@ export const adaptLighterWallet = (
         fromRouteType: params.fromRouteType,
         toRouteType: params.toRouteType,
         amount: params.amount,
-        usdcFee: params.usdcFee,
+        // usdcFee: params.usdcFee, Hardcoding for now
+        usdcFee: 3000000,
         memo: params.memo,
         ethSigner: ethSignerShim as unknown as LighterEthSignerParam
       })
@@ -317,58 +455,19 @@ export const adaptLighterWallet = (
 
       return txHash
     },
-    handleConfirmTransactionStep: async (txHash): Promise<LvmReceipt> => {
+    handleConfirmTransactionStep: async (
+      txHash: string
+    ): Promise<LvmReceipt> => {
       const { signerClient } = await ensureSession()
-      const start = Date.now()
-
-      while (true) {
-        let tx: Awaited<ReturnType<SignerClient['getTransaction']>> | undefined
-        try {
-          tx = await signerClient.getTransaction(txHash)
-        } catch {
-          // Transient fetch errors — fall through to polling
-        }
-
-        if (tx) {
-          const numericStatus =
-            typeof tx.status === 'number'
-              ? tx.status
-              : tx.status === 'confirmed'
-                ? LIGHTER_TX_STATUS.EXECUTED
-                : tx.status === 'failed'
-                  ? LIGHTER_TX_STATUS.FAILED
-                  : LIGHTER_TX_STATUS.PENDING
-
-          if (
-            numericStatus === LIGHTER_TX_STATUS.FAILED ||
-            numericStatus === LIGHTER_TX_STATUS.REJECTED
-          ) {
-            const label =
-              numericStatus === LIGHTER_TX_STATUS.FAILED
-                ? 'failed'
-                : 'rejected'
-            throw new Error(
-              `Lighter transaction ${label}: ${tx.message ?? 'unknown error'}`
-            )
-          }
-
-          if (
-            numericStatus === LIGHTER_TX_STATUS.COMMITTED ||
-            numericStatus === LIGHTER_TX_STATUS.EXECUTED
-          ) {
-            return {
-              txHash: tx.hash,
-              blockHeight: tx.block_height,
-              status: tx.status
-            }
-          }
-        }
-
-        if (Date.now() - start > timeoutMs) {
-          throw new Error('Lighter transaction confirmation timed out')
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+      const tx = await pollLighterTransaction(signerClient, txHash, {
+        pollIntervalMs,
+        timeoutMs,
+        waitFor: 'findable'
+      })
+      return {
+        txHash: tx.hash,
+        blockHeight: tx.block_height ?? 0,
+        status: tx.status
       }
     },
     switchChain: async () => {

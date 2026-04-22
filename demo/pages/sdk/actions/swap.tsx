@@ -246,13 +246,17 @@ const SwapActionPage: NextPage = () => {
                 // The adapter handles the full lifecycle internally — the
                 // user sees a `changeApiKey` signature prompt on the first
                 // swap, then transfers sign normally.
+                //
+                // `apiUrl: '/api/lighter'` routes all Lighter API traffic
+                // through our server-side proxy (`pages/api/lighter/[...path]`)
                 const walletClient = await primaryWallet.getWalletClient()
                 const account = walletClient.account
                 if (!account) throw 'Missing EVM account for Lighter adapter'
                 executionWallet = adaptLighterWallet({
                   l1Address: account.address,
                   signL1Message: (message) =>
-                    walletClient.signMessage({ account, message })
+                    walletClient.signMessage({ account, message }),
+                  apiUrl: '/api/lighter'
                 })
               } else if (isEthereumWallet(primaryWallet)) {
                 const walletClient = await primaryWallet.getWalletClient()

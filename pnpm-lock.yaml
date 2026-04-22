@@ -6,7 +6,6 @@ settings:
 
 overrides:
   '@solana/web3.js': 1.98.2
-  '@reservoir0x/lighter-ts-sdk': file:./local-packages/reservoir0x-lighter-ts-sdk-1.0.7-alpha18.tgz
 
 importers:
 
@@ -269,8 +268,8 @@ importers:
         specifier: workspace:*
         version: link:../sdk
       '@reservoir0x/lighter-ts-sdk':
-        specifier: file:../../local-packages/reservoir0x-lighter-ts-sdk-1.0.7-alpha18.tgz
-        version: file:local-packages/reservoir0x-lighter-ts-sdk-1.0.7-alpha18.tgz(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)
+        specifier: 1.0.7-alpha18
+        version: 1.0.7-alpha18(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)
       '@types/node':
         specifier: ^22.5.4
         version: 22.13.4
@@ -2362,9 +2361,8 @@ packages:
   '@reown/appkit@1.7.8':
     resolution: {integrity: sha512-51kTleozhA618T1UvMghkhKfaPcc9JlKwLJ5uV+riHyvSoWPKPRIa5A6M1Wano5puNyW0s3fwywhyqTHSilkaA==}
 
-  '@reservoir0x/lighter-ts-sdk@file:local-packages/reservoir0x-lighter-ts-sdk-1.0.7-alpha18.tgz':
-    resolution: {integrity: sha512-2UoH6aeCH+Qjxv+idaKcRs09mDj0yXyTr2e5pLbDvnlD0iMCs5JoZmh2pTd2iSCuMJcGjUHX4kcQNl87bYTa4w==, tarball: file:local-packages/reservoir0x-lighter-ts-sdk-1.0.7-alpha18.tgz}
-    version: 1.0.7-alpha18
+  '@reservoir0x/lighter-ts-sdk@1.0.7-alpha18':
+    resolution: {integrity: sha512-sgGWHyZnRwROyTfymWSQI9wcqyJDpJ5Kf2M6AhU6V99UpgKxb9JmSZZjNFvuDK1VrCW6IVXEJFNi8BIYVbrt5A==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       typescript: '>=4.5.0'
@@ -9853,7 +9851,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@reservoir0x/lighter-ts-sdk@file:local-packages/reservoir0x-lighter-ts-sdk-1.0.7-alpha18.tgz(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)':
+  '@reservoir0x/lighter-ts-sdk@1.0.7-alpha18(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)':
     dependencies:
       axios: 1.12.2
       dotenv: 17.4.2
