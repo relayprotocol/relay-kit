@@ -2,6 +2,12 @@ import useIsMounted from 'hooks/useIsMounted'
 import { useRouter } from 'next/router'
 import { FC } from 'react'
 
+const API_OPTIONS = ['mainnets', 'mainnets-dev', 'testnets'] as const
+type ApiOption = (typeof API_OPTIONS)[number]
+
+const isApiOption = (value: unknown): value is ApiOption =>
+  typeof value === 'string' && (API_OPTIONS as readonly string[]).includes(value)
+
 export const BaseApiSwitcher: FC = () => {
   const router = useRouter()
   const isMounted = useIsMounted()
@@ -9,7 +15,7 @@ export const BaseApiSwitcher: FC = () => {
   if (!isMounted) return null
   return (
     <select
-      value={router.query.api === 'testnets' ? 'testnets' : 'mainnets'}
+      value={isApiOption(router.query.api) ? router.query.api : 'mainnets'}
       onChange={(e) => {
         const selectedValue = e.target.value
         router.push({
@@ -23,7 +29,8 @@ export const BaseApiSwitcher: FC = () => {
         padding: '3.5px 10px'
       }}
     >
-      <option value="mainnets">Mainnets</option>
+      <option value="mainnets">Mainnets (Main)</option>
+      <option value="mainnets-dev">Mainnets (Dev)</option>
       <option value="testnets">Testnets</option>
     </select>
   )
