@@ -2,3 +2,15 @@ packages:
   # all packages in direct subdirs of packages/
   - 'packages/*'
   - 'demo'
+
+# Require packages to be published for at least 7 days before install.
+minimumReleaseAge: 10080
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - '@parcel/watcher'
+  - bufferutil
+  - utf-8-validate
+  - keccak
+  - bigint-buffer
