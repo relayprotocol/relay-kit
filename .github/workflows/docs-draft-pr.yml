@@ -55,7 +55,7 @@ jobs:
         # We need *some* workspace for Claude's Read/Glob/Write tools. A minimal
         # checkout of the calling repo gives Claude a valid workspace to operate
         # in. The actual docs editing happens inside the _docs-repo clone below.
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: ${{ github.repository }}
           fetch-depth: 1
@@ -133,7 +133,7 @@ jobs:
 
       - name: Write draft files with Claude
         id: write-draft
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@b4d67413279fc18c6e5de930ae307c4f108714eb # v1
         with:
           github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
