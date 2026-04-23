@@ -12,18 +12,136 @@ permissions:
 
 jobs:
   claude-review:
-    uses: relayprotocol/agents-config/.github/workflows/reusable-code-review.yml@main
-    with:
-      runner: blacksmith-4vcpu-ubuntu-2404
-      review_guidelines: |
-        - New code files must start with a 2-line `// ABOUTME:` comment.
-        - No mock modes or fake data -- real APIs and data only.
-        - Code naming must be evergreen (no "new", "improved", "enhanced", "v2" etc.).
-        - Comments must be evergreen -- no temporal references like "recently refactored".
-        - Code comments must not be removed unless provably false.
-        - No unrelated changes bundled into the PR.
-        - Match existing style and formatting conventions.
-        - Use options objects instead of overloaded parameters.
-        - Avoid fallback defaults on critical values (decimals, chain IDs, addresses) -- better to throw.
-        - Do NOT flag the ABOUTME convention on files that already existed and were only partially modified.
-    secrets: inherit
+    if: github.event.pull_request.draft == false
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if diff changed since last review
+        id: diff-check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          DIFF_HASH=$(git diff "origin/${BASE_REF}...HEAD" | sha256sum | cut -d' ' -f1)
+          echo "diff_hash=$DIFF_HASH" >> "$GITHUB_OUTPUT"
+
+          # Check if the existing review comment already contains this hash
+          EXISTING=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq "[.[] | select(.user.login == \"github-actions[bot]\") | select(.body | contains(\"REVIEW_DIFF_HASH\")) | .body] | last // \"\"")
+          if echo "$EXISTING" | grep -q "$DIFF_HASH"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Diff unchanged since last review — skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Claude Code Review
+        if: steps.diff-check.outputs.skip != 'true'
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ github.token }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          use_sticky_comment: true
+          include_fix_links: true
+          show_full_output: true
+          claude_args: '--model opus --max-turns 100 --allowedTools "Bash(git diff *),Bash(git log *),Bash(gh pr view *),Read,Glob,Grep"'
+          prompt: |
+            You are reviewing PR #${{ github.event.pull_request.number }}.
+
+            CRITICAL TOOL CONSTRAINTS -- VIOLATIONS WILL FAIL THE REVIEW:
+            - Bash ONLY works with these exact prefixes: `git diff`, `git log`, `gh pr view`. Everything else is DENIED.
+            - NEVER use subshells $(...), pipes |, or chaining (|| &&) in Bash commands. Each must be a single simple command.
+            - Use `Glob` to find files, `Grep` to search content, `Read` to read files. NEVER use Bash for these.
+
+            ## Instructions
+
+            Perform a thorough code review.
+
+            ### Step 1: Gather context
+            - Run `gh pr view ${{ github.event.pull_request.number }} --json title,body` to get the PR description.
+            - Run `git diff origin/${{ github.event.pull_request.base.ref }}...HEAD` to see all changes.
+            - Run `git log --oneline origin/${{ github.event.pull_request.base.ref }}..HEAD` to see commit history.
+            - Read the changed files in full to understand surrounding context.
+            - If a change modifies an algorithm or computation, read the entire function/module to verify correctness.
+            - Check `git log --oneline -10 -- <file>` for recently changed files to understand their evolution.
+
+            ### Step 2: Review checklist
+            Evaluate the diff against each category. Only flag issues where you have HIGH CONFIDENCE there is a real problem. Do not speculate or flag stylistic nitpicks.
+
+            **Correctness & Logic**
+            - Are algorithms implemented correctly? Check edge cases: empty inputs, zero values, negative numbers, overflow, off-by-one errors.
+            - Are there race conditions, deadlocks, or concurrency issues?
+            - Could any computation produce NaN, Infinity, or division by zero?
+            - For financial/numeric code: are decimals, precision, and rounding handled correctly?
+
+            **Security**
+            - Are there injection vulnerabilities (SQL, command, XSS)?
+            - Are secrets, keys, or credentials exposed in code?
+            - Is user input validated and sanitized before use?
+
+            **Error Handling**
+            - Are errors caught and handled appropriately?
+            - Could thrown errors crash the process or leak sensitive information?
+            - Are async operations properly awaited? Are there unhandled promise rejections?
+
+            **Architecture**
+            - Does the change fit the existing patterns in the codebase?
+            - Are there obvious performance issues (N+1 queries, unnecessary iterations, memory leaks)?
+
+            **Repo-specific guidelines** (check only NEW or MODIFIED code)
+            - New code files must start with a 2-line `// ABOUTME:` comment.
+            - No mock modes or fake data -- real APIs and data only.
+            - Code naming must be evergreen (no "new", "improved", "enhanced", "v2" etc.).
+            - Comments must be evergreen -- no temporal references like "recently refactored".
+            - Code comments must not be removed unless provably false.
+            - No unrelated changes bundled into the PR.
+            - Match existing style and formatting conventions.
+            - Use options objects instead of overloaded parameters.
+            - Avoid fallback defaults on critical values (decimals, chain IDs, addresses) -- better to throw.
+            - Do NOT flag the ABOUTME convention on files that already existed and were only partially modified.
+
+            ### Step 3: Output format
+
+            If you find NO high-confidence issues:
+
+            ```
+            **Code Review** -- No issues found.
+
+            Reviewed N files, M lines changed. Checked for correctness, security, error handling, and repo guidelines compliance.
+            ```
+
+            If you find issues:
+
+            ```
+            **Code Review** -- N issue(s) found
+
+            1. [SEVERITY] **Category: Brief title**
+               `path/to/file.ts:LINE` -- description of the problem and why it matters.
+               Suggested fix (if applicable).
+
+            2. ...
+            ```
+
+            Severity levels: `CRITICAL` (will cause bugs/security issues), `WARNING` (likely problematic), `NOTE` (worth considering).
+
+            ### Rules
+            - Do NOT flag issues you are not confident about. False positives waste reviewer time.
+            - Do NOT make subjective style comments. Only flag objective problems.
+            - Do NOT suggest adding comments or documentation unless something is actively misleading.
+            - Do NOT flag issues a linter or type checker would catch -- those run separately in CI.
+            - Be concise. One paragraph per issue maximum.
+            - At the very end of your output, include this exact line (used to skip re-runs on rebase):
+              <!-- REVIEW_DIFF_HASH:${{ steps.diff-check.outputs.diff_hash }} -->
