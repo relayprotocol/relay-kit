@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
 
@@ -60,7 +60,7 @@ jobs:
       - name: Draft docs update
         if: steps.diff-check.outputs.skip != 'true'
         id: drift-check
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@b4d67413279fc18c6e5de930ae307c4f108714eb # v1
         with:
           github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
