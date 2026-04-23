@@ -1,0 +1,21 @@
+name: Docs Draft PR
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  docs-draft-pr:
+    uses: relayprotocol/agents-config/.github/workflows/reusable-docs-draft-pr.yml@main
+    with:
+      runner: blacksmith-4vcpu-ubuntu-2404
+      docs_repo: unevenlabs/relay-docs
+      docs_base_ref: main
+      command: /publish-docs-pr
+    secrets: inherit

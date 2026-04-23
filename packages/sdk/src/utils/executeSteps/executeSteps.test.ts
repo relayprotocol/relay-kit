@@ -18,6 +18,7 @@ import { executeBridgeAuthorize } from '../../../tests/data/executeBridgeAuthori
 import type { ChainVM, Execute } from '../../types'
 import { postSignatureExtraSteps } from '../../../tests/data/postSignatureExtraSteps'
 import { swapWithApproval } from '../../../tests/data/swapWithApproval'
+import { swapWithZeroResetApproval } from '../../../tests/data/swapWithZeroResetApproval'
 import { adaptViemWallet } from '../viemWallet'
 
 const viemChains = [mainnet, base, zora, optimism, arbitrum, arbitrumNova]
@@ -1201,6 +1202,49 @@ describe('Should test atomic batch transactions', () => {
     // Should call handleSendTransactionStep twice - once for approve and once for swap
     expect(wallet.handleBatchTransactionStep).not.toHaveBeenCalled()
     expect(wallet.handleSendTransactionStep).toHaveBeenCalledTimes(2)
+  })
+
+  it('Should batch the 3-step zero-reset approval flow into a single tx', async () => {
+    const zeroResetData = JSON.parse(JSON.stringify(swapWithZeroResetApproval))
+    let batchedSteps: Execute['steps'] | undefined
+
+    await executeSteps(
+      1,
+      {},
+      wallet,
+      ({ steps, fees, breakdown, details }) => {
+        batchedSteps = steps
+      },
+      zeroResetData,
+      undefined
+    )
+
+    // One batched call for all three txs (approve→0, approve→amount, swap)
+    expect(wallet.handleBatchTransactionStep).toHaveBeenCalledTimes(1)
+    expect(wallet.handleSendTransactionStep).not.toHaveBeenCalled()
+
+    // Three steps collapsed into a single step carrying three items in order
+    expect(batchedSteps?.length).toBe(1)
+    expect(batchedSteps?.[0].id).toBe('approve-and-swap')
+    expect(batchedSteps?.[0].items?.length).toBe(3)
+  })
+
+  it('Should fall back to 3 sequential sends for zero-reset flow when atomic batch not supported', async () => {
+    wallet.supportsAtomicBatch = vi.fn().mockResolvedValue(false)
+    const zeroResetData = JSON.parse(JSON.stringify(swapWithZeroResetApproval))
+
+    await executeSteps(
+      1,
+      {},
+      wallet,
+      ({ steps, fees, breakdown, details }) => {},
+      zeroResetData,
+      undefined
+    )
+
+    expect(wallet.handleBatchTransactionStep).not.toHaveBeenCalled()
+    // Sequential: reset approve, amount approve, swap
+    expect(wallet.handleSendTransactionStep).toHaveBeenCalledTimes(3)
   })
 })
 
