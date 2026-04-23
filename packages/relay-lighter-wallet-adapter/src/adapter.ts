@@ -18,8 +18,8 @@ const DEFAULT_API_KEY_INDEX = 2
 // WASM assets hosted on jsDelivr.
 // Override via `options.wasmConfig` if you'd rather self-host.
 const LIGHTER_SDK_VERSION = '1.0.7-alpha16'
-const DEFAULT_WASM_PATH = `https://cdn.jsdelivr.net/npm/@reservoir0x/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/lighter-signer.wasm`
-const DEFAULT_WASM_EXEC_PATH = `https://cdn.jsdelivr.net/npm/@reservoir0x/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/wasm_exec.js`
+const DEFAULT_WASM_PATH = `https://cdn.jsdelivr.net/npm/@relay-protocol/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/lighter-signer.wasm`
+const DEFAULT_WASM_EXEC_PATH = `https://cdn.jsdelivr.net/npm/@relay-protocol/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/wasm_exec.js`
 
 // Dummy key used only to bootstrap the throwaway SignerClient that performs
 // the `generateAPIKey` / `changeApiKey` dance. `changeApiKey` uses the L1
@@ -55,7 +55,7 @@ export type LighterTransferParams = {
   /**
    * L1 signer used for the per-transfer authorization. Only omitted when
    * the caller's `signerClient` handles L1 signing internally — the stock
-   * `@reservoir0x/lighter-ts-sdk` `SignerClient` requires it.
+   * `@relay-protocol/lighter-ts-sdk` `SignerClient` requires it.
    */
   ethSigner?: LighterEthSigner
   nonce?: number
@@ -72,7 +72,7 @@ export type LighterTransaction = {
 /**
  * Minimal Lighter signer contract the adapter depends on. Integrators
  * passing a pre-built signer only need to implement these two methods;
- * the full `@reservoir0x/lighter-ts-sdk` `SignerClient` satisfies this
+ * the full `@relay-protocol/lighter-ts-sdk` `SignerClient` satisfies this
  * structurally and can be passed directly.
  */
 export type LighterSigner = {
@@ -82,29 +82,31 @@ export type LighterSigner = {
   getTransaction: (txHash: string) => Promise<LighterTransaction>
 }
 
-// Lazy, cached dynamic import of `@reservoir0x/lighter-ts-sdk`. Only fires
+// Lazy, cached dynamic import of `@relay-protocol/lighter-ts-sdk`. Only fires
 // when the adapter needs to bootstrap its own SignerClient. Integrators who
 // always supply a pre-built `signerClient` don't need the package installed
 // at all — it's declared as an optional peer dependency.
 let sdkModulePromise: Promise<
-  typeof import('@reservoir0x/lighter-ts-sdk')
+  typeof import('@relay-protocol/lighter-ts-sdk')
 > | null = null
 const loadLighterSdk = (): Promise<
-  typeof import('@reservoir0x/lighter-ts-sdk')
+  typeof import('@relay-protocol/lighter-ts-sdk')
 > => {
   if (!sdkModulePromise) {
-    sdkModulePromise = import('@reservoir0x/lighter-ts-sdk').catch((cause) => {
-      // Reset so the next attempt re-tries the import — callers who install
-      // the peer mid-session shouldn't have to reload.
-      sdkModulePromise = null
-      throw new Error(
-        'Lighter adapter: `@reservoir0x/lighter-ts-sdk` is required for the ' +
-          'bootstrap path (fresh keygen, `accountApiKey`, or `storage`). ' +
-          'Install it as a peer dependency, or pass a pre-built `signerClient` ' +
-          'to skip the SDK entirely.',
-        { cause }
-      )
-    })
+    sdkModulePromise = import('@relay-protocol/lighter-ts-sdk').catch(
+      (cause) => {
+        // Reset so the next attempt re-tries the import — callers who install
+        // the peer mid-session shouldn't have to reload.
+        sdkModulePromise = null
+        throw new Error(
+          'Lighter adapter: `@relay-protocol/lighter-ts-sdk` is required for the ' +
+            'bootstrap path (fresh keygen, `accountApiKey`, or `storage`). ' +
+            'Install it as a peer dependency, or pass a pre-built `signerClient` ' +
+            'to skip the SDK entirely.',
+          { cause }
+        )
+      }
+    )
   }
   return sdkModulePromise
 }
@@ -263,7 +265,7 @@ type AdaptLighterWalletBaseOptions = {
  * — the adapter can't pull account index out of a `SignerClient` instance
  * (the SDK's config is private), and it needs the value for
  * `AdaptedWallet.address()`. Pairing them lets the adapter run with
- * zero runtime dependency on `@reservoir0x/lighter-ts-sdk`.
+ * zero runtime dependency on `@relay-protocol/lighter-ts-sdk`.
  */
 type AdaptLighterWalletPreBuiltOptions = AdaptLighterWalletBaseOptions & {
   /**
@@ -273,7 +275,7 @@ type AdaptLighterWalletPreBuiltOptions = AdaptLighterWalletBaseOptions & {
    *
    * The caller is responsible for ensuring the signer is ready to use
    * (initialized, WASM loaded, API key registered) and for caching it
-   * if desired. A full `SignerClient` from `@reservoir0x/lighter-ts-sdk`
+   * if desired. A full `SignerClient` from `@relay-protocol/lighter-ts-sdk`
    * satisfies `LighterSigner` structurally and can be passed directly.
    *
    * When set, `apiUrl`, `apiKeyIndex`, `wasmConfig`, `accountApiKey`,
@@ -322,7 +324,7 @@ export type AdaptLighterWalletOptions =
  * Subsequent transactions reuse the cached session (in-memory at minimum).
  *
  * Passing `signerClient` skips the entire bootstrap and avoids any runtime
- * dependency on `@reservoir0x/lighter-ts-sdk`.
+ * dependency on `@relay-protocol/lighter-ts-sdk`.
  *
  */
 export const adaptLighterWallet = (
