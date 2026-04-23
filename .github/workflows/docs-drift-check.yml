@@ -12,21 +12,240 @@ permissions:
 
 jobs:
   docs-drift-check:
-    uses: relayprotocol/agents-config/.github/workflows/reusable-docs-drift-check.yml@main
-    with:
-      runner: blacksmith-4vcpu-ubuntu-2404
-      docs_repo: unevenlabs/relay-docs
-      docs_ref: main
-      is_public_repo: true
-      confidence_floor: medium
-      source_surface: |
-        - Public SDK exports under `packages/sdk/src/actions/` (e.g. `getQuote`, `execute`, `getCallQuote`, `getSolverCapacity`).
-        - Public SDK types/interfaces under `packages/sdk/src/types/` and re-exports from `packages/sdk/src/index.ts`.
-        - React hooks under `packages/hooks/src/` (e.g. `useQuote`, `useRelayClient`, `useRelayChains`, `useTokenList`).
-        - React UI widgets and components under `packages/ui/src/components/widgets/` (`SwapWidget`, `OnrampWidget`) and provider APIs (`RelayKitProvider`, `RelayClientProvider`, `onHapticEvent`).
-        - Public wallet adapter interfaces under `packages/relay-*-wallet-adapter/src/` (EVM, SVM, BVM, Tron, Sui, Lighter).
-        - Root `README.md`, package-level `README.md` files, and any migration guides under `packages/*/MIGRATION*.md`.
-        - `package.json` `peerDependencies` / `exports` changes in any published package.
-      docs_scope: |
-        references/relay-kit/**
-    secrets: inherit
+    if: github.event.pull_request.draft == false
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout calling repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Shallow-clone docs repo (read-only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Clone into the workspace so Claude's Read/Glob/Grep tools can reach it.
+          # `_docs-repo` is prefixed with `_` so it doesn't collide with real repo content.
+          git clone --depth 1 --branch "main" \
+            "https://github.com/unevenlabs/relay-docs.git" \
+            "_docs-repo"
+          echo "DOCS_REPO_PATH=_docs-repo" >> "$GITHUB_ENV"
+
+      - name: Check if drift check should run
+        id: diff-check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          DIFF_HASH=$(git diff "origin/${BASE_REF}...HEAD" | sha256sum | cut -d' ' -f1)
+          echo "diff_hash=$DIFF_HASH" >> "$GITHUB_OUTPUT"
+
+          # Skip if a previous drift-check already ran on this exact diff.
+          EXISTING=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq "[.[] | select(.user.login == \"github-actions[bot]\") | select(.body | contains(\"DOCS_DRIFT_DIFF_HASH\")) | .body] | last // \"\"")
+          if echo "$EXISTING" | grep -q "$DIFF_HASH"; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Diff unchanged since last drift check — skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Draft docs update
+        if: steps.diff-check.outputs.skip != 'true'
+        id: drift-check
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ github.token }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          use_sticky_comment: true
+          show_full_output: true
+          claude_args: '--model opus --max-turns 30 --allowedTools "Bash(git diff *),Bash(git log *),Bash(gh pr view *),Read,Glob,Grep"'
+          prompt: |
+            You are **Relay Docs Drift Checker** — an automated drafter that inspects
+            a PR in a source repo and produces a ready-to-publish draft for the
+            centralized docs repo (`unevenlabs/relay-docs`).
+
+            You are assessing PR #${{ github.event.pull_request.number }} in
+            `${{ github.repository }}`.
+
+            CRITICAL TOOL CONSTRAINTS -- VIOLATIONS WILL FAIL THE CHECK:
+            - Bash ONLY works with these exact prefixes: `git diff`, `git log`, `gh pr view`. Everything else is DENIED.
+            - NEVER use subshells $(...), pipes |, or chaining (|| &&) in Bash commands. Each must be a single simple command.
+            - Use `Glob` to find files, `Grep` to search content, `Read` to read files. NEVER use Bash for these.
+            - You do NOT have any tool that writes to the docs repo. A separate workflow handles publishing. Do NOT attempt to push, open PRs, or comment on the docs repo.
+
+            ## Privacy boundary — read this first
+
+            The calling repo's `is_public_repo` flag is: **true**.
+
+            The docs repo (`unevenlabs/relay-docs`) is PUBLIC. Your drafted docs
+            content may eventually be published there. Treat every character of your
+            drafted MDX as public-facing content:
+
+            - Describe **capabilities and interfaces**, not **implementation**.
+            - Do NOT include: internal service names, internal URLs, database schemas,
+              file paths from the source repo, unreleased code names, internal ticket
+              IDs, security-sensitive details, or customer data.
+            - Do NOT paste raw diffs, stack traces, log excerpts, or internal commit
+              messages into the draft.
+            - If you are uncertain whether something is safe to publish, LEAVE IT OUT
+              and flag it under "Needs human input" (see output format).
+
+            If `is_public_repo` is `false`, apply these rules with extra care — the
+            source repo is private.
+
+            ## Step 1: Understand what changed
+
+            1. `gh pr view ${{ github.event.pull_request.number }} --json title,body,author,files` to get PR metadata.
+            2. `git diff origin/${{ github.event.pull_request.base.ref }}...HEAD` to see changes.
+            3. `git log --oneline origin/${{ github.event.pull_request.base.ref }}..HEAD` for commits.
+            4. Read the changed files in full where needed to understand the semantic change — not just the diff hunks.
+
+            ### Doc-relevant surfaces in THIS repo
+
+            - Public SDK exports under `packages/sdk/src/actions/` (e.g. `getQuote`, `execute`, `getCallQuote`, `getSolverCapacity`).
+            - Public SDK types/interfaces under `packages/sdk/src/types/` and re-exports from `packages/sdk/src/index.ts`.
+            - React hooks under `packages/hooks/src/` (e.g. `useQuote`, `useRelayClient`, `useRelayChains`, `useTokenList`).
+            - React UI widgets and components under `packages/ui/src/components/widgets/` (`SwapWidget`, `OnrampWidget`) and provider APIs (`RelayKitProvider`, `RelayClientProvider`, `onHapticEvent`).
+            - Public wallet adapter interfaces under `packages/relay-*-wallet-adapter/src/` (EVM, SVM, BVM, Tron, Sui, Lighter).
+            - Root `README.md`, package-level `README.md` files, and any migration guides under `packages/*/MIGRATION*.md`.
+            - `package.json` `peerDependencies` / `exports` changes in any published package.
+
+            If the PR does NOT touch any doc-relevant surface, emit the short
+            "no docs impact" response (see output format) and stop.
+
+            ## Step 2: Load the docs context
+
+            The docs repo has been cloned read-only to `${{ env.DOCS_REPO_PATH }}`.
+
+            1. Read `${{ env.DOCS_REPO_PATH }}/CLAUDE.md` — this is the **codified style guide**. Every draft MUST conform to it (frontmatter, heading levels, voice, MDX components, tables, cross-refs).
+            2. Use `Glob` within the docs repo under the paths `references/relay-kit/**` to find pages that plausibly relate to what this PR changes.
+            3. `Read` the specific pages you believe are affected, in full. Do not skim.
+            4. If the PR introduces something entirely new (new SDK action, new API endpoint, new feature, new supported chain, etc.), find the closest sibling page in the same folder and use it as a structural template.
+
+            ## Step 3: Decide impact and confidence
+
+            Classify the PR as one of:
+
+            - `no_docs_impact` — the change does not require any docs update.
+            - `docs_update_needed` — existing docs pages need edits or a new page is needed.
+
+            If `docs_update_needed`, assign a confidence level:
+
+            - **HIGH** — mechanical, fully specified by the diff (renamed field, new
+              parameter, new action with clear signature). Draft is essentially
+              copy-pasteable.
+            - **MEDIUM** — change is clear but requires judgment on placement,
+              naming, or narrative framing. Draft is a strong starting point but
+              needs human review of substance.
+            - **LOW** — docs are likely affected but the right update isn't obvious
+              from the diff alone (e.g. conceptual shift, cross-cutting impact,
+              missing context in the PR). Describe the areas of concern rather than
+              attempting a full draft.
+
+            The calling workflow's `confidence_floor` is **medium**.
+            If your assessed confidence is below the floor, do NOT emit a full MDX
+            draft — use the short "needs attention" response instead.
+
+            ## Output format
+
+            Post exactly ONE sticky comment matching one of the templates below.
+            The comment MUST end with the diff-hash marker on its own line.
+
+            ### Template A — no docs impact
+
+            ```
+            📝 **Docs Drift Check** — No docs impact
+
+            This PR does not touch surfaces that require a `unevenlabs/relay-docs` update.
+
+            <!-- DOCS_DRIFT_DIFF_HASH:${{ steps.diff-check.outputs.diff_hash }} -->
+            ```
+
+            ### Template B — docs update needed, confidence at or above floor
+
+            ```
+            📝 **Docs Drift Check** — Confidence: HIGH | MEDIUM
+
+            **What changed**: (1–2 sentences)
+
+            **Docs impact**: (1–2 sentences explaining what in the docs is now stale, missing, or newly needed)
+
+            **Affected pages** (paths inside `unevenlabs/relay-docs`):
+            - `path/to/page.mdx` — (new | update | deprecate)
+            - ...
+
+            **Draft**:
+
+            For each affected page, emit a fenced block with the file path on the
+            info line. Use `mdx` as the language. For NEW files, paste the full
+            intended file content. For UPDATES, paste ONLY the sections that change,
+            preceded by a short `> Replace: ...` or `> Insert after: ...` directive
+            referencing the exact heading or anchor where the edit applies.
+
+            ````mdx path=references/relay-kit/sdk/actions/example.mdx action=create
+            ---
+            title: "example()"
+            description: "..."
+            ---
+
+            ## Overview
+
+            ...
+            ````
+
+            ````mdx path=references/relay-kit/hooks/use-example.mdx action=update
+            > Replace section: `## Parameters`
+
+            ## Parameters
+
+            | Name | Type | Description |
+            | ---- | ---- | ----------- |
+            | `newParam` | `string` | ... |
+            ````
+
+            **Needs human input** (optional — list anything you deliberately left out because you weren't sure it was safe/correct to publish):
+            - ...
+
+            **To publish as a draft PR in `unevenlabs/relay-docs`**, reply on this PR with:
+
+            `/publish-docs-pr`
+
+            A separate workflow will open a draft PR attributed to you. Edit the draft freely before marking it ready for review.
+
+            <!-- DOCS_DRIFT_DIFF_HASH:${{ steps.diff-check.outputs.diff_hash }} -->
+            ```
+
+            ### Template C — docs likely affected but confidence below floor
+
+            ```
+            📝 **Docs Drift Check** — Confidence: LOW (below configured floor: medium)
+
+            **What changed**: (1–2 sentences)
+
+            **Why I didn't draft**: (one sentence — e.g. "the behavior change spans multiple concepts and the right framing isn't obvious from the diff")
+
+            **Pages likely affected**:
+            - `path/to/page.mdx` — (what seems stale or missing)
+            - ...
+
+            **Suggested next step**: manually open an issue or PR in `unevenlabs/relay-docs` describing the change. Do NOT use `/publish-docs-pr` — it will attempt to publish a low-confidence draft.
+
+            <!-- DOCS_DRIFT_DIFF_HASH:${{ steps.diff-check.outputs.diff_hash }} -->
+            ```
+
+            ## Rules
+
+            - Follow `CLAUDE.md` in the docs repo exactly. Frontmatter, heading levels, voice, MDX components (`<Tip>`, `<Warning>`, etc.), table shape, cross-ref link format — all as specified.
+            - Never invent API shapes, parameter names, types, return values, or behavior. If the diff does not specify it, do not document it.
+            - Prefer updating an existing page over creating a new one. Only propose a new page when there is no structurally appropriate home.
+            - Keep the output comment focused. Long prose explanations go in the drafted MDX, not in the comment body.
+            - Do NOT include the raw diff, internal paths, or internal identifiers anywhere in your output.
