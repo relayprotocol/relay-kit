@@ -28,7 +28,9 @@
         "dev:esm": "tsc --watch --project ./tsconfig.build.json --module es2020 --outDir ./_esm && printf '{\"type\": \"module\",\"sideEffects\":false}' > ./_esm/package.json",
         "dev:types": "tsc --watch --project ./tsconfig.build.json --module esnext --outDir ./_types --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
         "clean": "rimraf ./_esm ./_cjs ./_types",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "repository": {
         "type": "git",
@@ -49,7 +51,8 @@
         "access": "public"
     },
     "devDependencies": {
-        "rimraf": "^5.0.5"
+        "rimraf": "^5.0.5",
+        "vitest": "^1.6.0"
     },
     "dependencies": {
         "@types/node": "^22.5.4"
