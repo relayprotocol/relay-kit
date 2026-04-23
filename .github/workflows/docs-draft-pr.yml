@@ -48,7 +48,7 @@ jobs:
           gh api -X POST \
             "repos/${{ github.repository }}/issues/${PR_NUMBER}/reactions" \
             -f content='eyes' >/dev/null || true
-          gh pr comment "$PR_NUMBER" --body \
+          gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body \
             "🚚 **Docs Draft PR** — starting publish to \`${DOCS_REPO}\`, requested by @${ACTOR}. I'll post the PR link here when it's ready."
 
       - name: Checkout calling repo workspace
