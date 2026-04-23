@@ -17,6 +17,7 @@ import {
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
 import { isSuiWallet } from '@dynamic-labs/sui'
+import { BaseApiSwitcher } from 'components/navbar/BaseApiSwitcher'
 
 const SwapActionPage: NextPage = () => {
   const client = useRelayClient()
@@ -62,6 +63,7 @@ const SwapActionPage: NextPage = () => {
       }}
     >
       <ConnectButton />
+      <BaseApiSwitcher />
       <div
         style={{
           display: 'flex',
