@@ -7,7 +7,7 @@ name: Docs Draft PR
 # Required secrets:
 #   CLAUDE_CODE_OAUTH_TOKEN
 #   DOCS_REPO_TOKEN — fine-grained PAT or GitHub App token with
-#                     contents:write + pull_requests:write on unevenlabs/relay-docs
+#                     contents:write + pull_requests:write on relayprotocol/relay-docs
 
 on:
   issue_comment:
@@ -43,19 +43,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number }}
           ACTOR: ${{ github.event.comment.user.login }}
-          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_REPO: relayprotocol/relay-docs
         run: |
           gh api -X POST \
             "repos/${{ github.repository }}/issues/${PR_NUMBER}/reactions" \
             -f content='eyes' >/dev/null || true
-          gh pr comment "$PR_NUMBER" --body \
+          gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body \
             "🚚 **Docs Draft PR** — starting publish to \`${DOCS_REPO}\`, requested by @${ACTOR}. I'll post the PR link here when it's ready."
 
       - name: Checkout calling repo workspace
         # We need *some* workspace for Claude's Read/Glob/Write tools. A minimal
         # checkout of the calling repo gives Claude a valid workspace to operate
         # in. The actual docs editing happens inside the _docs-repo clone below.
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: ${{ github.repository }}
           fetch-depth: 1
@@ -80,12 +80,12 @@ jobs:
           # Refuse to publish if the drift check said "no docs impact" or was below floor.
           if echo "$COMMENT" | grep -q "No docs impact"; then
             gh pr comment "$PR_NUMBER" --body \
-              "🛑 **Docs Draft PR** — the latest drift check concluded this PR has no docs impact. Nothing to publish. If you disagree, open an issue manually in \`unevenlabs/relay-docs\`."
+              "🛑 **Docs Draft PR** — the latest drift check concluded this PR has no docs impact. Nothing to publish. If you disagree, open an issue manually in \`relayprotocol/relay-docs\`."
             exit 1
           fi
           if echo "$COMMENT" | grep -q "Confidence: LOW"; then
             gh pr comment "$PR_NUMBER" --body \
-              "🛑 **Docs Draft PR** — the latest drift check was LOW confidence and deliberately did not draft content. Please open an issue manually in \`unevenlabs/relay-docs\` describing the change rather than auto-publishing a low-confidence draft."
+              "🛑 **Docs Draft PR** — the latest drift check was LOW confidence and deliberately did not draft content. Please open an issue manually in \`relayprotocol/relay-docs\` describing the change rather than auto-publishing a low-confidence draft."
             exit 1
           fi
 
@@ -108,7 +108,7 @@ jobs:
       - name: Clone docs repo with write token
         env:
           DOCS_REPO_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
-          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_REPO: relayprotocol/relay-docs
           DOCS_BASE_REF: main
           PR_NUMBER: ${{ github.event.issue.number }}
           PR_META_PATH: ${{ steps.pr-meta.outputs.meta_path }}
@@ -133,7 +133,7 @@ jobs:
 
       - name: Write draft files with Claude
         id: write-draft
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@b4d67413279fc18c6e5de930ae307c4f108714eb # v1
         with:
           github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -213,7 +213,7 @@ jobs:
         id: open-pr
         env:
           GH_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
-          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_REPO: relayprotocol/relay-docs
           DOCS_BASE_REF: main
           SOURCE_REPO: ${{ github.repository }}
           SOURCE_PR_NUMBER: ${{ github.event.issue.number }}
