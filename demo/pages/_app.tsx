@@ -78,8 +78,6 @@ type AppWrapperProps = {
 
 const ALCHEMY_API_KEY = process.env.NEXT_PUBLIC_ALCHEMY_KEY || ''
 
-const DEV_RELAY_API = 'https://api.dev.relay.link'
-
 const queryClient = new QueryClient()
 
 const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
@@ -90,7 +88,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   useEffect(() => {
     const newApi = resolveRelayApi(router.query.api)
     if (relayApi !== newApi) {
-      setRelayApi(isTestnet ? TESTNET_RELAY_API : DEV_RELAY_API)
+      setRelayApi(newApi)
     }
   }, [router.query.api])
 
