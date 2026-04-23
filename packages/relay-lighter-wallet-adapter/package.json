@@ -56,11 +56,11 @@
     },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
-        "@reservoir0x/lighter-ts-sdk": "1.0.7-alpha18",
+        "@relay-protocol/lighter-ts-sdk": "1.0.7-alpha18",
         "viem": ">=2.26.0"
     },
     "peerDependenciesMeta": {
-        "@reservoir0x/lighter-ts-sdk": {
+        "@relay-protocol/lighter-ts-sdk": {
             "optional": true
         }
     }

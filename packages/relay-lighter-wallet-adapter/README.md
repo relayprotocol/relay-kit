@@ -9,7 +9,7 @@ yarn add @relayprotocol/relay-lighter-wallet-adapter @relayprotocol/relay-sdk vi
 If you want the adapter to run its own bootstrap (fresh keygen, `accountApiKey`, or `storage` paths), you also need the Lighter SDK:
 
 ```
-yarn add @reservoir0x/lighter-ts-sdk
+yarn add @relay-protocol/lighter-ts-sdk
 ```
 
 It's declared as an **optional** peer dependency — integrators who always supply a pre-built `signerClient` can skip the install entirely. The adapter loads the SDK via a lazy dynamic `import()` and only touches it on the bootstrap path; if it's not installed and the bootstrap path runs, a clear error is thrown.
@@ -22,8 +22,7 @@ import { adaptLighterWallet } from '@relayprotocol/relay-lighter-wallet-adapter'
 const account = walletClient.account
 const wallet = adaptLighterWallet({
   l1Address: account.address,
-  signL1Message: (message) =>
-    walletClient.signMessage({ account, message })
+  signL1Message: (message) => walletClient.signMessage({ account, message })
 })
 ```
 
@@ -31,18 +30,18 @@ The adapter owns the full Lighter session lifecycle: it resolves the user's Ligh
 
 #### Options
 
-| Option | Default | |
-|---|---|---|
-| `l1Address` | — | The user's connected EVM address |
-| `signL1Message` | — | `(message) => Promise<hex sig>` — typically `walletClient.signMessage({ account, message })`. Optional when `signerClient` is supplied (the integrator owns signing). |
-| `apiUrl` | `https://mainnet.zklighter.elliot.ai` | Lighter HTTP API base URL. Override to point at testnet, a proxy service, or your own staging deployment. All `/api/v1/*` traffic (account lookup, `sendTx`, status polling) uses this base. |
-| `apiKeyIndex` | `2` | API key slot to (re)register |
-| `chainId` | `3586256` | Reported chain id |
-| `wasmConfig` | jsDelivr CDN | `{ wasmPath, wasmExecPath }` |
-| `accountApiKey` | — | Hex-encoded pre-registered Lighter account API key (see below) |
-| `signerClient` + `accountIndex` | — | Pre-built signer with the user's Lighter account index. **Must be supplied together** — TypeScript enforces the pair (see below). |
-| `storage` | — | Optional persistent API-key store |
-| `pollIntervalMs` / `timeoutMs` | `2000` / `120000` | Confirmation polling |
+| Option                          | Default                               |                                                                                                                                                                                              |
+| ------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `l1Address`                     | —                                     | The user's connected EVM address                                                                                                                                                             |
+| `signL1Message`                 | —                                     | `(message) => Promise<hex sig>` — typically `walletClient.signMessage({ account, message })`. Optional when `signerClient` is supplied (the integrator owns signing).                        |
+| `apiUrl`                        | `https://mainnet.zklighter.elliot.ai` | Lighter HTTP API base URL. Override to point at testnet, a proxy service, or your own staging deployment. All `/api/v1/*` traffic (account lookup, `sendTx`, status polling) uses this base. |
+| `apiKeyIndex`                   | `2`                                   | API key slot to (re)register                                                                                                                                                                 |
+| `chainId`                       | `3586256`                             | Reported chain id                                                                                                                                                                            |
+| `wasmConfig`                    | jsDelivr CDN                          | `{ wasmPath, wasmExecPath }`                                                                                                                                                                 |
+| `accountApiKey`                 | —                                     | Hex-encoded pre-registered Lighter account API key (see below)                                                                                                                               |
+| `signerClient` + `accountIndex` | —                                     | Pre-built signer with the user's Lighter account index. **Must be supplied together** — TypeScript enforces the pair (see below).                                                            |
+| `storage`                       | —                                     | Optional persistent API-key store                                                                                                                                                            |
+| `pollIntervalMs` / `timeoutMs`  | `2000` / `120000`                     | Confirmation polling                                                                                                                                                                         |
 
 #### API-key lifecycle strategies
 
@@ -80,7 +79,7 @@ adaptLighterWallet({
 
 No signature prompt fires for `changeApiKey`. The per-transfer L1 authorization (`signL1Message`) is still required.
 
-**4. Pre-built signer.** For integrators with privileged access to a Lighter-provided signer (already initialized, WASM loaded, key registered). This path bypasses every bootstrap step *and* skips the `@reservoir0x/lighter-ts-sdk` dynamic import entirely — the adapter runs with zero runtime dependency on the SDK.
+**4. Pre-built signer.** For integrators with privileged access to a Lighter-provided signer (already initialized, WASM loaded, key registered). This path bypasses every bootstrap step _and_ skips the `@relay-protocol/lighter-ts-sdk` dynamic import entirely — the adapter runs with zero runtime dependency on the SDK.
 
 The adapter only needs two methods, described by the `LighterSigner` type:
 
@@ -88,12 +87,14 @@ The adapter only needs two methods, described by the `LighterSigner` type:
 import type { LighterSigner } from '@relayprotocol/relay-lighter-wallet-adapter'
 
 type LighterSigner = {
-  transfer: (params: LighterTransferParams) => Promise<[unknown, string, string | null]>
+  transfer: (
+    params: LighterTransferParams
+  ) => Promise<[unknown, string, string | null]>
   getTransaction: (txHash: string) => Promise<LighterTransaction>
 }
 ```
 
-A full `SignerClient` from `@reservoir0x/lighter-ts-sdk` satisfies this structurally and can be passed directly:
+A full `SignerClient` from `@relay-protocol/lighter-ts-sdk` satisfies this structurally and can be passed directly:
 
 ```ts
 const client = await getLighterSigner() // from your Lighter integration
@@ -101,7 +102,7 @@ const client = await getLighterSigner() // from your Lighter integration
 adaptLighterWallet({
   l1Address,
   signerClient: client,
-  accountIndex: 509564  // required when `signerClient` is set
+  accountIndex: 509564 // required when `signerClient` is set
 })
 ```
 
