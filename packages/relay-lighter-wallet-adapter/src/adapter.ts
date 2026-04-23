@@ -557,8 +557,7 @@ export const adaptLighterWallet = (
         fromRouteType: params.fromRouteType,
         toRouteType: params.toRouteType,
         amount: params.amount,
-        // usdcFee: params.usdcFee, Hardcoding for now
-        usdcFee: 3000000,
+        usdcFee: params.usdcFee,
         memo: params.memo,
         ethSigner: ethSignerShim
       })
