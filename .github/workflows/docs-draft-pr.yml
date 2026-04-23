@@ -7,7 +7,7 @@ name: Docs Draft PR
 # Required secrets:
 #   CLAUDE_CODE_OAUTH_TOKEN
 #   DOCS_REPO_TOKEN — fine-grained PAT or GitHub App token with
-#                     contents:write + pull_requests:write on unevenlabs/relay-docs
+#                     contents:write + pull_requests:write on relayprotocol/relay-docs
 
 on:
   issue_comment:
@@ -43,7 +43,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.issue.number }}
           ACTOR: ${{ github.event.comment.user.login }}
-          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_REPO: relayprotocol/relay-docs
         run: |
           gh api -X POST \
             "repos/${{ github.repository }}/issues/${PR_NUMBER}/reactions" \
@@ -80,12 +80,12 @@ jobs:
           # Refuse to publish if the drift check said "no docs impact" or was below floor.
           if echo "$COMMENT" | grep -q "No docs impact"; then
             gh pr comment "$PR_NUMBER" --body \
-              "🛑 **Docs Draft PR** — the latest drift check concluded this PR has no docs impact. Nothing to publish. If you disagree, open an issue manually in \`unevenlabs/relay-docs\`."
+              "🛑 **Docs Draft PR** — the latest drift check concluded this PR has no docs impact. Nothing to publish. If you disagree, open an issue manually in \`relayprotocol/relay-docs\`."
             exit 1
           fi
           if echo "$COMMENT" | grep -q "Confidence: LOW"; then
             gh pr comment "$PR_NUMBER" --body \
-              "🛑 **Docs Draft PR** — the latest drift check was LOW confidence and deliberately did not draft content. Please open an issue manually in \`unevenlabs/relay-docs\` describing the change rather than auto-publishing a low-confidence draft."
+              "🛑 **Docs Draft PR** — the latest drift check was LOW confidence and deliberately did not draft content. Please open an issue manually in \`relayprotocol/relay-docs\` describing the change rather than auto-publishing a low-confidence draft."
             exit 1
           fi
 
@@ -108,7 +108,7 @@ jobs:
       - name: Clone docs repo with write token
         env:
           DOCS_REPO_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
-          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_REPO: relayprotocol/relay-docs
           DOCS_BASE_REF: main
           PR_NUMBER: ${{ github.event.issue.number }}
           PR_META_PATH: ${{ steps.pr-meta.outputs.meta_path }}
@@ -213,7 +213,7 @@ jobs:
         id: open-pr
         env:
           GH_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
-          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_REPO: relayprotocol/relay-docs
           DOCS_BASE_REF: main
           SOURCE_REPO: ${{ github.repository }}
           SOURCE_PR_NUMBER: ${{ github.event.issue.number }}

@@ -33,7 +33,7 @@ jobs:
           # Clone into the workspace so Claude's Read/Glob/Grep tools can reach it.
           # `_docs-repo` is prefixed with `_` so it doesn't collide with real repo content.
           git clone --depth 1 --branch "main" \
-            "https://github.com/unevenlabs/relay-docs.git" \
+            "https://github.com/relayprotocol/relay-docs.git" \
             "_docs-repo"
           echo "DOCS_REPO_PATH=_docs-repo" >> "$GITHUB_ENV"
 
@@ -71,7 +71,7 @@ jobs:
           prompt: |
             You are **Relay Docs Drift Checker** — an automated drafter that inspects
             a PR in a source repo and produces a ready-to-publish draft for the
-            centralized docs repo (`unevenlabs/relay-docs`).
+            centralized docs repo (`relayprotocol/relay-docs`).
 
             You are assessing PR #${{ github.event.pull_request.number }} in
             `${{ github.repository }}`.
@@ -86,7 +86,7 @@ jobs:
 
             The calling repo's `is_public_repo` flag is: **true**.
 
-            The docs repo (`unevenlabs/relay-docs`) is PUBLIC. Your drafted docs
+            The docs repo (`relayprotocol/relay-docs`) is PUBLIC. Your drafted docs
             content may eventually be published there. Treat every character of your
             drafted MDX as public-facing content:
 
@@ -165,7 +165,7 @@ jobs:
             ```
             📝 **Docs Drift Check** — No docs impact
 
-            This PR does not touch surfaces that require a `unevenlabs/relay-docs` update.
+            This PR does not touch surfaces that require a `relayprotocol/relay-docs` update.
 
             <!-- DOCS_DRIFT_DIFF_HASH:${{ steps.diff-check.outputs.diff_hash }} -->
             ```
@@ -179,7 +179,7 @@ jobs:
 
             **Docs impact**: (1–2 sentences explaining what in the docs is now stale, missing, or newly needed)
 
-            **Affected pages** (paths inside `unevenlabs/relay-docs`):
+            **Affected pages** (paths inside `relayprotocol/relay-docs`):
             - `path/to/page.mdx` — (new | update | deprecate)
             - ...
 
@@ -215,7 +215,7 @@ jobs:
             **Needs human input** (optional — list anything you deliberately left out because you weren't sure it was safe/correct to publish):
             - ...
 
-            **To publish as a draft PR in `unevenlabs/relay-docs`**, reply on this PR with:
+            **To publish as a draft PR in `relayprotocol/relay-docs`**, reply on this PR with:
 
             `/publish-docs-pr`
 
@@ -237,7 +237,7 @@ jobs:
             - `path/to/page.mdx` — (what seems stale or missing)
             - ...
 
-            **Suggested next step**: manually open an issue or PR in `unevenlabs/relay-docs` describing the change. Do NOT use `/publish-docs-pr` — it will attempt to publish a low-confidence draft.
+            **Suggested next step**: manually open an issue or PR in `relayprotocol/relay-docs` describing the change. Do NOT use `/publish-docs-pr` — it will attempt to publish a low-confidence draft.
 
             <!-- DOCS_DRIFT_DIFF_HASH:${{ steps.diff-check.outputs.diff_hash }} -->
             ```
