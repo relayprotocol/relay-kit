@@ -1,5 +1,14 @@
 name: Docs Draft PR
 
+# Publishes a drafted docs update (produced by `docs-drift-check.yml`) as a
+# draft PR in the centralized docs repo. Triggered only by a `/publish-docs-pr`
+# chatops comment from a trusted contributor on a PR in this repo.
+#
+# Required secrets:
+#   CLAUDE_CODE_OAUTH_TOKEN
+#   DOCS_REPO_TOKEN — fine-grained PAT or GitHub App token with
+#                     contents:write + pull_requests:write on unevenlabs/relay-docs
+
 on:
   issue_comment:
     types: [created]
@@ -12,10 +21,279 @@ permissions:
 
 jobs:
   docs-draft-pr:
-    uses: relayprotocol/agents-config/.github/workflows/reusable-docs-draft-pr.yml@main
-    with:
-      runner: blacksmith-4vcpu-ubuntu-2404
-      docs_repo: unevenlabs/relay-docs
-      docs_base_ref: main
-      command: /publish-docs-pr
-    secrets: inherit
+    if: >
+      github.event_name == 'issue_comment'
+      && github.event.issue.pull_request != null
+      && startsWith(github.event.comment.body, '/publish-docs-pr')
+      && (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'
+      )
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Acknowledge command
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          ACTOR: ${{ github.event.comment.user.login }}
+          DOCS_REPO: unevenlabs/relay-docs
+        run: |
+          gh api -X POST \
+            "repos/${{ github.repository }}/issues/${PR_NUMBER}/reactions" \
+            -f content='eyes' >/dev/null || true
+          gh pr comment "$PR_NUMBER" --body \
+            "🚚 **Docs Draft PR** — starting publish to \`${DOCS_REPO}\`, requested by @${ACTOR}. I'll post the PR link here when it's ready."
+
+      - name: Checkout calling repo workspace
+        # We need *some* workspace for Claude's Read/Glob/Write tools. A minimal
+        # checkout of the calling repo gives Claude a valid workspace to operate
+        # in. The actual docs editing happens inside the _docs-repo clone below.
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 1
+
+      - name: Fetch latest drift-check draft from PR
+        id: fetch-draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # Grab the latest "Docs Drift Check" sticky comment from this PR.
+          # That comment contains the drafted MDX, file paths, and confidence.
+          COMMENT=$(gh api "repos/${{ github.repository }}/issues/${PR_NUMBER}/comments" \
+            --jq '[.[] | select(.user.login == "github-actions[bot]") | select(.body | contains("Docs Drift Check"))] | last | .body // ""')
+
+          if [ -z "$COMMENT" ]; then
+            gh pr comment "$PR_NUMBER" --body \
+              "⚠️ **Docs Draft PR** — no drift-check comment found on this PR. The drift-check workflow must complete before publishing. Re-run it or push a commit to trigger it, then retry \`/publish-docs-pr\`."
+            exit 1
+          fi
+
+          # Refuse to publish if the drift check said "no docs impact" or was below floor.
+          if echo "$COMMENT" | grep -q "No docs impact"; then
+            gh pr comment "$PR_NUMBER" --body \
+              "🛑 **Docs Draft PR** — the latest drift check concluded this PR has no docs impact. Nothing to publish. If you disagree, open an issue manually in \`unevenlabs/relay-docs\`."
+            exit 1
+          fi
+          if echo "$COMMENT" | grep -q "Confidence: LOW"; then
+            gh pr comment "$PR_NUMBER" --body \
+              "🛑 **Docs Draft PR** — the latest drift check was LOW confidence and deliberately did not draft content. Please open an issue manually in \`unevenlabs/relay-docs\` describing the change rather than auto-publishing a low-confidence draft."
+            exit 1
+          fi
+
+          # Persist the comment body inside the workspace so Claude's Read tool can see it.
+          mkdir -p _drift
+          printf '%s' "$COMMENT" > "_drift/drift_comment.md"
+          echo "comment_path=_drift/drift_comment.md" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch source PR metadata
+        id: pr-meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          mkdir -p _drift
+          gh pr view "$PR_NUMBER" --json number,title,author,url,headRefOid \
+            > "_drift/pr_meta.json"
+          echo "meta_path=_drift/pr_meta.json" >> "$GITHUB_OUTPUT"
+
+      - name: Clone docs repo with write token
+        env:
+          DOCS_REPO_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
+          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_BASE_REF: main
+          PR_NUMBER: ${{ github.event.issue.number }}
+          PR_META_PATH: ${{ steps.pr-meta.outputs.meta_path }}
+        run: |
+          # issue_comment events don't include PR head SHA in the payload,
+          # so read it from the metadata we just fetched with `gh pr view`.
+          SOURCE_SHA=$(jq -r '.headRefOid' < "$PR_META_PATH")
+          SHORT_SHA="${SOURCE_SHA:0:7}"
+          SOURCE_REPO_SLUG="${GITHUB_REPOSITORY//\//-}"
+
+          git clone --branch "$DOCS_BASE_REF" \
+            "https://x-access-token:${DOCS_REPO_TOKEN}@github.com/${DOCS_REPO}.git" \
+            "_docs-repo"
+          cd "_docs-repo"
+          git config user.name  "relay-docs-bot"
+          git config user.email "relay-docs-bot@users.noreply.github.com"
+          # Unique branch per source PR + short SHA so retries are idempotent.
+          BRANCH="docs-drift/${SOURCE_REPO_SLUG}-pr-${PR_NUMBER}-${SHORT_SHA}"
+          echo "branch=$BRANCH" >> "$GITHUB_ENV"
+          git checkout -B "$BRANCH"
+          echo "DOCS_REPO_PATH=_docs-repo" >> "$GITHUB_ENV"
+
+      - name: Write draft files with Claude
+        id: write-draft
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ github.token }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          show_full_output: true
+          # Read/Glob/Grep to inspect the draft and the docs repo, Write/Edit
+          # to materialize file changes. No Bash — the runner handles commit,
+          # push, and PR creation in a later step with the scoped PAT.
+          claude_args: '--model opus --max-turns 40 --allowedTools "Read,Glob,Grep,Write,Edit"'
+          prompt: |
+            You are **Relay Docs Publisher** — an automated editor that takes a
+            previously-drafted docs update and materializes it as real file
+            changes inside the cloned docs repo.
+
+            Inputs available on disk:
+            - Drift-check comment body: `${{ steps.fetch-draft.outputs.comment_path }}`
+            - Source PR metadata (JSON): `${{ steps.pr-meta.outputs.meta_path }}`
+            - Docs repo clone root: `${{ env.DOCS_REPO_PATH }}`
+            - Docs repo style guide: `${{ env.DOCS_REPO_PATH }}/CLAUDE.md`
+
+            CRITICAL TOOL CONSTRAINTS:
+            - Use `Read` to read files. Use `Write` to create new files. Use `Edit` to modify existing files.
+            - Bash is restricted to read-only operations on the already-cloned docs repo. Do NOT push, commit, or create PRs — a later step does that.
+            - Do NOT invent content. Everything you write must come from the drift-check comment, optionally reconciled with the docs style guide.
+
+            ## Step 1: Load the draft
+
+            1. `Read` the drift-check comment at `${{ steps.fetch-draft.outputs.comment_path }}`.
+            2. Identify every fenced code block that begins with
+               ````mdx path=<target-path> action=<create|update>````
+               These are the file-level instructions.
+            3. `Read` `${{ env.DOCS_REPO_PATH }}/CLAUDE.md` to refresh the style rules.
+
+            ## Step 2: Materialize each change
+
+            For each fenced block in the draft comment:
+
+            - If `action=create`: `Write` the file at `${{ env.DOCS_REPO_PATH }}/<target-path>` with the block's contents as the full file body. Ensure frontmatter and heading levels conform to the style guide.
+            - If `action=update`: `Read` the existing file at `${{ env.DOCS_REPO_PATH }}/<target-path>`. Apply the `> Replace section:` / `> Insert after:` directive from the block precisely. Use `Edit` for surgical changes — never rewrite unaffected sections.
+
+            If a fenced block's target path does not exist and `action=update`, treat it as `create` and note this in your final summary.
+
+            Do NOT create or edit any file outside the paths declared in the draft.
+
+            ## Step 3: Verify style-guide conformance
+
+            For every file you wrote or edited:
+            - Frontmatter present with `title` and `description`.
+            - No `#` (H1) in the body — the frontmatter title is H1.
+            - Heading levels do not skip (no `##` directly to `####`).
+            - MDX components used correctly: `<Tip>`, `<Warning>`, `<Info>`, `<Note>` under 15 rendered lines each.
+            - Internal links use root-relative paths (`/features/...`), not relative or absolute URLs.
+
+            Fix any violations in place. If a violation cannot be fixed without
+            inventing content, leave the offending section as-is and record the
+            issue in the final summary.
+
+            ## Step 4: Emit a summary
+
+            When done, print (as your final message) a block like:
+
+            ```
+            DOCS_PUBLISH_SUMMARY_START
+            branch: <nothing here — the runner already set it>
+            files_changed:
+              - path: references/.../file.mdx
+                action: create | update
+            notes:
+              - <any deviations, skipped sections, or flags for human reviewer>
+            DOCS_PUBLISH_SUMMARY_END
+            ```
+
+            Do NOT attempt to commit, push, or open a PR. The runner does that
+            in the next step using a scoped token.
+
+      - name: Commit, push, and open draft PR
+        id: open-pr
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_REPO_TOKEN }}
+          DOCS_REPO: unevenlabs/relay-docs
+          DOCS_BASE_REF: main
+          SOURCE_REPO: ${{ github.repository }}
+          SOURCE_PR_NUMBER: ${{ github.event.issue.number }}
+          SOURCE_PR_URL: ${{ github.event.issue.html_url }}
+          ACTOR: ${{ github.event.comment.user.login }}
+          BRANCH: ${{ env.branch }}
+          DOCS_REPO_PATH: ${{ env.DOCS_REPO_PATH }}
+        run: |
+          cd "$DOCS_REPO_PATH"
+
+          # Stage first so both tracked and new files count toward the change check.
+          git add -A
+          if git diff --cached --quiet; then
+            gh pr comment "$SOURCE_PR_NUMBER" --repo "$SOURCE_REPO" --body \
+              "🛑 **Docs Draft PR** — Claude produced no file changes. Nothing to publish. Check the drift-check comment for malformed or missing fenced blocks."
+            exit 1
+          fi
+
+          git commit -m "docs(drift): draft from ${SOURCE_REPO}#${SOURCE_PR_NUMBER}" \
+                     -m "Requested by @${ACTOR} via /publish-docs-pr on ${SOURCE_PR_URL}"
+          git push -u origin "$BRANCH"
+
+          PR_BODY=$(cat <<EOF
+          Drafted from [${SOURCE_REPO}#${SOURCE_PR_NUMBER}](${SOURCE_PR_URL}), requested by @${ACTOR}.
+
+          This PR was auto-generated by the \`docs-draft-pr\` workflow from a Claude-drafted update in the source repo. It is opened as a **draft** — please review, edit as needed, and mark ready for review before merging.
+
+          **Review checklist**
+          - [ ] Content matches the behavior shipped in the source PR
+          - [ ] No internal-only details (service names, file paths, unreleased names, security internals) leaked into the draft
+          - [ ] Conforms to \`CLAUDE.md\` style rules
+          - [ ] Cross-references and internal links resolve
+          - [ ] Any \`Needs human input\` items from the source comment are addressed
+
+          ---
+          _Generated by \`docs-draft-pr.yml\` in \`${SOURCE_REPO}\`._
+          EOF
+          )
+
+          PR_URL=$(gh pr create \
+            --repo "$DOCS_REPO" \
+            --base "$DOCS_BASE_REF" \
+            --head "$BRANCH" \
+            --title "docs(drift): draft from ${SOURCE_REPO}#${SOURCE_PR_NUMBER}" \
+            --body "$PR_BODY" \
+            --draft \
+            --assignee "$ACTOR" 2>/dev/null || true)
+
+          # If --assignee failed (actor is not a docs-repo collaborator), retry without it.
+          if [ -z "$PR_URL" ]; then
+            PR_URL=$(gh pr create \
+              --repo "$DOCS_REPO" \
+              --base "$DOCS_BASE_REF" \
+              --head "$BRANCH" \
+              --title "docs(drift): draft from ${SOURCE_REPO}#${SOURCE_PR_NUMBER}" \
+              --body "$PR_BODY" \
+              --draft)
+          fi
+
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Comment PR link back on source PR
+        if: steps.open-pr.outputs.pr_url != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          DOCS_PR_URL: ${{ steps.open-pr.outputs.pr_url }}
+          ACTOR: ${{ github.event.comment.user.login }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body \
+            "✅ **Docs Draft PR** opened: ${DOCS_PR_URL}
+
+          @${ACTOR} is assigned on the draft PR. Review and mark ready when it's good."
+
+      - name: Comment failure back on source PR
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body \
+            "❌ **Docs Draft PR** failed. See the workflow run: ${RUN_URL}"
