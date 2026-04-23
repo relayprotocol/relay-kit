@@ -1,0 +1,32 @@
+name: Docs Drift Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  docs-drift-check:
+    uses: relayprotocol/agents-config/.github/workflows/reusable-docs-drift-check.yml@main
+    with:
+      runner: blacksmith-4vcpu-ubuntu-2404
+      docs_repo: unevenlabs/relay-docs
+      docs_ref: main
+      is_public_repo: true
+      confidence_floor: medium
+      source_surface: |
+        - Public SDK exports under `packages/sdk/src/actions/` (e.g. `getQuote`, `execute`, `getCallQuote`, `getSolverCapacity`).
+        - Public SDK types/interfaces under `packages/sdk/src/types/` and re-exports from `packages/sdk/src/index.ts`.
+        - React hooks under `packages/hooks/src/` (e.g. `useQuote`, `useRelayClient`, `useRelayChains`, `useTokenList`).
+        - React UI widgets and components under `packages/ui/src/components/widgets/` (`SwapWidget`, `OnrampWidget`) and provider APIs (`RelayKitProvider`, `RelayClientProvider`, `onHapticEvent`).
+        - Public wallet adapter interfaces under `packages/relay-*-wallet-adapter/src/` (EVM, SVM, BVM, Tron, Sui, Lighter).
+        - Root `README.md`, package-level `README.md` files, and any migration guides under `packages/*/MIGRATION*.md`.
+        - `package.json` `peerDependencies` / `exports` changes in any published package.
+      docs_scope: |
+        references/relay-kit/**
+    secrets: inherit

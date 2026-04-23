@@ -13,6 +13,14 @@ import {
   TESTNET_RELAY_API,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
+
+const DEV_RELAY_API = 'https://dev.api.relay.link'
+
+const resolveRelayApi = (api: unknown): string => {
+  if (api === 'testnets') return TESTNET_RELAY_API
+  if (api === 'mainnets-dev') return DEV_RELAY_API
+  return MAINNET_RELAY_API
+}
 import { configureViemChain } from '@relayprotocol/relay-sdk/chain-utils'
 import { ThemeProvider } from 'next-themes'
 import { useRouter } from 'next/router'
@@ -78,8 +86,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   const router = useRouter()
 
   useEffect(() => {
-    const isTestnet = router.query.api === 'testnets'
-    const newApi = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
+    const newApi = resolveRelayApi(router.query.api)
     if (relayApi !== newApi) {
       setRelayApi(newApi)
     }
@@ -255,8 +262,7 @@ const getInitialProps = async ({
       }
     }
 
-    const isTestnet = ctx.query.api === 'testnets'
-    const baseApiUrl = isTestnet ? TESTNET_RELAY_API : MAINNET_RELAY_API
+    const baseApiUrl = resolveRelayApi(ctx.query.api)
 
     const url = new URL(`${baseApiUrl}/chains`)
 
