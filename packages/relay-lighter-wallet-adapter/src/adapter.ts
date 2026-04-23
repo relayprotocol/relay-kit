@@ -1,10 +1,4 @@
 import {
-  AccountApi,
-  ApiClient,
-  SignerClient,
-  TransactionApi
-} from '@reservoir0x/lighter-ts-sdk'
-import {
   getClient,
   LogLevel,
   type AdaptedWallet,
@@ -27,12 +21,11 @@ const LIGHTER_SDK_VERSION = '1.0.7-alpha16'
 const DEFAULT_WASM_PATH = `https://cdn.jsdelivr.net/npm/@reservoir0x/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/lighter-signer.wasm`
 const DEFAULT_WASM_EXEC_PATH = `https://cdn.jsdelivr.net/npm/@reservoir0x/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/wasm_exec.js`
 
-// Dummy private key used only to bootstrap the throwaway SignerClient that
-// performs the `generateAPIKey` / `changeApiKey` dance. `changeApiKey` uses
-// the L1 signature as its root of trust, not `config.privateKey`.
-const DUMMY_PRIVATE_KEY = '0x' + '00'.repeat(40)
+// Dummy key used only to bootstrap the throwaway SignerClient that performs
+// the `generateAPIKey` / `changeApiKey` dance. `changeApiKey` uses the L1
+// signature as its root of trust, not this value.
+const DUMMY_API_KEY = '0x' + '00'.repeat(40)
 
-// Lighter transaction status enum (mirrors @reservoir0x/lighter-ts-sdk TransactionStatus)
 const LIGHTER_TX_STATUS = {
   PENDING: 0,
   QUEUED: 1,
@@ -42,14 +35,82 @@ const LIGHTER_TX_STATUS = {
   REJECTED: 5
 } as const
 
-type LighterEthSignerParam = Parameters<
-  SignerClient['transfer']
->[0]['ethSigner']
+/**
+ * Minimal L1 signer shape the adapter passes into `transfer()`. The real
+ * Lighter SDK accepts `string | ethers.Signer`; we only ever use
+ * `signMessage`, so that's all we require structurally.
+ */
+export type LighterEthSigner = {
+  signMessage: (message: string) => Promise<string>
+}
 
-type LighterTx = Awaited<ReturnType<SignerClient['getTransaction']>>
+export type LighterTransferParams = {
+  toAccountIndex: number
+  assetIndex: number
+  fromRouteType: number
+  toRouteType: number
+  amount: number
+  usdcFee: number
+  memo: string
+  /**
+   * L1 signer used for the per-transfer authorization. Only omitted when
+   * the caller's `signerClient` handles L1 signing internally — the stock
+   * `@reservoir0x/lighter-ts-sdk` `SignerClient` requires it.
+   */
+  ethSigner?: LighterEthSigner
+  nonce?: number
+}
+
+/** Subset of the SDK's `Transaction` shape that the adapter actually reads. */
+export type LighterTransaction = {
+  hash: string
+  status: number | 'pending' | 'confirmed' | 'failed'
+  block_height?: number
+  message?: string
+}
+
+/**
+ * Minimal Lighter signer contract the adapter depends on. Integrators
+ * passing a pre-built signer only need to implement these two methods;
+ * the full `@reservoir0x/lighter-ts-sdk` `SignerClient` satisfies this
+ * structurally and can be passed directly.
+ */
+export type LighterSigner = {
+  transfer: (
+    params: LighterTransferParams
+  ) => Promise<[unknown, string, string | null]>
+  getTransaction: (txHash: string) => Promise<LighterTransaction>
+}
+
+// Lazy, cached dynamic import of `@reservoir0x/lighter-ts-sdk`. Only fires
+// when the adapter needs to bootstrap its own SignerClient. Integrators who
+// always supply a pre-built `signerClient` don't need the package installed
+// at all — it's declared as an optional peer dependency.
+let sdkModulePromise: Promise<
+  typeof import('@reservoir0x/lighter-ts-sdk')
+> | null = null
+const loadLighterSdk = (): Promise<
+  typeof import('@reservoir0x/lighter-ts-sdk')
+> => {
+  if (!sdkModulePromise) {
+    sdkModulePromise = import('@reservoir0x/lighter-ts-sdk').catch((cause) => {
+      // Reset so the next attempt re-tries the import — callers who install
+      // the peer mid-session shouldn't have to reload.
+      sdkModulePromise = null
+      throw new Error(
+        'Lighter adapter: `@reservoir0x/lighter-ts-sdk` is required for the ' +
+          'bootstrap path (fresh keygen, `accountApiKey`, or `storage`). ' +
+          'Install it as a peer dependency, or pass a pre-built `signerClient` ' +
+          'to skip the SDK entirely.',
+        { cause }
+      )
+    })
+  }
+  return sdkModulePromise
+}
 
 const coerceLighterStatus = (
-  status: LighterTx['status']
+  status: LighterTransaction['status']
 ): (typeof LIGHTER_TX_STATUS)[keyof typeof LIGHTER_TX_STATUS] => {
   if (typeof status === 'number') {
     return status as (typeof LIGHTER_TX_STATUS)[keyof typeof LIGHTER_TX_STATUS]
@@ -65,32 +126,20 @@ const coerceLighterStatus = (
   }
 }
 
-/**
- * Polls Lighter's `/api/v1/tx` endpoint via the supplied SignerClient
- * until the transaction reaches the desired stage, a terminal failure,
- * or the timeout elapses.
- *
- *   - `waitFor: 'findable'` resolves as soon as the tx is indexed (any
- *     non-failed status). Used by `handleConfirmTransactionStep` — the
- *     Relay solver does its own end-to-end confirmation.
- *   - `waitFor: 'committed'` resolves only when status is COMMITTED or
- *     EXECUTED. Used in the session bootstrap after `changeApiKey`, so
- *     subsequent signed transfers don't race the key rotation.
- */
 const pollLighterTransaction = async (
-  signerClient: SignerClient,
+  signerClient: Pick<LighterSigner, 'getTransaction'>,
   txHash: string,
   options: {
     pollIntervalMs: number
     timeoutMs: number
     waitFor: 'findable' | 'committed'
   }
-): Promise<LighterTx> => {
+): Promise<LighterTransaction> => {
   const { pollIntervalMs, timeoutMs, waitFor } = options
   const maxAttempts = Math.max(1, Math.ceil(timeoutMs / pollIntervalMs))
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    let tx: LighterTx | undefined
+    let tx: LighterTransaction | undefined
     try {
       tx = await signerClient.getTransaction(txHash)
     } catch {
@@ -146,7 +195,7 @@ export type LighterKeyStorage = {
 /** Callback that signs a plain-text L1 authorization message. */
 export type LighterSignL1Message = (message: string) => Promise<string>
 
-export type AdaptLighterWalletOptions = {
+type AdaptLighterWalletBaseOptions = {
   /**
    * The user's L1 (EVM) wallet address. Used to resolve their Lighter
    * account index and to key the optional persistent storage.
@@ -157,10 +206,17 @@ export type AdaptLighterWalletOptions = {
    * connected wallet. Typically a thin wrapper around a viem
    * `WalletClient.signMessage` call.
    *
-   * Not invoked when `apiKey` is supplied (no bootstrap = no L1
-   * signature needed, only the per-transfer authorization).
+   * Required unless `signerClient` is supplied — when the integrator
+   * provides their own signer, it's assumed to handle L1 signing
+   * internally (or to accept `signL1Message` as a separate concern).
+   *
+   * When both are supplied, `signL1Message` is still forwarded to the
+   * signer's `transfer()` calls via the `ethSigner` param.
+   *
+   * Not invoked for the bootstrap step when `accountApiKey` or
+   * `signerClient` is supplied — only for per-transfer authorization.
    */
-  signL1Message: LighterSignL1Message
+  signL1Message?: LighterSignL1Message
   //Lighter HTTP API base URL. Default: mainnet. Recommended to host a proxy.
   apiUrl?: string
   //API key slot to (re)register. Default: 2.
@@ -171,29 +227,29 @@ export type AdaptLighterWalletOptions = {
     wasmExecPath?: string
   }
   /**
-   * Pre-registered Lighter API key. When supplied, the adapter skips the
-   * `generateAPIKey` + `changeApiKey` bootstrap entirely — no signature
-   * prompt, no on-chain key-rotation wait — and uses this key directly
-   * for the `SignerClient`.
+   * Pre-registered Lighter account API key (hex-encoded, with or without
+   * `0x` prefix). This is the Lighter protocol's session key — not a
+   * wallet private key. When supplied, the adapter skips the
+   * `generateAPIKey` + `changeApiKey` bootstrap entirely (no signature
+   * prompt, no on-chain key-rotation wait) and uses this key directly for
+   * the `SignerClient`.
    *
    * The caller is responsible for:
    *   - Having already registered the corresponding public key on the
    *     user's Lighter account at `apiKeyIndex`
-   *   - Storing the private key securely
+   *   - Storing the key securely
    *
    * Use this when you've built your own API-key lifecycle (e.g. a
    * backend service that provisions keys, or a wallet-level integration
    * that manages keys outside this adapter). Mutually exclusive with
-   * `storage` — if both are set, `apiKey` wins and `storage` is ignored.
+   * `storage` — if both are set, `accountApiKey` wins and `storage` is
+   * ignored.
    */
-  apiKey?: {
-    /** Hex-encoded private key (with or without `0x` prefix). */
-    privateKey: string
-  }
+  accountApiKey?: string
   /**
    * Optional API-key persistence. When provided, the adapter reuses the
    * stored key across sessions instead of re-running `changeApiKey`.
-   * Ignored when `apiKey` is supplied.
+   * Ignored when `accountApiKey` or `signerClient` is supplied.
    */
   storage?: LighterKeyStorage
   /** Confirmation poll interval. Default: 2000ms. */
@@ -202,10 +258,41 @@ export type AdaptLighterWalletOptions = {
   timeoutMs?: number
 }
 
-type SessionState = {
-  signerClient: SignerClient
+/**
+ * Pre-built-signer path. `signerClient` and `accountIndex` must be paired
+ * — the adapter can't pull account index out of a `SignerClient` instance
+ * (the SDK's config is private), and it needs the value for
+ * `AdaptedWallet.address()`. Pairing them lets the adapter run with
+ * zero runtime dependency on `@reservoir0x/lighter-ts-sdk`.
+ */
+type AdaptLighterWalletPreBuiltOptions = AdaptLighterWalletBaseOptions & {
+  /**
+   * Pre-built Lighter signer. When supplied, the adapter bypasses the
+   * `generateAPIKey` / `changeApiKey` bootstrap entirely and uses this
+   * signer for all `transfer()` and `getTransaction()` calls.
+   *
+   * The caller is responsible for ensuring the signer is ready to use
+   * (initialized, WASM loaded, API key registered) and for caching it
+   * if desired. A full `SignerClient` from `@reservoir0x/lighter-ts-sdk`
+   * satisfies `LighterSigner` structurally and can be passed directly.
+   *
+   * When set, `apiUrl`, `apiKeyIndex`, `wasmConfig`, `accountApiKey`,
+   * and `storage` are all ignored (baked into the signer).
+   */
+  signerClient: LighterSigner
+  /** The user's Lighter account index. Required when `signerClient` is set. */
   accountIndex: number
 }
+
+/** Bootstrap path — the adapter owns the signer lifecycle. */
+type AdaptLighterWalletBootstrapOptions = AdaptLighterWalletBaseOptions & {
+  signerClient?: never
+  accountIndex?: never
+}
+
+export type AdaptLighterWalletOptions =
+  | AdaptLighterWalletBootstrapOptions
+  | AdaptLighterWalletPreBuiltOptions
 
 /**
  * Adapts a Lighter wallet to work with the Relay SDK.
@@ -234,6 +321,9 @@ type SessionState = {
  *
  * Subsequent transactions reuse the cached session (in-memory at minimum).
  *
+ * Passing `signerClient` skips the entire bootstrap and avoids any runtime
+ * dependency on `@reservoir0x/lighter-ts-sdk`.
+ *
  */
 export const adaptLighterWallet = (
   options: AdaptLighterWalletOptions
@@ -244,11 +334,22 @@ export const adaptLighterWallet = (
     apiUrl = DEFAULT_API_URL,
     apiKeyIndex = DEFAULT_API_KEY_INDEX,
     wasmConfig,
-    apiKey,
+    accountApiKey,
+    signerClient: preConfiguredSigner,
+    accountIndex: preConfiguredAccountIndex,
     storage,
     pollIntervalMs = 2_000,
     timeoutMs = 120_000
   } = options
+
+  // `signL1Message` is only optional when the caller supplies a
+  // `signerClient`; otherwise the adapter's own bootstrap + `transfer()`
+  // path calls the stock `SignerClient`, which requires an ethSigner.
+  if (!preConfiguredSigner && !signL1Message) {
+    throw new Error(
+      'Lighter adapter: `signL1Message` is required unless a pre-built `signerClient` is supplied.'
+    )
+  }
 
   const normalizedL1Address = l1Address.toLowerCase()
 
@@ -259,20 +360,24 @@ export const adaptLighterWallet = (
 
   // The SDK's `SignerClient.transfer()` only calls `.signMessage(msg)` on
   // whatever is passed as `ethSigner`. We forward to the supplied callback.
-  const ethSignerShim = {
-    signMessage: (message: string): Promise<string> => signL1Message(message)
-  }
+  // `undefined` when the caller's `signerClient` handles L1 signing on its
+  // own — forwarded as-is to their `transfer()` implementation.
+  const ethSignerShim: LighterEthSigner | undefined = signL1Message
+    ? {
+        signMessage: (message: string): Promise<string> =>
+          signL1Message(message)
+      }
+    : undefined
 
   // Account-index cache. Resolved via public API — no signature required.
-  let cachedAccountIndex: number | null = null
+  // Pre-populated from the `accountIndex` option when supplied, so we
+  // never hit the network (or the SDK) in that path.
+  let cachedAccountIndex: number | null = preConfiguredAccountIndex ?? null
   const resolveAccountIndex = async (): Promise<number> => {
     if (cachedAccountIndex !== null) return cachedAccountIndex
+    const { AccountApi, ApiClient } = await loadLighterSdk()
     const apiClient = new ApiClient({ host: apiUrl })
     const accountApi = new AccountApi(apiClient)
-    // The SDK's `getAccount` is typed to return a single Account, but the
-    // underlying `/api/v1/account` endpoint actually returns an envelope:
-    //   { code, total, accounts: [{ index, l1_address, ... }] }
-    // Coerce through `unknown` so we can safely read the real shape.
     const response = (await accountApi.getAccount({
       by: 'l1_address',
       value: normalizedL1Address
@@ -294,30 +399,34 @@ export const adaptLighterWallet = (
     return index
   }
 
-  // Session bootstrap — runs once per L1 address per page (or cached via
-  // storage if provided). Fires the `changeApiKey` signature prompt.
-  let sessionPromise: Promise<SessionState> | null = null
-  const ensureSession = (): Promise<SessionState> => {
-    if (sessionPromise) return sessionPromise
+  // Signer resolution. When `signerClient` is supplied, this is a direct
+  // pass-through — no network, no SDK import, no account-index lookup.
+  // Otherwise the first call triggers the lazy bootstrap, which fires the
+  // `changeApiKey` signature prompt if we have to generate a fresh key.
+  let signerPromise: Promise<LighterSigner> | null = preConfiguredSigner
+    ? Promise.resolve(preConfiguredSigner)
+    : null
+  const getSigner = (): Promise<LighterSigner> => {
+    if (signerPromise) return signerPromise
 
-    sessionPromise = (async () => {
+    signerPromise = (async () => {
+      const { SignerClient, ApiClient, TransactionApi } = await loadLighterSdk()
       const accountIndex = await resolveAccountIndex()
 
-      // Precedence: explicit `apiKey` > persisted via `storage` > fresh
-      // bootstrap. The first two both bypass the `changeApiKey` prompt.
-      const preRegisteredPrivateKey = apiKey?.privateKey
+      // Precedence: explicit `accountApiKey` > persisted via `storage` >
+      // fresh bootstrap. The first two both bypass the `changeApiKey` prompt.
       const storageKey = `lighter-api-key:${normalizedL1Address}:${apiKeyIndex}`
 
-      let hydratedPrivateKey: string | null = preRegisteredPrivateKey ?? null
-      if (!hydratedPrivateKey && storage) {
+      let hydratedAccountApiKey: string | null = accountApiKey ?? null
+      if (!hydratedAccountApiKey && storage) {
         const stored = await storage.get(storageKey)
-        hydratedPrivateKey = stored ?? null
+        hydratedAccountApiKey = stored ?? null
       }
 
-      if (hydratedPrivateKey) {
+      if (hydratedAccountApiKey) {
         const signerClient = new SignerClient({
           url: apiUrl,
-          privateKey: hydratedPrivateKey,
+          privateKey: hydratedAccountApiKey,
           accountIndex,
           apiKeyIndex,
           chainId: LIGHTER_CIRCUIT_CHAIN_ID,
@@ -325,12 +434,16 @@ export const adaptLighterWallet = (
         })
         await signerClient.initialize()
         await signerClient.ensureWasmClient()
-        return { signerClient, accountIndex }
+        // Cast: SignerClient's `transfer` accepts `string | Signer` for
+        // `ethSigner`, which is structurally wider than our
+        // `LighterEthSigner`. Safe because the SDK only calls
+        // `.signMessage()` on it.
+        return signerClient as unknown as LighterSigner
       }
 
       // No stored key — generate one and register it.
       //
-      // Step 1: keygen-only client. A dummy private key is fine because
+      // Step 1: keygen-only client. A dummy key is fine because
       // `generateAPIKey` is a stateless WASM call that doesn't use the
       // current signing context. We deliberately DO NOT call
       // `ensureWasmClient` here — doing so would lock the WASM's signing
@@ -340,7 +453,7 @@ export const adaptLighterWallet = (
       // the tx as "invalid signature".
       const keygenClient = new SignerClient({
         url: apiUrl,
-        privateKey: DUMMY_PRIVATE_KEY,
+        privateKey: DUMMY_API_KEY,
         accountIndex,
         apiKeyIndex,
         chainId: LIGHTER_CIRCUIT_CHAIN_ID,
@@ -378,7 +491,12 @@ export const adaptLighterWallet = (
 
       const [, changeKeyTxHash, changeKeyError] =
         await signerClient.changeApiKey({
-          ethSigner: ethSignerShim as unknown as LighterEthSignerParam,
+          // Cast through `unknown`: the SDK types `ethSigner` as
+          // `string | ethers.Signer`, but it only ever invokes
+          // `.signMessage()` on it — which our shim provides.
+          ethSigner: ethSignerShim as unknown as Parameters<
+            typeof signerClient.changeApiKey
+          >[0]['ethSigner'],
           newPubkey: keypair.publicKey,
           newApiKeyIndex: apiKeyIndex,
           nonce: Number.isFinite(nonceForChangeKey) ? nonceForChangeKey : 0
@@ -400,15 +518,16 @@ export const adaptLighterWallet = (
         await storage.set(storageKey, keypair.privateKey)
       }
 
-      return { signerClient, accountIndex }
+      // Same narrowing cast as the hydrated-key branch above.
+      return signerClient as unknown as LighterSigner
     })()
 
     // If bootstrap fails, clear the promise so a retry can start fresh.
-    sessionPromise.catch(() => {
-      sessionPromise = null
+    signerPromise.catch(() => {
+      signerPromise = null
     })
 
-    return sessionPromise
+    return signerPromise
   }
 
   return {
@@ -428,7 +547,7 @@ export const adaptLighterWallet = (
         )
       }
 
-      const { signerClient } = await ensureSession()
+      const signerClient = await getSigner()
       const params = action.parameters
       client.log(['Executing Lighter transfer', params], LogLevel.Verbose)
 
@@ -441,7 +560,7 @@ export const adaptLighterWallet = (
         // usdcFee: params.usdcFee, Hardcoding for now
         usdcFee: 3000000,
         memo: params.memo,
-        ethSigner: ethSignerShim as unknown as LighterEthSignerParam
+        ethSigner: ethSignerShim
       })
 
       if (error) {
@@ -458,7 +577,7 @@ export const adaptLighterWallet = (
     handleConfirmTransactionStep: async (
       txHash: string
     ): Promise<LvmReceipt> => {
-      const { signerClient } = await ensureSession()
+      const signerClient = await getSigner()
       const tx = await pollLighterTransaction(signerClient, txHash, {
         pollIntervalMs,
         timeoutMs,
