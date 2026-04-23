@@ -40,8 +40,7 @@ The adapter owns the full Lighter session lifecycle: it resolves the user's Ligh
 | `chainId` | `3586256` | Reported chain id |
 | `wasmConfig` | jsDelivr CDN | `{ wasmPath, wasmExecPath }` |
 | `accountApiKey` | — | Hex-encoded pre-registered Lighter account API key (see below) |
-| `signerClient` | — | A pre-built `LighterSigner` (see below) |
-| `accountIndex` | — | Pre-known Lighter account index. Skips the HTTP account-lookup step (and the SDK import it requires). |
+| `signerClient` + `accountIndex` | — | Pre-built signer with the user's Lighter account index. **Must be supplied together** — TypeScript enforces the pair (see below). |
 | `storage` | — | Optional persistent API-key store |
 | `pollIntervalMs` / `timeoutMs` | `2000` / `120000` | Confirmation polling |
 
@@ -81,7 +80,7 @@ adaptLighterWallet({
 
 No signature prompt fires for `changeApiKey`. The per-transfer L1 authorization (`signL1Message`) is still required.
 
-**4. Pre-built signer.** For integrators with privileged access to a Lighter-provided signer (already initialized, WASM loaded, key registered). Supplying `signerClient` bypasses every bootstrap step *and* avoids any runtime dependency on `@reservoir0x/lighter-ts-sdk` — the SDK is imported dynamically only when the adapter has to build its own signer, so this path tree-shakes the SDK out of the bundle.
+**4. Pre-built signer.** For integrators with privileged access to a Lighter-provided signer (already initialized, WASM loaded, key registered). This path bypasses every bootstrap step *and* skips the `@reservoir0x/lighter-ts-sdk` dynamic import entirely — the adapter runs with zero runtime dependency on the SDK.
 
 The adapter only needs two methods, described by the `LighterSigner` type:
 
@@ -102,10 +101,10 @@ const client = await getLighterSigner() // from your Lighter integration
 adaptLighterWallet({
   l1Address,
   signerClient: client,
-  accountIndex // pair with `accountIndex` to run with zero dependency on @reservoir0x/lighter-ts-sdk
+  accountIndex: 509564  // required when `signerClient` is set
 })
 ```
 
-`signerClient` and `accountIndex` are fully independent — pairing them is what achieves the zero-SDK-runtime story. Supplying only `signerClient` skips the bootstrap but still loads the SDK dynamically to resolve the account index via HTTP.
+**`signerClient` and `accountIndex` must be supplied together.** TypeScript's discriminated union on `AdaptLighterWalletOptions` enforces the pair — you can't pass one without the other. The adapter needs `accountIndex` for `AdaptedWallet.address()` (which the Relay SDK calls when building quotes or rendering the widget); it can't pull this out of a `SignerClient` instance because the SDK's config is private.
 
 When `signerClient` is set, `apiUrl`, `apiKeyIndex`, `wasmConfig`, `accountApiKey`, and `storage` are all ignored (the signer already has them baked in). `signL1Message` becomes optional too — if the integrator's signer handles L1 signing internally, omit it; otherwise supply it and the adapter will forward it to `transfer()` as `ethSigner`.

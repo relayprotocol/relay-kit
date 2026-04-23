@@ -195,7 +195,7 @@ export type LighterKeyStorage = {
 /** Callback that signs a plain-text L1 authorization message. */
 export type LighterSignL1Message = (message: string) => Promise<string>
 
-export type AdaptLighterWalletOptions = {
+type AdaptLighterWalletBaseOptions = {
   /**
    * The user's L1 (EVM) wallet address. Used to resolve their Lighter
    * account index and to key the optional persistent storage.
@@ -247,28 +247,6 @@ export type AdaptLighterWalletOptions = {
    */
   accountApiKey?: string
   /**
-   * Pre-built Lighter signer. When supplied, the adapter bypasses the
-   * `generateAPIKey` / `changeApiKey` bootstrap entirely and uses this
-   * signer for all `transfer()` and `getTransaction()` calls.
-   *
-   * The caller is responsible for ensuring the signer is ready to use
-   * (initialized, WASM loaded, API key registered) and for caching it
-   * if desired. A full `SignerClient` from `@reservoir0x/lighter-ts-sdk`
-   * satisfies `LighterSigner` structurally and can be passed directly.
-   *
-   * Takes precedence over `accountApiKey` and `storage`. When set,
-   * `apiUrl`, `apiKeyIndex`, and `wasmConfig` are ignored (baked into
-   * the signer).
-   */
-  signerClient?: LighterSigner
-  /**
-   * The user's Lighter account index. When supplied, the adapter skips
-   * the HTTP account-lookup step (and the SDK import it requires) —
-   * pair with `signerClient` to run the adapter with zero runtime
-   * dependency on `@reservoir0x/lighter-ts-sdk`.
-   */
-  accountIndex?: number
-  /**
    * Optional API-key persistence. When provided, the adapter reuses the
    * stored key across sessions instead of re-running `changeApiKey`.
    * Ignored when `accountApiKey` or `signerClient` is supplied.
@@ -279,6 +257,42 @@ export type AdaptLighterWalletOptions = {
   /** Confirmation timeout. Default: 120000ms. */
   timeoutMs?: number
 }
+
+/**
+ * Pre-built-signer path. `signerClient` and `accountIndex` must be paired
+ * — the adapter can't pull account index out of a `SignerClient` instance
+ * (the SDK's config is private), and it needs the value for
+ * `AdaptedWallet.address()`. Pairing them lets the adapter run with
+ * zero runtime dependency on `@reservoir0x/lighter-ts-sdk`.
+ */
+type AdaptLighterWalletPreBuiltOptions = AdaptLighterWalletBaseOptions & {
+  /**
+   * Pre-built Lighter signer. When supplied, the adapter bypasses the
+   * `generateAPIKey` / `changeApiKey` bootstrap entirely and uses this
+   * signer for all `transfer()` and `getTransaction()` calls.
+   *
+   * The caller is responsible for ensuring the signer is ready to use
+   * (initialized, WASM loaded, API key registered) and for caching it
+   * if desired. A full `SignerClient` from `@reservoir0x/lighter-ts-sdk`
+   * satisfies `LighterSigner` structurally and can be passed directly.
+   *
+   * When set, `apiUrl`, `apiKeyIndex`, `wasmConfig`, `accountApiKey`,
+   * and `storage` are all ignored (baked into the signer).
+   */
+  signerClient: LighterSigner
+  /** The user's Lighter account index. Required when `signerClient` is set. */
+  accountIndex: number
+}
+
+/** Bootstrap path — the adapter owns the signer lifecycle. */
+type AdaptLighterWalletBootstrapOptions = AdaptLighterWalletBaseOptions & {
+  signerClient?: never
+  accountIndex?: never
+}
+
+export type AdaptLighterWalletOptions =
+  | AdaptLighterWalletBootstrapOptions
+  | AdaptLighterWalletPreBuiltOptions
 
 /**
  * Adapts a Lighter wallet to work with the Relay SDK.
