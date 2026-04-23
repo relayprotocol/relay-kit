@@ -17,7 +17,7 @@ const DEFAULT_API_KEY_INDEX = 2
 
 // WASM assets hosted on jsDelivr.
 // Override via `options.wasmConfig` if you'd rather self-host.
-const LIGHTER_SDK_VERSION = '1.0.7-alpha16'
+const LIGHTER_SDK_VERSION = '1.0.7-alpha18'
 const DEFAULT_WASM_PATH = `https://cdn.jsdelivr.net/npm/@relay-protocol/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/lighter-signer.wasm`
 const DEFAULT_WASM_EXEC_PATH = `https://cdn.jsdelivr.net/npm/@relay-protocol/lighter-ts-sdk@${LIGHTER_SDK_VERSION}/wasm/wasm_exec.js`
 
