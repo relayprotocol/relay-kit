@@ -72,19 +72,19 @@ jobs:
             --jq '[.[] | select(.user.login == "github-actions[bot]") | select(.body | contains("Docs Drift Check"))] | last | .body // ""')
 
           if [ -z "$COMMENT" ]; then
-            gh pr comment "$PR_NUMBER" --body \
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body \
               "⚠️ **Docs Draft PR** — no drift-check comment found on this PR. The drift-check workflow must complete before publishing. Re-run it or push a commit to trigger it, then retry \`/publish-docs-pr\`."
             exit 1
           fi
 
           # Refuse to publish if the drift check said "no docs impact" or was below floor.
           if echo "$COMMENT" | grep -q "No docs impact"; then
-            gh pr comment "$PR_NUMBER" --body \
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body \
               "🛑 **Docs Draft PR** — the latest drift check concluded this PR has no docs impact. Nothing to publish. If you disagree, open an issue manually in \`relayprotocol/relay-docs\`."
             exit 1
           fi
           if echo "$COMMENT" | grep -q "Confidence: LOW"; then
-            gh pr comment "$PR_NUMBER" --body \
+            gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body \
               "🛑 **Docs Draft PR** — the latest drift check was LOW confidence and deliberately did not draft content. Please open an issue manually in \`relayprotocol/relay-docs\` describing the change rather than auto-publishing a low-confidence draft."
             exit 1
           fi
@@ -283,7 +283,7 @@ jobs:
           DOCS_PR_URL: ${{ steps.open-pr.outputs.pr_url }}
           ACTOR: ${{ github.event.comment.user.login }}
         run: |
-          gh pr comment "$PR_NUMBER" --body \
+          gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body \
             "✅ **Docs Draft PR** opened: ${DOCS_PR_URL}
 
           @${ACTOR} is assigned on the draft PR. Review and mark ready when it's good."
@@ -295,5 +295,5 @@ jobs:
           PR_NUMBER: ${{ github.event.issue.number }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          gh pr comment "$PR_NUMBER" --body \
+          gh pr comment "$PR_NUMBER" --repo "${{ github.repository }}" --body \
             "❌ **Docs Draft PR** failed. See the workflow run: ${RUN_URL}"
