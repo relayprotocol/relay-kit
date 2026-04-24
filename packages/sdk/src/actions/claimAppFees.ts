@@ -8,7 +8,10 @@ import {
   getApiKeyHeader
 } from '../utils/index.js'
 import { type WalletClient } from 'viem'
-import { isViemWalletClient } from '../utils/viemWallet.js'
+import {
+  isViemWalletClient,
+  type AdaptViemWalletOptions
+} from '../utils/viemWallet.js'
 import type { paths } from '../types/index.js'
 import type { AxiosRequestConfig } from 'axios'
 
@@ -26,7 +29,7 @@ export type ClaimAppFeesParameters = {
   recipient?: string
   amount?: string
   onProgress?: (data: any) => any
-}
+} & AdaptViemWalletOptions
 
 /**
  * Claim app fees for a wallet and execute the returned steps
@@ -38,8 +41,15 @@ export async function claimAppFees(
   data: Execute
   abortController: AbortController
 }> {
-  const { wallet, chainId, currency, recipient, amount, onProgress } =
-    parameters
+  const {
+    wallet,
+    chainId,
+    currency,
+    recipient,
+    amount,
+    onProgress,
+    disableCapabilitiesCheck
+  } = parameters
   const client = getClient()
 
   if (!client.baseApiUrl || !client.baseApiUrl.length) {
@@ -49,7 +59,7 @@ export async function claimAppFees(
   let adaptedWallet: AdaptedWallet | undefined
   if (wallet) {
     adaptedWallet = isViemWalletClient(wallet)
-      ? adaptViemWallet(wallet as WalletClient)
+      ? adaptViemWallet(wallet as WalletClient, { disableCapabilitiesCheck })
       : wallet
   }
 

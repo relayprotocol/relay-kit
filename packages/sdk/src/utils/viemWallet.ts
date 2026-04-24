@@ -34,7 +34,21 @@ export function isViemWalletClient(
   )
 }
 
-export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
+export type AdaptViemWalletOptions = {
+  /**
+   * Skip `wallet.getCapabilities` calls used for EIP-5792 atomic-batch
+   * detection and smart-wallet detection. Set this for wallets with a
+   * broken `getCapabilities` implementation that hangs or never resolves.
+   * When true, execution falls back to sequential transactions.
+   */
+  disableCapabilitiesCheck?: boolean
+}
+
+export const adaptViemWallet = (
+  wallet: WalletClient,
+  options: AdaptViemWalletOptions = {}
+): AdaptedWallet => {
+  const { disableCapabilitiesCheck } = options
   return {
     vmType: 'evm',
     getChainId: async () => {
@@ -206,6 +220,7 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
       }
     },
     supportsAtomicBatch: async (chainId) => {
+      if (disableCapabilitiesCheck) return false
       if (!wallet.account) return false
       try {
         const capabilities = await wallet.getCapabilities({
@@ -284,6 +299,7 @@ export const adaptViemWallet = (wallet: WalletClient): AdaptedWallet => {
 
         // Always fetch capabilities fresh (wallet-specific, not cacheable)
         const getSmartWalletCapabilities = async () => {
+          if (disableCapabilitiesCheck) return false
           let _hasSmartWalletCapabilities = false
           try {
             const capabilities = await wallet.getCapabilities({
