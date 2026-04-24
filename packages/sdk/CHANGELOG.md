@@ -1,5 +1,12 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.4
+
+### Patch Changes
+
+- 670737f: lighter sdk adapter
+- 0eedcc1: add disableCapabilitiesCheck option to skip wallet.getCapabilities
+
 ## 5.2.3
 
 ### Patch Changes
