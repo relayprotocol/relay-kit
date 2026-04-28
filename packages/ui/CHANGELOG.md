@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.7
+
+### Patch Changes
+
+- 31cd7b4: Fix gap in token selector's suggested tokens
+- Updated dependencies [ef54ef1]
+  - @relayprotocol/relay-sdk@5.2.5
+  - @relayprotocol/relay-kit-hooks@3.0.15
+
 ## 8.0.6
 
 ### Patch Changes
