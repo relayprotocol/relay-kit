@@ -1,5 +1,5 @@
 import { type FC } from 'react'
-import { Box, Button, Flex, Text } from '../../../primitives/index.js'
+import { Anchor, Box, Button, Flex, Text } from '../../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons/faCircleExclamation'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
@@ -101,6 +101,21 @@ export const ErrorStep: FC<ErrorStepProps> = ({
       )
     : null
 
+  const isWithdrawable = Boolean(transaction?.protocol?.isWithdrawable)
+  const depositOrigin = transaction?.protocol?.deposit?.origin
+  const inTx = transaction?.data?.inTxs?.[0]
+  const withdrawTxHash = depositOrigin?.transactionId ?? inTx?.hash
+  const withdrawChainId = depositOrigin?.chainId ?? inTx?.chainId
+  const showWithdrawLink =
+    !isRefund && isWithdrawable && withdrawTxHash && withdrawChainId
+  const withdrawHref = showWithdrawLink
+    ? `${baseTransactionUrl}/withdraw?${new URLSearchParams({
+        tab: 'attest',
+        chain: String(withdrawChainId),
+        txHash: String(withdrawTxHash)
+      }).toString()}`
+    : undefined
+
   return (
     <Flex
       direction="column"
@@ -199,11 +214,27 @@ export const ErrorStep: FC<ErrorStepProps> = ({
           </Text>
         )
       ) : (
-        <ErrorWell
-          error={mergedError}
-          hasTxHashes={hasTxHashes}
-          fromChain={fromChain}
-        />
+        <>
+          <ErrorWell
+            error={mergedError}
+            hasTxHashes={hasTxHashes}
+            fromChain={fromChain}
+          />
+          {showWithdrawLink ? (
+            <Text style="subtitle2" className="relay:my-4 relay:text-center">
+              This transaction couldn&apos;t be refunded automatically. Visit
+              the{' '}
+              <Anchor
+                href={withdrawHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Withdraw page
+              </Anchor>{' '}
+              to manually withdraw.
+            </Text>
+          ) : null}
+        </>
       )}
       {depositTx || fillTx ? (
         <>
