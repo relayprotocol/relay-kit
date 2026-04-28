@@ -441,7 +441,7 @@ export interface paths {
           /** @description User address, when supplied returns user balance and max bridge amount */
           user?: string;
           /** @description Restricts the user balance and capacity to a particular currency when supplied with a currency id. Defaults to the native currency of the destination chain. */
-          currency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+          currency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
         };
       };
       responses: {
@@ -494,7 +494,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -598,7 +598,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
+                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -609,10 +609,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
               };
               breakdown?: {
                   /** @description Amount that will be bridged in the estimated time */
@@ -674,7 +674,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -1155,7 +1155,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
+                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -1166,10 +1166,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "pusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
               };
               /**
                * @example {
@@ -7496,8 +7496,7 @@ export interface paths {
               status?: string;
               report?: {
                 version?: string;
-              } & {
-                [key: string]: ({
+                [key: string]: string | ({
                   status?: string;
                   reason?: string | null;
                 }) | undefined;
@@ -7512,8 +7511,7 @@ export interface paths {
               status?: string;
               report?: {
                 version?: string;
-              } & {
-                [key: string]: ({
+                [key: string]: string | ({
                   status?: string;
                   reason?: string | null;
                 }) | undefined;
@@ -7581,6 +7579,8 @@ export interface paths {
               time?: number;
               originChainId?: number;
               destinationChainId?: number;
+              /** @description The timestamp when the quote request was created */
+              quoteCreatedAt?: number;
             };
           };
         };
@@ -7611,6 +7611,8 @@ export interface paths {
               updatedAt?: number;
               originChainId?: number;
               destinationChainId?: number;
+              /** @description The timestamp when the quote request was created */
+              quoteCreatedAt?: number;
             };
           };
         };
@@ -7958,7 +7960,8 @@ export interface paths {
                *   "recipient": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
                *   "depositAddress": {
                *     "address": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
-               *     "depositAddressType": "open"
+               *     "depositAddressType": "open",
+               *     "depositor": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea"
                *   },
                *   "data": {
                *     "subsidizedRequest": false,
@@ -8024,6 +8027,7 @@ export interface paths {
                     address?: string;
                     /** @enum {string} */
                     depositAddressType?: "strict" | "open";
+                    depositor?: string | null;
                   }) | null;
                   data?: {
                     /** @description Slippage tolerance for the swap. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
@@ -9336,6 +9340,55 @@ export interface paths {
                         };
                       };
                     };
+                    /** @description Breakdown of price impact by component, with quoted and actual values */
+                    expandedPriceImpact?: {
+                      /** @description Price impact as estimated at quote time */
+                      quoted?: {
+                        /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
+                        swap?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid to cover transaction execution costs */
+                        execution?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid to the protocol */
+                        relay?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
+                        app?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid by a sponsor for this request */
+                        sponsored?: {
+                          usd?: string;
+                        };
+                      };
+                      /** @description Price impact as computed at fill time */
+                      actual?: {
+                        /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
+                        swap?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid to cover transaction execution costs */
+                        execution?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid to the protocol */
+                        relay?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
+                        app?: {
+                          usd?: string;
+                        };
+                        /** @description Fees paid by a sponsor for this request */
+                        sponsored?: {
+                          usd?: string;
+                        };
+                      };
+                    } | null;
                     paidAppFees?: {
                         recipient?: string;
                         bps?: string;
@@ -9650,6 +9703,82 @@ export interface paths {
                         status?: "success" | "failure";
                       })[];
                   };
+                  protocol?: {
+                    orderId?: string;
+                    /** @enum {string} */
+                    hubType?: "onchain";
+                    /** @description True if the deposit is recoverable via the protocol withdrawal flow. */
+                    isWithdrawable?: boolean;
+                    solver?: {
+                      address?: string;
+                      protocolChainId?: string;
+                      chainId?: number;
+                    };
+                    deposit?: {
+                      origin?: {
+                        amount?: string;
+                        chainId?: number;
+                        currency?: string;
+                        depositor?: string;
+                        depository?: string;
+                        onchainId?: string;
+                        transactionId?: string;
+                      };
+                      relay?: {
+                        amount?: string;
+                        chainId?: number;
+                        currency?: string;
+                        hash?: string;
+                        /** @enum {string} */
+                        operation?: "mint";
+                      };
+                      attestation?: {
+                        execution?: {
+                          actions?: string[];
+                          idempotencyKey?: string;
+                        };
+                        attestations?: {
+                            oracleChainId?: string;
+                            oracleContract?: string;
+                            signerAddress?: string;
+                            signature?: string;
+                          }[];
+                      };
+                    };
+                    settlement?: {
+                      destination?: {
+                        fills?: {
+                            chainId?: number;
+                            transactionId?: string;
+                          }[];
+                        refunds?: {
+                            chainId?: number;
+                            transactionId?: string;
+                          }[];
+                      };
+                      relay?: {
+                        amount?: string;
+                        chainId?: number;
+                        currency?: string;
+                        hash?: string;
+                        /** @enum {string} */
+                        operation?: "transfer" | "burn" | "mixed";
+                        solver?: string;
+                      };
+                      attestation?: {
+                        execution?: {
+                          actions?: string[];
+                          idempotencyKey?: string;
+                        };
+                        attestations?: {
+                            oracleChainId?: string;
+                            oracleContract?: string;
+                            signerAddress?: string;
+                            signature?: string;
+                          }[];
+                      };
+                    };
+                  };
                   orderData?: unknown;
                   referrer?: string;
                   moonpayId?: string;
@@ -9758,6 +9887,7 @@ export interface paths {
             depositAddress: string;
             sweep?: boolean;
             targetChainId?: number;
+            currency?: string;
           };
         };
       };
