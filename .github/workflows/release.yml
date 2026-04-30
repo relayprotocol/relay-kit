@@ -15,9 +15,9 @@ jobs:
       contents: write
       pull-requests: write
       packages: write
+      id-token: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -27,17 +27,14 @@ jobs:
         with:
           node-version: 24.x
 
+      - name: Setup npm for trusted publishing
+        run: sudo npm i -g npm@^11.5.1
+
       - name: Setup pnpm
         run: sudo npm i -g pnpm@10.33.0
 
       - name: Install Dependencies
         run: pnpm install
-
-      - name: Creating .npmrc
-        run: |
-              cat << EOF > "$HOME/.npmrc"
-              //registry.npmjs.org/:_authToken=$NPM_TOKEN
-              EOF
 
       - name: Get Open PRs Created by Bots
         id: get_bot_prs
@@ -96,4 +93,3 @@ jobs:
           commitMode: github-api
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
