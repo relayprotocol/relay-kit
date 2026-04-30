@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["./src/*"],
+  "exclude": ["./*.json", "./*.md"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~relay-lighter-wallet-adapter/*": ["./src/*"]
+    }
+  },
+  "watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriority",
+    "synchronousWatchDirectory": true,
+    "excludeDirectories": ["**/node_modules", "_build"],
+    "excludeFiles": ["build/fileWhichChangesOften.ts"]
+  }
+}

@@ -8,7 +8,8 @@ import type {
 import { useEffect, useRef, useState } from 'react'
 import { Dropdown } from '../primitives/Dropdown.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGear, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
+import { faGear } from '@fortawesome/free-solid-svg-icons/faGear'
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons/faInfoCircle'
 import { Button, Flex, Input, Text, Box } from '../primitives/index.js'
 import Tooltip from '../primitives/Tooltip.js'
 import {
@@ -22,11 +23,18 @@ import {
   ratingToColor,
   type SlippageToleranceMode
 } from '../../utils/slippage.js'
+
+const tokenToColor = (token: string | undefined): string | undefined => {
+  if (!token) return undefined
+  return `var(--relay-colors-${token})`
+}
 import { EventNames } from '../../constants/events.js'
+import { useHapticEvent } from '../../providers/RelayKitProvider.js'
 import { useDebounceValue, useMediaQuery } from 'usehooks-ts'
 import useFallbackState from '../../hooks/useFallbackState.js'
 import { Modal } from './Modal.js'
 import { convertBpsToPercent } from '../../utils/numbers.js'
+import { cn } from '../../utils/cn.js'
 
 type SlippageToleranceConfigProps = {
   open?: boolean
@@ -39,7 +47,6 @@ type SlippageToleranceConfigProps = {
   onOpenSlippageConfig?: () => void
   showGearIcon?: boolean
   showLabel?: boolean
-  widgetType?: 'token' | 'swap'
 }
 
 type SlippageTabsProps = {
@@ -53,7 +60,6 @@ type SlippageTabsProps = {
   slippageRating: string | undefined
   slippageRatingColor: string | undefined
   inputRef: React.RefObject<HTMLInputElement | null>
-  widgetType?: 'token' | 'swap'
 }
 
 const SlippageTabs: FC<SlippageTabsProps> = ({
@@ -66,48 +72,36 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
   handleClose,
   slippageRating,
   slippageRatingColor,
-  inputRef,
-  widgetType
+  inputRef
 }) => {
+  const haptic = useHapticEvent()
   const isMobile = useMediaQuery('(max-width: 520px)')
-  const isTokenWidget = widgetType === 'token'
   return (
     <TabsRoot
       value={mode}
       onValueChange={(value) => {
+        haptic('selection')
         setMode(value as SlippageToleranceMode)
         if (value === 'Auto') {
           setDisplayValue(undefined)
         }
       }}
-      css={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        gap: isTokenWidget ? '4px' : '3',
-        sm: {
-          gap: isTokenWidget ? '4px' : '2'
-        }
-      }}
+      className="relay:flex relay:flex-col relay:w-full relay:gap-3 relay:sm:gap-2"
     >
-      <TabsList css={{ width: '100%' }}>
-        <TabsTrigger value="Auto" css={{ width: '50%' }}>
+      <TabsList className="relay:w-full">
+        <TabsTrigger value="Auto" className="relay:w-1/2">
           Auto
         </TabsTrigger>
-        <TabsTrigger value="Custom" css={{ width: '50%' }}>
+        <TabsTrigger value="Custom" className="relay:w-1/2">
           Custom
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="Auto" css={{ width: '100%' }}>
+      <TabsContent value="Auto" className="relay:w-full">
         <Text
-          style={isTokenWidget ? 'body3' : 'body2'}
+          style="body2"
           color="subtle"
-          css={
-            isTokenWidget
-              ? { lineHeight: 'normal', fontSize: '12px' }
-              : { lineHeight: '14px', sm: { fontSize: '12px' } }
-          }
+          className="relay:leading-[14px] relay:sm:text-xs"
         >
           We'll set the slippage automatically to minimize the failure rate.
         </Text>
@@ -115,89 +109,39 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
 
       <TabsContent
         value="Custom"
-        css={{
-          display: 'flex',
-          width: '100%',
-          overflow: 'hidden',
-          flexDirection: 'column',
-          gap: '1'
-        }}
+        className="relay:flex relay:w-full relay:overflow-hidden relay:flex-col relay:gap-1"
       >
         {/* Mobile shortcut buttons */}
         <Flex
-          css={{
-            display: 'none',
-            smDown: {
-              display: 'flex',
-              width: '100%',
-              gap: '2',
-              mb: '2'
-            }
-          }}
+          className="relay:hidden relay:max-[520px]:flex relay:max-[520px]:w-full relay:max-[520px]:gap-2 relay:max-[520px]:mb-2"
         >
           <Button
-            color="ghost"
-            size="small"
-            css={{
-              flex: 1,
-              minHeight: 32,
-              backgroundColor: 'gray3',
-              fontWeight: 500,
-              fontSize: 14,
-              py: 2,
-              borderRadius: '6px',
-              justifyContent: 'center',
-              '&:hover': {
-                backgroundColor: 'gray5'
-              }
-            }}
+            color="grey"
+            size="none"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('1')}
           >
             1%
           </Button>
           <Button
-            color="ghost"
-            size="small"
-            css={{
-              flex: 1,
-              minHeight: 32,
-              backgroundColor: 'gray3',
-              fontWeight: 500,
-              fontSize: 14,
-              py: 2,
-              borderRadius: '6px',
-              justifyContent: 'center',
-              '&:hover': {
-                backgroundColor: 'gray5'
-              }
-            }}
+            color="grey"
+            size="none"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('2')}
           >
             2%
           </Button>
           <Button
-            color="ghost"
-            size="small"
-            css={{
-              flex: 1,
-              minHeight: 32,
-              backgroundColor: 'gray3',
-              fontWeight: 500,
-              fontSize: 14,
-              py: 2,
-              borderRadius: '6px',
-              justifyContent: 'center',
-              '&:hover': {
-                backgroundColor: 'gray5'
-              }
-            }}
+            color="grey"
+            size="none"
+            className="relay:flex-1 relay:min-h-0 relay:h-[28px] relay:font-medium relay:text-sm relay:rounded-[6px] relay:justify-center relay:active:bg-[var(--relay-colors-gray5)]"
             onClick={() => handleInputChange('5')}
           >
             5%
           </Button>
         </Flex>
 
-        <Flex css={{ display: 'flex', width: '100%', position: 'relative' }}>
+        <Flex className="relay:flex relay:w-full relay:relative">
           <Input
             ref={inputRef}
             value={displayValue || ''}
@@ -219,43 +163,27 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
               }
             }}
             placeholder="2"
-            containerCss={{
-              width: '100%'
-            }}
-            css={{
-              height: '36px',
-              pr: '28px !important',
-              border: 'none',
-              textAlign: 'right',
-              width: '100%',
-              smDown: {
-                backgroundColor: 'transparent',
-                '--borderColor': 'colors.gray.5',
-                border: '1px solid var(--borderColor)'
-              },
-              color: slippageRatingColor
-            }}
+            containerClassName="relay:w-full"
+            className={cn(
+              'relay:h-9 relay:!pr-7 relay:border-none relay:text-right relay:w-full',
+              'relay:max-[520px]:bg-transparent relay:max-[520px]:border relay:max-[520px]:border-solid relay:max-[520px]:border-[var(--relay-colors-gray-5)]'
+            )}
+            inputStyle={{ color: tokenToColor(slippageRatingColor) }}
           />
           <Box
-            css={{
-              position: 'absolute',
-              right: 8,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: slippageRatingColor
-            }}
+            className="relay:absolute relay:right-2 relay:top-1/2 relay:-translate-y-1/2"
           >
-            %
+            <span style={{ color: tokenToColor(slippageRatingColor) }}>%</span>
           </Box>
         </Flex>
 
         {slippageRating === 'very-high' ? (
-          <Text style="body3" css={{ color: 'red11' }}>
+          <Text style="body3" color="red">
             Very high slippage
           </Text>
         ) : null}
         {slippageRating === 'high' ? (
-          <Text style="body3" css={{ color: 'amber11' }}>
+          <Text style="body3" color="warningSecondary">
             High slippage
           </Text>
         ) : null}
@@ -274,8 +202,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   label = 'Slippage',
   onOpenSlippageConfig,
   showGearIcon = true,
-  showLabel = false,
-  widgetType
+  showLabel = false
 }) => {
   const isMobile = useMediaQuery('(max-width: 520px)')
   const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
@@ -386,56 +313,25 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     })
   }
 
-  const triggerButton =
-    widgetType === 'token' ? (
-      <Button
-        aria-label="Slippage Tolerance Configuration"
-        color="ghost"
-        size="none"
-        css={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '4px',
-          borderRadius: '8px',
-          padding: '4px 6px',
-          backgroundColor: 'gray3'
-        }}
-      >
-        <Text style="subtitle3" color="subtle">
-          Slippage
+  const triggerButton = (
+    <Button
+      aria-label="Slippage Tolerance Configuration"
+      color="ghost"
+      size="none"
+      className="relay:items-center relay:justify-center relay:gap-1 relay:p-2 relay:rounded-[12px] relay:border relay:border-solid relay:border-[var(--relay-colors-gray5)] relay:h-9 relay:px-[10px]"
+      style={{
+        color: tokenToColor(slippageRatingColor) ?? 'var(--relay-colors-gray9)',
+        backgroundColor: 'var(--relay-colors-widget-card-background)'
+      }}
+    >
+      {open === false && displayValue && (
+        <Text style="subtitle2" color={slippageRatingColor === 'red11' ? 'red' : slippageRatingColor === 'amber11' ? 'warningSecondary' : undefined}>
+          {displayValue}%
         </Text>
-        <Text style="subtitle3">
-          {displayValue ? `${displayValue}%` : 'Auto'}
-        </Text>
-      </Button>
-    ) : (
-      <Button
-        aria-label="Slippage Tolerance Configuration"
-        color="ghost"
-        size="none"
-        css={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '1',
-          bg: 'subtle-background-color',
-          color: slippageRatingColor ?? 'gray9',
-          p: '2',
-          borderRadius: 12,
-          border: '1px solid',
-          borderColor: 'gray5',
-          height: '36px',
-          px: '10px'
-        }}
-      >
-        {open === false && displayValue && (
-          <Text style="subtitle2" css={{ color: slippageRatingColor }}>
-            {displayValue}%
-          </Text>
-        )}
-        <FontAwesomeIcon icon={faGear} />
-      </Button>
-    )
+      )}
+      <FontAwesomeIcon icon={faGear} />
+    </Button>
+  )
 
   const slippageTabsProps = {
     mode,
@@ -447,12 +343,11 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
     handleClose,
     slippageRating,
     slippageRatingColor,
-    inputRef,
-    widgetType
+    inputRef
   }
 
   return (
-    <div className="relay-kit-reset">
+    <div className="relay-kit-reset relay:inline-flex">
       {isMobile ? (
         <Modal
           open={open}
@@ -463,13 +358,9 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
             }
           }}
           trigger={triggerButton}
-          css={{
-            width: '100%',
-            minHeight: '262px',
-            maxHeight: '90vh'
-          }}
+          className="relay:w-full relay:min-h-[262px] relay:max-h-[90vh]"
         >
-          <Flex direction="column" css={{ width: '100%', gap: '4' }}>
+          <Flex direction="column" className="relay:w-full relay:gap-4">
             <Text style="h6">Max Slippage</Text>
 
             <Text style="body3" color="subtle">
@@ -493,7 +384,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
           contentProps={{
             align: 'end',
             sideOffset: 5,
-            css: { maxWidth: 188, mx: 0 },
+            className: 'relay:max-w-[188px] relay:mx-0 relay:p-3',
             avoidCollisions: false,
             onCloseAutoFocus: (e) => {
               e.preventDefault()
@@ -502,22 +393,22 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
         >
           <Flex
             direction="column"
-            css={{ width: '100%', gap: '2', maxWidth: 188 }}
+            className="relay:w-full relay:gap-2 relay:max-w-[188px]"
           >
-            <Flex direction="row" css={{ gap: '1', alignItems: 'center' }}>
+            <Flex direction="row" className="relay:gap-1 relay:items-center">
               <Text style="subtitle3">Max Slippage</Text>
               <Tooltip
                 content={
                   <Text
                     style="tiny"
-                    css={{ display: 'inline-block', maxWidth: 190 }}
+                    className="relay:inline-block relay:max-w-[190px]"
                   >
                     If the price exceeds the maximum slippage percentage, the
                     transaction will revert.
                   </Text>
                 }
               >
-                <Box css={{ color: 'gray8' }}>
+                <Box className="relay:text-[color:var(--relay-colors-gray8)]">
                   <FontAwesomeIcon icon={faInfoCircle} width={14} height={14} />
                 </Box>
               </Tooltip>

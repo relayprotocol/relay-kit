@@ -32,14 +32,18 @@ import {
 } from '../../utils/quote.js'
 import { useQuote, useTokenPrice } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../constants/events.js'
-import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../providers/RelayKitProvider.js'
 import type { DebouncedState } from 'usehooks-ts'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
 import {
   addressWithFallback,
   isValidAddress,
-  findSupportedWallet
+  findSupportedWallet,
+  isChainVmTypeSupported
 } from '../../utils/address.js'
 import { adaptViemWallet } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
@@ -184,6 +188,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   onAnalyticEvent,
   onSwapError
 }) => {
+  const haptic = useHapticEvent()
   const [fromToken, setFromToken] = useFallbackState(
     _setFromToken ? _fromToken : undefined,
     _setFromToken
@@ -252,11 +257,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   )
 
   const fromChainWalletVMSupported =
-    !fromChain?.vmType ||
-    supportedWalletVMs.includes(fromChain?.vmType) ||
+    isChainVmTypeSupported(fromChain?.vmType, supportedWalletVMs) ||
     fromChain?.id === 1337
   const toChainWalletVMSupported =
-    !toChain?.vmType || supportedWalletVMs.includes(toChain?.vmType)
+    isChainVmTypeSupported(toChain?.vmType, supportedWalletVMs)
 
   const defaultRecipient = useMemo(() => {
     const _linkedWallet = linkedWallets?.find(
@@ -622,7 +626,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         error_message: errorMessage,
         parameters: quoteParameters,
         quote_request_id: quoteRequestId,
-        status_code: e.response.status ?? e.status ?? ''
+        status_code: e?.response?.status ?? e?.status ?? ''
       })
     },
     undefined,
@@ -872,6 +876,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         onAnalyticEvent?.(EventNames.SWAP_ERROR, swapEventData)
       }
 
+      haptic('error')
       setSwapError(errorMessage)
       onSwapError?.(errorMessage, { ...quote, steps: currentSteps } as Execute)
     }
@@ -888,11 +893,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       setWaitingForSteps(true)
 
       if (!executeSwap) {
-        throw 'Missing a quote'
+        throw new Error('Missing a quote')
       }
 
       if (!wallet && !walletClient.data) {
-        throw 'Missing a wallet'
+        throw new Error('Missing a wallet')
       }
 
       setSteps(quote?.steps as Execute['steps'])

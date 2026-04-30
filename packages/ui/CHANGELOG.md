@@ -1,5 +1,103 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.7
+
+### Patch Changes
+
+- 31cd7b4: Fix gap in token selector's suggested tokens
+- Updated dependencies [ef54ef1]
+  - @relayprotocol/relay-sdk@5.2.5
+  - @relayprotocol/relay-kit-hooks@3.0.15
+
+## 8.0.6
+
+### Patch Changes
+
+- Updated dependencies [670737f]
+- Updated dependencies [0eedcc1]
+  - @relayprotocol/relay-sdk@5.2.4
+  - @relayprotocol/relay-kit-hooks@3.0.14
+
+## 8.0.5
+
+### Patch Changes
+
+- Updated dependencies [eeb4695]
+  - @relayprotocol/relay-sdk@5.2.3
+  - @relayprotocol/relay-kit-hooks@3.0.13
+
+## 8.0.4
+
+### Patch Changes
+
+- 8d8aa50: Sync api types and add depositing step to deposit address status
+- 38dabc0: Use spotClearinghouseState for Spot USDC and unified Hyperliquid accounts. Adds a new useHyperliquidAccountMode hook to detect the user's account abstraction mode, and routes balance queries through spotClearinghouseState for unified/portfolio-margin accounts where the Perps USDC balance is reported under spot.
+- Updated dependencies [8d8aa50]
+  - @relayprotocol/relay-kit-hooks@3.0.12
+  - @relayprotocol/relay-sdk@5.2.2
+
+## 8.0.3
+
+### Patch Changes
+
+- d5bea75: Namespace keyframes with relay- prefix to prevent collisions with host apps
+- 08ecc49: Add onHapticEvent callback to RelayKitProvider
+
+## 8.0.2
+
+### Patch Changes
+
+- 26b2fc7: Fix CSS layer scoping and priority for host app compatibility
+
+## 8.0.1
+
+### Patch Changes
+
+- 887f0e0: Fix CSS being tree-shaken in production builds by declaring styles.css as
+
+## 8.0.0
+
+### Major Changes
+
+- 4c6d8d2: Migrate styling system from Panda CSS to Tailwind CSS
+
+### Patch Changes
+
+- 0e44e49: Optimize Font Awesome imports to use individual icon paths
+
+## 7.1.6
+
+### Patch Changes
+
+- Updated dependencies [ad4f08c]
+  - @relayprotocol/relay-kit-hooks@3.0.11
+
+## 7.1.5
+
+### Patch Changes
+
+- 2f0d6de: Fix minor errors
+- Updated dependencies [2f0d6de]
+- Updated dependencies [7b351ab]
+  - @relayprotocol/relay-kit-hooks@3.0.10
+  - @relayprotocol/relay-sdk@5.2.1
+
+## 7.1.4
+
+### Patch Changes
+
+- 1ae288f: Make progress modal error scrollable
+- 3c9e0a1: Clearer error for locked wallet
+- Updated dependencies [144f7a4]
+  - @relayprotocol/relay-sdk@5.2.0
+  - @relayprotocol/relay-kit-hooks@3.0.9
+
+## 7.1.3
+
+### Patch Changes
+
+- 5b4830b: Enable multi wallet dropdown for hyperliquid
+
 ## 7.1.2
 
 ### Patch Changes

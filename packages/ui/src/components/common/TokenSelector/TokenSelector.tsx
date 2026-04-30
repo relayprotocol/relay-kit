@@ -9,11 +9,9 @@ import {
 import { Flex, Text, Input, Box, Button } from '../../primitives/index.js'
 import { Modal } from '../Modal.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faMagnifyingGlass,
-  faFolderOpen,
-  faXmark
-} from '@fortawesome/free-solid-svg-icons'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass'
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons/faFolderOpen'
+import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark'
 import type { Token } from '../../../types/index.js'
 import { type ChainFilterValue } from './ChainFilter.js'
 import useRelayClient from '../../../hooks/useRelayClient.js'
@@ -26,11 +24,15 @@ import {
   useTrendingCurrencies
 } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { UnverifiedTokenModal } from '../UnverifiedTokenModal.js'
 import { useEnhancedTokensList } from '../../../hooks/useEnhancedTokensList.js'
 import { TokenList } from './TokenList.js'
 import { UnsupportedDepositAddressChainIds } from '../../../constants/depositAddresses.js'
-import { getRelayUiKitData, getStarredChainIds } from '../../../utils/localStorage.js'
+import {
+  getRelayUiKitData,
+  getStarredChainIds
+} from '../../../utils/localStorage.js'
 import { isValidAddress as isValidAddressUtil } from '../../../utils/address.js'
 import {
   AccessibleList,
@@ -89,6 +91,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
   setToken,
   onAnalyticEvent
 }) => {
+  const haptic = useHapticEvent()
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
 
@@ -488,6 +491,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
 
   const handleTokenSelection = useCallback(
     (selectedToken: Token) => {
+      haptic('light')
       const isVerified = selectedToken.verified
       const direction = context === 'from' ? 'input' : 'output'
       let position = undefined
@@ -538,6 +542,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
       onOpenChange(false)
     },
     [
+      haptic,
       setToken,
       onOpenChange,
       resetState,
@@ -575,26 +580,23 @@ const TokenSelector: FC<TokenSelectorProps> = ({
             }
           }}
           trigger={trigger}
-          css={{
-            p: '4',
-            display: 'flex',
-            flexDirection: 'column',
+          className="relay:p-4 relay:flex relay:flex-col relay:w-full relay:max-w-full relay:sm:max-w-full"
+          contentStyle={{
             height: isDesktop ? 'min(85vh, 600px)' : '100%',
             maxHeight: isDesktop ? 'min(85vh, 600px)' : '100%',
-            borderRadius: isDesktop ? 'modal-border-radius' : '0px',
-            width: '100%',
-            maxWidth: '100%',
-            sm: {
-              maxWidth: '100%'
-            },
-            '@media(min-width: 660px)': {
-              minWidth: isDesktop
-                ? hasMultipleConfiguredChainIds
-                  ? 660
-                  : 408
-                : 400,
-              maxWidth: isDesktop && hasMultipleConfiguredChainIds ? 660 : 408
-            }
+            borderRadius: isDesktop
+              ? 'var(--relay-radii-modal-border-radius)'
+              : '0px',
+            minWidth: isDesktop
+              ? hasMultipleConfiguredChainIds
+                ? 660
+                : 408
+              : undefined,
+            maxWidth: isDesktop
+              ? hasMultipleConfiguredChainIds
+                ? 660
+                : 408
+              : undefined
           }}
         >
           {!isDesktop && mobileView === 'chains' ? (
@@ -617,16 +619,11 @@ const TokenSelector: FC<TokenSelectorProps> = ({
           ) : (
             <Flex
               direction="column"
-              css={{
-                width: '100%',
-                height: '100%',
-                gap: '3',
-                overflowY: 'hidden'
-              }}
+              className="relay:w-full relay:h-full relay:gap-3 relay:overflow-y-hidden"
             >
               {isDesktop && <Text style="h6">Select Token</Text>}
 
-              <Flex css={{ flex: 1, gap: '3', overflow: 'hidden' }}>
+              <Flex className="relay:flex-1 relay:gap-3 relay:overflow-hidden">
                 {/* Desktop Chain Filter Sidebar */}
                 {isDesktop &&
                 (!configuredChainIds || hasMultipleConfiguredChainIds) ? (
@@ -667,37 +664,21 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                       handleTokenSelection(selectedToken)
                     }
                   }}
-                  css={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: '100%',
-                    minWidth: 0,
-                    height: '100%'
-                  }}
+                  className="relay:flex relay:flex-col relay:w-full relay:min-w-0 relay:h-full"
                 >
                   {/* Search Input Section - Fixed */}
                   <Flex
                     direction="column"
                     align="start"
-                    css={{
-                      width: '100%',
-                      gap: '2',
-                      background: 'modal-background'
-                    }}
+                    className="relay:w-full relay:gap-2 relay:bg-[var(--relay-colors-modal-background)]"
                   >
-                    <Flex
-                      align="center"
-                      css={{
-                        width: '100%',
-                        gap: '2'
-                      }}
-                    >
+                    <Flex align="center" className="relay:w-full relay:gap-2">
                       <AccessibleListItem value="input" asChild>
                         <Input
                           ref={setTokenSearchInputElement}
                           placeholder="Search for a token or paste address"
                           icon={
-                            <Box css={{ color: 'gray9' }}>
+                            <Box className="relay:flex relay:text-[color:var(--relay-colors-gray9)]">
                               <FontAwesomeIcon
                                 icon={faMagnifyingGlass}
                                 width={16}
@@ -705,17 +686,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                               />
                             </Box>
                           }
-                          containerCss={{
-                            width: '100%',
-                            height: 40,
-                            mb: isDesktop ? '1' : '0'
-                          }}
-                          css={{
-                            width: '100%',
-                            _placeholder_parent: {
-                              textOverflow: 'ellipsis'
-                            }
-                          }}
+                          containerClassName={`relay:w-full relay:h-[40px] ${isDesktop ? 'relay:mb-1' : 'relay:mb-0'}`}
+                          className="relay:w-full relay:cursor-text relay:[&::placeholder]:text-ellipsis"
                           value={tokenSearchInput}
                           onChange={(e) => {
                             const value = (e.target as HTMLInputElement).value
@@ -740,16 +712,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                           color="ghost"
                           size="none"
                           onClick={() => onOpenChange(false)}
-                          css={{
-                            p: '2',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minWidth: '40px',
-                            height: '40px',
-                            color: 'gray9'
-                          }}
+                          className="relay:p-2 relay:rounded-[8px] relay:flex relay:items-center relay:justify-center relay:min-w-[40px] relay:h-[40px] relay:text-[color:var(--relay-colors-gray9)]"
                         >
                           <FontAwesomeIcon
                             icon={faXmark}
@@ -777,11 +740,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                     {!isDesktop && chainFilter.id !== undefined ? (
                       <Flex
                         align="center"
-                        css={{
-                          gap: '2',
-                          pb: '1',
-                          width: '100%'
-                        }}
+                        className="relay:gap-2 relay:pb-1 relay:w-full"
                       >
                         <Text style="subtitle2" color="subtle">
                           Tokens on{' '}
@@ -797,12 +756,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                   <Flex
                     key={chainFilter.id ?? 'all'}
                     direction="column"
-                    css={{
-                      flex: 1,
-                      overflowY: 'auto',
-                      gap: '3',
-                      pt:
-                        !isDesktop && chainFilter.id !== undefined ? '0' : '2',
+                    className={`relay:flex-1 relay:overflow-y-auto relay:gap-3 ${!isDesktop && chainFilter.id !== undefined ? 'relay:pt-0' : 'relay:pt-2'}`}
+                    style={{
                       scrollbarColor: 'var(--relay-colors-gray5) transparent'
                     }}
                   >
@@ -832,7 +787,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                         chainFilterId={chainFilter.id}
                       />
                     ) : (
-                      <Flex direction="column" css={{ gap: '3' }}>
+                      <Flex direction="column" className="relay:gap-3">
                         {[
                           {
                             title: 'Your Tokens',
@@ -887,10 +842,10 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                       <Flex
                         direction="column"
                         align="center"
-                        css={{ py: '5', maxWidth: 312, alignSelf: 'center' }}
+                        className="relay:py-5 relay:max-w-[312px] relay:self-center"
                       >
                         {!chainFilter?.id && isSearchTermValidAddress && (
-                          <Box css={{ color: 'gray8', mb: '2' }}>
+                          <Box className="relay:text-[color:var(--relay-colors-gray8)] relay:mb-2">
                             <FontAwesomeIcon
                               icon={faFolderOpen}
                               size="xl"
@@ -902,7 +857,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
                         <Text
                           color="subtle"
                           style="body2"
-                          css={{ textAlign: 'center' }}
+                          className="relay:text-center"
                         >
                           {!chainFilter?.id && isSearchTermValidAddress
                             ? 'No results. Switch to the desired chain to search by contract.'

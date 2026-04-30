@@ -41,6 +41,19 @@ export type TransactionStepItem = Pick<
       contract_address: string
       data: string
     }
+    // Lighter (LVM)
+    action?: {
+      type: 'transfer'
+      parameters: {
+        toAccountIndex: number
+        assetIndex: number
+        fromRouteType: number
+        toRouteType: number
+        amount: number
+        usdcFee: number
+        memo: string
+      }
+    }
     type?: string
   }
 }

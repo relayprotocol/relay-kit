@@ -12,18 +12,19 @@ import { isENSName } from '../../utils/ens.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
 import { EventNames } from '../../constants/events.js'
 import type { Token } from '../../types/index.js'
-import {
-  faCircleCheck,
-  faTriangleExclamation,
-  faClipboard,
-  faCircleXmark
-} from '@fortawesome/free-solid-svg-icons'
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons/faCircleCheck'
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons/faTriangleExclamation'
+import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons/faCircleXmark'
 import { AnchorButton } from '../primitives/Anchor.js'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
 import { truncateAddress } from '../../utils/truncate.js'
 import { isValidAddress } from '../../utils/address.js'
-import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../providers/RelayKitProvider.js'
 import {
   addCustomAddress,
   getCustomAddresses
@@ -58,6 +59,7 @@ export const CustomAddressModal: FC<Props> = ({
   onConfirmed,
   onClear
 }) => {
+  const haptic = useHapticEvent()
   const connectedAddress = useWalletAddress(wallet, linkedWallets)
   const [address, setAddress] = useState('')
   const [input, setInput] = useState('')
@@ -172,39 +174,23 @@ export const CustomAddressModal: FC<Props> = ({
       trigger={null}
       open={open}
       onOpenChange={onOpenChange}
-      css={{
-        overflow: 'hidden'
-      }}
+      className="relay:overflow-hidden"
     >
       <Flex
         direction="column"
-        css={{
-          width: '100%',
-          height: '100%',
-          gap: '4',
-          sm: {
-            width: 386
-          }
-        }}
+        className="relay:w-full relay:h-full relay:gap-4 relay:sm:w-[386px]"
       >
         <Text style="h6">To Address</Text>
-        <Flex direction="column" css={{ gap: '2', position: 'relative' }}>
+        <Flex direction="column" className="relay:gap-2 relay:relative">
           <Flex
-            css={{
-              position: 'relative',
-              display: 'inline-block'
-            }}
+            className="relay:relative relay:w-full"
           >
             <Input
               type="text"
               inputMode="text"
               autoComplete="off"
               autoCorrect="off"
-              className="ph-no-capture"
-              css={{
-                width: '100%',
-                height: 48
-              }}
+              className="ph-no-capture relay:w-full relay:h-12"
               inputStyle={{
                 paddingRight: input.length > 0 ? '42px' : '16px'
               }}
@@ -226,23 +212,7 @@ export const CustomAddressModal: FC<Props> = ({
               <Button
                 color="ghost"
                 size="none"
-                css={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: '24px',
-                  height: '24px',
-                  minWidth: '24px',
-                  minHeight: '24px',
-                  padding: '0',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'gray3',
-                  color: 'gray8'
-                }}
+                className="relay:absolute relay:right-[8px] relay:top-1/2 relay:-translate-y-1/2 relay:!w-[24px] relay:!h-[24px] relay:!min-w-0 relay:!min-h-0 relay:!leading-none relay:p-0 relay:rounded relay:flex relay:items-center relay:justify-center relay:bg-[var(--relay-colors-gray3)] relay:!text-[color:var(--relay-colors-gray8)]"
                 onMouseDown={(e) => {
                   e.preventDefault() // Prevent input from losing focus
                 }}
@@ -254,13 +224,9 @@ export const CustomAddressModal: FC<Props> = ({
               </Button>
             )}
             {isLoading && (
-              <LoadingSpinner
-                css={{
-                  right: 2,
-                  top: 3,
-                  position: 'absolute'
-                }}
-              />
+              <div className="relay:absolute relay:right-2 relay:top-[12px]">
+                <LoadingSpinner />
+              </div>
             )}
           </Flex>
           {isLighterError ? (
@@ -282,7 +248,7 @@ export const CustomAddressModal: FC<Props> = ({
 
           {didResolveLighterFromEvm && resolvedLighterIndex ? (
             <Flex
-              css={{ bg: 'green2', p: '2', borderRadius: 8, gap: '2' }}
+              className="relay:bg-[var(--relay-colors-green2)] relay:p-2 relay:rounded-lg relay:gap-2"
               align="center"
             >
               <FontAwesomeIcon
@@ -299,7 +265,7 @@ export const CustomAddressModal: FC<Props> = ({
 
           {!connectedAddressSet && address && isConnected ? (
             <Flex
-              css={{ bg: 'amber2', p: '2', borderRadius: 8, gap: '2' }}
+              className="relay:bg-[var(--relay-colors-amber2)] relay:p-2 relay:rounded-lg relay:gap-2"
               align="center"
             >
               <FontAwesomeIcon
@@ -307,7 +273,7 @@ export const CustomAddressModal: FC<Props> = ({
                 color="#FFA01C"
                 width={16}
                 height={16}
-                style={{ flexShrink: 0 }}
+                className="relay:shrink-0"
               />
               <Text style="subtitle3" color="warning">
                 This isn't the connected wallet address. Please ensure that the
@@ -319,7 +285,7 @@ export const CustomAddressModal: FC<Props> = ({
           {!multiWalletSupportEnabled && isConnected ? (
             connectedAddressSet ? (
               <Flex
-                css={{ bg: 'green2', p: '2', borderRadius: 8, gap: '2' }}
+                className="relay:bg-[var(--relay-colors-green2)] relay:p-2 relay:rounded-lg relay:gap-2"
                 align="center"
               >
                 <FontAwesomeIcon
@@ -345,21 +311,16 @@ export const CustomAddressModal: FC<Props> = ({
           {filteredRecentCustomAddresses.length > 0 ? (
             <>
               <Text style="subtitle2">Recent addresses</Text>
-              <Flex css={{ gap: '2', flexWrap: 'wrap' }} align="center">
+              <Flex className="relay:gap-2 relay:flex-wrap" align="center">
                 {filteredRecentCustomAddresses.map((address) => (
                   <Pill
                     key={address}
                     color="transparent"
                     bordered
                     radius="squared"
-                    css={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      cursor: 'pointer',
-                      px: '8px'
-                    }}
+                    className="relay:flex relay:items-center relay:gap-[6px] relay:cursor-pointer relay:px-2"
                     onClick={() => {
+                      haptic('light')
                       onConfirmed(address)
                       onOpenChange(false)
                       onAnalyticEvent?.(EventNames.ADDRESS_MODAL_CONFIRMED, {
@@ -386,7 +347,7 @@ export const CustomAddressModal: FC<Props> = ({
           disabled={
             isLoading || !isValidAddress(toChain?.vmType, address, toChain?.id)
           }
-          css={{ justifyContent: 'center' }}
+          className="relay:justify-center"
           onClick={() => {
             if (isValidAddress(toChain?.vmType, address, toChain?.id)) {
               // Save the address to custom addresses if it's not a connected wallet address
@@ -398,6 +359,7 @@ export const CustomAddressModal: FC<Props> = ({
                 setRecentCustomAddresses(getCustomAddresses())
               }
 
+              haptic('light')
               onConfirmed(address)
               onAnalyticEvent?.(EventNames.ADDRESS_MODAL_CONFIRMED, {
                 address: address,

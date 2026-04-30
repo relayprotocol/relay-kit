@@ -15,8 +15,13 @@ import {
   LogLevel
 } from '@relayprotocol/relay-sdk'
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
+import {
+  adaptLighterWallet,
+  LIGHTER_CHAIN_ID
+} from '@relayprotocol/relay-lighter-wallet-adapter'
 import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
 import { isSuiWallet } from '@dynamic-labs/sui'
+import { BaseApiSwitcher } from 'components/navbar/BaseApiSwitcher'
 
 const SwapActionPage: NextPage = () => {
   const client = useRelayClient()
@@ -62,6 +67,7 @@ const SwapActionPage: NextPage = () => {
       }}
     >
       <ConnectButton />
+      <BaseApiSwitcher />
       <div
         style={{
           display: 'flex',
@@ -234,6 +240,26 @@ const SwapActionPage: NextPage = () => {
                   connection,
                   signer.signAndSendTransaction
                 )
+              } else if (
+                quoteParams.originChainId === LIGHTER_CHAIN_ID &&
+                isEthereumWallet(primaryWallet)
+              ) {
+                // Lighter is account-based and needs a per-session API key.
+                // The adapter handles the full lifecycle internally — the
+                // user sees a `changeApiKey` signature prompt on the first
+                // swap, then transfers sign normally.
+                //
+                // `apiUrl: '/api/lighter'` routes all Lighter API traffic
+                // through our server-side proxy (`pages/api/lighter/[...path]`)
+                const walletClient = await primaryWallet.getWalletClient()
+                const account = walletClient.account
+                if (!account) throw 'Missing EVM account for Lighter adapter'
+                executionWallet = adaptLighterWallet({
+                  l1Address: account.address,
+                  signL1Message: (message) =>
+                    walletClient.signMessage({ account, message }),
+                  apiUrl: '/api/lighter'
+                })
               } else if (isEthereumWallet(primaryWallet)) {
                 const walletClient = await primaryWallet.getWalletClient()
                 executionWallet = adaptViemWallet(walletClient)

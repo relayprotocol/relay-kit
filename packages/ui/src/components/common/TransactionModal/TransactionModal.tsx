@@ -14,6 +14,7 @@ import { Modal } from '../Modal.js'
 import { Flex, Text } from '../../primitives/index.js'
 import { ErrorStep } from './steps/ErrorStep.js'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { SwapConfirmationStep } from './steps/SwapConfirmationStep.js'
 import { type Token } from '../../../types/index.js'
 import { SwapSuccessStep } from './steps/SwapSuccessStep.js'
@@ -64,6 +65,7 @@ export const TransactionModal: FC<TransactionModalProps> = (
     onSuccess,
     onSwapValidating
   } = transactionModalProps
+  const haptic = useHapticEvent()
 
   useEffect(() => {
     onOpenChange(open)
@@ -115,6 +117,7 @@ export const TransactionModal: FC<TransactionModalProps> = (
           extraData.relayer_fee = parseFloat(fees.relayer.amountFormatted)
         }
         const quoteId = steps ? extractQuoteId(steps) : undefined
+        haptic('success')
         onAnalyticEvent?.(EventNames.SWAP_SUCCESS, {
           ...extraData,
           chain_id_in: fromToken?.chainId,
@@ -203,6 +206,7 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
   linkedWallets,
   currentCheckStatus
 }) => {
+  const haptic = useHapticEvent()
   useEffect(() => {
     if (!open) {
       if (currentStep) {
@@ -235,14 +239,7 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
       trigger={null}
       open={open}
       onOpenChange={onOpenChange}
-      css={{
-        overflow: 'hidden',
-        p: '4',
-        maxWidth: '412px !important',
-        '@media(max-width: 520px)': {
-          maxWidth: 'unset !important'
-        }
-      }}
+      className="relay:overflow-hidden relay:p-4 relay:!max-w-[412px] max-[520px]:!relay-max-w-[unset]"
       showCloseButton={true}
       onPointerDownOutside={(e) => {
         const dynamicModalElements = Array.from(
@@ -259,13 +256,9 @@ const InnerTransactionModal: FC<InnerTransactionModalProps> = ({
     >
       <Flex
         direction="column"
-        css={{
-          width: '100%',
-          height: '100%',
-          gap: '3'
-        }}
+        className="relay:w-full relay:h-full relay:gap-3"
       >
-        <Text style="h6" css={{ mb: 8 }}>
+        <Text style="h6" className="relay:mb-2">
           Transaction Details
         </Text>
         {progressStep === TransactionProgressStep.Confirmation ||

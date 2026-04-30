@@ -7,7 +7,8 @@ import type {
   paths,
   SvmReceipt,
   SuiReceipt,
-  TronReceipt
+  TronReceipt,
+  LvmReceipt
 } from '../types/index.js'
 import { axios } from '../utils/axios.js'
 import type {
@@ -51,7 +52,12 @@ export async function sendTransactionSafely(
   isValidating?: (res?: AxiosResponse<any, any>) => void,
   details?: Execute['details'],
   setReceipt?: (
-    receipt: TransactionReceipt | SvmReceipt | SuiReceipt | TronReceipt
+    receipt:
+      | TransactionReceipt
+      | SvmReceipt
+      | SuiReceipt
+      | TronReceipt
+      | LvmReceipt
   ) => void,
   setCheckStatus?: (
     checkStatus: NonNullable<Execute['steps'][0]['items']>[0]['checkStatus']
@@ -80,6 +86,7 @@ export async function sendTransactionSafely(
     | SvmReceipt
     | SuiReceipt
     | TronReceipt
+    | LvmReceipt
     | undefined
   let transactionCancelled = false
   let confirmationError = false
@@ -574,6 +581,12 @@ const postSameChainTransactionToSolver = async ({
             LogLevel.Verbose
           )
         })
+        .catch((e) => {
+          getClient()?.log(
+            ['Failed to post same chain transaction to solver', e],
+            LogLevel.Warn
+          )
+        })
     } catch (e) {
       getClient()?.log(
         ['Failed to post same chain transaction to solver', e],
@@ -626,6 +639,12 @@ const postTransactionToSolver = async ({
           getClient()?.log(
             ['Transaction notified to the solver'],
             LogLevel.Verbose
+          )
+        })
+        .catch((e) => {
+          getClient()?.log(
+            ['Failed to post transaction to solver', e],
+            LogLevel.Warn
           )
         })
     } catch (e) {

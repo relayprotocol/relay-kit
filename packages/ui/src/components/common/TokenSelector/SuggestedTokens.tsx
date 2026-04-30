@@ -45,15 +45,7 @@ export const SuggestedTokens: FC<SuggestedTokensProps> = ({
   }
 
   return (
-    <Flex
-      css={{
-        width: '100%',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1',
-        my: '2'
-      }}
-    >
+    <Flex className="relay:w-full relay:items-center relay:flex-wrap relay:gap-1 relay:my-2">
       {suggestedTokens.map((token, idx) => (
         <AccessibleListItem
           asChild
@@ -69,32 +61,8 @@ export const SuggestedTokens: FC<SuggestedTokensProps> = ({
             }}
             color="ghost"
             size="none"
-            css={{
-              display: 'flex',
-              flexShrink: 0,
-              cursor: 'pointer',
-              outline: 'none',
-              p: '1',
-              pr: '2',
-              gap: 1,
-              alignItems: 'center',
-              '--borderColor': 'colors.gray5',
-              border: '1px solid var(--borderColor)',
-              borderRadius: '100px',
-              '--focusColor': 'colors.focus-color',
-              _focusVisible: {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              },
-              '&[data-state="on"]': {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              },
-              _active: {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              },
-              _focusWithin: {
-                boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-              }
-            }}
+            corners="pill"
+            className="relay:flex relay:shrink-0 relay:cursor-pointer relay:outline-none relay:py-1 relay:pl-1 relay:pr-2 relay:gap-1 relay:items-center relay:border relay:border-solid relay:border-[var(--relay-colors-gray5)] relay:focus-inset relay:transition-none"
           >
             <ChainTokenIcon
               chainId={token.chainId}

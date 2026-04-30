@@ -4,6 +4,10 @@ import {
   type DefaultError,
   type QueryKey
 } from '@tanstack/react-query'
+import {
+  isUnifiedMode,
+  type HyperliquidAccountMode
+} from './useHyperliquidAccountMode.js'
 
 export type HyperliquidMarginSummary = {
   accountValue?: string
@@ -41,11 +45,14 @@ type QueryType = typeof useQuery<
 >
 type QueryOptions = Parameters<QueryType>['0']
 
+const HYPERLIQUID_API = 'https://api.hyperliquid.xyz/info'
+
 // Perps USDC uses zero address
 const PERPS_USDC_ADDRESS = '0x00000000000000000000000000000000'
 
 // Map currency addresses to Hyperliquid spot coin symbols and decimals
 const SPOT_TOKEN_CONFIG: Record<string, { coin: string; decimals: number }> = {
+  '0x6d1e7cde53ba9467b783cb7c530ce054': { coin: 'USDC', decimals: 8 },
   '0x2e6d84f2d7ca82e6581e03523e4389f7': { coin: 'USDe', decimals: 2 },
   '0x54e00a5988577cb0b0c9ab0cb6ef7f4b': { coin: 'USDH', decimals: 2 }
 }
@@ -53,14 +60,16 @@ const SPOT_TOKEN_CONFIG: Record<string, { coin: string; decimals: number }> = {
 export default (
   address?: string,
   currency: string = PERPS_USDC_ADDRESS,
+  accountMode?: HyperliquidAccountMode,
   queryOptions?: Partial<QueryOptions>
 ) => {
   const isEvmAddress = isAddress(address ?? '')
   const isPerps = currency === PERPS_USDC_ADDRESS
   const spotConfig = SPOT_TOKEN_CONFIG[currency.toLowerCase()]
   const decimals = isPerps ? 8 : (spotConfig?.decimals ?? 2)
+  const isUnified = isUnifiedMode(accountMode)
 
-  const queryKey = ['useHyperliquidBalance', address, currency]
+  const queryKey = ['useHyperliquidBalance', address, currency, accountMode]
 
   const response = (useQuery as QueryType)({
     queryKey,
@@ -69,9 +78,9 @@ export default (
         return undefined
       }
 
-      if (isPerps) {
-        // Fetch perps balance
-        const res = await fetch('https://api.hyperliquid.xyz/info', {
+      if (isPerps && !isUnified) {
+        // Non-unified perps USDC: use clearinghouseState
+        const res = await fetch(HYPERLIQUID_API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -81,9 +90,10 @@ export default (
         })
         const data = (await res.json()) as HyperLiquidPerpsResponse
         return data?.withdrawable
-      } else if (spotConfig) {
-        // Fetch spot balances
-        const res = await fetch('https://api.hyperliquid.xyz/info', {
+      } else {
+        // Spot tokens OR perps USDC in unified/portfolio mode:
+        // use spotClearinghouseState
+        const res = await fetch(HYPERLIQUID_API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -92,15 +102,15 @@ export default (
           })
         })
         const data = (await res.json()) as HyperliquidSpotResponse
-        // Find the balance matching the coin symbol
+        const coin = isPerps ? 'USDC' : spotConfig?.coin
+        if (!coin) return undefined
         const tokenBalance = data?.balances?.find(
-          (b) => b.coin.toLowerCase() === spotConfig.coin.toLowerCase()
+          (b) => b.coin.toLowerCase() === coin.toLowerCase()
         )
         return tokenBalance?.total
       }
-      return undefined
     },
-    enabled: address !== undefined && isEvmAddress,
+    enabled: address !== undefined && isEvmAddress && accountMode !== undefined,
     ...queryOptions
   })
 

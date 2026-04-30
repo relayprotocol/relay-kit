@@ -5,12 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { type Token } from '../../../../types/index.js'
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
 import type { Execute, RelayChain } from '@relayprotocol/relay-sdk'
-import { faCheck } from '@fortawesome/free-solid-svg-icons'
+import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { formatTransactionSteps } from '../../../../utils/steps.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
 import { StepIcon } from '../../StepIcon.js'
+import { cn } from '../../../../utils/cn.js'
 
 type SwapConfirmationStepProps = {
   fromToken?: Token
@@ -80,68 +81,49 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
         align="center"
         justify="between"
         direction="column"
-        css={{ flexShrink: 0, bp500: { flexDirection: 'row' } }}
+        className="relay:shrink-0 relay:bp500:flex-row"
       >
         <Flex
           direction="row"
-          css={{
-            backgroundColor: 'subtle-background-color',
-            p: '12px 16px',
-            borderRadius: 12,
-            gap: 2,
-            width: '100%',
-            alignItems: 'center',
-            bp500: { flexDirection: 'column', gap: 1, alignItems: 'flex-start' }
-          }}
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-2 relay:w-full relay:items-center relay:bp500:flex-col relay:bp500:gap-1 relay:bp500:items-start relay:py-[12px] relay:px-[16px]"
         >
           <ChainTokenIcon
             chainId={fromToken?.chainId}
             tokenlogoURI={fromToken?.logoURI}
             tokenSymbol={fromToken?.symbol}
-            css={{ height: 32, width: 32 }}
+            className="relay:h-[32px] relay:w-[32px]"
           />
-          <Flex direction="column" align="start" css={{ gap: '1' }}>
+          <Flex direction="column" align="start" className="relay:gap-1">
             <Text color="subtle" style="subtitle2">
               {fromChain?.displayName}
             </Text>
-            <Text style="h6" ellipsify css={{ lineHeight: '20px' }}>
+            <Text style="h6" ellipsify className="relay:leading-[20px]">
               {fromAmountFormatted} {fromToken?.symbol}
             </Text>
           </Flex>
         </Flex>
         <Text
           style="body1"
-          css={{
-            color: 'gray9',
-            p: '0 12px',
-            bp400Down: { transform: 'rotate(90deg)', p: '12px 0' }
-          }}
+          color="subtle"
+          className="relay:px-3 relay:py-0 relay:bp400Down:rotate-90 relay:bp400Down:py-3 relay:bp400Down:px-0"
         >
           <FontAwesomeIcon icon={faArrowRight} width={16} />
         </Text>
         <Flex
           direction="row"
-          css={{
-            backgroundColor: 'subtle-background-color',
-            p: '12px 16px',
-            borderRadius: 12,
-            gap: 2,
-            width: '100%',
-            alignItems: 'center',
-            bp500: { flexDirection: 'column', gap: 1, alignItems: 'flex-start' }
-          }}
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-2 relay:w-full relay:items-center relay:bp500:flex-col relay:bp500:gap-1 relay:bp500:items-start relay:py-[12px] relay:px-[16px]"
         >
           <ChainTokenIcon
             chainId={toToken?.chainId}
             tokenlogoURI={toToken?.logoURI}
             tokenSymbol={toToken?.symbol}
-            css={{ height: 32, width: 32 }}
+            className="relay:h-[32px] relay:w-[32px]"
           />
-          <Flex direction="column" align="start" css={{ gap: '1' }}>
+          <Flex direction="column" align="start" className="relay:gap-1">
             <Text color="subtle" style="subtitle2">
               {toChain?.displayName}
             </Text>
-            <Text style="h6" ellipsify css={{ lineHeight: '20px' }}>
+            <Text style="h6" ellipsify className="relay:leading-[20px]">
               {toAmountFormatted} {toToken?.symbol}
             </Text>
           </Flex>
@@ -151,14 +133,7 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
         <Flex
           direction="row"
           justify="between"
-          css={{
-            backgroundColor: 'subtle-background-color',
-            p: '12px 16px',
-            borderRadius: 12,
-            gap: 2,
-            width: '100%',
-            alignItems: 'center'
-          }}
+          className="relay:bg-[var(--relay-colors-subtle-background-color)] relay:rounded-[12px] relay:gap-2 relay:w-full relay:items-center relay:py-[12px] relay:px-[16px]"
         >
           <Text style="subtitle2" color="subtle">
             Additional Gas
@@ -170,28 +145,15 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
       ) : null}
       <Flex
         direction="column"
-        css={{
-          '--borderColor': 'colors.gray3',
-          border: '1px solid var(--borderColor)',
-          borderRadius: 12,
-          px: '3',
-          py: '2',
-          gap: '1'
-        }}
+        className="relay:border relay:border-solid relay:border-[var(--relay-colors-gray3)] relay:rounded-[12px] relay:px-3 relay:py-2 relay:gap-1"
       >
         {formattedSteps.map((step, index) => (
           <Box key={step.id}>
             <StepRow {...step} />
 
             {index !== formattedSteps.length - 1 && (
-              <Box css={{ height: '14px', pl: '12px', marginTop: '4px' }}>
-                <Box
-                  css={{
-                    width: '1px',
-                    height: '100%',
-                    backgroundColor: 'gray7'
-                  }}
-                />
+              <Box className="relay:pl-3 relay:h-[14px] relay:mt-[4px]">
+                <Box className="relay:h-full relay:w-px relay:bg-[var(--relay-colors-gray7)]" />
               </Box>
             )}
           </Box>
@@ -231,37 +193,30 @@ export const StepRow: FC<StepRowProps> = ({
   const relayClient = useRelayClient()
   const chains = relayClient?.chains
   return (
-    <Flex align="center" justify="between" css={{ width: '100%', gap: '3' }}>
-      <Flex align="center" css={{ gap: '3', height: 40 }}>
+    <Flex align="center" justify="between" className="relay:w-full relay:gap-3">
+      <Flex align="center" className="relay:gap-3 relay:h-[40px]">
         <Flex
           data-active={isActive && !isCompleted}
-          css={{
-            height: 30,
-            width: 30,
-            borderRadius: 9999999,
-            flexShrink: 0,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: isCompleted
-              ? 'green3'
+          className={cn(
+            'relay:shrink-0 relay:items-center relay:justify-center relay:rounded-full relay:h-[30px] relay:w-[30px]',
+            isCompleted
+              ? 'relay:bg-[var(--relay-colors-green3)]'
               : isActive
-                ? 'primary6'
-                : 'gray5',
-            color:
-              isActive && !isCompleted
-                ? 'primary11'
-                : isCompleted
-                  ? 'green11'
-                  : isActive
-                    ? 'primary11'
-                    : 'gray9',
+                ? 'relay:bg-[var(--relay-colors-primary6)]'
+                : 'relay:bg-[var(--relay-colors-gray5)]'
+          )}
+          style={{
+            color: isActive && !isCompleted
+              ? 'var(--relay-colors-primary11)'
+              : isCompleted
+                ? 'var(--relay-colors-green11)'
+                : isActive
+                  ? 'var(--relay-colors-primary11)'
+                  : 'var(--relay-colors-gray9)',
             animation:
               isActive && !isCompleted
-                ? 'pulse-shadow 1s infinite alternate-reverse'
-                : 'none',
-            '& > *': {
-              color: isCompleted ? 'green11' : isActive ? 'primary11' : 'gray9'
-            }
+                ? 'relay-pulse-shadow 1s infinite alternate-reverse'
+                : 'none'
           }}
         >
           {isCompleted ? (
@@ -270,13 +225,13 @@ export const StepRow: FC<StepRowProps> = ({
             <StepIcon stepId={id} chainId={chainId} />
           )}
         </Flex>
-        <Flex direction="column" css={{ gap: '2px' }}>
+        <Flex direction="column" className="relay:gap-[2px]">
           <Text style="subtitle2" color={isActive ? undefined : 'subtle'}>
             {action}
           </Text>
 
           {subText && (
-            <Flex align="center" css={{ gap: '6px' }}>
+            <Flex align="center" className="relay:gap-[6px]">
               {(() => {
                 // Handle "Success: txhash" case with split colors and link
                 if (subText.startsWith('Success:')) {
@@ -289,8 +244,11 @@ export const StepRow: FC<StepRowProps> = ({
                       : undefined
 
                   return (
-                    <Flex align="center" css={{ gap: '4px' }}>
-                      <Text style="subtitle3" css={{ color: 'green11' }}>
+                    <Flex align="center" className="relay:gap-[4px]">
+                      <Text
+                        style="subtitle3"
+                        color="green"
+                      >
                         {successText}:
                       </Text>
                       {hashPart &&
@@ -299,20 +257,20 @@ export const StepRow: FC<StepRowProps> = ({
                             href={txUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{
-                              color: 'var(--colors-primary11)',
-                              textDecoration: 'none'
-                            }}
+                            className="relay:no-underline"
                           >
                             <Text
                               style="subtitle3"
-                              css={{ color: 'primary11' }}
+                              color="primary"
                             >
                               {hashPart}
                             </Text>
                           </a>
                         ) : (
-                          <Text style="subtitle3" css={{ color: 'primary11' }}>
+                          <Text
+                            style="subtitle3"
+                            color="primary"
+                          >
                             {hashPart}
                           </Text>
                         ))}
@@ -335,8 +293,11 @@ export const StepRow: FC<StepRowProps> = ({
                       : undefined
 
                   return (
-                    <Flex align="center" css={{ gap: '4px' }}>
-                      <Text style="subtitle3" css={{ color: 'primary11' }}>
+                    <Flex align="center" className="relay:gap-[4px]">
+                      <Text
+                        style="subtitle3"
+                        color="primary"
+                      >
                         {labelText}:
                       </Text>
                       {hashPart &&
@@ -345,20 +306,20 @@ export const StepRow: FC<StepRowProps> = ({
                             href={txUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{
-                              color: 'var(--colors-primary11)',
-                              textDecoration: 'none'
-                            }}
+                            className="relay:no-underline"
                           >
                             <Text
                               style="subtitle3"
-                              css={{ color: 'primary11' }}
+                              color="primary"
                             >
                               {hashPart}
                             </Text>
                           </a>
                         ) : (
-                          <Text style="subtitle3" css={{ color: 'primary11' }}>
+                          <Text
+                            style="subtitle3"
+                            color="primary"
+                          >
                             {hashPart}
                           </Text>
                         ))}
@@ -369,23 +330,22 @@ export const StepRow: FC<StepRowProps> = ({
                 return (
                   <Text
                     style="subtitle3"
-                    css={{
-                      color:
-                        subTextColor === 'slate10'
-                          ? 'slate10'
-                          : subTextColor === 'subtle'
-                            ? 'text-subtle'
-                            : subTextColor === 'green11'
-                              ? 'green11'
-                              : 'primary11'
-                    }}
+                    color={
+                      subTextColor === 'slate10'
+                        ? 'slate'
+                        : subTextColor === 'subtle'
+                          ? 'subtle'
+                          : subTextColor === 'green11'
+                            ? 'green'
+                            : 'primary'
+                    }
                   >
                     {subText}
                   </Text>
                 )
               })()}
               {showSubTextSpinner && (
-                <LoadingSpinner css={{ height: 12, width: 12 }} />
+                <LoadingSpinner className="relay:h-3 relay:w-3" />
               )}
             </Flex>
           )}

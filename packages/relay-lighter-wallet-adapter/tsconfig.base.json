@@ -1,0 +1,27 @@
+{
+  // This tsconfig file contains the shared config for the build (tsconfig.build.json) and type checking (tsconfig.json) config.
+  "include": [],
+  "compilerOptions": {
+    "incremental": true,
+    "strict": true,
+    "useDefineForClassFields": true,
+    "noFallthroughCasesInSwitch": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "checkJs": false,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": false,
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
+    "importHelpers": true,
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "target": "ES2021",
+    "lib": ["ES2022", "DOM"],
+    "skipLibCheck": true
+  }
+}

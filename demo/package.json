@@ -31,6 +31,7 @@
     "@relayprotocol/relay-bitcoin-wallet-adapter": "workspace:*",
     "@relayprotocol/relay-kit-hooks": "workspace:*",
     "@relayprotocol/relay-kit-ui": "workspace:*",
+    "@relayprotocol/relay-lighter-wallet-adapter": "workspace:*",
     "@relayprotocol/relay-sdk": "workspace:*",
     "@relayprotocol/relay-sui-wallet-adapter": "workspace:*",
     "@relayprotocol/relay-svm-wallet-adapter": "workspace:*",
@@ -47,7 +48,8 @@
     "tronweb": "^6.0.4",
     "usehooks-ts": "^3.1.0",
     "viem": ">=2.26.0",
-    "wagmi": "^2.15.6"
+    "wagmi": "^2.15.6",
+    "web-haptics": "^0.0.6"
   },
   "devDependencies": {
     "@dynamic-labs/types": "4.10.4",

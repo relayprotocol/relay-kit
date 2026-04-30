@@ -4,6 +4,7 @@ export { defaultTheme } from './themes/index.js'
 
 //Providers
 export { RelayKitProvider } from './providers/RelayKitProvider.js'
+export type { HapticEventType } from './providers/RelayKitProvider.js'
 export { RelayClientProvider } from './providers/RelayClientProvider.js'
 
 //hooks

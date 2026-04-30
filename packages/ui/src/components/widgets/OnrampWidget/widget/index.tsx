@@ -4,12 +4,10 @@ import { Box, Button, Flex, Text } from '../../../primitives/index.js'
 import AmountInput from '../../../common/AmountInput.js'
 import { useCallback, useContext, useEffect, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faArrowDownLong,
-  faArrowUpLong,
-  faClipboard,
-  faCreditCard
-} from '@fortawesome/free-solid-svg-icons'
+import { faArrowDownLong } from '@fortawesome/free-solid-svg-icons/faArrowDownLong'
+import { faArrowUpLong } from '@fortawesome/free-solid-svg-icons/faArrowUpLong'
+import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
+import { faCreditCard } from '@fortawesome/free-solid-svg-icons/faCreditCard'
 import TokenSelector from '../../../common/TokenSelector/TokenSelector.js'
 import { EventNames } from '../../../../constants/events.js'
 import { TokenTrigger } from '../../../common/TokenSelector/triggers/TokenTrigger.js'
@@ -21,7 +19,10 @@ import { useAccount } from 'wagmi'
 import { OnrampModal } from '../modals/OnrampModal.js'
 import { formatBN } from '../../../../utils/numbers.js'
 import { findSupportedWallet } from '../../../../utils/address.js'
-import { ProviderOptionsContext } from '../../../../providers/RelayKitProvider.js'
+import {
+  ProviderOptionsContext,
+  useHapticEvent
+} from '../../../../providers/RelayKitProvider.js'
 
 type BaseOnrampWidgetProps = {
   defaultWalletAddress?: string
@@ -94,6 +95,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
   const [onrampModalOpen, setOnrampModalOpen] = useState(false)
   const { isConnected } = useAccount()
   const providerOptionsContext = useContext(ProviderOptionsContext)
+  const haptic = useHapticEvent()
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
 
   return (
@@ -199,35 +201,20 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
 
         return (
           <div
-            className="relay-kit-reset"
-            style={{ maxWidth: 408, minWidth: 320, width: '100%' }}
+            className="relay-kit-reset relay:max-w-[408px] relay:min-w-[320px] relay:w-full"
           >
             <Flex
               direction="column"
-              css={{
-                gap: '2',
-                border: 'widget-border',
-                width: '100%'
-              }}
+              className="relay:gap-2 relay:w-full relay:border-widget"
             >
               <Flex
                 direction="column"
-                css={{
-                  width: '100%',
-                  overflow: 'hidden',
-                  borderRadius: 'widget-card-border-radius',
-                  backgroundColor: 'widget-background',
-                  border: 'widget-card-border',
-                  mb: 'widget-card-section-gutter',
-                  px: '4',
-                  pt: '40px',
-                  pb: '24px'
-                }}
+                className="relay:w-full relay:overflow-hidden relay:px-4 relay:pt-[40px] relay:pb-[24px] relay:rounded-widget-card relay:bg-[var(--relay-colors-widget-background)] relay:border-widget-card relay:mb-[var(--relay-spacing-widget-card-section-gutter)]"
               >
                 <Text
                   style="subtitle2"
                   color="subtle"
-                  css={{ textAlign: 'center' }}
+                  className="relay:text-center"
                 >
                   Enter an amount
                 </Text>
@@ -333,7 +320,8 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                     }
                     input.style.caretColor = 'initial'
                   }}
-                  css={{
+                  className="relay:text-center relay:whitespace-pre"
+                  inputStyle={{
                     fontWeight: '700',
                     fontSize: 48,
                     lineHeight: '58px',
@@ -342,18 +330,12 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                       amount === '' || amountToToken === ''
                         ? '-36px'
                         : undefined,
-                    whiteSpace: 'pre',
-                    _placeholder: {
-                      color: 'text-subtle'
-                    }
+                    whiteSpace: 'pre'
                   }}
-                  containerCss={{
-                    mb: '2',
-                    width: '100%'
-                  }}
+                  containerClassName="relay:mb-2 relay:w-full"
                 />
                 {notEnoughFiat ? (
-                  <Text color="red" css={{ mb: 24, textAlign: 'center' }}>
+                  <Text color="red" className="relay:mb-[24px] relay:text-center">
                     Minimum amount is{' '}
                     {displayCurrency && minAmountCurrency
                       ? `${minAmountCurrency} ${token.symbol}`
@@ -361,15 +343,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   </Text>
                 ) : undefined}
                 <button
-                  style={{
-                    gap: '8px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: '16px',
-                    alignSelf: 'center'
-                  }}
+                  className="relay:gap-2 relay:cursor-pointer relay:flex relay:items-center relay:justify-center relay:mb-[16px] relay:self-center"
                   onClick={() => {
                     const _displayCurrency = !displayCurrency
                     setDisplayCurrency(_displayCurrency)
@@ -391,16 +365,14 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                       : `${amountToTokenFormatted} ${token.symbol}`}
                   </Text>
                   <Flex
-                    css={{
-                      color: 'gray8'
-                    }}
+                    className="relay:text-[color:var(--relay-colors-gray8)]"
                   >
                     <FontAwesomeIcon
-                      style={{ height: 14 }}
+                      className="relay:h-[14px]"
                       icon={faArrowUpLong}
                     />
                     <FontAwesomeIcon
-                      style={{ height: 14 }}
+                      className="relay:h-[14px]"
                       icon={faArrowDownLong}
                     />
                   </Flex>
@@ -419,38 +391,19 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   context="to"
                   trigger={
                     <div
-                      style={{
-                        width: 'max-content',
-                        margin: '0 auto',
-                        marginBottom: '16px'
-                      }}
+                      className="relay:w-max relay:mx-auto relay:mb-[16px]"
                       data-testid="onramp-token-select-button"
                     >
                       <TokenTrigger token={token} />
                     </div>
                   }
                 />
-                <Flex css={{ gap: '2', margin: '0 auto' }}>
+                <Flex className="relay:gap-2 relay:mx-auto">
                   <Button
                     color="white"
                     corners="pill"
-                    css={{
-                      minHeight: 28,
-                      px: 3,
-                      py: 1,
-                      _light: {
-                        filter:
-                          amount === '100' && !displayCurrency
-                            ? 'brightness(97%)'
-                            : undefined
-                      },
-                      _dark: {
-                        filter:
-                          amount === '100' && !displayCurrency
-                            ? 'brightness(130%)'
-                            : undefined
-                      }
-                    }}
+                    size="none"
+                    className="relay:h-[30px] relay:px-[14px] relay:py-[4px] relay:text-[14px]"
                     onClick={() => {
                       setDisplayCurrency(false)
                       setInputValue('100', false)
@@ -461,23 +414,8 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   <Button
                     color="white"
                     corners="pill"
-                    css={{
-                      minHeight: 28,
-                      px: 3,
-                      py: 1,
-                      _light: {
-                        filter:
-                          amount === '300' && !displayCurrency
-                            ? 'brightness(97%)'
-                            : undefined
-                      },
-                      _dark: {
-                        filter:
-                          amount === '300' && !displayCurrency
-                            ? 'brightness(130%)'
-                            : undefined
-                      }
-                    }}
+                    size="none"
+                    className="relay:h-[30px] relay:px-[14px] relay:py-[4px] relay:text-[14px]"
                     onClick={() => {
                       setDisplayCurrency(false)
                       setInputValue('300', false)
@@ -488,23 +426,8 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   <Button
                     color="white"
                     corners="pill"
-                    css={{
-                      minHeight: 28,
-                      px: 3,
-                      py: 1,
-                      _light: {
-                        filter:
-                          amount === '1000' && !displayCurrency
-                            ? 'brightness(97%)'
-                            : undefined
-                      },
-                      _dark: {
-                        filter:
-                          amount === '1000' && !displayCurrency
-                            ? 'brightness(130%)'
-                            : undefined
-                      }
-                    }}
+                    size="none"
+                    className="relay:h-[30px] relay:px-[14px] relay:py-[4px] relay:text-[14px]"
                     onClick={() => {
                       setDisplayCurrency(false)
                       setInputValue('1000', false)
@@ -517,17 +440,9 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
             </Flex>
             <Flex
               direction="column"
-              css={{
-                width: '100%',
-                overflow: 'hidden',
-                borderRadius: 'widget-card-border-radius',
-                backgroundColor: 'widget-background',
-                border: 'widget-card-border',
-                mb: 'widget-card-section-gutter',
-                p: '4'
-              }}
+              className="relay:w-full relay:overflow-hidden relay:p-4 relay:rounded-widget-card relay:bg-[var(--relay-colors-widget-background)] relay:border-widget-card relay:mb-[var(--relay-spacing-widget-card-section-gutter)]"
             >
-              <Flex justify="between" align="center" css={{ mb: '2' }}>
+              <Flex justify="between" align="center" className="relay:mb-2">
                 <Text color="subtle" style="subtitle2">
                   Recipient
                 </Text>
@@ -571,19 +486,14 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                     }
                     corners="pill"
                     size="none"
-                    css={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      px: '2',
-                      py: '1'
-                    }}
+                    className="relay:flex relay:items-center relay:px-2 relay:py-1"
                     onClick={() => {
                       setAddressModalOpen(true)
                       onAnalyticEvent?.(EventNames.SWAP_ADDRESS_MODAL_CLICKED)
                     }}
                   >
                     {isValidRecipient && !isRecipientLinked ? (
-                      <Box css={{ color: 'amber11' }}>
+                      <Box className="relay:text-[color:var(--relay-colors-amber11)]">
                         <FontAwesomeIcon
                           icon={faClipboard}
                           width={16}
@@ -593,12 +503,11 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                     ) : null}
                     <Text
                       style="subtitle2"
-                      css={{
-                        color:
-                          isValidRecipient && !isRecipientLinked
-                            ? 'amber11'
-                            : 'anchor-color'
-                      }}
+                      className={
+                        isValidRecipient && !isRecipientLinked
+                          ? 'relay:text-[color:var(--relay-colors-amber11)]'
+                          : 'relay:text-[color:var(--relay-colors-anchor-color)]'
+                      }
                     >
                       {!isValidRecipient ? `Enter Address` : toDisplayName}
                     </Text>
@@ -610,13 +519,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
                   Paying with
                 </Text>
                 <Flex
-                  css={{
-                    alignItems: 'center',
-                    gap: '2',
-                    ml: 'auto',
-                    mr: '2',
-                    color: 'gray9'
-                  }}
+                  className="relay:items-center relay:gap-2 relay:ml-auto relay:mr-2 relay:text-[color:var(--relay-colors-gray9)]"
                 >
                   <FontAwesomeIcon style={{ width: 16 }} icon={faCreditCard} />
                   <Text style="subtitle2">Card</Text>
@@ -631,9 +534,10 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
             </Flex>
             <Button
               cta={true}
-              css={{ width: '100%', justifyContent: 'center' }}
+              className="relay:w-full relay:justify-center"
               disabled={notEnoughFiat}
               onClick={() => {
+                haptic('medium')
                 if (!recipient && toChainWalletVMSupported) {
                   if (!linkedWallets || linkedWallets.length === 0) {
                     onConnectWallet?.()

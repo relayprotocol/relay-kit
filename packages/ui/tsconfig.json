@@ -9,9 +9,7 @@
       "~sdk/*": ["./src/*"],
       "@relayprotocol/relay-sdk": ["./packages/sdk/src"],
       "@relayprotocol/relay-kit-ui": ["./packages/ui/src"],
-      "@relayprotocol/relay-kit-hooks": ["./packages/hooks/src"],
-      "@relayprotocol/relay-design-system": ["./packages/design-system"],
-      "@relayprotocol/relay-design-system/OnrampWidget": ["./packages/ui/src/components/widgets/OnrampWidget"],
+      "@relayprotocol/relay-kit-hooks": ["./packages/hooks/src"]
     }
   },
   "watchOptions": {

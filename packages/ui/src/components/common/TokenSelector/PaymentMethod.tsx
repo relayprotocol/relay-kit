@@ -9,11 +9,9 @@ import {
 import { Flex, Text, Input, Box, Button } from '../../primitives/index.js'
 import { Modal } from '../Modal.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-  faMagnifyingGlass,
-  faFolderOpen,
-  faChevronLeft
-} from '@fortawesome/free-solid-svg-icons'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass'
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons/faFolderOpen'
+import { faChevronLeft } from '@fortawesome/free-solid-svg-icons/faChevronLeft'
 import type { Token } from '../../../types/index.js'
 import { type ChainFilterValue } from './ChainFilter.js'
 import useRelayClient from '../../../hooks/useRelayClient.js'
@@ -23,6 +21,7 @@ import { useMultiWalletBalances } from '../../../hooks/useMultiWalletBalances.js
 import { useMediaQuery } from 'usehooks-ts'
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
 import { EventNames } from '../../../constants/events.js'
+import { useHapticEvent } from '../../../providers/RelayKitProvider.js'
 import { UnverifiedTokenModal } from '../UnverifiedTokenModal.js'
 import { useEnhancedTokensList } from '../../../hooks/useEnhancedTokensList.js'
 import { TokenList } from './TokenList.js'
@@ -83,6 +82,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   onAnalyticEvent,
   onPaymentMethodOpenChange
 }) => {
+  const haptic = useHapticEvent()
   const relayClient = useRelayClient()
   const { chains: allRelayChains } = useInternalRelayChains()
 
@@ -418,6 +418,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 
   const handleTokenSelection = useCallback(
     (selectedToken: Token) => {
+      haptic('light')
       const isVerified = selectedToken.verified
       const direction = context === 'from' ? 'input' : 'output'
       let position = undefined
@@ -468,6 +469,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       onOpenChange(false)
     },
     [
+      haptic,
       setToken,
       onOpenChange,
       resetState,
@@ -494,51 +496,20 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
   const paymentMethodContent = (
     <Flex
       direction="column"
-      css={{
-        width: '100%',
-        height: '100%',
-        gap: '3',
-        overflowY: 'hidden',
-        minWidth: 0,
-        maxWidth: '100%'
-      }}
+      className="relay:w-full relay:h-full relay:gap-3 relay:overflow-y-hidden relay:min-w-0 relay:max-w-full"
     >
       {/* Header with back button */}
-      <Flex align="center" css={{ gap: '1' }}>
+      <Flex align="center" className="relay:gap-1">
         <Button
           color="ghost"
           size="none"
           onClick={() => onOpenChange(false)}
-          css={{
-            py: '1',
-            px: '0',
-            minWidth: 'auto',
-            color: 'gray9',
-            cursor: 'pointer',
-            borderRadius: 8,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1',
-            '--focusColor': 'colors.focus-color',
-            _focusVisible: {
-              boxShadow: 'inset 0 0 0 2px var(--focusColor)'
-            },
-            '@media(min-width: 660px)': {
-              p: '0'
-            }
-          }}
+          className="relay:py-1 relay:px-0 relay:min-w-[auto] relay:text-[color:var(--relay-colors-gray9)] relay:cursor-pointer relay:rounded-[8px] relay:flex relay:items-center relay:gap-1 relay:focus-visible:shadow-[inset_0_0_0_2px_var(--relay-colors-focus-color)] relay:min-[660px]:p-0"
         >
           <FontAwesomeIcon icon={faChevronLeft} width={20} height={20} />
           <Text
             style="subtitle1"
-            css={{
-              color: 'text-subtle',
-              '@media(min-width: 660px)': {
-                fontSize: '14px',
-                color: 'text-default',
-                lineHeight: '20px'
-              }
-            }}
+            className="relay:text-[color:var(--relay-colors-text-subtle)] relay:min-[660px]:text-[14px] relay:min-[660px]:text-[color:var(--relay-colors-text-default)] relay:min-[660px]:leading-[20px]"
           >
             {context === 'from' ? 'Pay with' : 'Sell to'}
           </Text>
@@ -546,13 +517,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       </Flex>
 
       <Flex
-        css={{
-          flex: 1,
-          gap: '3',
-          overflow: 'hidden',
-          minWidth: 0,
-          maxWidth: '100%'
-        }}
+        className="relay:flex-1 relay:gap-3 relay:overflow-hidden relay:min-w-0 relay:max-w-full"
       >
         {/* Main Token Content */}
         <AccessibleList
@@ -575,53 +540,29 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               handleTokenSelection(selectedToken)
             }
           }}
-          css={{
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            minWidth: 0,
-            maxWidth: '100%',
-            height: '100%'
-          }}
+          className="relay:flex relay:flex-col relay:w-full relay:min-w-0 relay:max-w-full relay:h-full"
         >
           {/* Search Input Section - Fixed */}
           <Flex
             direction="column"
             align="start"
-            css={{
-              width: '100%',
-              gap: '2',
-              background: 'modal-background',
-              minWidth: 0,
-              maxWidth: '100%'
-            }}
+            className="relay:w-full relay:gap-2 relay:bg-[var(--relay-colors-modal-background)] relay:min-w-0 relay:max-w-full"
           >
             {/* Search input and Chain Filter Button Row */}
             <Flex
               align="center"
-              css={{
-                width: '100%',
-                gap: '2',
-                minWidth: 0,
-                alignItems: 'center',
-                height: 40
-              }}
+              className="relay:w-full relay:gap-2 relay:min-w-0 relay:items-center relay:h-[40px]"
             >
               <AccessibleListItem
                 value="input"
                 asChild
-                css={{
-                  flex: 1,
-                  minWidth: 0,
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
+                className="relay:flex-1 relay:min-w-0 relay:flex relay:items-center"
               >
                 <Input
                   ref={setTokenSearchInputElement}
                   placeholder="Search for a token"
                   icon={
-                    <Box css={{ color: 'gray9' }}>
+                    <Box className="relay:flex relay:text-[color:var(--relay-colors-gray9)]">
                       <FontAwesomeIcon
                         icon={faMagnifyingGlass}
                         width={16}
@@ -629,16 +570,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                       />
                     </Box>
                   }
-                  containerCss={{
-                    width: '100%',
-                    height: 40
-                  }}
-                  css={{
-                    width: '100%',
-                    _placeholder_parent: {
-                      textOverflow: 'ellipsis'
-                    }
-                  }}
+                  containerClassName="relay:w-full relay:h-[40px]"
+                  className="relay:w-full relay:[&::placeholder]:text-ellipsis"
                   onChange={(e) => {
                     const value = (e.target as HTMLInputElement).value
 
@@ -676,15 +609,8 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           <Flex
             key={chainFilter.id ?? 'all'}
             direction="column"
-            css={{
-              flex: 1,
-              overflowY: 'auto',
-              gap: '3',
-              pt: '2',
-              scrollbarColor: 'var(--relay-colors-gray5) transparent',
-              minWidth: 0,
-              maxWidth: '100%'
-            }}
+            className="relay:flex-1 relay:overflow-y-auto relay:gap-3 relay:pt-2 relay:min-w-0 relay:max-w-full"
+            style={{ scrollbarColor: 'var(--relay-colors-gray5) transparent' }}
           >
             {/* Suggested Tokens */}
             {chainFilter.id &&
@@ -720,7 +646,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 chainFilterId={chainFilter.id}
               />
             ) : (
-              <Flex direction="column" css={{ gap: '3' }}>
+              <Flex direction="column" className="relay:gap-3">
                 {(() => {
                   const hasLoadedBalanceData = Boolean(duneTokens)
                   const userTokensReady = !isLoadingUserTokens
@@ -799,10 +725,10 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
               <Flex
                 direction="column"
                 align="center"
-                css={{ py: '5', maxWidth: 312, alignSelf: 'center' }}
+                className="relay:py-5 relay:max-w-[312px] relay:self-center"
               >
                 {!chainFilter?.id && isSearchTermValidAddress && (
-                  <Box css={{ color: 'gray8', mb: '2' }}>
+                  <Box className="relay:text-[color:var(--relay-colors-gray8)] relay:mb-2">
                     <FontAwesomeIcon
                       icon={faFolderOpen}
                       size="xl"
@@ -814,7 +740,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
                 <Text
                   color="subtle"
                   style="body2"
-                  css={{ textAlign: 'center' }}
+                  className="relay:text-center"
                 >
                   {!chainFilter?.id && isSearchTermValidAddress
                     ? 'No results. Switch to the desired chain to search by contract.'
@@ -836,18 +762,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           <div onClick={() => onOpenChange(true)}>{trigger}</div>
           {open && (
             <Box
-              css={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                zIndex: 100,
-                background: 'widget-background',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden'
-              }}
+              className="relay:absolute relay:top-0 relay:left-0 relay:right-0 relay:bottom-0 relay:z-[100] relay:bg-[var(--relay-colors-widget-background)] relay:flex relay:flex-col relay:overflow-hidden"
             >
               {paymentMethodContent}
             </Box>
@@ -862,15 +777,11 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
           onOpenChange={onOpenChange}
           showCloseButton={false}
           trigger={trigger}
-          css={{
-            p: '4',
-            display: 'flex',
-            flexDirection: 'column',
+          className="relay:p-4 relay:flex relay:flex-col relay:min-w-0 relay:box-border"
+          contentStyle={{
             height: 'min(85vh, 540px)',
             width: 'min(400px, 100vw)',
-            maxWidth: 'min(400px, 100vw)',
-            minWidth: 0,
-            boxSizing: 'border-box'
+            maxWidth: 'min(400px, 100vw)'
           }}
         >
           {paymentMethodContent}

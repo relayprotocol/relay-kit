@@ -13,6 +13,23 @@ export function getValueFromKey(obj: any, key: string): any {
   return value
 }
 
+// Pattern matching known token references (e.g. "primary9", "gray12", "white", "black")
+const TOKEN_REF_PATTERN =
+  /^(primary|gray|red|green|amber|yellow|blue|violet|slate|tomato|grass)\d{1,2}$/
+
+const RAW_CSS_PATTERN =
+  /^(#|rgb|hsl|oklch|lch|lab|hwb|color\(|var\()|(\d+(\.\d+)?(px|rem|em|%|vh|vw|ch|ex|cap|ic|lh|rlh|vi|vb|vmin|vmax|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|deg|grad|rad|turn|s|ms))/i
+
+const NAMED_COLORS = new Set(['white', 'black', 'transparent', 'currentColor', 'inherit'])
+
+function resolveThemeValue(value: string): string {
+  if (NAMED_COLORS.has(value)) return value
+  if (RAW_CSS_PATTERN.test(value)) return value
+  if (TOKEN_REF_PATTERN.test(value)) return `var(--relay-colors-${value})`
+  // Fallback: treat as raw CSS value
+  return value
+}
+
 // Generate CSS variables based on theme and overrides
 export const generateCssVars = (
   theme?: RelayKitTheme,
@@ -34,7 +51,7 @@ export const generateCssVars = (
         if (typeof value === 'object' && value !== null) {
           processTheme(value, fullKey + '.')
         } else if (cssVarOverride && value) {
-          cssString += `${cssVarOverride}:${value};\n`
+          cssString += `${cssVarOverride}:${resolveThemeValue(String(value))};\n`
         }
       }
     }

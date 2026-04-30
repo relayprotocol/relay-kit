@@ -1,5 +1,42 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.5
+
+### Patch Changes
+
+- ef54ef1: Sync api types
+
+## 5.2.4
+
+### Patch Changes
+
+- 670737f: lighter sdk adapter
+- 0eedcc1: add disableCapabilitiesCheck option to skip wallet.getCapabilities
+
+## 5.2.3
+
+### Patch Changes
+
+- eeb4695: Support atomic batching for zero-reset approval swap flows (e.g. USDT on Ethereum). `canBatchTransactions` and `prepareBatchTransaction` now accept any number of leading `approve` steps before the terminal `swap`/`deposit`, so wallets that support EIP-5792 collapse the `approve(0) → approve(amount) → swap` sequence into a single `wallet_sendCalls` instead of three separate prompts.
+
+## 5.2.2
+
+### Patch Changes
+
+- 8d8aa50: Sync api types and add depositing step to deposit address status
+
+## 5.2.1
+
+### Patch Changes
+
+- 7b351ab: Fix async errors not caught
+
+## 5.2.0
+
+### Minor Changes
+
+- 144f7a4: Add executeGaslessBatch action to support 7702 gasless flow
+
 ## 5.1.1
 
 ### Patch Changes

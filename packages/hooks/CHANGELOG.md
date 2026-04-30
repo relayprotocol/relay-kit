@@ -1,5 +1,57 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.15
+
+### Patch Changes
+
+- Updated dependencies [ef54ef1]
+  - @relayprotocol/relay-sdk@5.2.5
+
+## 3.0.14
+
+### Patch Changes
+
+- Updated dependencies [670737f]
+- Updated dependencies [0eedcc1]
+  - @relayprotocol/relay-sdk@5.2.4
+
+## 3.0.13
+
+### Patch Changes
+
+- Updated dependencies [eeb4695]
+  - @relayprotocol/relay-sdk@5.2.3
+
+## 3.0.12
+
+### Patch Changes
+
+- 8d8aa50: Sync api types and add depositing step to deposit address status
+- Updated dependencies [8d8aa50]
+  - @relayprotocol/relay-sdk@5.2.2
+
+## 3.0.11
+
+### Patch Changes
+
+- ad4f08c: Add default stale time to useTokenPrice hook
+
+## 3.0.10
+
+### Patch Changes
+
+- 2f0d6de: Fix minor errors
+- 7b351ab: Fix async errors not caught
+- Updated dependencies [7b351ab]
+  - @relayprotocol/relay-sdk@5.2.1
+
+## 3.0.9
+
+### Patch Changes
+
+- Updated dependencies [144f7a4]
+  - @relayprotocol/relay-sdk@5.2.0
+
 ## 3.0.8
 
 ### Patch Changes

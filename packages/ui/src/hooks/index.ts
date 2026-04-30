@@ -22,6 +22,7 @@ import useMoonPayTransaction from './useMoonPayTransaction.js'
 import { useInternalRelayChains } from './useInternalRelayChains.js'
 import useGasTopUpRequired from './useGasTopUpRequired.js'
 import useHyperliquidBalance from './useHyperliquidBalance.js'
+import useHyperliquidAccountMode from './useHyperliquidAccountMode.js'
 import useExplicitDeposit from './useExplicitDeposit.js'
 import useTransactionCount from './useTransactionCount.js'
 import useTronBalance from './useTronBalance.js'
@@ -53,6 +54,7 @@ export {
   useInternalRelayChains,
   useGasTopUpRequired,
   useHyperliquidBalance,
+  useHyperliquidAccountMode,
   useExplicitDeposit,
   useTransactionCount,
   useTronBalance,

@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 type FastFillRequest =
   paths['/fast-fill']['post']['requestBody']['content']['application/json'] & {
     password?: string // Password for fast fill authentication
+    apiKey?: string // Optional API key override (skips password auth)
   }
 type FastFillResponse =
   paths['/fast-fill']['post']['responses']['200']['content']['application/json']
@@ -18,28 +19,36 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { requestId, solverInputCurrencyAmount, password } =
+  const { requestId, solverInputCurrencyAmount, password, apiKey: clientApiKey } =
     req.body as FastFillRequest
 
   if (!requestId) {
     return res.status(400).json({ error: 'requestId is required' })
   }
 
-  // Check password first (before any API calls)
-  const expectedPassword = process.env.FAST_FILL_PASSWORD
-  if (!expectedPassword) {
-    return res.status(500).json({
-      error: 'Fast fill password not configured on server'
-    })
-  }
+  let apiKey: string
 
-  if (!password || password !== expectedPassword) {
-    return res.status(401).json({ error: 'Invalid fast fill password' })
-  }
+  if (clientApiKey) {
+    // API key provided directly — use it, skip password auth
+    apiKey = clientApiKey
+  } else {
+    // Fall back to password auth + server-side API key
+    const expectedPassword = process.env.FAST_FILL_PASSWORD
+    if (!expectedPassword) {
+      return res.status(500).json({
+        error: 'Fast fill password not configured on server'
+      })
+    }
 
-  const apiKey = process.env.NEXT_RELAY_API_KEY
-  if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured' })
+    if (!password || password !== expectedPassword) {
+      return res.status(401).json({ error: 'Invalid fast fill password' })
+    }
+
+    const serverApiKey = process.env.NEXT_RELAY_API_KEY
+    if (!serverApiKey) {
+      return res.status(500).json({ error: 'API key not configured' })
+    }
+    apiKey = serverApiKey
   }
 
   const baseApiUrl =
