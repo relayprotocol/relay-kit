@@ -110,7 +110,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
     !isRefund && isWithdrawable && withdrawTxHash && withdrawChainId
   const withdrawHref = showWithdrawLink
     ? `${baseTransactionUrl}/withdraw?${new URLSearchParams({
-        tab: 'attest',
+        tab: 'claim',
         chain: String(withdrawChainId),
         txHash: String(withdrawTxHash)
       }).toString()}`
