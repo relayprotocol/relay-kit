@@ -172,8 +172,11 @@ async function enrichExecutionWithRequestMetadata({
       return
     }
 
-    const transaction = await pollRequestMetadataById(requestId)
-    if (!transaction) {
+    const transaction = await pollRequestMetadataById(
+      requestId,
+      abortController.signal
+    )
+    if (!transaction || abortController.signal.aborted) {
       return
     }
 
@@ -189,7 +192,8 @@ async function enrichExecutionWithRequestMetadata({
     const existingCurrencyOut = data.details?.currencyOut
     const amountChanged =
       nextCurrencyOut.amount !== existingCurrencyOut?.amount ||
-      nextCurrencyOut.amountFormatted !== existingCurrencyOut?.amountFormatted ||
+      nextCurrencyOut.amountFormatted !==
+        existingCurrencyOut?.amountFormatted ||
       nextCurrencyOut.amountUsd !== existingCurrencyOut?.amountUsd
 
     if (!amountChanged) {
@@ -202,7 +206,8 @@ async function enrichExecutionWithRequestMetadata({
       recipient: metadata?.recipient ?? data.details?.recipient,
       currencyIn: metadata?.currencyIn ?? data.details?.currencyIn,
       currencyOut: nextCurrencyOut,
-      currencyGasTopup: metadata?.currencyGasTopup ?? data.details?.currencyGasTopup
+      currencyGasTopup:
+        metadata?.currencyGasTopup ?? data.details?.currencyGasTopup
     }
 
     if (!onProgress || abortController.signal.aborted) {
@@ -229,7 +234,8 @@ async function enrichExecutionWithRequestMetadata({
 }
 
 async function pollRequestMetadataById(
-  requestId: string
+  requestId: string,
+  signal: AbortSignal
 ): Promise<RelayTransaction | undefined> {
   const client = getClient()
   const pollingInterval = client.pollingInterval ?? 5000
@@ -255,11 +261,20 @@ async function pollRequestMetadataById(
   let transaction: RelayTransaction | undefined = undefined
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const res = (await requestApi(requestConfig)) as {
+    if (signal.aborted) {
+      return undefined
+    }
+
+    const res = (await requestApi({ ...requestConfig, signal })) as {
       data?: {
         requests?: RelayTransaction[]
       }
     }
+
+    if (signal.aborted) {
+      return undefined
+    }
+
     transaction = res.data?.requests?.[0]
 
     if (transaction?.data?.metadata?.currencyOut) {
@@ -267,9 +282,30 @@ async function pollRequestMetadataById(
     }
 
     if (attempt < maxAttempts - 1) {
-      await new Promise((resolve) => setTimeout(resolve, pollingInterval))
+      await waitForPollInterval(pollingInterval, signal)
     }
   }
 
   return transaction?.data?.metadata?.currencyOut ? transaction : undefined
+}
+
+function waitForPollInterval(pollingInterval: number, signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    if (signal.aborted) {
+      resolve()
+      return
+    }
+
+    const timeout = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, pollingInterval)
+
+    const onAbort = () => {
+      clearTimeout(timeout)
+      resolve()
+    }
+
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
 }

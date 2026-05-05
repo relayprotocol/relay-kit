@@ -269,9 +269,9 @@ describe('Should test the execute action.', () => {
     )
     expect(axiosRequestSpy).toHaveBeenCalledTimes(3)
     expect(onProgress).toHaveBeenCalled()
-    expect(onProgress.mock.calls.at(-1)?.[0]?.details?.currencyOut?.amount).toBe(
-      settledAmount
-    )
+    expect(
+      onProgress.mock.calls.at(-1)?.[0]?.details?.currencyOut?.amount
+    ).toBe(settledAmount)
 
     axiosRequestSpy.mockRestore()
   })
@@ -307,6 +307,88 @@ describe('Should test the execute action.', () => {
       expect(axiosRequestSpy).toHaveBeenCalledTimes(1)
     })
     expect(onTransactionReceived).not.toHaveBeenCalled()
+
+    axiosRequestSpy.mockRestore()
+  })
+
+  it('Should not emit settled metadata after aborting execution', async () => {
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      pollingInterval: 1,
+      maxPollingAttemptsBeforeTimeout: 1
+    })
+
+    const onProgress = vi.fn()
+    const onTransactionReceived = vi.fn()
+    const settledAmount = '1002000000000000'
+    let resolveRequest: (value: any) => void = () => {}
+
+    executeStepsSpy.mockImplementation(
+      (
+        chainId: any,
+        request: any,
+        wallet: any,
+        progress: any,
+        clonedQuote: Execute,
+        options?: any
+      ) => {
+        progress({
+          steps: clonedQuote.steps,
+          fees: clonedQuote.fees,
+          breakdown: clonedQuote.breakdown,
+          details: clonedQuote.details
+        })
+        return Promise.resolve(clonedQuote)
+      }
+    )
+
+    const axiosRequestSpy = vi.spyOn(axios, 'request').mockImplementation(
+      (config: any) =>
+        new Promise((resolve) => {
+          expect(config.signal).toBeDefined()
+          resolveRequest = resolve
+        }) as any
+    )
+
+    const execution = client?.actions?.execute({
+      wallet,
+      quote,
+      onProgress,
+      onTransactionReceived
+    })
+
+    await execution
+    execution?.abortController.abort()
+
+    resolveRequest({
+      data: {
+        requests: [
+          {
+            id: '0xabc',
+            data: {
+              metadata: {
+                currencyOut: {
+                  ...quote.details?.currencyOut,
+                  amount: settledAmount,
+                  amountFormatted: '0.001002'
+                }
+              }
+            }
+          }
+        ]
+      }
+    })
+
+    await vi.waitFor(() => {
+      expect(axiosRequestSpy).toHaveBeenCalledTimes(1)
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(onTransactionReceived).not.toHaveBeenCalled()
+    expect(
+      onProgress.mock.calls.at(-1)?.[0]?.details?.currencyOut?.amount
+    ).not.toBe(settledAmount)
 
     axiosRequestSpy.mockRestore()
   })
