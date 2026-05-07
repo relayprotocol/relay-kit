@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.8
+
+### Patch Changes
+
+- 22aa1f9: Differentiate hyperliquid usdc pills
+- Updated dependencies [a443358]
+  - @relayprotocol/relay-sdk@5.2.6
+  - @relayprotocol/relay-kit-hooks@3.0.16
+
 ## 8.0.7
 
 ### Patch Changes
