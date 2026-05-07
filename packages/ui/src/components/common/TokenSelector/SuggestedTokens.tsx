@@ -46,35 +46,42 @@ export const SuggestedTokens: FC<SuggestedTokensProps> = ({
 
   return (
     <Flex className="relay:w-full relay:items-center relay:flex-wrap relay:gap-1 relay:my-2">
-      {suggestedTokens.map((token, idx) => (
-        <AccessibleListItem
-          asChild
-          key={`${token.chainId}:${token.address}:${idx}`}
-          value={`${token.chainId}:${token.address}`}
-        >
-          <Button
-            onClick={(e) => {
-              e.preventDefault()
-              onSelect({
-                ...token
-              } as Token)
-            }}
-            color="ghost"
-            size="none"
-            corners="pill"
-            className="relay:flex relay:shrink-0 relay:cursor-pointer relay:outline-none relay:py-1 relay:pl-1 relay:pr-2 relay:gap-1 relay:items-center relay:border relay:border-solid relay:border-[var(--relay-colors-gray5)] relay:focus-inset relay:transition-none"
+      {suggestedTokens.map((token, idx) => {
+        const tokenSymbol =
+          token.chainId === 1337 && token.symbol === 'USDC'
+            ? token.name
+            : token.symbol
+
+        return (
+          <AccessibleListItem
+            asChild
+            key={`${token.chainId}:${token.address}:${idx}`}
+            value={`${token.chainId}:${token.address}`}
           >
-            <ChainTokenIcon
-              chainId={token.chainId}
-              tokenlogoURI={token?.metadata?.logoURI}
-              tokenSymbol={token.symbol}
-            />
-            <Text style="h6" ellipsify>
-              {token.symbol}
-            </Text>
-          </Button>
-        </AccessibleListItem>
-      ))}
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                onSelect({
+                  ...token
+                } as Token)
+              }}
+              color="ghost"
+              size="none"
+              corners="pill"
+              className="relay:flex relay:shrink-0 relay:cursor-pointer relay:outline-none relay:py-1 relay:pl-1 relay:pr-2 relay:gap-1 relay:items-center relay:border relay:border-solid relay:border-[var(--relay-colors-gray5)] relay:focus-inset relay:transition-none"
+            >
+              <ChainTokenIcon
+                chainId={token.chainId}
+                tokenlogoURI={token?.metadata?.logoURI}
+                tokenSymbol={token.symbol}
+              />
+              <Text style="h6" ellipsify>
+                {tokenSymbol}
+              </Text>
+            </Button>
+          </AccessibleListItem>
+        )
+      })}
     </Flex>
   )
 }
