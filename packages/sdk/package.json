@@ -1,6 +1,11 @@
 {
   "name": "@relayprotocol/relay-sdk",
   "version": "5.2.6",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relayprotocol/relay-kit.git",
+    "directory": "packages/sdk"
+  },
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",

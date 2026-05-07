@@ -32,7 +32,8 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/reservoirprotocol/relay-sdk"
+        "url": "git+https://github.com/relayprotocol/relay-kit.git",
+        "directory": "packages/relay-tron-wallet-adapter"
     },
     "keywords": [
         "reservoir",
