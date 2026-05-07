@@ -441,7 +441,7 @@ export interface paths {
           /** @description User address, when supplied returns user balance and max bridge amount */
           user?: string;
           /** @description Restricts the user balance and capacity to a particular currency when supplied with a currency id. Defaults to the native currency of the destination chain. */
-          currency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+          currency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd";
         };
       };
       responses: {
@@ -494,7 +494,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -598,7 +598,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
+                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -609,10 +609,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd";
               };
               breakdown?: {
                   /** @description Amount that will be bridged in the estimated time */
@@ -674,7 +674,7 @@ export interface paths {
             originChainId: number;
             destinationChainId: number;
             /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd";
             /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
             amount: string;
             /** @description App fees to be charged for execution */
@@ -1155,7 +1155,7 @@ export interface paths {
                  * @description Origin chain gas currency
                  * @enum {string}
                  */
-                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
+                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "avax" | "bnb" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "sui" | "ton" | "cronos" | "hype" | "mcade" | "usd";
                 /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
                 relayer?: string;
                 /** @description Destination chain gas fee in wei */
@@ -1166,10 +1166,10 @@ export interface paths {
                  * @description The currency for all relayer fees (gas and service)
                  * @enum {string}
                  */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd";
                 app?: string;
                 /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd";
+                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "wbtc" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd";
               };
               /**
                * @example {
@@ -2748,11 +2748,6 @@ export interface paths {
             referrerAddress?: string;
             /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
             refundTo?: string;
-            /**
-             * @description Which chain to refund on in case of failure. Defaults to origin for normal requests. For open-ended deposit-address requests, refundTo without refundType implies origin; omitting refundTo means there is no automatic refund.
-             * @enum {string}
-             */
-            refundType?: "origin" | "destination";
             /**
              * @deprecated
              * @description Always refund on the origin chain in case of any issues
@@ -4815,11 +4810,6 @@ export interface paths {
             referrerAddress?: string;
             /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
             refundTo?: string;
-            /**
-             * @description Which chain to refund on in case of failure. Defaults to origin for normal requests. For open-ended deposit-address requests, refundTo without refundType implies origin; omitting refundTo means there is no automatic refund.
-             * @enum {string}
-             */
-            refundType?: "origin" | "destination";
             /**
              * @deprecated
              * @description Always refund on the origin chain in case of any issues
@@ -9731,6 +9721,11 @@ export interface paths {
                         hash?: string;
                         /** @enum {string} */
                         operation?: "mint";
+                        tokenMetadata?: {
+                          decimals?: number;
+                          name?: string;
+                          symbol?: string;
+                        };
                       };
                       attestation?: {
                         execution?: {
@@ -9764,6 +9759,11 @@ export interface paths {
                         /** @enum {string} */
                         operation?: "transfer" | "burn" | "mixed";
                         solver?: string;
+                        tokenMetadata?: {
+                          decimals?: number;
+                          name?: string;
+                          symbol?: string;
+                        };
                       };
                       attestation?: {
                         execution?: {
