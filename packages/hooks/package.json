@@ -1,6 +1,11 @@
 {
   "name": "@relayprotocol/relay-kit-hooks",
   "version": "3.0.16",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relayprotocol/relay-kit.git",
+    "directory": "packages/hooks"
+  },
   "type": "module",
   "main": "./_cjs/src/index.js",
   "module": "./_esm/src/index.js",
