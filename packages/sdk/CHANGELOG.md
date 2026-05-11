@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.7
+
+### Patch Changes
+
+- eab4c8f: Add testnet ws
+
 ## 5.2.6
 
 ### Patch Changes
