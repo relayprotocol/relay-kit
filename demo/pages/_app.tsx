@@ -14,7 +14,7 @@ import {
   type RelayChain
 } from '@relayprotocol/relay-sdk'
 
-const DEV_RELAY_API = 'https://dev.api.relay.link'
+const DEV_RELAY_API = 'https://api.dev.relay.link'
 
 const resolveRelayApi = (api: unknown): string => {
   if (api === 'testnets') return TESTNET_RELAY_API
