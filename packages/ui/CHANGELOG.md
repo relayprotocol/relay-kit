@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.10
+
+### Patch Changes
+
+- 4d73aeb: Update CEX address url
+
 ## 8.0.9
 
 ### Patch Changes
