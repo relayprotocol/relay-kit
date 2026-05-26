@@ -22,7 +22,7 @@ export default () => {
     queryKey: queryKey,
     queryFn: () => {
       const url = new URL(
-        `https://raw.githubusercontent.com/reservoirprotocol/relay-kit/refs/heads/main/assets/cexAddresses.json`
+        `https://assets.relay.link/app/cexAddresses.json`
       )
 
       return fetch(url.href)
