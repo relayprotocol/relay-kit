@@ -3,6 +3,10 @@ name: Main Tests
 on:
   push:
     branches: [ "main" ]
+
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Unit tests and linting
