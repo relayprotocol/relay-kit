@@ -5,6 +5,10 @@ on:
     types:
       - opened
       - synchronize
+
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Unit tests and linting
