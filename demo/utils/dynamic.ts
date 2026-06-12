@@ -54,7 +54,7 @@ export const extractWalletIcon = (wallet: Wallet) => {
 export const convertToLinkedWallet = (wallet: Wallet): LinkedWallet => {
   const walletIcon = extractWalletIcon(wallet)
   let walletChain = wallet.chain.toLowerCase()
-  let vmType: 'evm' | 'svm' | 'bvm' | 'suivm' | 'tvm' = 'evm'
+  let vmType: 'evm' | 'svm' | 'bvm' | 'suivm' | 'tvm' | 'tonvm' = 'evm'
 
   if (walletChain === 'sol' || walletChain === 'eclipse') {
     vmType = 'svm'
@@ -64,6 +64,8 @@ export const convertToLinkedWallet = (wallet: Wallet): LinkedWallet => {
     vmType = 'suivm'
   } else if (walletChain === 'tron') {
     vmType = 'tvm'
+  } else if (walletChain === 'ton') {
+    vmType = 'tonvm'
   }
 
   const address =

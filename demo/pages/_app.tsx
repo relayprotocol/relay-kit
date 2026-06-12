@@ -39,6 +39,7 @@ import { chainIdToAlchemyNetworkMap } from 'utils/chainIdToAlchemyNetworkMap'
 import { useWalletFilter, WalletFilterProvider } from 'context/walletFilter'
 import { EclipseWalletConnectors } from '@dynamic-labs/eclipse'
 import { TronWalletConnectors } from '@dynamic-labs/tron'
+import { TonWalletConnectors } from '@dynamic-labs/ton'
 import { AbstractEvmWalletConnectors } from '@dynamic-labs-connectors/abstract-global-wallet-evm'
 import { MoonPayProvider } from 'context/MoonpayProvider'
 import { CustomizeProvider, useCustomize } from 'context/customizeContext'
@@ -188,7 +189,8 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
                 EclipseWalletConnectors,
                 SuiWalletConnectors,
                 AbstractEvmWalletConnectors,
-                TronWalletConnectors
+                TronWalletConnectors,
+                TonWalletConnectors
               ],
               cssOverrides: `
               [data-testid="send-balance-button"] {

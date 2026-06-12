@@ -33,11 +33,25 @@ import { type Token } from '@relayprotocol/relay-kit-ui'
 import { isSuiWallet, SuiWallet } from '@dynamic-labs/sui'
 import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
+import { adaptTonWallet } from '@relayprotocol/relay-ton-wallet-adapter'
 import Head from 'next/head'
 import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
+import { isTonWallet, TonWallet } from '@dynamic-labs/ton'
 import { CustomizeSidebar } from 'components/CustomizeSidebar'
 
-const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm', 'tvm', 'hypevm'] as const
+// TODO: confirm the Relay numeric chainId for TON mainnet once it's live on the
+// API (this value matches the solver's TON mainnet fixture).
+const TON_MAINNET_CHAIN_ID = 224235520
+
+const WALLET_VM_TYPES = [
+  'evm',
+  'bvm',
+  'svm',
+  'suivm',
+  'tvm',
+  'tonvm',
+  'hypevm'
+] as const
 
 const SwapWidgetPage: NextPage = () => {
   useDynamicEvents('walletAdded', (newWallet) => {
@@ -181,6 +195,19 @@ const SwapWidgetPage: NextPage = () => {
             adaptedWallet = adaptTronWallet(
               (primaryWallet as TronWallet).address,
               tronWeb
+            )
+          } else if (isTonWallet(primaryWallet)) {
+            const tonWallet = primaryWallet as TonWallet
+            adaptedWallet = adaptTonWallet(
+              tonWallet.address,
+              TON_MAINNET_CHAIN_ID, // @TODO: handle ton testnet
+              async (request) => {
+                // Dynamic's TON wallet signs + broadcasts a raw TonConnect
+                // request via its connector and returns the tx hash.
+                const transactionHash =
+                  await tonWallet.connector.sendTransaction(request as any)
+                return { transactionHash }
+              }
             )
           }
 
