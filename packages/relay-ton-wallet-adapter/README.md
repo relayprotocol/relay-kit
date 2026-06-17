@@ -46,9 +46,8 @@ existing client, pass them via the optional `options` argument:
 import { TonClient } from '@ton/ton'
 
 adaptTonWallet(walletAddress, chainId, sendTransaction, {
-  client: new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' }),
-  // or: endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-  isTestnet: false
+  client: new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' })
+  // or: endpoint: 'https://toncenter.com/api/v2/jsonRPC'
 })
 ```
 

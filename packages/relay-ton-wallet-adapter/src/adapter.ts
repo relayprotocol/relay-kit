@@ -12,9 +12,11 @@ import type {
   TonSendTransaction
 } from './types.js'
 
-// TonConnect CHAIN identifiers (note: distinct from Relay's numeric chainIds).
+// TON Connect CHAIN identifier for mainnet (distinct from Relay's numeric
+// chainIds). Relay only supports TON mainnet, so this is always mainnet. The
+// field is an optional TON Connect guard — the wallet rejects the request if
+// its selected network doesn't match.
 const TON_MAINNET_CHAIN = '-239'
-const TON_TESTNET_CHAIN = '-3'
 
 // How long a freshly built request should remain valid before the wallet
 // rejects it, and how long / how often we poll for on-chain confirmation.
@@ -35,7 +37,7 @@ const CONFIRM_TX_LOOKBACK = 16
  * @param walletAddress - The connected wallet's address (raw or user-friendly).
  * @param chainId - The Relay numeric chainId for the TON network.
  * @param sendTransaction - Wallet callback that signs + broadcasts a request.
- * @param options - Optional read client / endpoint / testnet configuration.
+ * @param options - Optional read client / endpoint configuration.
  */
 export const adaptTonWallet = (
   walletAddress: string,
@@ -93,7 +95,7 @@ export const adaptTonWallet = (
       // steps. Normalize whatever shape arrives into a SendTransactionRequest.
       // TODO: confirm the exact `stepItem.data` shape once TON is live on the
       // Relay API and tighten this mapping accordingly.
-      const request = buildTransactionRequest(data, options?.isTestnet)
+      const request = buildTransactionRequest(data)
 
       client.log(['Sending TON transaction', request], LogLevel.Verbose)
 
@@ -180,10 +182,8 @@ export const adaptTonWallet = (
  * and a single-message shape (`to`/`address` + `amount`/`value`).
  */
 const buildTransactionRequest = (
-  data: any,
-  isTestnet?: boolean
+  data: any
 ): TonConnectTransactionRequest => {
-  const network = isTestnet ? TON_TESTNET_CHAIN : TON_MAINNET_CHAIN
   const validUntil =
     typeof data.validUntil === 'number'
       ? data.validUntil
@@ -202,7 +202,7 @@ const buildTransactionRequest = (
 
   return {
     validUntil,
-    network: typeof data.network === 'string' ? data.network : network,
+    network: typeof data.network === 'string' ? data.network : TON_MAINNET_CHAIN,
     from: typeof data.from === 'string' ? data.from : undefined,
     messages
   }

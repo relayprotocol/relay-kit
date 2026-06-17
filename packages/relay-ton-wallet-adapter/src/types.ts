@@ -20,8 +20,8 @@ export interface TonConnectMessage {
 export interface TonConnectTransactionRequest {
   // Unix timestamp (in seconds) after which the wallet should reject the tx.
   validUntil: number
-  // TonConnect CHAIN id: '-239' for mainnet, '-3' for testnet. Optional — when
-  // omitted the wallet uses its currently selected network.
+  // TON Connect CHAIN id. Relay supports TON mainnet only ('-239'). Optional —
+  // when omitted the wallet uses its currently selected network.
   network?: string
   // Optional sender address.
   from?: string
@@ -52,7 +52,4 @@ export interface AdaptTonWalletOptions {
   // Explicit TON RPC endpoint (JSON-RPC v2) for confirmation polling. Overrides
   // the Relay-provided chain RPC url.
   endpoint?: string
-  // Whether this is a testnet wallet. Used to set the TonConnect `network`
-  // field ('-3' testnet vs '-239' mainnet) on outgoing requests.
-  isTestnet?: boolean
 }

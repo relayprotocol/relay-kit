@@ -30,13 +30,16 @@ import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
 import { convertToLinkedWallet } from 'utils/dynamic'
 import { isEclipseWallet } from '@dynamic-labs/eclipse'
 import { type Token } from '@relayprotocol/relay-kit-ui'
-import { isSuiWallet, SuiWallet } from '@dynamic-labs/sui'
-import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 import { adaptTonWallet } from '@relayprotocol/relay-ton-wallet-adapter'
 import Head from 'next/head'
 import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
-import { isTonWallet, TonWallet } from '@dynamic-labs/ton'
+import {
+  isTonWallet,
+  TonWallet,
+  TonWalletConnector,
+  CHAIN
+} from '@dynamic-labs/ton'
 import { CustomizeSidebar } from 'components/CustomizeSidebar'
 
 // TODO: confirm the Relay numeric chainId for TON mainnet once it's live on the
@@ -162,31 +165,6 @@ const SwapWidgetPage: NextPage = () => {
               connection,
               signer.signAndSendTransaction
             )
-          } else if (isSuiWallet(primaryWallet)) {
-            const suiWallet = primaryWallet as SuiWallet
-            const walletClient = await suiWallet.getWalletClient()
-
-            if (!walletClient) {
-              throw 'Unable to setup Sui wallet'
-            }
-
-            adaptedWallet = adaptSuiWallet(
-              suiWallet.address,
-              103665049, // @TODO: handle sui testnet
-              walletClient as any,
-              async (tx) => {
-                const signedTransaction = await suiWallet.signTransaction(tx)
-
-                const executionResult =
-                  await walletClient.executeTransactionBlock({
-                    options: {},
-                    signature: signedTransaction.signature,
-                    transactionBlock: signedTransaction.bytes
-                  })
-
-                return executionResult
-              }
-            )
           } else if (isTronWallet(primaryWallet)) {
             const tronWeb = (primaryWallet as TronWallet).getTronWeb()
             if (!tronWeb) {
@@ -200,12 +178,15 @@ const SwapWidgetPage: NextPage = () => {
             const tonWallet = primaryWallet as TonWallet
             adaptedWallet = adaptTonWallet(
               tonWallet.address,
-              TON_MAINNET_CHAIN_ID, // @TODO: handle ton testnet
+              TON_MAINNET_CHAIN_ID, // Relay supports TON mainnet only
               async (request) => {
                 // Dynamic's TON wallet signs + broadcasts a raw TonConnect
-                // request via its connector and returns the tx hash.
-                const transactionHash =
-                  await tonWallet.connector.sendTransaction(request as any)
+                // request via its connector and returns the tx hash. The only
+                // type gap is `network` (string vs Dynamic's CHAIN enum), which
+                // we map explicitly to mainnet.
+                const transactionHash = await (
+                  tonWallet.connector as TonWalletConnector
+                ).sendTransaction({ ...request, network: CHAIN.MAINNET })
                 return { transactionHash }
               }
             )
@@ -338,6 +319,8 @@ const SwapWidgetPage: NextPage = () => {
                 setWalletFilter('SUI')
               } else if (chain?.vmType === 'tvm') {
                 setWalletFilter('TRON')
+              } else if (chain?.vmType === 'tonvm') {
+                setWalletFilter('TON')
               } else {
                 setWalletFilter(undefined)
               }
