@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 8.0.11
+
+### Patch Changes
+
+- d3eda06: Support TON destination bridging
+
 ## 8.0.10
 
 ### Patch Changes
