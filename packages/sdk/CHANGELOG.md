@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 5.2.8
+
+### Patch Changes
+
+- 1fc8190: Add TON dead address
+
 ## 5.2.7
 
 ### Patch Changes
