@@ -41,6 +41,16 @@ export type TransactionStepItem = Pick<
       contract_address: string
       data: string
     }
+    // TON (internal-message fields the wallet maps into a TON Connect request)
+    messages?: {
+      from?: string
+      to: string
+      value: string
+      body?: string
+      stateInit?: string
+      bounce?: boolean
+      mode?: number
+    }[]
     // Lighter (LVM)
     action?: {
       type: 'transfer'
