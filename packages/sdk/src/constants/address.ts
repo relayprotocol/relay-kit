@@ -9,6 +9,8 @@ export const eclipseDeadAddress =
 export const bitcoinDeadAddress = 'bc1q4vxn43l44h30nkluqfxd9eckf45vr2awz38lwa'
 export const tronDeadAddress = 'THa7BwoPfacfiELa63pbmm3g5PGKYmtJyt'
 export const zeroDeadAddress = '0x00000000000000000000000000000000000dead0'
+export const tonDeadAddress =
+  'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADerZ0z' as const
 
 const eclipseId = 9286185
 const zeroChainId = 543210
@@ -22,6 +24,8 @@ export const getDeadAddress = (vmType?: ChainVM, chainId?: number) => {
     return zeroDeadAddress
   } else if (vmType === 'tvm') {
     return tronDeadAddress
+  } else if (vmType === 'tonvm') {
+    return tonDeadAddress
   } else {
     return evmDeadAddress
   }
@@ -36,7 +40,8 @@ export const isDeadAddress = (address?: string) => {
     address === eclipseDeadAddress ||
     address === solDeadAddress ||
     address === bitcoinDeadAddress ||
-    address === evmDeadAddress
+    address === evmDeadAddress ||
+    address === tonDeadAddress
   ) {
     return true
   }
