@@ -30,14 +30,12 @@ import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
 import { convertToLinkedWallet } from 'utils/dynamic'
 import { isEclipseWallet } from '@dynamic-labs/eclipse'
 import { type Token } from '@relayprotocol/relay-kit-ui'
-import { isSuiWallet, SuiWallet } from '@dynamic-labs/sui'
-import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 import Head from 'next/head'
 import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
 import { CustomizeSidebar } from 'components/CustomizeSidebar'
 
-const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'suivm', 'tvm', 'hypevm'] as const
+const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'tvm', 'hypevm'] as const
 
 const SwapWidgetPage: NextPage = () => {
   useDynamicEvents('walletAdded', (newWallet) => {
@@ -147,31 +145,6 @@ const SwapWidgetPage: NextPage = () => {
               _chainId,
               connection,
               signer.signAndSendTransaction
-            )
-          } else if (isSuiWallet(primaryWallet)) {
-            const suiWallet = primaryWallet as SuiWallet
-            const walletClient = await suiWallet.getWalletClient()
-
-            if (!walletClient) {
-              throw 'Unable to setup Sui wallet'
-            }
-
-            adaptedWallet = adaptSuiWallet(
-              suiWallet.address,
-              103665049, // @TODO: handle sui testnet
-              walletClient as any,
-              async (tx) => {
-                const signedTransaction = await suiWallet.signTransaction(tx)
-
-                const executionResult =
-                  await walletClient.executeTransactionBlock({
-                    options: {},
-                    signature: signedTransaction.signature,
-                    transactionBlock: signedTransaction.bytes
-                  })
-
-                return executionResult
-              }
             )
           } else if (isTronWallet(primaryWallet)) {
             const tronWeb = (primaryWallet as TronWallet).getTronWeb()
@@ -307,8 +280,6 @@ const SwapWidgetPage: NextPage = () => {
                 setWalletFilter('BTC')
               } else if (chain?.id === 9286185) {
                 setWalletFilter('ECLIPSE')
-              } else if (chain?.vmType === 'suivm') {
-                setWalletFilter('SUI')
               } else if (chain?.vmType === 'tvm') {
                 setWalletFilter('TRON')
               } else {

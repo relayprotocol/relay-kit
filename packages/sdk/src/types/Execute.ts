@@ -1,6 +1,5 @@
 import type {
   SvmReceipt,
-  SuiReceipt,
   TronReceipt,
   LvmReceipt
 } from '../types/index.js'
@@ -53,7 +52,6 @@ export type Execute = {
       receipt?:
         | TransactionReceipt
         | SvmReceipt
-        | SuiReceipt
         | TronReceipt
         | LvmReceipt
       checkStatus?:

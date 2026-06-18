@@ -11,7 +11,6 @@ import type { QueryKey } from '@tanstack/react-query'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import useDuneBalances from './useDuneBalances.js'
 import useBitcoinBalance from './useBitcoinBalance.js'
-import useSuiBalance from './useSuiBalance.js'
 import useAdaptedWalletBalance from './useAdaptedWalletBalance.js'
 import { isValidAddress } from '../utils/address.js'
 import useRelayClient from './useRelayClient.js'
@@ -136,19 +135,6 @@ const useCurrencyBalance = ({
       !adaptedWalletBalanceIsEnabled &&
         chain &&
         chain.vmType === 'bvm' &&
-        address &&
-        _isValidAddress &&
-        enabled
-    ),
-    gcTime: refreshInterval,
-    staleTime: refreshInterval
-  })
-
-  const suiBalances = useSuiBalance(address, currency, {
-    enabled: Boolean(
-      !adaptedWalletBalanceIsEnabled &&
-        chain &&
-        chain.vmType === 'suivm' &&
         address &&
         _isValidAddress &&
         enabled
@@ -303,15 +289,6 @@ const useCurrencyBalance = ({
         isDuneBalance: false,
         hasPendingBalance: false
       }
-    }
-  } else if (chain?.vmType === 'suivm') {
-    return {
-      value: suiBalances.balance,
-      queryKey: suiBalances.queryKey,
-      isLoading: suiBalances.isLoading,
-      isError: suiBalances.isError,
-      error: suiBalances.error,
-      isDuneBalance: false
     }
   } else if (chain?.vmType === 'hypevm') {
     return {

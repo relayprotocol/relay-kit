@@ -7,7 +7,6 @@ const WALLET_VM_TYPES = [
   'evm',
   'bvm',
   'svm',
-  'suivm',
   'tvm',
   'hypevm'
 ] as const

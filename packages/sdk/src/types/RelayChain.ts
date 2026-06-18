@@ -10,7 +10,6 @@ export type ChainVM =
   | 'svm'
   | 'bvm'
   | 'tvm'
-  | 'suivm'
   | 'hypevm'
   | 'lvm'
   | 'tonvm'

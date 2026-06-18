@@ -13,7 +13,6 @@ import {
 } from '../utils/solana.js'
 import type { LinkedWallet } from '../types/index.js'
 import type { RelayKitProviderProps } from '../providers/RelayKitProvider.js'
-import { isSuiAddress } from '../utils/sui.js'
 import { isTronAddress } from './tron.js'
 import { isTonAddress } from './ton.js'
 import { isLighterAddress } from './lighter.js'
@@ -87,8 +86,6 @@ export const isValidAddress = (
       return isSolanaAddress(address)
     } else if (vmType === 'bvm') {
       return isBitcoinAddress(address)
-    } else if (vmType === 'suivm') {
-      return isSuiAddress(address)
     } else if (vmType === 'tvm') {
       return isTronAddress(address)
     } else if (vmType === 'tonvm') {
@@ -159,7 +156,7 @@ export function addressesEqual(
   b?: string
 ): boolean {
   if (!a || !b) return false
-  if (vmType === 'evm' || vmType === 'hypevm' || vmType === 'suivm') {
+  if (vmType === 'evm' || vmType === 'hypevm') {
     return a.toLowerCase() === b.toLowerCase()
   }
   return a === b
