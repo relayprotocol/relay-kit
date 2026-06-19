@@ -115,7 +115,7 @@ jobs:
             - Public SDK types/interfaces under `packages/sdk/src/types/` and re-exports from `packages/sdk/src/index.ts`.
             - React hooks under `packages/hooks/src/` (e.g. `useQuote`, `useRelayClient`, `useRelayChains`, `useTokenList`).
             - React UI widgets and components under `packages/ui/src/components/widgets/` (`SwapWidget`, `OnrampWidget`) and provider APIs (`RelayKitProvider`, `RelayClientProvider`, `onHapticEvent`).
-            - Public wallet adapter interfaces under `packages/relay-*-wallet-adapter/src/` (EVM, SVM, BVM, Tron, Sui, Lighter).
+            - Public wallet adapter interfaces under `packages/relay-*-wallet-adapter/src/` (EVM, SVM, BVM, Tron, Lighter).
             - Root `README.md`, package-level `README.md` files, and any migration guides under `packages/*/MIGRATION*.md`.
             - `package.json` `peerDependencies` / `exports` changes in any published package.
 
