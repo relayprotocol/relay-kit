@@ -55,6 +55,7 @@ importers:
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
       '@dynamic-labs/solana':
+<<<<<<< HEAD
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
       '@dynamic-labs/sui':
@@ -63,6 +64,10 @@ importers:
       '@dynamic-labs/ton':
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
+=======
+        specifier: 4.40.2
+        version: 4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
+>>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
       '@dynamic-labs/tron':
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -96,9 +101,6 @@ importers:
       '@relayprotocol/relay-sdk':
         specifier: workspace:*
         version: link:../packages/sdk
-      '@relayprotocol/relay-sui-wallet-adapter':
-        specifier: workspace:*
-        version: link:../packages/relay-sui-wallet-adapter
       '@relayprotocol/relay-svm-wallet-adapter':
         specifier: workspace:*
         version: link:../packages/relay-svm-wallet-adapter
@@ -296,28 +298,6 @@ importers:
       vitest:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@22.13.4)(@vitest/ui@1.6.1)(lightningcss@1.31.1)(terser@5.39.0)
-
-  packages/relay-sui-wallet-adapter:
-    dependencies:
-      '@mysten/sui':
-        specifier: 1.24.0
-        version: 1.24.0(typescript@5.4.5)
-      '@relayprotocol/relay-sdk':
-        specifier: workspace:*
-        version: link:../sdk
-      '@types/node':
-        specifier: ^22.5.4
-        version: 22.13.4
-      axios:
-        specifier: ^1.6.5
-        version: 1.7.9
-      viem:
-        specifier: '>=2.26.0'
-        version: 2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
-    devDependencies:
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.10
 
   packages/relay-svm-wallet-adapter:
     dependencies:
@@ -839,11 +819,16 @@ packages:
   '@dynamic-labs/sui-core@4.87.2':
     resolution: {integrity: sha512-qnMRP2VGHFe6m9c92s2BqEQfMgSujWLvJR004IuyMUIauerPHqvUXS6EWyoRrbl+gaUK32GzjI/hm6efhdwruQ==}
 
+<<<<<<< HEAD
   '@dynamic-labs/sui@4.87.2':
     resolution: {integrity: sha512-hc82FcHIrkhFcPd4Wlqq7ry8yjnFez4YMQCgmeha9S0WQKuoVohzGn0IFeu2jfgg3ad1lRTBnonmrccMeEQC1w==}
 
   '@dynamic-labs/ton@4.87.2':
     resolution: {integrity: sha512-QrjfkNwp6oEI7xttE8Tu3VVAYH88Qg6MZHUy7XYnoKuEyFnQTDJbNWRxn9+xyxxrjJ5wQiiF5iOabjNaXuEYew==}
+=======
+  '@dynamic-labs/tron@4.40.2':
+    resolution: {integrity: sha512-OXrm3xLw/LKzkH7z+SYrlb7YYzFER5gFjCl47mt9/K3fAuVI3uNALHg8CJ0n+sMXg1piVxgvDROGqOWj+HR4HQ==}
+>>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
 
   '@dynamic-labs/tron@4.87.2':
     resolution: {integrity: sha512-Opl1Nof16Uq0vd1yGpMa7b8ymDb+zWeZsUrSQ6QDkINLbpNeCSpZjaS5RwGKHZ7/LvCCOLkOIyD8QHwVDDFceg==}
@@ -863,11 +848,22 @@ packages:
   '@dynamic-labs/waas-svm@4.87.2':
     resolution: {integrity: sha512-ASL5VLN+QesNyZmCwz3+gvxGROMrdUOSbAtu+1uRmbml+3FN8/ekH6mOyXQ2IJW5jb2hbojjslH+wxhTcFwWuA==}
 
+<<<<<<< HEAD
   '@dynamic-labs/waas@4.87.2':
     resolution: {integrity: sha512-KbHnoaDv3EwuzogUm0t5K31wLQZ1k2gty8sJ/itLomheX5/oCKgTrl+J0N7SgxNrMtDZYkJ7gLA1RAekn0zx9A==}
 
   '@dynamic-labs/wagmi-connector@4.87.2':
     resolution: {integrity: sha512-Ci34mkxVlY8t8SwYy0+GdzUMsHHRqjSuGEKIFvjam0ewceutTjjggPqGdcPeBGq160oyt0Z7dQa5s57wFqM9dg==}
+=======
+  '@dynamic-labs/waas-svm@4.40.2':
+    resolution: {integrity: sha512-fNaf1RDgLzy82Yic8m95hk5TWJBLHUNpGxD6vJbPp7DyMFNHr2mJuNc5OTECFeBO6lHxkRsvCJXPvvjedcllzA==}
+
+  '@dynamic-labs/waas@4.40.2':
+    resolution: {integrity: sha512-ZK3TirHv6n1SZHJFrUhVYDBCHF7bJrRaxhIiSl2qVS+hGyC2ZK2FyagFPjb8mqc6+7uaFPhuBWD8ajvXIapWXg==}
+
+  '@dynamic-labs/wagmi-connector@4.40.2':
+    resolution: {integrity: sha512-1uR1Z95mIZMR8BSFLk01c7PoLGGYwn0KeZHPGbFLd0g4r9zkc6EpOHZz8XxORiu7mkBwKLN8AV33QuTQAmH5Ig==}
+>>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
     peerDependencies:
       '@dynamic-labs/assert-package-version': 4.87.2
       '@dynamic-labs/ethereum-core': 4.87.2
@@ -8157,6 +8153,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
+<<<<<<< HEAD
   '@dynamic-labs/sui@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.87.2
@@ -8184,6 +8181,9 @@ snapshots:
       - viem
 
   '@dynamic-labs/ton@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
+=======
+  '@dynamic-labs/tron@4.40.2(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)':
+>>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
     dependencies:
       '@dynamic-labs-sdk/client': 1.6.0(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
       '@dynamic-labs/assert-package-version': 4.87.2
@@ -8307,6 +8307,7 @@ snapshots:
       - utf-8-validate
       - zod
 
+<<<<<<< HEAD
   '@dynamic-labs/waas-sui@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:
       '@dynamic-labs-sdk/client': 1.6.0(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
@@ -8344,6 +8345,9 @@ snapshots:
       - viem
 
   '@dynamic-labs/waas-svm@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)':
+=======
+  '@dynamic-labs/waas-svm@4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
+>>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
     dependencies:
       '@dynamic-labs/assert-package-version': 4.87.2
       '@dynamic-labs/embedded-wallet-solana': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)

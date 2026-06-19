@@ -394,7 +394,7 @@ export interface paths {
                    * @description The type of VM the chain runs on
                    * @enum {string}
                    */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
                   explorerQueryParams?: {
                     [key: string]: unknown;
                   } | null;
@@ -10022,7 +10022,7 @@ export interface paths {
                   name?: string;
                   decimals?: number;
                   /** @enum {string} */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
                   metadata?: {
                     logoURI?: string;
                     verified?: boolean;
@@ -10084,7 +10084,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10188,7 +10188,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10219,7 +10219,7 @@ export interface paths {
               name?: string;
               decimals?: number;
               /** @enum {string} */
-              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "suivm" | "hypevm" | "lvm";
+              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
               metadata?: {
                 logoURI?: string;
                 verified?: boolean;

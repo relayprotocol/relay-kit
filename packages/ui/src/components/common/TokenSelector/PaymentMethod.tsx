@@ -163,7 +163,6 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       ? configuredChains?.filter(
           (chain) =>
             (chain.vmType === 'evm' ||
-              chain.vmType === 'suivm' ||
               chain.vmType === 'tvm' ||
               chain.vmType === 'tonvm' ||
               chain.vmType === 'hypevm' ||

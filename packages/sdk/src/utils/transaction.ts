@@ -6,7 +6,6 @@ import type {
   TransactionStepItem,
   paths,
   SvmReceipt,
-  SuiReceipt,
   TronReceipt,
   TonReceipt,
   LvmReceipt
@@ -56,7 +55,6 @@ export async function sendTransactionSafely(
     receipt:
       | TransactionReceipt
       | SvmReceipt
-      | SuiReceipt
       | TronReceipt
       | TonReceipt
       | LvmReceipt
@@ -86,7 +84,6 @@ export async function sendTransactionSafely(
   let receipt:
     | TransactionReceipt
     | SvmReceipt
-    | SuiReceipt
     | TronReceipt
     | TonReceipt
     | LvmReceipt

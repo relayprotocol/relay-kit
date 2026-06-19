@@ -31,7 +31,6 @@ import {
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum'
 import { SolanaWalletConnectors } from '@dynamic-labs/solana'
 import { BitcoinWalletConnectors } from '@dynamic-labs/bitcoin'
-import { SuiWalletConnectors } from '@dynamic-labs/sui'
 import { convertRelayChainToDynamicNetwork } from 'utils/dynamic'
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector'
 import { EIP1193RequestFn, fallback, Transport } from 'viem'
@@ -187,7 +186,6 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
                 SolanaWalletConnectors,
                 BitcoinWalletConnectors,
                 EclipseWalletConnectors,
-                SuiWalletConnectors,
                 AbstractEvmWalletConnectors,
                 TronWalletConnectors,
                 TonWalletConnectors

@@ -1,7 +1,6 @@
 import type { TransactionReceipt } from 'viem'
 import type {
   SvmReceipt,
-  SuiReceipt,
   TronReceipt,
   TonReceipt,
   LvmReceipt
@@ -12,7 +11,6 @@ export class TransactionConfirmationError extends Error {
   receipt:
     | TransactionReceipt
     | SvmReceipt
-    | SuiReceipt
     | TronReceipt
     | TonReceipt
     | LvmReceipt
@@ -24,7 +22,6 @@ export class TransactionConfirmationError extends Error {
     receipt?:
       | TransactionReceipt
       | SvmReceipt
-      | SuiReceipt
       | TronReceipt
       | TonReceipt
       | LvmReceipt,

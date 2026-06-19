@@ -1,6 +1,5 @@
 import type {
   SvmReceipt,
-  SuiReceipt,
   TronReceipt,
   TonReceipt,
   LvmReceipt
@@ -54,7 +53,6 @@ export type Execute = {
       receipt?:
         | TransactionReceipt
         | SvmReceipt
-        | SuiReceipt
         | TronReceipt
         | TonReceipt
         | LvmReceipt

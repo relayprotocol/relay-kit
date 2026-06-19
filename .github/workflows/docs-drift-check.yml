@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout calling repo
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
 
@@ -60,7 +60,7 @@ jobs:
       - name: Draft docs update
         if: steps.diff-check.outputs.skip != 'true'
         id: drift-check
-        uses: anthropics/claude-code-action@bbfaf8e1ffe3e688f7ab65ceee78de241e24a238 # v1
+        uses: anthropics/claude-code-action@0b1b62002952733671bde978d429b50b51c51c85 # v1
         with:
           github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -115,7 +115,7 @@ jobs:
             - Public SDK types/interfaces under `packages/sdk/src/types/` and re-exports from `packages/sdk/src/index.ts`.
             - React hooks under `packages/hooks/src/` (e.g. `useQuote`, `useRelayClient`, `useRelayChains`, `useTokenList`).
             - React UI widgets and components under `packages/ui/src/components/widgets/` (`SwapWidget`, `OnrampWidget`) and provider APIs (`RelayKitProvider`, `RelayClientProvider`, `onHapticEvent`).
-            - Public wallet adapter interfaces under `packages/relay-*-wallet-adapter/src/` (EVM, SVM, BVM, Tron, Sui, Lighter).
+            - Public wallet adapter interfaces under `packages/relay-*-wallet-adapter/src/` (EVM, SVM, BVM, Tron, Lighter).
             - Root `README.md`, package-level `README.md` files, and any migration guides under `packages/*/MIGRATION*.md`.
             - `package.json` `peerDependencies` / `exports` changes in any published package.
 

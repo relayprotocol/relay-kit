@@ -50,7 +50,6 @@ const WALLET_VM_TYPES = [
   'evm',
   'bvm',
   'svm',
-  'suivm',
   'tvm',
   'tonvm',
   'hypevm'
@@ -260,7 +259,6 @@ const SwapWidgetPage: NextPage = () => {
               const usdcSponsoredTokens = [
                 '792703809:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
                 '130:0x078d782b760474a361dda0af3839290b0ef57ad6',
-                '103665049:0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
                 '8453:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
                 '43114:0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
                 '137:0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
@@ -315,8 +313,6 @@ const SwapWidgetPage: NextPage = () => {
                 setWalletFilter('BTC')
               } else if (chain?.id === 9286185) {
                 setWalletFilter('ECLIPSE')
-              } else if (chain?.vmType === 'suivm') {
-                setWalletFilter('SUI')
               } else if (chain?.vmType === 'tvm') {
                 setWalletFilter('TRON')
               } else if (chain?.vmType === 'tonvm') {
