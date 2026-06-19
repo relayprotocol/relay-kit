@@ -24,28 +24,24 @@ adapter handles request building and on-chain confirmation.
 import { adaptTonWallet } from '@relayprotocol/relay-ton-wallet-adapter'
 import { sendTransaction, isTonWalletAccount } from '@dynamic-labs-sdk/ton'
 
-const adaptedWallet = adaptTonWallet(
-  walletAddress,
-  chainId, // the Relay numeric chainId for the TON network
-  async (request) => {
-    // request is a TonConnect-style { validUntil, messages, network? }
-    return await sendTransaction({ walletAccount, request })
-    // -> { transactionHash }
-  }
-)
+const adaptedWallet = adaptTonWallet(walletAddress, async (request) => {
+  // request is a TonConnect-style { validUntil, messages, network? }
+  return await sendTransaction({ walletAccount, request })
+  // -> { transactionHash }
+})
 ```
 
 #### Confirmation endpoint
 
 `handleConfirmTransactionStep` polls a read-only [`@ton/ton`](https://github.com/ton-org/ton)
-`TonClient`. By default the adapter creates one from the `httpRpcUrl` Relay
-provides for the chain — no API key required. To use your own endpoint or an
-existing client, pass them via the optional `options` argument:
+`TonClient`. By default the adapter creates one against toncenter's public TON
+HTTP API — no API key required. To use your own endpoint or an existing client,
+pass them via the optional `options` argument:
 
 ```ts
 import { TonClient } from '@ton/ton'
 
-adaptTonWallet(walletAddress, chainId, sendTransaction, {
+adaptTonWallet(walletAddress, sendTransaction, {
   client: new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' })
   // or: endpoint: 'https://toncenter.com/api/v2/jsonRPC'
 })

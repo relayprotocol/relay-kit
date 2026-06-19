@@ -42,18 +42,7 @@ import {
 } from '@dynamic-labs/ton'
 import { CustomizeSidebar } from 'components/CustomizeSidebar'
 
-// TODO: confirm the Relay numeric chainId for TON mainnet once it's live on the
-// API (this value matches the solver's TON mainnet fixture).
-const TON_MAINNET_CHAIN_ID = 224235520
-
-const WALLET_VM_TYPES = [
-  'evm',
-  'bvm',
-  'svm',
-  'tvm',
-  'tonvm',
-  'hypevm'
-] as const
+const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'tvm', 'tonvm', 'hypevm'] as const
 
 const SwapWidgetPage: NextPage = () => {
   useDynamicEvents('walletAdded', (newWallet) => {
@@ -177,16 +166,13 @@ const SwapWidgetPage: NextPage = () => {
             const tonWallet = primaryWallet as TonWallet
             adaptedWallet = adaptTonWallet(
               tonWallet.address,
-              TON_MAINNET_CHAIN_ID, // Relay supports TON mainnet only
               async (request) => {
-                // Dynamic's TON wallet signs + broadcasts a raw TonConnect
-                // request via its connector and returns the tx hash. The only
-                // type gap is `network` (string vs Dynamic's CHAIN enum), which
-                // we map explicitly to mainnet.
-                const transactionHash = await (
+                // Dynamic's connector signs + broadcasts and returns the signed
+                // external-message BOC (not an EVM-style tx hash).
+                const boc = await (
                   tonWallet.connector as TonWalletConnector
                 ).sendTransaction({ ...request, network: CHAIN.MAINNET })
-                return { transactionHash }
+                return { boc }
               }
             )
           }

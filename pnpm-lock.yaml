@@ -55,19 +55,11 @@ importers:
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
       '@dynamic-labs/solana':
-<<<<<<< HEAD
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
-      '@dynamic-labs/sui':
-        specifier: 4.87.2
-        version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/ton':
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
-=======
-        specifier: 4.40.2
-        version: 4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
->>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
       '@dynamic-labs/tron':
         specifier: 4.87.2
         version: 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -819,16 +811,8 @@ packages:
   '@dynamic-labs/sui-core@4.87.2':
     resolution: {integrity: sha512-qnMRP2VGHFe6m9c92s2BqEQfMgSujWLvJR004IuyMUIauerPHqvUXS6EWyoRrbl+gaUK32GzjI/hm6efhdwruQ==}
 
-<<<<<<< HEAD
-  '@dynamic-labs/sui@4.87.2':
-    resolution: {integrity: sha512-hc82FcHIrkhFcPd4Wlqq7ry8yjnFez4YMQCgmeha9S0WQKuoVohzGn0IFeu2jfgg3ad1lRTBnonmrccMeEQC1w==}
-
   '@dynamic-labs/ton@4.87.2':
     resolution: {integrity: sha512-QrjfkNwp6oEI7xttE8Tu3VVAYH88Qg6MZHUy7XYnoKuEyFnQTDJbNWRxn9+xyxxrjJ5wQiiF5iOabjNaXuEYew==}
-=======
-  '@dynamic-labs/tron@4.40.2':
-    resolution: {integrity: sha512-OXrm3xLw/LKzkH7z+SYrlb7YYzFER5gFjCl47mt9/K3fAuVI3uNALHg8CJ0n+sMXg1piVxgvDROGqOWj+HR4HQ==}
->>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
 
   '@dynamic-labs/tron@4.87.2':
     resolution: {integrity: sha512-Opl1Nof16Uq0vd1yGpMa7b8ymDb+zWeZsUrSQ6QDkINLbpNeCSpZjaS5RwGKHZ7/LvCCOLkOIyD8QHwVDDFceg==}
@@ -842,28 +826,14 @@ packages:
   '@dynamic-labs/waas-evm@4.87.2':
     resolution: {integrity: sha512-Ac/FTGAIP985Fo5TnI5kErlSbd4Z0cPQEA6avY4MqgEHKOKK741fXjm4nM5RkLil+oeLvNXa9aZNTQq88AccwA==}
 
-  '@dynamic-labs/waas-sui@4.87.2':
-    resolution: {integrity: sha512-GK8zirpBPfxHtTKtR4VBnVhapQIGA3oJ9FFsmvnnrvL/OBFSAxmo2RQeO2y8x4irf6mp+SLu/b08hvSBZP+l0Q==}
-
   '@dynamic-labs/waas-svm@4.87.2':
     resolution: {integrity: sha512-ASL5VLN+QesNyZmCwz3+gvxGROMrdUOSbAtu+1uRmbml+3FN8/ekH6mOyXQ2IJW5jb2hbojjslH+wxhTcFwWuA==}
 
-<<<<<<< HEAD
   '@dynamic-labs/waas@4.87.2':
     resolution: {integrity: sha512-KbHnoaDv3EwuzogUm0t5K31wLQZ1k2gty8sJ/itLomheX5/oCKgTrl+J0N7SgxNrMtDZYkJ7gLA1RAekn0zx9A==}
 
   '@dynamic-labs/wagmi-connector@4.87.2':
     resolution: {integrity: sha512-Ci34mkxVlY8t8SwYy0+GdzUMsHHRqjSuGEKIFvjam0ewceutTjjggPqGdcPeBGq160oyt0Z7dQa5s57wFqM9dg==}
-=======
-  '@dynamic-labs/waas-svm@4.40.2':
-    resolution: {integrity: sha512-fNaf1RDgLzy82Yic8m95hk5TWJBLHUNpGxD6vJbPp7DyMFNHr2mJuNc5OTECFeBO6lHxkRsvCJXPvvjedcllzA==}
-
-  '@dynamic-labs/waas@4.40.2':
-    resolution: {integrity: sha512-ZK3TirHv6n1SZHJFrUhVYDBCHF7bJrRaxhIiSl2qVS+hGyC2ZK2FyagFPjb8mqc6+7uaFPhuBWD8ajvXIapWXg==}
-
-  '@dynamic-labs/wagmi-connector@4.40.2':
-    resolution: {integrity: sha512-1uR1Z95mIZMR8BSFLk01c7PoLGGYwn0KeZHPGbFLd0g4r9zkc6EpOHZz8XxORiu7mkBwKLN8AV33QuTQAmH5Ig==}
->>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
     peerDependencies:
       '@dynamic-labs/assert-package-version': 4.87.2
       '@dynamic-labs/ethereum-core': 4.87.2
@@ -1213,20 +1183,6 @@ packages:
     peerDependencies:
       '@fortawesome/fontawesome-svg-core': ~1 || ~6
       react: '>=16.3'
-
-  '@gql.tada/cli-utils@1.6.3':
-    resolution: {integrity: sha512-jFFSY8OxYeBxdKi58UzeMXG1tdm4FVjXa8WHIi66Gzu9JWtCE6mqom3a8xkmSw+mVaybFW5EN2WXf1WztJVNyQ==}
-    peerDependencies:
-      '@0no-co/graphqlsp': ^1.12.13
-      '@gql.tada/svelte-support': 1.0.1
-      '@gql.tada/vue-support': 1.0.1
-      graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
-      typescript: ^5.0.0
-    peerDependenciesMeta:
-      '@gql.tada/svelte-support':
-        optional: true
-      '@gql.tada/vue-support':
-        optional: true
 
   '@gql.tada/cli-utils@1.7.3':
     resolution: {integrity: sha512-3iQY5E/jvv3Lnh6D1Mh7zr+Bb9C/TGk1DHkm+lbIjQBnZAu2m+BcTcr1e3spUt6Aa6HG/xAN2XxpbWw9oZALEg==}
@@ -1792,15 +1748,8 @@ packages:
     resolution: {integrity: sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ==}
     engines: {node: '>= 18'}
 
-  '@mysten/bcs@1.5.0':
-    resolution: {integrity: sha512-v39dm5oNfKYMAf2CVI+L0OaJiG9RVXsjqPM4BwTKcHNCZOvr35IIewGtXtWXsI67SQU2TRq8lhQzeibdiC/CNg==}
-
   '@mysten/bcs@1.9.2':
     resolution: {integrity: sha512-kBk5xrxV9OWR7i+JhL/plQrgQ2/KJhB2pB5gj+w6GXhbMQwS3DPpOvi/zN0Tj84jwPvHMllpEl0QHj6ywN7/eQ==}
-
-  '@mysten/sui@1.24.0':
-    resolution: {integrity: sha512-lmJJLM7eMrxM6Qpr6cdLr07UBXlxCM7SJjfcDO7NGrqZTx7/3TD2QhhRpDx0fS2tODxrNwQxCoHPApLVPjokIA==}
-    engines: {node: '>=18'}
 
   '@mysten/sui@1.45.2':
     resolution: {integrity: sha512-gftf7fNpFSiXyfXpbtP2afVEnhc7p2m/MEYc/SO5pov92dacGKOpQIF7etZsGDI1Wvhv+dpph+ulRNpnYSs7Bg==}
@@ -3432,6 +3381,7 @@ packages:
 
   '@walletconnect/sign-client@2.21.1':
     resolution: {integrity: sha512-QaXzmPsMnKGV6tc4UcdnQVNOz4zyXgarvdIQibJ4L3EmLat73r5ZVl4c0cCOcoaV7rgM9Wbphgu5E/7jNcd3Zg==}
+    deprecated: 'Reliability and performance improvements. See: https://github.com/WalletConnect/walletconnect-monorepo/releases'
 
   '@walletconnect/sign-client@2.21.5':
     resolution: {integrity: sha512-IAs/IqmE1HVL9EsvqkNRU4NeAYe//h9NwqKi7ToKYZv4jhcC3BBemUD1r8iQJSTHMhO41EKn1G9/DiBln3ZiwQ==}
@@ -4720,12 +4670,6 @@ packages:
     resolution: {integrity: sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==}
     engines: {node: '>=10.19.0'}
 
-  gql.tada@1.8.10:
-    resolution: {integrity: sha512-FrvSxgz838FYVPgZHGOSgbpOjhR+yq44rCzww3oOPJYi0OvBJjAgCiP6LEokZIYND2fUTXzQAyLgcvgw1yNP5A==}
-    hasBin: true
-    peerDependencies:
-      typescript: ^5.0.0
-
   gql.tada@1.9.2:
     resolution: {integrity: sha512-QxRHVpxtrOVdYXz6oavq0lBM+Zdp0swapLGJcD4SLpXDcsD337BHDFrzqqjfkbepv0sSAiO0LGabu1kI5D5Gyg==}
     hasBin: true
@@ -4737,10 +4681,6 @@ packages:
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
-
-  graphql@16.10.0:
-    resolution: {integrity: sha512-AjqGKbDGUFRKIRCP9tCKiIGHyriz2oHEbPIbEtcSLSs4YjReZOIPQQWek4+6hjw62H9QShXHyaGivGiYVLeYFQ==}
-    engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
   graphql@16.14.1:
     resolution: {integrity: sha512-cQOsSMS/IrDz82PVyRDvf/Q1F/bRbBVjJlh+xYOkI1qw2bWRvWGiWc+m2O0d6l4Bt1fyY+8kzJ8JFWGJqNeDBg==}
@@ -6745,9 +6685,6 @@ packages:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
 
-  valibot@0.36.0:
-    resolution: {integrity: sha512-CjF1XN4sUce8sBK9TixrDqFM7RwNkuXdJu174/AwmQUB62QbCQADg5lLe8ldBalFgtj1uKj+pKwDJiNo4Mn+eQ==}
-
   valibot@1.1.0:
     resolution: {integrity: sha512-Nk8lX30Qhu+9txPYTwM0cFlWLdPFsFr6LblzqIySfbZph9+BFsAHsNvHOymEviUepeIW6KFHzpX8TKhbptBXXw==}
     peerDependencies:
@@ -7224,19 +7161,9 @@ packages:
 
 snapshots:
 
-  '@0no-co/graphql.web@1.1.2(graphql@16.10.0)':
-    optionalDependencies:
-      graphql: 16.10.0
-
   '@0no-co/graphql.web@1.1.2(graphql@16.14.1)':
     optionalDependencies:
       graphql: 16.14.1
-
-  '@0no-co/graphqlsp@1.12.16(graphql@16.10.0)(typescript@5.4.5)':
-    dependencies:
-      '@gql.tada/internal': 1.0.8(graphql@16.10.0)(typescript@5.4.5)
-      graphql: 16.10.0
-      typescript: 5.4.5
 
   '@0no-co/graphqlsp@1.12.16(graphql@16.14.1)(typescript@5.4.5)':
     dependencies:
@@ -8153,37 +8080,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-<<<<<<< HEAD
-  '@dynamic-labs/sui@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@dynamic-labs/assert-package-version': 4.87.2
-      '@dynamic-labs/sui-core': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)
-      '@dynamic-labs/waas-sui': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@dynamic-labs/wallet-connector-core': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
-      text-encoding: 0.7.0
-    transitivePeerDependencies:
-      - '@dynamic-labs-wallet/primitives'
-      - '@gql.tada/svelte-support'
-      - '@gql.tada/vue-support'
-      - '@react-native-async-storage/async-storage'
-      - bufferutil
-      - debug
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - react
-      - react-dom
-      - react-native
-      - react-native-inappbrowser-reborn
-      - react-native-keychain
-      - react-native-passkey
-      - typescript
-      - utf-8-validate
-      - viem
-
   '@dynamic-labs/ton@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
-=======
-  '@dynamic-labs/tron@4.40.2(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)':
->>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
     dependencies:
       '@dynamic-labs-sdk/client': 1.6.0(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
       '@dynamic-labs/assert-package-version': 4.87.2
@@ -8307,47 +8204,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-<<<<<<< HEAD
-  '@dynamic-labs/waas-sui@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@dynamic-labs-sdk/client': 1.6.0(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
-      '@dynamic-labs-wallet/browser-wallet-client': 1.0.13(@dynamic-labs-wallet/forward-mpc-client@0.10.1(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      '@dynamic-labs-wallet/forward-mpc-client': 0.10.1(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@dynamic-labs/assert-package-version': 4.87.2
-      '@dynamic-labs/logger': 4.87.2
-      '@dynamic-labs/rpc-providers': 4.87.2
-      '@dynamic-labs/sdk-api-core': 0.0.1015
-      '@dynamic-labs/sui-core': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)
-      '@dynamic-labs/types': 4.87.2
-      '@dynamic-labs/utils': 4.87.2
-      '@dynamic-labs/waas': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@dynamic-labs/wallet-book': 4.87.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@dynamic-labs/wallet-connector-core': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
-      '@mysten/sui': 1.45.2(typescript@5.4.5)
-      '@mysten/wallet-standard': 0.19.9(typescript@5.4.5)
-    transitivePeerDependencies:
-      - '@dynamic-labs-wallet/primitives'
-      - '@gql.tada/svelte-support'
-      - '@gql.tada/vue-support'
-      - '@react-native-async-storage/async-storage'
-      - bufferutil
-      - debug
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - react
-      - react-dom
-      - react-native
-      - react-native-inappbrowser-reborn
-      - react-native-keychain
-      - react-native-passkey
-      - typescript
-      - utf-8-validate
-      - viem
-
   '@dynamic-labs/waas-svm@4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)':
-=======
-  '@dynamic-labs/waas-svm@4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
->>>>>>> 4149ded851de90181047d05bad9077b68c722fe0
     dependencies:
       '@dynamic-labs/assert-package-version': 4.87.2
       '@dynamic-labs/embedded-wallet-solana': 4.87.2(@dynamic-labs-wallet/primitives@1.0.13)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -8537,9 +8394,9 @@ snapshots:
       '@simplewebauthn/browser': 13.1.0
       '@simplewebauthn/types': 12.0.0
 
-  '@ecies/ciphers@0.2.2(@noble/ciphers@1.2.1)':
+  '@ecies/ciphers@0.2.2(@noble/ciphers@1.3.0)':
     dependencies:
-      '@noble/ciphers': 1.2.1
+      '@noble/ciphers': 1.3.0
 
   '@ecies/ciphers@0.2.6(@noble/ciphers@1.3.0)':
     dependencies:
@@ -8956,24 +8813,11 @@ snapshots:
       prop-types: 15.8.1
       react: 19.1.1
 
-  '@gql.tada/cli-utils@1.6.3(@0no-co/graphqlsp@1.12.16(graphql@16.10.0)(typescript@5.4.5))(graphql@16.10.0)(typescript@5.4.5)':
-    dependencies:
-      '@0no-co/graphqlsp': 1.12.16(graphql@16.10.0)(typescript@5.4.5)
-      '@gql.tada/internal': 1.0.8(graphql@16.10.0)(typescript@5.4.5)
-      graphql: 16.10.0
-      typescript: 5.4.5
-
   '@gql.tada/cli-utils@1.7.3(@0no-co/graphqlsp@1.12.16(graphql@16.14.1)(typescript@5.4.5))(graphql@16.14.1)(typescript@5.4.5)':
     dependencies:
       '@0no-co/graphqlsp': 1.12.16(graphql@16.14.1)(typescript@5.4.5)
       '@gql.tada/internal': 1.0.9(graphql@16.14.1)(typescript@5.4.5)
       graphql: 16.14.1
-      typescript: 5.4.5
-
-  '@gql.tada/internal@1.0.8(graphql@16.10.0)(typescript@5.4.5)':
-    dependencies:
-      '@0no-co/graphql.web': 1.1.2(graphql@16.10.0)
-      graphql: 16.10.0
       typescript: 5.4.5
 
   '@gql.tada/internal@1.0.8(graphql@16.14.1)(typescript@5.4.5)':
@@ -8987,10 +8831,6 @@ snapshots:
       '@0no-co/graphql.web': 1.1.2(graphql@16.14.1)
       graphql: 16.14.1
       typescript: 5.4.5
-
-  '@graphql-typed-document-node/core@3.2.0(graphql@16.10.0)':
-    dependencies:
-      graphql: 16.10.0
 
   '@graphql-typed-document-node/core@3.2.0(graphql@16.14.1)':
     dependencies:
@@ -9656,32 +9496,10 @@ snapshots:
 
   '@msgpack/msgpack@3.1.2': {}
 
-  '@mysten/bcs@1.5.0':
-    dependencies:
-      '@scure/base': 1.2.4
-
   '@mysten/bcs@1.9.2':
     dependencies:
       '@mysten/utils': 0.2.0
       '@scure/base': 1.2.6
-
-  '@mysten/sui@1.24.0(typescript@5.4.5)':
-    dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
-      '@mysten/bcs': 1.5.0
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
-      '@scure/base': 1.2.4
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
-      gql.tada: 1.8.10(graphql@16.10.0)(typescript@5.4.5)
-      graphql: 16.10.0
-      poseidon-lite: 0.2.1
-      valibot: 0.36.0
-    transitivePeerDependencies:
-      - '@gql.tada/svelte-support'
-      - '@gql.tada/vue-support'
-      - typescript
 
   '@mysten/sui@1.45.2(typescript@5.4.5)':
     dependencies:
@@ -10342,7 +10160,7 @@ snapshots:
     dependencies:
       big.js: 6.2.2
       dayjs: 1.11.13
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -10353,7 +10171,7 @@ snapshots:
     dependencies:
       big.js: 6.2.2
       dayjs: 1.11.13
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -10366,7 +10184,7 @@ snapshots:
       '@reown/appkit-wallet': 1.7.20(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)
       '@walletconnect/universal-provider': 2.21.7(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
       valtio: 2.1.5(@types/react@19.1.11)(react@19.1.1)
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10400,7 +10218,7 @@ snapshots:
       '@reown/appkit-wallet': 1.7.8(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)
       '@walletconnect/universal-provider': 2.21.0(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
       valtio: 1.13.2(@types/react@19.1.11)(react@19.1.1)
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10656,7 +10474,7 @@ snapshots:
       '@walletconnect/logger': 2.1.2
       '@walletconnect/universal-provider': 2.21.7(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
       valtio: 2.1.5(@types/react@19.1.11)(react@19.1.1)
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10693,7 +10511,7 @@ snapshots:
       '@walletconnect/logger': 2.1.2
       '@walletconnect/universal-provider': 2.21.0(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
       valtio: 1.13.2(@types/react@19.1.11)(react@19.1.1)
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10757,7 +10575,7 @@ snapshots:
       bs58: 6.0.0
       semver: 7.7.2
       valtio: 2.1.5(@types/react@19.1.11)(react@19.1.1)
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     optionalDependencies:
       '@lit/react': 1.0.8(@types/react@19.1.11)
     transitivePeerDependencies:
@@ -10901,7 +10719,7 @@ snapshots:
   '@safe-global/safe-apps-sdk@9.1.0(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@safe-global/safe-gateway-typescript-sdk': 3.22.9
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -11662,7 +11480,7 @@ snapshots:
       '@turnkey/crypto': 2.5.0
       '@turnkey/encoding': 0.5.0
     optionalDependencies:
-      viem: 2.38.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
+      viem: 2.52.2(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -13705,8 +13523,8 @@ snapshots:
 
   eciesjs@0.4.13:
     dependencies:
-      '@ecies/ciphers': 0.2.2(@noble/ciphers@1.2.1)
-      '@noble/ciphers': 1.2.1
+      '@ecies/ciphers': 0.2.2(@noble/ciphers@1.3.0)
+      '@noble/ciphers': 1.3.0
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
 
@@ -14495,18 +14313,6 @@ snapshots:
       p-cancelable: 2.1.1
       responselike: 2.0.1
 
-  gql.tada@1.8.10(graphql@16.10.0)(typescript@5.4.5):
-    dependencies:
-      '@0no-co/graphql.web': 1.1.2(graphql@16.10.0)
-      '@0no-co/graphqlsp': 1.12.16(graphql@16.10.0)(typescript@5.4.5)
-      '@gql.tada/cli-utils': 1.6.3(@0no-co/graphqlsp@1.12.16(graphql@16.10.0)(typescript@5.4.5))(graphql@16.10.0)(typescript@5.4.5)
-      '@gql.tada/internal': 1.0.8(graphql@16.10.0)(typescript@5.4.5)
-      typescript: 5.4.5
-    transitivePeerDependencies:
-      - '@gql.tada/svelte-support'
-      - '@gql.tada/vue-support'
-      - graphql
-
   gql.tada@1.9.2(graphql@16.14.1)(typescript@5.4.5):
     dependencies:
       '@0no-co/graphql.web': 1.1.2(graphql@16.14.1)
@@ -14522,8 +14328,6 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   graphemer@1.4.0: {}
-
-  graphql@16.10.0: {}
 
   graphql@16.14.1: {}
 
@@ -15378,7 +15182,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.0(typescript@5.4.5)(zod@3.22.4)
+      abitype: 1.2.3(typescript@5.4.5)(zod@3.22.4)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.4.5
@@ -15407,7 +15211,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.0(typescript@5.4.5)(zod@3.22.4)
+      abitype: 1.2.3(typescript@5.4.5)(zod@3.22.4)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.4.5
@@ -16611,8 +16415,6 @@ snapshots:
   uuid@8.3.2: {}
 
   uuid@9.0.1: {}
-
-  valibot@0.36.0: {}
 
   valibot@1.1.0(typescript@5.4.5):
     optionalDependencies:
