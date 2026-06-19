@@ -56,9 +56,6 @@ importers:
       '@dynamic-labs/solana':
         specifier: 4.40.2
         version: 4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))(zod@3.22.4)
-      '@dynamic-labs/sui':
-        specifier: 4.40.2
-        version: 4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
       '@dynamic-labs/tron':
         specifier: 4.40.2
         version: 4.40.2(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -92,9 +89,6 @@ importers:
       '@relayprotocol/relay-sdk':
         specifier: workspace:*
         version: link:../packages/sdk
-      '@relayprotocol/relay-sui-wallet-adapter':
-        specifier: workspace:*
-        version: link:../packages/relay-sui-wallet-adapter
       '@relayprotocol/relay-svm-wallet-adapter':
         specifier: workspace:*
         version: link:../packages/relay-svm-wallet-adapter
@@ -283,28 +277,6 @@ importers:
       vitest:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@22.13.4)(@vitest/ui@1.6.1)(lightningcss@1.31.1)(terser@5.39.0)
-
-  packages/relay-sui-wallet-adapter:
-    dependencies:
-      '@mysten/sui':
-        specifier: 1.24.0
-        version: 1.24.0(typescript@5.4.5)
-      '@relayprotocol/relay-sdk':
-        specifier: workspace:*
-        version: link:../sdk
-      '@types/node':
-        specifier: ^22.5.4
-        version: 22.13.4
-      axios:
-        specifier: ^1.6.5
-        version: 1.7.9
-      viem:
-        specifier: '>=2.26.0'
-        version: 2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)
-    devDependencies:
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.10
 
   packages/relay-svm-wallet-adapter:
     dependencies:
@@ -777,9 +749,6 @@ packages:
   '@dynamic-labs/sui-core@4.40.2':
     resolution: {integrity: sha512-k3BlFtEgbqhHjMvXWf3xlpQsD9FyOr4rWnTr/qk6sybbjcashl7XETMBPDLkfyc+PZVkJjLe+vklNPxl0NGfYg==}
 
-  '@dynamic-labs/sui@4.40.2':
-    resolution: {integrity: sha512-SmyBUMUDifSkPMe5H8lRjTqRQcDX0YS2LJOEcNOX7hFG5YTpWmn3v2loQM5GKjBsG1tL/OryrkxI3EPaw9BHkw==}
-
   '@dynamic-labs/tron@4.40.2':
     resolution: {integrity: sha512-OXrm3xLw/LKzkH7z+SYrlb7YYzFER5gFjCl47mt9/K3fAuVI3uNALHg8CJ0n+sMXg1piVxgvDROGqOWj+HR4HQ==}
 
@@ -800,9 +769,6 @@ packages:
 
   '@dynamic-labs/waas-evm@4.40.2':
     resolution: {integrity: sha512-gu17363RNIl3i0NjhWoJSmtHIb75AJDs8YI+eOVQn3J3AmP2hDqVBeqSwc1Ij6R/8ZzbI4xIhsZDDRCe3vCrrQ==}
-
-  '@dynamic-labs/waas-sui@4.40.2':
-    resolution: {integrity: sha512-08dvJgK/361mvHLTFOyX+i5XX7veugq/Ot0QAjAnwLoeIvNTGgClH4Q8xLTfifgl9DWjj60unXom/WViN0wW0g==}
 
   '@dynamic-labs/waas-svm@4.40.2':
     resolution: {integrity: sha512-fNaf1RDgLzy82Yic8m95hk5TWJBLHUNpGxD6vJbPp7DyMFNHr2mJuNc5OTECFeBO6lHxkRsvCJXPvvjedcllzA==}
@@ -7696,26 +7662,6 @@ snapshots:
       - react-dom
       - typescript
 
-  '@dynamic-labs/sui@4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@dynamic-labs/assert-package-version': 4.40.2
-      '@dynamic-labs/sui-core': 4.40.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)
-      '@dynamic-labs/waas-sui': 4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@dynamic-labs/wallet-connector-core': 4.40.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      text-encoding: 0.7.0
-    transitivePeerDependencies:
-      - '@gql.tada/svelte-support'
-      - '@gql.tada/vue-support'
-      - bufferutil
-      - debug
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - react
-      - react-dom
-      - typescript
-      - utf-8-validate
-      - viem
-
   '@dynamic-labs/tron@4.40.2(@types/react@19.1.11)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.40.2
@@ -7815,34 +7761,6 @@ snapshots:
       - typescript
       - utf-8-validate
       - zod
-
-  '@dynamic-labs/waas-sui@4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
-    dependencies:
-      '@dynamic-labs-wallet/browser-wallet-client': 0.0.187(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@dynamic-labs/assert-package-version': 4.40.2
-      '@dynamic-labs/logger': 4.40.2
-      '@dynamic-labs/rpc-providers': 4.40.2
-      '@dynamic-labs/sdk-api-core': 0.0.813
-      '@dynamic-labs/sui-core': 4.40.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)
-      '@dynamic-labs/types': 4.40.2
-      '@dynamic-labs/utils': 4.40.2
-      '@dynamic-labs/waas': 4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))
-      '@dynamic-labs/wallet-book': 4.40.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@dynamic-labs/wallet-connector-core': 4.40.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@mysten/sui': 1.24.0(typescript@5.4.5)
-      '@mysten/wallet-standard': 0.13.29(typescript@5.4.5)
-    transitivePeerDependencies:
-      - '@gql.tada/svelte-support'
-      - '@gql.tada/vue-support'
-      - bufferutil
-      - debug
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - react
-      - react-dom
-      - typescript
-      - utf-8-validate
-      - viem
 
   '@dynamic-labs/waas-svm@4.40.2(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.4.5)(utf-8-validate@5.0.10)(viem@2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.22.4))':
     dependencies:

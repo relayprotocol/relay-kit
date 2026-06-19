@@ -11,7 +11,7 @@ Monorepo (pnpm workspaces) for Relay's cross-chain swap/bridge UI kit.
 | `packages/sdk` | Core SDK — API client, execution logic (Viem-based) |
 | `packages/ui` | React UI components (Tailwind v4, Radix primitives) |
 | `packages/hooks` | React hooks for SDK integration (TanStack Query) |
-| `packages/*-wallet-adapter` | Multi-chain wallet adapters (EVM, SVM, BVM, Tron, Sui) |
+| `packages/*-wallet-adapter` | Multi-chain wallet adapters (EVM, SVM, BVM, Tron) |
 | `demo/` | Next.js 15 playground |
 
 ## Critical Rules

@@ -1,7 +1,6 @@
 import type { TransactionReceipt } from 'viem'
 import type {
   SvmReceipt,
-  SuiReceipt,
   TronReceipt,
   LvmReceipt
 } from '../types/index.js'
@@ -11,7 +10,6 @@ export class TransactionConfirmationError extends Error {
   receipt:
     | TransactionReceipt
     | SvmReceipt
-    | SuiReceipt
     | TronReceipt
     | LvmReceipt
     | undefined
@@ -22,7 +20,6 @@ export class TransactionConfirmationError extends Error {
     receipt?:
       | TransactionReceipt
       | SvmReceipt
-      | SuiReceipt
       | TronReceipt
       | LvmReceipt,
     tenderlyError?: TenderlyErrorInfo | null

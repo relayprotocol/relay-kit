@@ -13,11 +13,9 @@ import { useDynamicContext } from '@dynamic-labs/sdk-react-core'
 import { isEthereumWallet } from '@dynamic-labs/ethereum'
 import { isSolanaWallet } from '@dynamic-labs/solana'
 import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
-import { isSuiWallet } from '@dynamic-labs/sui'
 import { isTronWallet, type TronWallet } from '@dynamic-labs/tron'
 import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
 import { adaptBitcoinWallet } from '@relayprotocol/relay-bitcoin-wallet-adapter'
-import { adaptSuiWallet } from '@relayprotocol/relay-sui-wallet-adapter'
 import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
 
 const FastFillPage: NextPage = () => {
@@ -72,27 +70,6 @@ const FastFillPage: NextPage = () => {
                 throw new Error('Missing psbt response')
               }
               return response.signedPsbt
-            }
-          )
-        } else if (isSuiWallet(primaryWallet)) {
-          const walletClient = await primaryWallet.getWalletClient()
-
-          if (!walletClient) {
-            throw new Error('Unable to setup Sui wallet')
-          }
-
-          wallet = adaptSuiWallet(
-            primaryWallet.address,
-            784, // Sui chain ID placeholder - will be updated based on quote params
-            walletClient,
-            async (tx) => {
-              const signedTransaction = await primaryWallet.signTransaction(tx)
-              const executionResult = await walletClient.executeTransactionBlock({
-                options: {},
-                signature: signedTransaction.signature,
-                transactionBlock: signedTransaction.bytes
-              })
-              return executionResult
             }
           )
         } else if (isTronWallet(primaryWallet)) {
@@ -277,7 +254,7 @@ const FastFillPage: NextPage = () => {
         >
           Note that user/recipient are not required — they are taken from the
           connected wallet. This demo now supports all wallet types: EVM, Solana
-          (SVM), Bitcoin (BVM), Sui, Tron (TVM), and Hyperliquid.
+          (SVM), Bitcoin (BVM), Tron (TVM), and Hyperliquid.
         </div>
         <textarea
           value={quoteParams}
