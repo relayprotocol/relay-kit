@@ -6,9 +6,6 @@
 const nextConfig = {
   /* config options here */
   bundlePagesRouterDependencies: true,
-  // Allow Next 15 dev requests coming through a cloudflared/ngrok tunnel
-  // (needed when opening the demo via the tunnel's HTTPS URL).
-  allowedDevOrigins: ['*.trycloudflare.com', '*.ngrok-free.app'],
   transpilePackages: [
     '@dynamic-labs/wagmi-connector',
     '@dynamic-labs/sdk-react-core',
