@@ -22,12 +22,15 @@ adapter handles request building and on-chain confirmation.
 
 ```ts
 import { adaptTonWallet } from '@relayprotocol/relay-ton-wallet-adapter'
-import { sendTransaction, isTonWalletAccount } from '@dynamic-labs-sdk/ton'
 
 const adaptedWallet = adaptTonWallet(walletAddress, async (request) => {
-  // request is a TonConnect-style { validUntil, messages, network? }
-  return await sendTransaction({ walletAccount, request })
-  // -> { transactionHash }
+  // `request` is a TonConnect-style { validUntil, messages, network? }.
+  // Forward it to your wallet provider's send method (e.g. Dynamic's TON
+  // connector, or `tonConnectUI.sendTransaction`) and return the result. The
+  // adapter accepts { boc } (the signed external-message BOC most TonConnect
+  // wallets return) or { transactionHash }.
+  const boc = await wallet.sendTransaction(request)
+  return { boc }
 })
 ```
 
@@ -47,7 +50,5 @@ adaptTonWallet(walletAddress, sendTransaction, {
 })
 ```
 
-> Note: message signing (`handleSignMessageStep`) is not implemented, matching
-> the Tron and Sui adapters. The exact shape of the Relay quote's `tonvm`
-> transaction step is being finalized alongside backend TON support; the request
-> mapping in `handleSendTransactionStep` may be tightened once it is live.
+> Note: message signing (`handleSignMessageStep`) is not implemented, as it is
+> not used by deposit/bridge flows.

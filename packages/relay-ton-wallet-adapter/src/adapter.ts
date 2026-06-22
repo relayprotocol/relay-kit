@@ -71,7 +71,7 @@ export const adaptTonWallet = (
     getChainId: async () => TON_CHAIN_ID,
     address: async () => walletAddress,
     handleSignMessageStep: async () => {
-      // Mirrors the Tron and Sui adapters — not needed for deposit/bridge flows.
+      // Not used by deposit/bridge flows; mirrors the other VM adapters.
       throw new Error('Message signing not implemented for TON')
     },
     handleSendTransactionStep: async (_chainId, stepItem) => {
