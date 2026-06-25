@@ -126,7 +126,9 @@ export const adaptTonWallet = (
       // message against the Relay step.
       const start = Date.now()
 
-      while (true) {
+      const maxAttempts = Math.ceil(CONFIRM_TIMEOUT_MS / CONFIRM_POLL_MS) + 1
+
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
         let match:
           | { hash: string; lt: string; description: unknown }
           | undefined
@@ -165,10 +167,12 @@ export const adaptTonWallet = (
           return { hash: match.hash, lt: match.lt }
         }
         if (Date.now() - start > CONFIRM_TIMEOUT_MS) {
-          throw new Error('TON transaction confirmation timed out')
+          break
         }
         await new Promise((resolve) => setTimeout(resolve, CONFIRM_POLL_MS))
       }
+
+      throw new Error('TON transaction confirmation timed out')
     },
     switchChain: () => Promise.resolve()
   }
@@ -176,7 +180,11 @@ export const adaptTonWallet = (
 
 /** Canonical message hash, used identically for the BOC and on-chain messages. */
 const hashMessage = (message: Message): string => {
-  return beginCell().store(storeMessage(message)).endCell().hash().toString('hex')
+  return beginCell()
+    .store(storeMessage(message))
+    .endCell()
+    .hash()
+    .toString('hex')
 }
 
 /**
@@ -190,7 +198,9 @@ const toMessageHash = (bocOrHash: string, expectedWallet?: Address): string => {
   try {
     const message = loadMessage(Cell.fromBase64(bocOrHash).beginParse())
     if (message.info.type !== 'external-in') {
-      throw new Error(`Expected an external-in message, got ${message.info.type}`)
+      throw new Error(
+        `Expected an external-in message, got ${message.info.type}`
+      )
     }
     if (expectedWallet && !message.info.dest.equals(expectedWallet)) {
       throw new Error('TON wallet returned a BOC for an unexpected account')
@@ -240,7 +250,9 @@ const isTransactionSuccessful = (description: unknown): boolean => {
     return false
   }
   const computeOk =
-    desc.computePhase?.type === 'vm' ? desc.computePhase.success !== false : true
+    desc.computePhase?.type === 'vm'
+      ? desc.computePhase.success !== false
+      : true
   const actionOk = desc.actionPhase ? desc.actionPhase.success !== false : true
   return computeOk && actionOk
 }
