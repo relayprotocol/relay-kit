@@ -137,7 +137,8 @@ export default (
   queryOptions?: Partial<QueryOptions>
 ) => {
   const rpcUrl = 'https://api.trongrid.io'
-  const trxAddress = 'TXuo7BWT6hDdotW8LPPeiShe1KHUFzB6hJ'
+  // Native TRX sentinel returned by the Relay API (decodes to the zero address)
+  const trxAddress = 'T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb'
 
   const queryKey = ['useTronBalance', address, currency]
 
@@ -163,7 +164,7 @@ export default (
             throw new Error(data.error.message)
           }
 
-          const result = data.result as TronAccountResponse
+          const result = data as Partial<TronAccountResponse>
 
           return {
             balance: BigInt(result.balance ?? 0)
@@ -192,7 +193,21 @@ export default (
             throw new Error(data.error.message)
           }
 
+          // Trigger failures arrive on data.result, not data.error — surface
+          // them instead of returning a 0 balance (message is plaintext here)
+          if (data.result?.result === false || data.result?.code) {
+            throw new Error(
+              data.result?.message ??
+                data.result?.code ??
+                'triggerconstantcontract failed'
+            )
+          }
+
           const hex = data?.constant_result?.[0] as string | undefined
+
+          if (!hex) {
+            throw new Error('Empty constant_result from triggerconstantcontract')
+          }
 
           return {
             balance: BigInt('0x' + hex)

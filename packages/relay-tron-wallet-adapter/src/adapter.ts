@@ -41,6 +41,8 @@ export const adaptTronWallet = (
         owner_address: stepItem.data.parameter?.owner_address,
         contract_address: stepItem.data.parameter?.contract_address,
         data: strip0x(stepItem.data.parameter?.data!),
+        // Native TRX amount rides in call_value, not calldata
+        call_value: stepItem.data.parameter?.call_value ?? 0,
         visible: false,
         fee_limit: 30_000_000
       }
