@@ -1,5 +1,15 @@
 # @reservoir0x/relay-sdk
 
+## 6.0.0
+
+### Major Changes
+
+- 4149ded: Remove Sui support
+
+### Patch Changes
+
+- b61e540: Fix native TRX handling on Tron: forward call_value on the deposit transaction (was sending 0 TRX) and fix the native-TRX sentinel address (the wrong sentinel made native TRX fall through to a failing balanceOf call).
+
 ## 5.2.8
 
 ### Patch Changes
