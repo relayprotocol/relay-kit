@@ -1,5 +1,14 @@
 # @relayprotocol/relay-tron-wallet-adapter
 
+## 7.0.0
+
+### Patch Changes
+
+- b61e540: Fix native TRX handling on Tron: forward call_value on the deposit transaction (was sending 0 TRX) and fix the native-TRX sentinel address (the wrong sentinel made native TRX fall through to a failing balanceOf call).
+- Updated dependencies [4149ded]
+- Updated dependencies [b61e540]
+  - @relayprotocol/relay-sdk@6.0.0
+
 ## 6.0.8
 
 ### Patch Changes

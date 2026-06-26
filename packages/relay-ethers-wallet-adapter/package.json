@@ -1,6 +1,6 @@
 {
     "name": "@relayprotocol/relay-ethers-wallet-adapter",
-    "version": "29.0.8",
+    "version": "30.0.0",
     "description": "An adapter used to convert an ethersjs signer to an Adapted Wallet for use in the @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
