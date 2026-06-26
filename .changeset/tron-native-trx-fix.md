@@ -4,4 +4,4 @@
 '@relayprotocol/relay-kit-ui': patch
 ---
 
-Fix native TRX handling on Tron: forward call_value on the deposit transaction (was sending 0 TRX) and read native balance via getaccount instead of a balanceOf contract call.
+Fix native TRX handling on Tron: forward call_value on the deposit transaction (was sending 0 TRX) and fix the native-TRX sentinel address (the wrong sentinel made native TRX fall through to a failing balanceOf call).
