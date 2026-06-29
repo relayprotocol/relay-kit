@@ -1,4 +1,4 @@
-import { useMemo, type FC } from 'react'
+import { useMemo } from 'react'
 import { Flex, Text, ChainTokenIcon, Box } from '../../../primitives/index.js'
 import { LoadingSpinner } from '../../LoadingSpinner.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -26,7 +26,7 @@ type SwapConfirmationStepProps = {
   linkedWallets?: any[]
 }
 
-export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
+export function SwapConfirmationStep({
   fromToken,
   toToken,
   fromChain,
@@ -37,7 +37,7 @@ export const SwapConfirmationStep: FC<SwapConfirmationStepProps> = ({
   steps,
   currentAddress,
   linkedWallets
-}) => {
+}: SwapConfirmationStepProps) {
   const operation = quote?.details?.operation || 'swap'
 
   const { formattedSteps } = useMemo(
@@ -177,7 +177,7 @@ export type StepRowProps = {
   showSubTextSpinner?: boolean
 }
 
-export const StepRow: FC<StepRowProps> = ({
+export function StepRow({
   id,
   action,
   isActive,
@@ -189,7 +189,7 @@ export const StepRow: FC<StepRowProps> = ({
   subText,
   subTextColor,
   showSubTextSpinner
-}) => {
+}: StepRowProps) {
   const relayClient = useRelayClient()
   const chains = relayClient?.chains
   return (
@@ -206,13 +206,14 @@ export const StepRow: FC<StepRowProps> = ({
                 : 'relay:bg-[var(--relay-colors-gray5)]'
           )}
           style={{
-            color: isActive && !isCompleted
-              ? 'var(--relay-colors-primary11)'
-              : isCompleted
-                ? 'var(--relay-colors-green11)'
-                : isActive
-                  ? 'var(--relay-colors-primary11)'
-                  : 'var(--relay-colors-gray9)',
+            color:
+              isActive && !isCompleted
+                ? 'var(--relay-colors-primary11)'
+                : isCompleted
+                  ? 'var(--relay-colors-green11)'
+                  : isActive
+                    ? 'var(--relay-colors-primary11)'
+                    : 'var(--relay-colors-gray9)',
             animation:
               isActive && !isCompleted
                 ? 'relay-pulse-shadow 1s infinite alternate-reverse'
@@ -245,10 +246,7 @@ export const StepRow: FC<StepRowProps> = ({
 
                   return (
                     <Flex align="center" className="relay:gap-[4px]">
-                      <Text
-                        style="subtitle3"
-                        color="green"
-                      >
+                      <Text style="subtitle3" color="green">
                         {successText}:
                       </Text>
                       {hashPart &&
@@ -259,18 +257,12 @@ export const StepRow: FC<StepRowProps> = ({
                             rel="noopener noreferrer"
                             className="relay:no-underline"
                           >
-                            <Text
-                              style="subtitle3"
-                              color="primary"
-                            >
+                            <Text style="subtitle3" color="primary">
                               {hashPart}
                             </Text>
                           </a>
                         ) : (
-                          <Text
-                            style="subtitle3"
-                            color="primary"
-                          >
+                          <Text style="subtitle3" color="primary">
                             {hashPart}
                           </Text>
                         ))}
@@ -294,10 +286,7 @@ export const StepRow: FC<StepRowProps> = ({
 
                   return (
                     <Flex align="center" className="relay:gap-[4px]">
-                      <Text
-                        style="subtitle3"
-                        color="primary"
-                      >
+                      <Text style="subtitle3" color="primary">
                         {labelText}:
                       </Text>
                       {hashPart &&
@@ -308,18 +297,12 @@ export const StepRow: FC<StepRowProps> = ({
                             rel="noopener noreferrer"
                             className="relay:no-underline"
                           >
-                            <Text
-                              style="subtitle3"
-                              color="primary"
-                            >
+                            <Text style="subtitle3" color="primary">
                               {hashPart}
                             </Text>
                           </a>
                         ) : (
-                          <Text
-                            style="subtitle3"
-                            color="primary"
-                          >
+                          <Text style="subtitle3" color="primary">
                             {hashPart}
                           </Text>
                         ))}

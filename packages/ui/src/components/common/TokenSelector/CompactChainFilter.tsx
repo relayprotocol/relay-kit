@@ -1,5 +1,4 @@
 import {
-  type FC,
   useState,
   useMemo,
   forwardRef,
@@ -69,7 +68,7 @@ type CompactChainFilterProps = {
   onAnalyticEvent?: (eventName: string, data?: any) => void
 }
 
-export const CompactChainFilter: FC<CompactChainFilterProps> = ({
+export function CompactChainFilter({
   options,
   value,
   onSelect,
@@ -77,7 +76,7 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
   onChainStarToggle,
   starredChainIds,
   onAnalyticEvent
-}) => {
+}: CompactChainFilterProps) {
   const [open, setOpen] = useState(false)
   const [chainSearchInput, setChainSearchInput] = useState('')
   const searchInputRef = useRef<HTMLInputElement | null>(null)
@@ -221,7 +220,10 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Flex align="center" className="relay:px-2 relay:py-1 relay:gap-1">
+                  <Flex
+                    align="center"
+                    className="relay:px-2 relay:py-1 relay:gap-1"
+                  >
                     <Box className="relay:text-[color:var(--relay-colors-primary9)]">
                       <FontAwesomeIcon icon={faStar} width={12} height={12} />
                     </Box>
@@ -255,7 +257,11 @@ export const CompactChainFilter: FC<CompactChainFilterProps> = ({
                 </>
               )}
 
-              <Text style="subtitle2" color="subtle" className="relay:px-2 relay:py-1">
+              <Text
+                style="subtitle2"
+                color="subtle"
+                className="relay:px-2 relay:py-1"
+              >
                 Chains A-Z
               </Text>
               {alphabeticalChains.map((chain: ChainFilterValue) => {

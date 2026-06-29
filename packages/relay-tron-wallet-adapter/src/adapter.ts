@@ -12,10 +12,10 @@ import type { TriggerSmartContractResponse } from './types.js'
  * @param tronWeb - The TronWeb instance for interacting with the Tron network
  * @returns An AdaptedWallet object that conforms to the Relay SDK interface
  */
-export const adaptTronWallet = (
+export function adaptTronWallet(
   walletAddress: string,
   tronWeb: TronWeb
-): AdaptedWallet => {
+): AdaptedWallet {
   const getChainId = async () => {
     return 728126428
   }

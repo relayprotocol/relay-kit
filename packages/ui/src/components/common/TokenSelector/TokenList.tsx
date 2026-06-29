@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react'
+import { useState } from 'react'
 import {
   Flex,
   Text,
@@ -26,14 +26,14 @@ type TokenListProps = {
   showMoreButton?: boolean
 }
 
-export const TokenList: FC<TokenListProps> = ({
+export function TokenList({
   title,
   tokens: rawTokens,
   isLoading,
   isLoadingBalances,
   chainFilterId,
   showMoreButton
-}) => {
+}: TokenListProps) {
   const [tokensExpanded, setTokensExpanded] = useState(false)
   const tokens =
     showMoreButton && rawTokens && rawTokens.length > 4 && !tokensExpanded
@@ -49,9 +49,7 @@ export const TokenList: FC<TokenListProps> = ({
             align="center"
             className="relay:gap-2 relay:p-2 relay:w-full"
           >
-            <Skeleton
-              className="relay:w-[40px] relay:h-[40px] relay:!rounded-full relay:shrink-0"
-            />
+            <Skeleton className="relay:w-[40px] relay:h-[40px] relay:!rounded-full relay:shrink-0" />
             <Flex direction="column" className="relay:gap-[2px] relay:grow">
               <Skeleton className="relay:w-[60%] relay:h-[16px]" />
               <Skeleton className="relay:w-[40%] relay:h-[16px]" />

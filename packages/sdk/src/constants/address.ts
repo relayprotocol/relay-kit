@@ -15,7 +15,7 @@ export const tonDeadAddress =
 const eclipseId = 9286185
 const zeroChainId = 543210
 
-export const getDeadAddress = (vmType?: ChainVM, chainId?: number) => {
+export function getDeadAddress(vmType?: ChainVM, chainId?: number) {
   if (vmType === 'svm') {
     return chainId === eclipseId ? eclipseDeadAddress : solDeadAddress
   } else if (vmType === 'bvm') {
@@ -31,7 +31,7 @@ export const getDeadAddress = (vmType?: ChainVM, chainId?: number) => {
   }
 }
 
-export const isDeadAddress = (address?: string) => {
+export function isDeadAddress(address?: string) {
   if (!address) {
     return false
   }

@@ -44,10 +44,10 @@ export type AdaptViemWalletOptions = {
   disableCapabilitiesCheck?: boolean
 }
 
-export const adaptViemWallet = (
+export function adaptViemWallet(
   wallet: WalletClient,
   options: AdaptViemWalletOptions = {}
-): AdaptedWallet => {
+): AdaptedWallet {
   const { disableCapabilitiesCheck } = options
   return {
     vmType: 'evm',

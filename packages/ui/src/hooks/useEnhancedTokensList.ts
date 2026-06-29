@@ -23,14 +23,14 @@ export type EnhancedToken = {
   chain?: RelayChain
 }
 
-export const useEnhancedTokensList = (
+export function useEnhancedTokensList(
   tokenLists: Currency[] | undefined,
   balanceMap: BalanceMap | undefined,
   context: 'from' | 'to',
   multiWalletSupportEnabled: boolean,
   chainId?: number,
   sortByBalance: boolean = true
-): EnhancedToken[] => {
+): EnhancedToken[] {
   const { chains } = useInternalRelayChains()
 
   const chainCurrencyMap = useMemo(() => {

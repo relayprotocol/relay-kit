@@ -1,4 +1,4 @@
-import { type FC, useState, useEffect, useMemo, useContext } from 'react'
+import { useState, useEffect, useMemo, useContext } from 'react'
 import { Text, Flex, Button, Input, Pill } from '../primitives/index.js'
 import { Modal } from '../common/Modal.js'
 import { type Address, isAddress } from 'viem'
@@ -46,7 +46,7 @@ type Props = {
   onClear: () => void
 }
 
-export const CustomAddressModal: FC<Props> = ({
+export function CustomAddressModal({
   open,
   toAddress,
   toChain,
@@ -58,7 +58,7 @@ export const CustomAddressModal: FC<Props> = ({
   onOpenChange,
   onConfirmed,
   onClear
-}) => {
+}: Props) {
   const haptic = useHapticEvent()
   const connectedAddress = useWalletAddress(wallet, linkedWallets)
   const [address, setAddress] = useState('')
@@ -182,9 +182,7 @@ export const CustomAddressModal: FC<Props> = ({
       >
         <Text style="h6">To Address</Text>
         <Flex direction="column" className="relay:gap-2 relay:relative">
-          <Flex
-            className="relay:relative relay:w-full"
-          >
+          <Flex className="relay:relative relay:w-full">
             <Input
               type="text"
               inputMode="text"

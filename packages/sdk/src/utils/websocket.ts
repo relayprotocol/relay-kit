@@ -28,7 +28,7 @@ export interface TrackRequestStatusOptions<E extends WebSocketEvent> {
 }
 
 // @TODO: remove once requestId gets added to top level of quote response
-export const extractDepositRequestId = (steps?: Execute['steps'] | null) => {
+export function extractDepositRequestId(steps?: Execute['steps'] | null) {
   if (!steps?.length) return null
 
   // Find the first step that has a requestId

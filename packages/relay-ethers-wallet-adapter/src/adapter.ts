@@ -16,10 +16,10 @@ import {
   type HttpTransport
 } from 'viem'
 
-export const adaptEthersSigner = (
+export function adaptEthersSigner(
   signer: Signer,
   transport?: CustomTransport | HttpTransport
-): AdaptedWallet => {
+): AdaptedWallet {
   return {
     vmType: 'evm',
     transport,

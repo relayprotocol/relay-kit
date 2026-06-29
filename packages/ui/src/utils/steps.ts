@@ -150,7 +150,7 @@ type FormatTransactionStepsProps = {
  * - Showing clear action text with dynamic sub-text status updates
  * - Preserving transaction hash display and state management
  */
-export const formatTransactionSteps = ({
+export function formatTransactionSteps({
   steps,
   fromToken,
   toToken,
@@ -160,7 +160,7 @@ export const formatTransactionSteps = ({
   quote,
   currentAddress,
   linkedWallets
-}: FormatTransactionStepsProps) => {
+}: FormatTransactionStepsProps) {
   if (!steps || steps.length === 0) return { formattedSteps: [] }
 
   // Get wallet display name for customizing action text

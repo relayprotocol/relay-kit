@@ -58,7 +58,7 @@ const fuseSearchOptions = {
   keys: ['id', 'name', 'displayName']
 }
 
-export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
+export function MobileChainSelector({
   options,
   value,
   sameChainOption,
@@ -70,7 +70,7 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
   context,
   onChainStarToggle,
   starredChainIds
-}) => {
+}: MobileChainSelectorProps) {
   const haptic = useHapticEvent()
   const [chainSearchInput, setChainSearchInput] = useState('')
   const chainFuse = new Fuse(options, fuseSearchOptions)
@@ -105,15 +105,9 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
   )
 
   return (
-    <Flex
-      direction="column"
-      className="relay:w-full relay:h-full relay:gap-3"
-    >
+    <Flex direction="column" className="relay:w-full relay:h-full relay:gap-3">
       {/* Header with back button, search, and close */}
-      <Flex
-        align="center"
-        className="relay:gap-1 relay:w-full"
-      >
+      <Flex align="center" className="relay:gap-1 relay:w-full">
         <Button
           color="ghost"
           size="none"
@@ -162,9 +156,9 @@ export const MobileChainSelector: FC<MobileChainSelectorProps> = ({
                 ? { id: undefined, name: 'All Chains' }
                 : isSameChainSelection
                   ? sameChainOption
-                : options.find(
-                    (chain) => chain.id?.toString() === selectedValue
-                  )
+                  : options.find(
+                      (chain) => chain.id?.toString() === selectedValue
+                    )
             if (chain) {
               haptic('selection')
               const fromStarredList =
@@ -455,9 +449,7 @@ const MobileChainRow: FC<MobileChainRowProps> = ({
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
         >
-          <Flex
-            className="relay:items-center relay:gap-[8px] relay:p-[8px] relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-gray1)] relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:hover:bg-[var(--relay-colors-gray2)]"
-          >
+          <Flex className="relay:items-center relay:gap-[8px] relay:p-[8px] relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-gray1)] relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)] relay:hover:bg-[var(--relay-colors-gray2)]">
             <Box
               className={cn(
                 isStarred

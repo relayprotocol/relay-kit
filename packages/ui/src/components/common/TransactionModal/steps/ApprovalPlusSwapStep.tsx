@@ -1,4 +1,3 @@
-import { type FC } from 'react'
 import {
   Flex,
   Text,
@@ -29,14 +28,14 @@ type ApprovalPlusSwapStepProps = {
   steps: Execute['steps'] | null
 }
 
-export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
+export function ApprovalPlusSwapStep({
   fromToken,
   toToken,
   quote,
   fromAmountFormatted,
   toAmountFormatted,
   steps
-}) => {
+}: ApprovalPlusSwapStepProps) {
   const details = quote?.details
   const relayClient = useRelayClient()
 
@@ -191,9 +190,7 @@ export const ApprovalPlusSwapStep: FC<ApprovalPlusSwapStepProps> = ({
 
                 <Flex>
                   {isCurrentStep && hasTxHash ? (
-                    <LoadingSpinner
-                      className="relay:h-4 relay:w-4 relay:fill-[var(--relay-colors-gray9)]"
-                    />
+                    <LoadingSpinner className="relay:h-4 relay:w-4 relay:fill-[var(--relay-colors-gray9)]" />
                   ) : step?.items?.every(
                       (item) => item.status === 'complete'
                     ) ? (

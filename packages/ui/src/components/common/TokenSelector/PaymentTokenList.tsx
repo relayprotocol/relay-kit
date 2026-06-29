@@ -1,4 +1,4 @@
-import { useState, type FC } from 'react'
+import { useState } from 'react'
 import {
   Flex,
   Text,
@@ -26,7 +26,7 @@ type PaymentTokenListProps = {
   opacity?: number
 }
 
-export const PaymentTokenList: FC<PaymentTokenListProps> = ({
+export function PaymentTokenList({
   title,
   tokens: rawTokens,
   isLoading,
@@ -35,7 +35,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
   showMoreButton,
   limit = 5,
   opacity = 1
-}) => {
+}: PaymentTokenListProps) {
   const [tokensExpanded, setTokensExpanded] = useState(false)
   const tokens =
     showMoreButton && rawTokens && rawTokens.length > limit && !tokensExpanded
@@ -51,9 +51,7 @@ export const PaymentTokenList: FC<PaymentTokenListProps> = ({
             align="center"
             className="relay:gap-2 relay:py-2 relay:px-0 relay:w-full relay:min-[660px]:px-2"
           >
-            <Skeleton
-              className="relay:w-[40px] relay:h-[40px] relay:rounded-[50%] relay:shrink-0"
-            />
+            <Skeleton className="relay:w-[40px] relay:h-[40px] relay:rounded-[50%] relay:shrink-0" />
             <Flex direction="column" className="relay:gap-[2px] relay:grow">
               <Skeleton className="relay:w-[60%] relay:h-[16px]" />
               <Skeleton className="relay:w-[40%] relay:h-[16px]" />

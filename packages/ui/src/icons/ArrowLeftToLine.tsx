@@ -6,12 +6,12 @@ type ArrowLeftToLineProps = React.SVGProps<SVGSVGElement> & {
   fill?: string
 }
 
-export const ArrowLeftToLine = ({
+export function ArrowLeftToLine({
   width = 15,
   height = 13,
   fill = '#889096',
   ...props
-}: ArrowLeftToLineProps) => {
+}: ArrowLeftToLineProps) {
   return (
     <svg
       width={width}

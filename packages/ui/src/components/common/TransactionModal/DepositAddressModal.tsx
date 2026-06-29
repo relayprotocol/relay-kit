@@ -35,9 +35,9 @@ type DepositAddressModalProps = {
   onSuccess?: (data: Execute) => void
 }
 
-export const DepositAddressModal: FC<DepositAddressModalProps> = (
-  depositAddressModalProps
-) => {
+export function DepositAddressModal(
+  depositAddressModalProps: DepositAddressModalProps
+) {
   const {
     open,
     address,

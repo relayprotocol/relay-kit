@@ -115,7 +115,7 @@ export function setCacheEntry(
   setRelayUiKitData({ genericCache: newCache })
 }
 
-export const alreadyAcceptedToken = (token: Token) => {
+export function alreadyAcceptedToken(token: Token) {
   const tokenKey = `${token.chainId}:${token.address}`
   const relayUiKitData = getRelayUiKitData()
   // Ensure acceptedUnverifiedTokens exists before accessing includes

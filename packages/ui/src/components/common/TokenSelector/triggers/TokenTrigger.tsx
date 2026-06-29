@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import type { Token } from '../../../../types/index.js'
 import {
   Button,
@@ -18,12 +17,12 @@ type TokenTriggerProps = {
   testId?: string
 }
 
-export const TokenTrigger: FC<TokenTriggerProps> = ({
+export function TokenTrigger({
   token,
   locked,
   address,
   testId
-}) => {
+}: TokenTriggerProps) {
   const relayClient = useRelayClient()
   const chain = relayClient?.chains?.find(
     (chain) => chain.id === token?.chainId

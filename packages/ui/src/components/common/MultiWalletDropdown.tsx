@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState, type FC } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { Dropdown, DropdownMenuItem } from '../primitives/Dropdown.js'
 import { Box, Button, Flex, Text } from '../primitives/index.js'
 import type { LinkedWallet } from '../../types/index.js'
@@ -32,7 +32,7 @@ type MultiWalletDropdownProps = {
   disableWalletFiltering?: boolean
 }
 
-export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
+export function MultiWalletDropdown({
   context,
   wallets,
   selectedWalletAddress,
@@ -44,7 +44,7 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
   onLinkNewWallet,
   setAddressModalOpen,
   disableWalletFiltering = false
-}) => {
+}: MultiWalletDropdownProps) {
   const [open, setOpen] = useState(false)
   const providerOptionsContext = useContext(ProviderOptionsContext)
   const connectorKeyOverrides = providerOptionsContext.vmConnectorKeyOverrides
@@ -157,7 +157,10 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
           className="relay:gap-2 relay:!px-2 relay:py-1 relay:cursor-pointer relay:flex relay:content-center"
           data-testid={testId}
         >
-          <Flex align="center" className="relay:gap-1 relay:shrink relay:min-w-0">
+          <Flex
+            align="center"
+            className="relay:gap-1 relay:shrink relay:min-w-0"
+          >
             {isSupportedSelectedWallet && selectedWallet?.walletLogoUrl ? (
               <img
                 src={selectedWallet.walletLogoUrl}
@@ -172,11 +175,14 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
               style="subtitle2"
               className="relay:whitespace-nowrap relay:overflow-hidden relay:text-ellipsis"
             >
-              <span style={{
-                color: !selectedWallet && selectedWalletAddress
-                  ? 'var(--relay-colors-amber11)'
-                  : 'var(--relay-colors-primary11)'
-              }}>
+              <span
+                style={{
+                  color:
+                    !selectedWallet && selectedWalletAddress
+                      ? 'var(--relay-colors-amber11)'
+                      : 'var(--relay-colors-primary11)'
+                }}
+              >
                 {isSupportedSelectedWallet &&
                 selectedWalletAddress &&
                 selectedWalletAddress != ''
@@ -191,9 +197,10 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
             <div
               className="relay:shrink-0"
               style={{
-                color: !selectedWallet && selectedWalletAddress
-                  ? 'var(--relay-colors-amber11)'
-                  : 'var(--relay-colors-primary11)'
+                color:
+                  !selectedWallet && selectedWalletAddress
+                    ? 'var(--relay-colors-amber11)'
+                    : 'var(--relay-colors-primary11)'
               }}
             >
               <FontAwesomeIcon icon={faChevronDown} width={14} height={14} />
@@ -208,7 +215,10 @@ export const MultiWalletDropdown: FC<MultiWalletDropdownProps> = ({
         className: 'relay:max-w-[248px] relay:p-0'
       }}
     >
-      <Flex direction="column" className="relay:rounded-[12px] relay:p-1 relay:gap-1">
+      <Flex
+        direction="column"
+        className="relay:rounded-[12px] relay:p-1 relay:gap-1"
+      >
         {filteredWallets.map((wallet, idx) => {
           return (
             <DropdownMenuItem

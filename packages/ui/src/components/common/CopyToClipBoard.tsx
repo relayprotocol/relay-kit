@@ -1,4 +1,4 @@
-import { type FC, useState } from 'react'
+import { useState } from 'react'
 import { Button, Text } from '../primitives/index.js'
 import Tooltip from '../primitives/Tooltip.js'
 import { useCopyToClipboard } from 'usehooks-ts'
@@ -10,7 +10,7 @@ type CopyToClipBoardProps = {
   text: string
 }
 
-export const CopyToClipBoard: FC<CopyToClipBoardProps> = ({ text }) => {
+export function CopyToClipBoard({ text }: CopyToClipBoardProps) {
   const [value, copy] = useCopyToClipboard()
   const [isCopied, setIsCopied] = useState(false)
   const [open, setOpen] = useState(false)

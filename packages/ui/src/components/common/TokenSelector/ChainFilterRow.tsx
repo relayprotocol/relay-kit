@@ -1,5 +1,4 @@
 import {
-  type FC,
   useState,
   useRef,
   useCallback,
@@ -31,14 +30,14 @@ export type ChainFilterRowProps = {
   children?: ReactNode
 }
 
-export const ChainFilterRow: FC<ChainFilterRowProps> = ({
+export function ChainFilterRow({
   chain,
   tag,
   onToggleStar,
   showStar = true,
   onAnalyticEvent,
   children
-}) => {
+}: ChainFilterRowProps) {
   const haptic = useHapticEvent()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -136,9 +135,7 @@ export const ChainFilterRow: FC<ChainFilterRowProps> = ({
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
         >
-          <Flex
-            className="relay:flex relay:items-center relay:gap-[6px] relay:p-3 relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray2)]"
-          >
+          <Flex className="relay:flex relay:items-center relay:gap-[6px] relay:p-3 relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray2)]">
             <Box
               className={cn(
                 isStarred

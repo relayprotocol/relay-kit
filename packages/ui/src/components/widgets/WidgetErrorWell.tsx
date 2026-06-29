@@ -1,6 +1,5 @@
 import { type Execute } from '@relayprotocol/relay-sdk'
 import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
-import { type FC } from 'react'
 import { Box, Flex, Text } from '../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons/faExclamationCircle'
@@ -29,7 +28,7 @@ type Props = {
   toChainVmType?: string
 }
 
-export const WidgetErrorWell: FC<Props> = ({
+export function WidgetErrorWell({
   error,
   hasInsufficientBalance,
   quote,
@@ -44,7 +43,7 @@ export const WidgetErrorWell: FC<Props> = ({
   toChainWalletVMSupported,
   recipientLinkedWallet,
   toChainVmType
-}) => {
+}: Props) {
   const isSmallDevice = useMediaQuery('(max-width: 600px)')
   const fetchQuoteErrorMessage = error
     ? error?.response?.data?.message

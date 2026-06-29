@@ -1,4 +1,3 @@
-import { type FC } from 'react'
 import Button from './Button.js'
 import Text from './Text.js'
 
@@ -19,10 +18,10 @@ const convertBpsToPercent = (bps?: string) => {
   return formatted.replace(/\.0+$/, '').replace(/\.00$/, '')
 }
 
-export const SlippageButton: FC<SlippageButtonProps> = ({
+export function SlippageButton({
   slippageTolerance,
   onOpenSlippageConfig
-}) => {
+}: SlippageButtonProps) {
   const resolvedValue = convertBpsToPercent(slippageTolerance)
   const displayValue = resolvedValue ? `${resolvedValue}%` : 'Auto'
 

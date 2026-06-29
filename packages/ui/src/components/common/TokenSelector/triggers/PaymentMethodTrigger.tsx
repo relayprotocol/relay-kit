@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import type { Token } from '../../../../types/index.js'
 import {
   Button,
@@ -40,13 +39,13 @@ const normalizeAddress = (address?: string) => {
   return address.startsWith('0x') ? address.toLowerCase() : address
 }
 
-export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
+export function PaymentMethodTrigger({
   token,
   address,
   testId,
   balanceLabel = 'available',
   placeholderText = 'Select Token'
-}) => {
+}: PaymentMethodTriggerProps) {
   const relayClient = useRelayClient()
 
   const normalizedAddress = normalizeAddress(address)
@@ -103,9 +102,7 @@ export const PaymentMethodTrigger: FC<PaymentMethodTriggerProps> = ({
               {token.symbol}
             </Text>
             {showSkeleton ? (
-              <Skeleton
-                className="relay:w-[70px] relay:h-[12px] relay:rounded-[4px]"
-              />
+              <Skeleton className="relay:w-[70px] relay:h-[12px] relay:rounded-[4px]" />
             ) : (
               <Text
                 style="subtitle3"

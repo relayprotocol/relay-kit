@@ -6,12 +6,12 @@ type SwitchIconProps = React.HTMLAttributes<SVGElement> & {
   fill?: string
 }
 
-export const SwitchIcon = ({
+export function SwitchIcon({
   width = 10,
   height = 10,
   fill = 'currentColor',
   ...props
-}: SwitchIconProps) => {
+}: SwitchIconProps) {
   return (
     <svg
       width={width}

@@ -1,5 +1,4 @@
 import {
-  type FC,
   useMemo,
   useState,
   useEffect,
@@ -91,7 +90,7 @@ type Props = {
   onSwapError?: (error: string, data?: Execute) => void
 }
 
-export const DepositAddressModalRenderer: FC<Props> = ({
+export function DepositAddressModalRenderer({
   open,
   address,
   fromChain,
@@ -105,7 +104,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
   onSuccess,
   onAnalyticEvent,
   onSwapError
-}) => {
+}: Props) {
   const haptic = useHapticEvent()
   const [quoteData, setQuoteData] = useState<Execute | null>(null)
   const [fetchingQuote, setFetchingQuote] = useState(false)
@@ -284,7 +283,10 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       }
       setProgressStep(TransactionProgressStep.Success)
       invalidateBalanceQueries()
-    } else if (executionStatus?.status === 'pending' || executionStatus?.status === 'depositing') {
+    } else if (
+      executionStatus?.status === 'pending' ||
+      executionStatus?.status === 'depositing'
+    ) {
       const timeEstimateMs =
         ((quote?.details?.timeEstimate ?? 0) +
           (fromChain && fromChain.id === bitcoin.id ? 600 : 0)) *

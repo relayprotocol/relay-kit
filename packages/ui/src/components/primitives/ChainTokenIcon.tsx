@@ -1,4 +1,3 @@
-import { type FC } from 'react'
 import ChainIcon from './ChainIcon.js'
 import Text from './Text.js'
 import { cn } from '../../utils/cn.js'
@@ -34,7 +33,7 @@ const SIZES = {
   }
 } as const
 
-export const ChainTokenIcon: FC<ChainTokenProps> = ({
+export function ChainTokenIcon({
   chainId,
   tokenlogoURI,
   tokenSymbol,
@@ -42,7 +41,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   size = 'md',
   chainRadius = 4,
   chainIconSize
-}) => {
+}: ChainTokenProps) {
   const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
   const dimensions = SIZES[size]
   const chainSize = chainIconSize ?? dimensions.chain

@@ -6,12 +6,12 @@ type ShuffleProps = React.SVGProps<SVGSVGElement> & {
   fill?: string
 }
 
-export const Shuffle = ({
+export function Shuffle({
   width = 17,
   height = 15,
   fill = '#889096',
   ...props
-}: ShuffleProps) => {
+}: ShuffleProps) {
   return (
     <svg
       width={width}

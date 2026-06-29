@@ -20,7 +20,13 @@ const TOKEN_REF_PATTERN =
 const RAW_CSS_PATTERN =
   /^(#|rgb|hsl|oklch|lch|lab|hwb|color\(|var\()|(\d+(\.\d+)?(px|rem|em|%|vh|vw|ch|ex|cap|ic|lh|rlh|vi|vb|vmin|vmax|svw|svh|lvw|lvh|dvw|dvh|cqw|cqh|deg|grad|rad|turn|s|ms))/i
 
-const NAMED_COLORS = new Set(['white', 'black', 'transparent', 'currentColor', 'inherit'])
+const NAMED_COLORS = new Set([
+  'white',
+  'black',
+  'transparent',
+  'currentColor',
+  'inherit'
+])
 
 function resolveThemeValue(value: string): string {
   if (NAMED_COLORS.has(value)) return value
@@ -31,10 +37,10 @@ function resolveThemeValue(value: string): string {
 }
 
 // Generate CSS variables based on theme and overrides
-export const generateCssVars = (
+export function generateCssVars(
   theme?: RelayKitTheme,
   themeOverrides?: ThemeOverridesMap
-): string => {
+): string {
   let cssString = ''
   if (!theme || !themeOverrides) {
     return cssString

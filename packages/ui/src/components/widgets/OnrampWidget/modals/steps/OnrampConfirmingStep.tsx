@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import {
   Anchor,
   Button,
@@ -29,7 +28,7 @@ type OnrampConfirmingStepProps = {
   setStep: (step: OnrampStep) => void
 }
 
-export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
+export function OnrampConfirmingStep({
   toToken,
   fromToken,
   fromChain,
@@ -43,13 +42,10 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
   isFetchingQuote,
   onAnalyticEvent,
   setStep
-}) => {
+}: OnrampConfirmingStepProps) {
   const haptic = useHapticEvent()
   return (
-    <Flex
-      direction="column"
-      className="relay:w-full relay:h-full relay:gap-4"
-    >
+    <Flex direction="column" className="relay:w-full relay:h-full relay:gap-4">
       <Text style="h6">
         Buy {toToken?.symbol} ({toChain?.displayName})
       </Text>
@@ -68,9 +64,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
             your card
           </Text>
         </Flex>
-        <div
-          className="relay:ml-[16px] relay:h-[24px] relay:w-px relay:bg-[var(--relay-colors-gray5)] relay:mt-[5px] relay:mb-[5px]"
-        />
+        <div className="relay:ml-[16px] relay:h-[24px] relay:w-px relay:bg-[var(--relay-colors-gray5)] relay:mt-[5px] relay:mb-[5px]" />
         <Flex align="center" className="relay:gap-2">
           <ChainTokenIcon
             chainId={toToken?.chainId}
@@ -114,9 +108,7 @@ export const OnrampConfirmingStep: FC<OnrampConfirmingStepProps> = ({
         }}
       >
         {!depositAddress || isFetchingQuote ? (
-          <LoadingSpinner
-            className="relay:h-[16px] relay:w-[16px] relay:fill-[var(--relay-colors-button-disabled-color)]"
-          />
+          <LoadingSpinner className="relay:h-[16px] relay:w-[16px] relay:fill-[var(--relay-colors-button-disabled-color)]" />
         ) : (
           `Purchase ${fromToken?.symbol} (${fromChain?.displayName})`
         )}

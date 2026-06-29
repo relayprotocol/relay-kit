@@ -19,7 +19,7 @@ type ChainShortcutsProps = {
   context?: 'from' | 'to'
 }
 
-export const ChainShortcuts: FC<ChainShortcutsProps> = ({
+export function ChainShortcuts({
   options,
   value,
   onSelect,
@@ -28,7 +28,7 @@ export const ChainShortcuts: FC<ChainShortcutsProps> = ({
   starredChainIds,
   onAnalyticEvent,
   context
-}) => {
+}: ChainShortcutsProps) {
   const shortcutChains = useMemo(() => {
     const { allChainsOption, starredChains, alphabeticalChains } = groupChains(
       options,

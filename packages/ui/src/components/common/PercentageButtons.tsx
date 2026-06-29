@@ -1,4 +1,3 @@
-import { type FC } from 'react'
 import { Button, Flex } from '../primitives/index.js'
 import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
 import type { PublicClient } from 'viem'
@@ -25,7 +24,7 @@ type PercentageButtonsProps = {
   buttonClassName?: string
 }
 
-export const PercentageButtons: FC<PercentageButtonsProps> = ({
+export function PercentageButtons({
   balance,
   onPercentageClick,
   getFeeBufferAmount,
@@ -35,7 +34,7 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   variant = 'desktop',
   percentages = [20, 50],
   buttonClassName: customButtonClassName
-}) => {
+}: PercentageButtonsProps) {
   const getExecutionBuffer = (amount: bigint) => {
     if (amount <= 0n) return 0n
 

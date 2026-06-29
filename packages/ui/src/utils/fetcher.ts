@@ -13,7 +13,7 @@ const fetcher = async (url: string, headers?: HeadersInit) => {
 
 export default fetcher
 
-export const axiosPostFetcher = async (url: string, params: any) => {
+export async function axiosPostFetcher(url: string, params: any) {
   const { data } = await axios.post(url, params)
   return data
 }
