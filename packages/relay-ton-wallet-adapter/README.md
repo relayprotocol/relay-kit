@@ -37,18 +37,11 @@ const adaptedWallet = adaptTonWallet(walletAddress, async (request) => {
 #### Confirmation endpoint
 
 `handleConfirmTransactionStep` polls a read-only [`@ton/ton`](https://github.com/ton-org/ton)
-`TonClient`. By default the adapter creates one against toncenter's public TON
-HTTP API — no API key required. To use your own endpoint or an existing client,
-pass them via the optional `options` argument:
-
-```ts
-import { TonClient } from '@ton/ton'
-
-adaptTonWallet(walletAddress, sendTransaction, {
-  client: new TonClient({ endpoint: 'https://toncenter.com/api/v2/jsonRPC' })
-  // or: endpoint: 'https://toncenter.com/api/v2/jsonRPC'
-})
-```
+`TonClient` to confirm the origin transaction. The RPC endpoint comes from the
+TON chain's `httpRpcUrl` in the Relay client's chain configuration, so to use a
+custom endpoint (e.g. a keyed provider for production), override the TON chain's
+`httpRpcUrl` when configuring the SDK client rather than passing it to the
+adapter.
 
 > Note: message signing (`handleSignMessageStep`) is not implemented, as it is
 > not used by deposit/bridge flows.

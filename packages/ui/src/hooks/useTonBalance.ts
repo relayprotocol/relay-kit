@@ -12,32 +12,38 @@ type QueryType = typeof useQuery<
 >
 type QueryOptions = Parameters<QueryType>['0']
 
-// Canonical public TON HTTP API. The Relay chain's httpRpcUrl points at a
-// JSON-RPC gateway (drpc) that doesn't reliably serve `getAddressBalance`
-// without a key, so we hit toncenter's REST endpoint directly — mirroring how
-// the Tron balance hook hardcodes trongrid rather than using the chain RPC.
-const TON_API_BASE = 'https://toncenter.com/api/v2'
-
 /**
- * Fetches a wallet's native TON balance (in nanotons). TON launches with native
- * $TON only, so this does not handle Jettons.
+ * Fetches a wallet's native TON balance (in nanotons) from the chain's
+ * configured JSON-RPC endpoint. TON launches with native $TON only, so this
+ * does not handle Jettons.
  */
-export default (address?: string, queryOptions?: Partial<QueryOptions>) => {
-  const queryKey = ['useTonBalance', address]
+export default (
+  address?: string,
+  rpcUrl?: string,
+  queryOptions?: Partial<QueryOptions>
+) => {
+  const queryKey = ['useTonBalance', address, rpcUrl]
 
   const response = (useQuery as QueryType)({
     queryKey,
     queryFn: async () => {
-      if (!address) {
+      if (!address || !rpcUrl) {
         return undefined
       }
 
-      const res = await fetch(
-        `${TON_API_BASE}/getAddressBalance?address=${encodeURIComponent(address)}`
-      )
+      const res = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: 1,
+          jsonrpc: '2.0',
+          method: 'getAddressBalance',
+          params: { address }
+        })
+      })
       const data = await res.json()
 
-      if (!data.ok) {
+      if (data.ok === false || data.error) {
         throw new Error(
           typeof data.error === 'string'
             ? data.error
@@ -50,7 +56,7 @@ export default (address?: string, queryOptions?: Partial<QueryOptions>) => {
         balance: BigInt(data.result ?? 0)
       }
     },
-    enabled: address !== undefined,
+    enabled: address !== undefined && rpcUrl !== undefined,
     ...queryOptions
   })
 

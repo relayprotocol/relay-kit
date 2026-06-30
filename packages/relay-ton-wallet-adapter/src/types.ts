@@ -43,13 +43,3 @@ export interface TonSendTransactionResponse {
 export type TonSendTransaction = (
   request: TonConnectTransactionRequest
 ) => Promise<TonSendTransactionResponse>
-
-export interface AdaptTonWalletOptions {
-  // An existing @ton/ton TonClient used for confirmation polling. If omitted,
-  // the adapter lazily creates one from `endpoint`, falling back to a public
-  // toncenter endpoint. No API key is required, but the public endpoint is rate
-  // limited — pass your own client or endpoint for production use.
-  client?: import('@ton/ton').TonClient
-  // Explicit TON RPC endpoint (JSON-RPC v2) for confirmation polling.
-  endpoint?: string
-}

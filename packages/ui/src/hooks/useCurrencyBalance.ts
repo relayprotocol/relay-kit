@@ -199,11 +199,12 @@ const useCurrencyBalance = ({
     staleTime: refreshInterval
   })
 
-  const tonBalance = useTonBalance(address, {
+  const tonBalance = useTonBalance(address, chain?.httpRpcUrl, {
     enabled: Boolean(
       !adaptedWalletBalanceIsEnabled &&
         chain &&
         chain.vmType === 'tonvm' &&
+        chain.httpRpcUrl &&
         address &&
         _isValidAddress &&
         enabled

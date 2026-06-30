@@ -13,7 +13,6 @@ import {
   type Message
 } from '@ton/core'
 import type {
-  AdaptTonWalletOptions,
   TonConnectTransactionRequest,
   TonSendTransaction
 } from './types.js'
@@ -23,10 +22,6 @@ const TON_MAINNET_CHAIN = '-239'
 // Relay's numeric chainId for TON mainnet. TON is single-chain for Relay, so
 // the adapter owns this rather than taking it as a parameter.
 const TON_CHAIN_ID = 224235520
-// Public TON HTTP API used for confirmation reads. The Relay chain's httpRpcUrl
-// points at a gateway that doesn't reliably serve these reads, so we default to
-// toncenter (overridable via `options`).
-const DEFAULT_TON_RPC = 'https://toncenter.com/api/v2/jsonRPC'
 
 const DEFAULT_VALID_FOR_SECONDS = 300
 const CONFIRM_POLL_MS = 2000
@@ -43,28 +38,16 @@ const CONFIRM_TX_LOOKBACK = 32
  *
  * @param walletAddress - The connected wallet's address.
  * @param sendTransaction - Wallet callback that signs + broadcasts a request.
- * @param options - Optional read client / endpoint configuration.
  */
 export const adaptTonWallet = (
   walletAddress: string,
-  sendTransaction: TonSendTransaction,
-  options?: AdaptTonWalletOptions
+  sendTransaction: TonSendTransaction
 ): AdaptedWallet => {
   if (typeof sendTransaction !== 'function') {
     throw new Error('adaptTonWallet requires a sendTransaction function')
   }
   // Parse (and validate) the wallet address once, then reuse it for confirmation.
   const walletAccount = Address.parse(walletAddress)
-  let _client = options?.client
-
-  const getReadClient = (): TonClient => {
-    if (!_client) {
-      _client = new TonClient({
-        endpoint: options?.endpoint ?? DEFAULT_TON_RPC
-      })
-    }
-    return _client
-  }
 
   return {
     vmType: 'tonvm',
@@ -114,9 +97,19 @@ export const adaptTonWallet = (
       client.log(['TON transaction submitted', messageHash], LogLevel.Verbose)
       return messageHash
     },
-    handleConfirmTransactionStep: async (externalMessageHash) => {
+    handleConfirmTransactionStep: async (externalMessageHash, chainId) => {
       const client = getClient()
-      const tonClient = getReadClient()
+
+      // Read the TON RPC from the Relay client's chain config so integrators can
+      // override it by configuring the chain — no adapter-level endpoint option.
+      const rpcUrl = client.chains.find((chain) => chain.id === chainId)
+        ?.httpRpcUrl
+      if (!rpcUrl) {
+        throw new Error(
+          `No TON httpRpcUrl configured for chainId ${chainId} in the Relay client`
+        )
+      }
+      const tonClient = new TonClient({ endpoint: rpcUrl })
 
       // `handleSendTransactionStep` returns the external-message hash, which
       // equals the inbound message hash of the transaction it produces. Poll the
