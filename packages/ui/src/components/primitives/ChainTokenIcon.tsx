@@ -1,4 +1,4 @@
-import { type FC } from 'react'
+import { type FC, useState } from 'react'
 import ChainIcon from './ChainIcon.js'
 import Text from './Text.js'
 import { cn } from '../../utils/cn.js'
@@ -43,7 +43,9 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   chainRadius = 4,
   chainIconSize
 }) => {
-  const isValidTokenLogo = tokenlogoURI && tokenlogoURI !== 'missing.png'
+  const [tokenLogoError, setTokenLogoError] = useState(false)
+  const isValidTokenLogo =
+    tokenlogoURI && tokenlogoURI !== 'missing.png' && !tokenLogoError
   const dimensions = SIZES[size]
   const chainSize = chainIconSize ?? dimensions.chain
 
@@ -65,6 +67,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           src={tokenlogoURI}
           width={dimensions.token}
           height={dimensions.token}
+          onError={() => setTokenLogoError(true)}
           style={{
             borderRadius: 9999,
             overflow: 'hidden'

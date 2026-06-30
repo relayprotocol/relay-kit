@@ -1,4 +1,4 @@
-import { useContext, type FC } from 'react'
+import { useContext, useState, type FC } from 'react'
 import useRelayClient from '../../hooks/useRelayClient.js'
 import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
 import { cn } from '../../utils/cn.js'
@@ -20,6 +20,7 @@ const ChainIcon: FC<Props> = ({
   square = true,
   borderRadius = 4
 }) => {
+  const [iconError, setIconError] = useState(false)
   const providerOptions = useContext(ProviderOptionsContext)
   const client = useRelayClient()
   const chain = chainId
@@ -35,7 +36,7 @@ const ChainIcon: FC<Props> = ({
   const iconUrl =
     square && icon ? icon.replace('/icons/', '/icons/square/') : icon
 
-  return iconUrl ? (
+  return iconUrl && !iconError ? (
     <div
       className={cn('relay:flex relay:shrink-0', className)}
       style={{
@@ -48,6 +49,7 @@ const ChainIcon: FC<Props> = ({
         <img
           src={iconUrl}
           alt={`Chain #${chainId}`}
+          onError={() => setIconError(true)}
           style={{
             borderRadius: square ? borderRadius : 0,
             width: '100%',
