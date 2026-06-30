@@ -8,9 +8,9 @@ export type RelayAPIChain = Required<
   >['0']
 >
 
-export const convertViemChainToRelayChain = (
+export function convertViemChainToRelayChain(
   chain: Chain
-): RelayChain & Required<Pick<RelayChain, 'viemChain'>> => {
+): RelayChain & Required<Pick<RelayChain, 'viemChain'>> {
   return {
     id: chain.id,
     name: chain.name.replace(' ', '-'),
