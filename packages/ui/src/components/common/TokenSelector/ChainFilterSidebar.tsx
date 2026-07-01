@@ -56,7 +56,7 @@ const fuseSearchOptions = {
   keys: ['id', 'name', 'displayName']
 }
 
-export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
+export function ChainFilterSidebar({
   options,
   value,
   isOpen,
@@ -69,7 +69,7 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
   context,
   onChainStarToggle,
   starredChainIds
-}) => {
+}: ChainFilterSidebarProps) {
   const haptic = useHapticEvent()
   const [chainSearchInput, setChainSearchInput] = useState('')
   const chainFuse = new Fuse(options, fuseSearchOptions)
@@ -127,9 +127,9 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                 ? { id: undefined, name: 'All Chains' }
                 : isSameChainSelection
                   ? sameChainOption
-                : options.find(
-                    (chain) => chain.id?.toString() === selectedValue
-                  )
+                  : options.find(
+                      (chain) => chain.id?.toString() === selectedValue
+                    )
             if (chain) {
               haptic('selection')
               onSelect(chain)
@@ -217,9 +217,14 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                         ref={isSameChainSelected ? activeChainRef : null}
                         className={cn(
                           'relay:p-2 relay:flex relay:items-center relay:gap-2 relay:relative relay:transition-colors relay:duration-150 relay:outline-none relay:rounded-lg relay:focus-inset',
-                          !isSameChainSelected && 'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+                          !isSameChainSelected &&
+                            'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
                         )}
-                        style={isSameChainSelected ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined}
+                        style={
+                          isSameChainSelected
+                            ? { backgroundColor: 'var(--relay-colors-gray6)' }
+                            : undefined
+                        }
                       >
                         <ChainIcon
                           chainId={sameChainOption.id}
@@ -238,7 +243,10 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
 
               {starredChains.length > 0 && (
                 <>
-                  <Flex align="center" className="relay:px-2 relay:py-1 relay:gap-1">
+                  <Flex
+                    align="center"
+                    className="relay:px-2 relay:py-1 relay:gap-1"
+                  >
                     <Box className="relay:text-[color:var(--relay-colors-primary9)]">
                       <FontAwesomeIcon icon={faStar} width={12} height={12} />
                     </Box>
@@ -286,7 +294,11 @@ export const ChainFilterSidebar: FC<ChainFilterSidebarProps> = ({
                 </>
               )}
 
-              <Text style="subtitle2" color="subtle" className="relay:px-2 relay:py-1">
+              <Text
+                style="subtitle2"
+                color="subtle"
+                className="relay:px-2 relay:py-1"
+              >
                 Chains A-Z
               </Text>
               {alphabeticalChains.map((chain) => {
@@ -410,10 +422,13 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           ref={isActive ? activeChainRef : null}
           className={cn(
             'relay:p-2 relay:flex relay:items-center relay:gap-2 relay:relative relay:transition-colors relay:duration-150 relay:outline-none relay:rounded-lg relay:focus-inset',
-            !isActive && 'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+            !isActive &&
+              'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
           )}
           style={{
-            ...(isActive ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined),
+            ...(isActive
+              ? { backgroundColor: 'var(--relay-colors-gray6)' }
+              : undefined),
             boxShadow: 'none'
           }}
         >
@@ -453,9 +468,14 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           }}
           className={cn(
             'relay:p-2 relay:flex relay:items-center relay:gap-2 relay:w-full relay:transition-colors relay:duration-150 relay:outline-none relay:rounded-lg relay:focus-inset',
-            !isActive && 'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
+            !isActive &&
+              'relay:hover:bg-[rgba(var(--relay-colors-gray-rgb,0,0,0),0.1)]'
           )}
-          style={isActive ? { backgroundColor: 'var(--relay-colors-gray6)' } : undefined}
+          style={
+            isActive
+              ? { backgroundColor: 'var(--relay-colors-gray6)' }
+              : undefined
+          }
         >
           <ChainIcon chainId={chain.id} square width={24} height={24} />
           <Text style="subtitle1" ellipsify>
@@ -481,9 +501,7 @@ const ChainFilterRow: FC<ChainFilterRowProps> = ({
           onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
         >
-          <Flex
-            className="relay:flex relay:items-center relay:gap-[6px] relay:p-3 relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray2)]"
-          >
+          <Flex className="relay:flex relay:items-center relay:gap-[6px] relay:p-3 relay:rounded-[12px] relay:cursor-pointer relay:bg-[var(--relay-colors-modal-background)] relay:hover:bg-[var(--relay-colors-gray2)]">
             <Box
               className={cn(
                 isStarred

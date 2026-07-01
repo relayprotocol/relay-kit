@@ -4,7 +4,7 @@ import {
   type Execute,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
-import { type FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Modal } from '../../../common/Modal.js'
 import type { FiatCurrency, Token } from '../../../../types/index.js'
 import useRelayClient from '../../../../hooks/useRelayClient.js'
@@ -74,7 +74,7 @@ type OnrampModalProps = {
 
 type TxHashes = { txHash: string; chainId: number }[]
 
-export const OnrampModal: FC<OnrampModalProps> = ({
+export function OnrampModal({
   open,
   amount,
   amountFormatted,
@@ -96,7 +96,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   onSuccess,
   onError,
   onOpenChange
-}) => {
+}: OnrampModalProps) {
   const haptic = useHapticEvent()
   const [swapError, setSwapError] = useState<Error | null>(null)
   const [step, setStep] = useState<OnrampStep>(OnrampStep.Confirming)
@@ -230,9 +230,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     client?.baseApiUrl,
     {
       enabled:
-        depositAddress !== undefined &&
-        step === OnrampStep.Processing &&
-        open,
+        depositAddress !== undefined && step === OnrampStep.Processing && open,
       refetchInterval(query) {
         const observableStates = ['waiting', 'pending']
 

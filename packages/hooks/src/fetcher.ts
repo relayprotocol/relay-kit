@@ -13,11 +13,11 @@ const fetcher = async (url: string, headers?: HeadersInit) => {
 
 export default fetcher
 
-export const axiosPostFetcher = async (
+export async function axiosPostFetcher(
   url: string,
   params: any,
   config?: AxiosRequestConfig
-) => {
+) {
   const { data } = await axios.post(url, params, config)
   return data
 }

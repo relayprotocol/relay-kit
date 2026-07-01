@@ -1,5 +1,4 @@
 import {
-  type FC,
   useMemo,
   useState,
   useEffect,
@@ -82,7 +81,7 @@ type Props = {
   onValidating?: (quote: Execute) => void
 }
 
-export const TransactionModalRenderer: FC<Props> = ({
+export function TransactionModalRenderer({
   open,
   slippageTolerance,
   wallet,
@@ -93,7 +92,7 @@ export const TransactionModalRenderer: FC<Props> = ({
   children,
   onSuccess,
   onValidating
-}) => {
+}: Props) {
   const relayClient = useRelayClient()
   const chainId = quote?.details?.currencyIn?.currency?.chainId || 1
 

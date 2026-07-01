@@ -46,9 +46,7 @@ type TransactionModalProps = {
   invalidateQuoteQuery: () => void
 }
 
-export const TransactionModal: FC<TransactionModalProps> = (
-  transactionModalProps
-) => {
+export function TransactionModal(transactionModalProps: TransactionModalProps) {
   const {
     quote,
     steps,

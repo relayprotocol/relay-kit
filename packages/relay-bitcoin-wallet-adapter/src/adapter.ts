@@ -15,7 +15,7 @@ type DynamicSignPsbtParams = {
   }>
 }
 
-export const adaptBitcoinWallet = (
+export function adaptBitcoinWallet(
   walletAddress: string,
   signPsbt: (
     address: string,
@@ -23,7 +23,7 @@ export const adaptBitcoinWallet = (
     dynamicParams: DynamicSignPsbtParams
   ) => Promise<string>,
   publicKey?: string
-): AdaptedWallet => {
+): AdaptedWallet {
   return {
     vmType: 'bvm',
     getChainId: async () => {

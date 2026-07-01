@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import {
   AccessibleListItem,
   Button,
@@ -16,11 +15,11 @@ type SuggestedTokensProps = {
   onSelect: (token: Token) => void
 }
 
-export const SuggestedTokens: FC<SuggestedTokensProps> = ({
+export function SuggestedTokens({
   chainId,
   depositAddressOnly,
   onSelect
-}) => {
+}: SuggestedTokensProps) {
   const { chains } = useInternalRelayChains()
 
   const chain = chains?.find((c) => c.id === chainId)

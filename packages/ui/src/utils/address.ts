@@ -17,10 +17,10 @@ import { isTronAddress } from './tron.js'
 import { isTonAddress } from './ton.js'
 import { isLighterAddress } from './lighter.js'
 
-export const isWalletVmTypeCompatible = (
+export function isWalletVmTypeCompatible(
   walletVmType?: ChainVM,
   chainVmType?: ChainVM
-) => {
+) {
   if (!walletVmType || !chainVmType) {
     return false
   }
@@ -33,10 +33,10 @@ export const isWalletVmTypeCompatible = (
   return chainVmType === 'hypevm' && walletVmType === 'evm'
 }
 
-export const isChainVmTypeSupported = (
+export function isChainVmTypeSupported(
   chainVmType: ChainVM | undefined,
   supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
-) => {
+) {
   if (!chainVmType) {
     return true
   }
@@ -50,13 +50,13 @@ export const isChainVmTypeSupported = (
   )
 }
 
-export const isValidAddress = (
+export function isValidAddress(
   vmType?: ChainVM,
   address?: string,
   chainId?: number,
   connector?: string,
   connectorKeyOverrides?: RelayKitProviderProps['options']['vmConnectorKeyOverrides']
-) => {
+) {
   let eclipseConnectorKeys: string[] | undefined = undefined
   if (connectorKeyOverrides && connectorKeyOverrides[eclipse.id]) {
     eclipseConnectorKeys = connectorKeyOverrides[eclipse.id]
@@ -97,13 +97,13 @@ export const isValidAddress = (
   return false
 }
 
-export const addressWithFallback = (
+export function addressWithFallback(
   vmType?: ChainVM,
   address?: string,
   chainId?: number,
   connector?: string,
   connectorKeyOverrides?: Parameters<typeof isValidAddress>['4']
-) => {
+) {
   return address &&
     isValidAddress(
       vmType ?? 'evm',

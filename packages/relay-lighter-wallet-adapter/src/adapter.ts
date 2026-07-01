@@ -327,9 +327,9 @@ export type AdaptLighterWalletOptions =
  * dependency on `@relay-protocol/lighter-ts-sdk`.
  *
  */
-export const adaptLighterWallet = (
+export function adaptLighterWallet(
   options: AdaptLighterWalletOptions
-): AdaptedWallet => {
+): AdaptedWallet {
   const {
     l1Address,
     signL1Message,

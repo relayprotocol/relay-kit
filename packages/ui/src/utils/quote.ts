@@ -28,11 +28,11 @@ const formatUsdFee = (
   }
 }
 
-export const parseFees = (
+export function parseFees(
   selectedTo: RelayChain,
   selectedFrom: RelayChain,
   quote?: ReturnType<typeof useQuote>['data']
-): FeeBreakdown => {
+): FeeBreakdown {
   const fees = quote?.fees
   const expandedPriceImpact = quote?.details?.expandedPriceImpact
 
@@ -145,7 +145,7 @@ export const parseFees = (
   }
 }
 
-export const calculateRelayerFeeProportionUsd = (quote?: QuoteResponse) => {
+export function calculateRelayerFeeProportionUsd(quote?: QuoteResponse) {
   const usdIn = quote?.details?.currencyIn?.amountUsd
     ? Number(quote.details.currencyIn.amountUsd)
     : null
@@ -160,10 +160,10 @@ export const calculateRelayerFeeProportionUsd = (quote?: QuoteResponse) => {
   return BigInt(Math.floor((relayerServiceFeeUsd * 100) / usdIn))
 }
 
-export const calculateRelayerFeeProportion = (
+export function calculateRelayerFeeProportion(
   totalAmount: { rawExcludingOriginGas: bigint },
   feeBreakdown: BridgeFee[]
-) => {
+) {
   if (totalAmount.rawExcludingOriginGas > 0n) {
     const relayerFeeRaw =
       feeBreakdown.find((fee) => fee.id === 'relayer-fee')?.raw ?? 0n
@@ -172,7 +172,7 @@ export const calculateRelayerFeeProportion = (
   return 0n
 }
 
-export const isHighRelayerServiceFeeUsd = (quote?: QuoteResponse) => {
+export function isHighRelayerServiceFeeUsd(quote?: QuoteResponse) {
   const usdIn = quote?.details?.currencyIn?.amountUsd
     ? Number(quote.details.currencyIn.amountUsd)
     : null
@@ -192,20 +192,18 @@ export const isHighRelayerServiceFeeUsd = (quote?: QuoteResponse) => {
   )
 }
 
-export const extractQuoteId = (
+export function extractQuoteId(
   steps?: Execute['steps'] | QuoteResponse['steps']
-) => {
+) {
   return steps && steps[0] ? steps[0].requestId : undefined
 }
 
-export const extractDepositAddress = (steps?: Execute['steps']) => {
+export function extractDepositAddress(steps?: Execute['steps']) {
   const depositStep = steps?.find((step) => step.id === 'deposit')
   return depositStep?.depositAddress
 }
 
-export const calculatePriceTimeEstimate = (
-  details?: QuoteResponse['details']
-) => {
+export function calculatePriceTimeEstimate(details?: QuoteResponse['details']) {
   const isBitcoin =
     details?.currencyIn?.currency?.chainId === bitcoin.id ||
     details?.currencyOut?.currency?.chainId === bitcoin.id
@@ -220,12 +218,12 @@ export const calculatePriceTimeEstimate = (
   }
 }
 
-export const appendMetadataToRequest = (
+export function appendMetadataToRequest(
   baseUrl?: string,
   requestId?: string,
   additionalMetadata?: paths['/requests/metadata']['post']['requestBody']['content']['application/json']['additionalMetadata'],
   referrer?: string
-) => {
+) {
   if (requestId && additionalMetadata) {
     const triggerData: paths['/requests/metadata']['post']['requestBody']['content']['application/json'] & {
       referrer?: string
@@ -243,12 +241,10 @@ export const appendMetadataToRequest = (
   }
 }
 
-export const getCurrentStep = (
-  steps?: Execute['steps'] | null
-): {
+export function getCurrentStep(steps?: Execute['steps'] | null): {
   step: ExecuteStep | null | undefined
   stepItem: ExecuteStepItem | null | undefined
-} => {
+} {
   if (!steps) {
     return { step: null, stepItem: null }
   }
@@ -264,13 +260,13 @@ export const getCurrentStep = (
   return { step, stepItem }
 }
 
-export const getSwapEventData = (
+export function getSwapEventData(
   details: Execute['details'],
   fees: Execute['fees'],
   steps: Execute['steps'] | null,
   connector?: string,
   quoteParameters?: Parameters<typeof useQuote>['2']
-) => {
+) {
   let operation: string | undefined = details?.operation
 
   if (operation === 'swap') {
@@ -350,10 +346,10 @@ export const getSwapEventData = (
   }
 }
 
-export const calculateUsdValue = (
+export function calculateUsdValue(
   price?: number,
   amountString?: string
-): number | undefined => {
+): number | undefined {
   if (price && price > 0 && amountString && Number(amountString) > 0) {
     try {
       return parseFloat(amountString) * price
@@ -368,7 +364,7 @@ export const calculateUsdValue = (
   return undefined
 }
 
-export const isGasSponsored = (quote?: QuoteResponse) => {
+export function isGasSponsored(quote?: QuoteResponse) {
   return (
     quote?.fees?.subsidized?.amount != undefined &&
     quote?.fees?.subsidized?.amount != '0'

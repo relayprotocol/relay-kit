@@ -11,11 +11,11 @@ import type { LinkedWallet } from '../types/index.js'
 /**
  * Fetches and merges balances for linked wallets
  */
-export const useMultiWalletBalances = (
+export function useMultiWalletBalances(
   linkedWallets?: LinkedWallet[],
   primaryAddress?: string,
   evmChainIds: 'mainnet' | 'testnet' = 'mainnet'
-) => {
+) {
   const walletAddresses = useMemo(() => {
     const addresses = new Set<string>()
 

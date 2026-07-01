@@ -1,6 +1,6 @@
 import type { Execute } from '../types/index.js'
 
-export const getCurrentStepData = (steps: Execute['steps']) => {
+export function getCurrentStepData(steps: Execute['steps']) {
   let currentStep: NonNullable<Execute['steps']>['0'] | null = null
   let currentStepItem: NonNullable<Execute['steps'][0]['items']>[0] | undefined
   let txHashes: { txHash: string; chainId: number }[] = []

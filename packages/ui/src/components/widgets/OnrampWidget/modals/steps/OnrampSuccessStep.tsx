@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import {
   Anchor,
   Box,
@@ -26,7 +25,7 @@ type OnrampSuccessStepProps = {
   onOpenChange: (open: boolean) => void
 }
 
-export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
+export function OnrampSuccessStep({
   toToken,
   moonpayTxUrl,
   isLoadingTransaction,
@@ -35,12 +34,9 @@ export const OnrampSuccessStep: FC<OnrampSuccessStepProps> = ({
   fillTxUrl,
   baseTransactionUrl,
   onOpenChange
-}) => {
+}: OnrampSuccessStepProps) {
   return (
-    <Flex
-      direction="column"
-      className="relay:w-full relay:h-full"
-    >
+    <Flex direction="column" className="relay:w-full relay:h-full">
       <Text style="h6" className="relay:mb-4">
         Transaction Details
       </Text>

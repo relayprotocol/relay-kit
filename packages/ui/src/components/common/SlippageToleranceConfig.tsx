@@ -112,9 +112,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
         className="relay:flex relay:w-full relay:overflow-hidden relay:flex-col relay:gap-1"
       >
         {/* Mobile shortcut buttons */}
-        <Flex
-          className="relay:hidden relay:max-[520px]:flex relay:max-[520px]:w-full relay:max-[520px]:gap-2 relay:max-[520px]:mb-2"
-        >
+        <Flex className="relay:hidden relay:max-[520px]:flex relay:max-[520px]:w-full relay:max-[520px]:gap-2 relay:max-[520px]:mb-2">
           <Button
             color="grey"
             size="none"
@@ -170,9 +168,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
             )}
             inputStyle={{ color: tokenToColor(slippageRatingColor) }}
           />
-          <Box
-            className="relay:absolute relay:right-2 relay:top-1/2 relay:-translate-y-1/2"
-          >
+          <Box className="relay:absolute relay:right-2 relay:top-1/2 relay:-translate-y-1/2">
             <span style={{ color: tokenToColor(slippageRatingColor) }}>%</span>
           </Box>
         </Flex>
@@ -192,7 +188,7 @@ const SlippageTabs: FC<SlippageTabsProps> = ({
   )
 }
 
-export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
+export function SlippageToleranceConfig({
   open: _open,
   setOpen: _setOpen,
   setSlippageTolerance: externalSetValue,
@@ -203,7 +199,7 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
   onOpenSlippageConfig,
   showGearIcon = true,
   showLabel = false
-}) => {
+}: SlippageToleranceConfigProps) {
   const isMobile = useMediaQuery('(max-width: 520px)')
   const [displayValue, setDisplayValue] = useState<string | undefined>(() =>
     currentSlippageTolerance !== undefined
@@ -325,7 +321,16 @@ export const SlippageToleranceConfig: FC<SlippageToleranceConfigProps> = ({
       }}
     >
       {open === false && displayValue && (
-        <Text style="subtitle2" color={slippageRatingColor === 'red11' ? 'red' : slippageRatingColor === 'amber11' ? 'warningSecondary' : undefined}>
+        <Text
+          style="subtitle2"
+          color={
+            slippageRatingColor === 'red11'
+              ? 'red'
+              : slippageRatingColor === 'amber11'
+                ? 'warningSecondary'
+                : undefined
+          }
+        >
           {displayValue}%
         </Text>
       )}

@@ -5,10 +5,10 @@ export type TenderlyErrorInfo = {
   error?: string
 }
 
-export const getTenderlyDetails = (
+export function getTenderlyDetails(
   chainId: number,
   txHash: string
-): Promise<TenderlyErrorInfo | null> => {
+): Promise<TenderlyErrorInfo | null> {
   return new Promise((resolve) => {
     axios
       .get(

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Anchor,
   Box,
@@ -31,7 +31,7 @@ type OnrampProcessingStepUIProps = {
   requestId?: string
 }
 
-export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
+export function OnrampProcessingStepUI({
   toToken,
   fromToken,
   fromChain,
@@ -42,7 +42,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
   processingStep,
   baseTransactionUrl,
   requestId
-}) => {
+}: OnrampProcessingStepUIProps) {
   const [delayedMoonpayTx, setDelayedMoonpayTx] = useState(false)
 
   useEffect(() => {
@@ -65,10 +65,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
   }, [processingStep])
 
   return (
-    <Flex
-      direction="column"
-      className="relay:w-full relay:h-full"
-    >
+    <Flex direction="column" className="relay:w-full relay:h-full">
       <Text style="h6" className="relay:mb-4">
         Processing Transaction
       </Text>
@@ -77,12 +74,14 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
         className="relay:w-full relay:overflow-hidden relay:p-4 relay:mb-4 relay:rounded-widget-card relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)]"
       >
         <Flex align="center" className="relay:gap-2">
-          <div style={{
-            filter:
-              processingStep === OnrampProcessingStep.Relaying
-                ? 'grayscale(1)'
-                : 'none'
-          }}>
+          <div
+            style={{
+              filter:
+                processingStep === OnrampProcessingStep.Relaying
+                  ? 'grayscale(1)'
+                  : 'none'
+            }}
+          >
             <ChainTokenIcon
               chainId={fromToken?.chainId}
               tokenlogoURI={fromToken?.logoURI}
@@ -121,9 +120,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
               <FontAwesomeIcon icon={faCheck} style={{ height: 16 }} />
             </Box>
           ) : (
-            <LoadingSpinner
-              className="relay:h-[20px] relay:w-[20px] relay:fill-[var(--relay-colors-gray9)] relay:ml-auto"
-            />
+            <LoadingSpinner className="relay:h-[20px] relay:w-[20px] relay:fill-[var(--relay-colors-gray9)] relay:ml-auto" />
           )}
         </Flex>
         {processingStep === OnrampProcessingStep.Finalizing ? (
@@ -165,19 +162,16 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
           )
         ) : null}
 
-        <div
-          className="relay:ml-[16px] relay:h-[24px] relay:w-px relay:bg-[var(--relay-colors-gray5)] relay:mt-[5px] relay:mb-[5px]"
-        />
-        <Flex
-          align="center"
-          className="relay:gap-2"
-        >
-          <div style={{
-            filter:
-              processingStep === OnrampProcessingStep.Relaying
-                ? 'none'
-                : 'grayscale(1)'
-          }}>
+        <div className="relay:ml-[16px] relay:h-[24px] relay:w-px relay:bg-[var(--relay-colors-gray5)] relay:mt-[5px] relay:mb-[5px]" />
+        <Flex align="center" className="relay:gap-2">
+          <div
+            style={{
+              filter:
+                processingStep === OnrampProcessingStep.Relaying
+                  ? 'none'
+                  : 'grayscale(1)'
+            }}
+          >
             <ChainTokenIcon
               chainId={toToken?.chainId}
               tokenlogoURI={toToken?.logoURI}
@@ -207,9 +201,7 @@ export const OnrampProcessingStepUI: FC<OnrampProcessingStepUIProps> = ({
             ) : null}
           </Flex>
           {processingStep === OnrampProcessingStep.Relaying ? (
-            <LoadingSpinner
-              className="relay:h-[16px] relay:w-[16px] relay:fill-[var(--relay-colors-gray9)] relay:ml-auto"
-            />
+            <LoadingSpinner className="relay:h-[16px] relay:w-[16px] relay:fill-[var(--relay-colors-gray9)] relay:ml-auto" />
           ) : null}
         </Flex>
       </Flex>

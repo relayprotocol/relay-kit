@@ -6,12 +6,12 @@ type XIconProps = React.HTMLAttributes<SVGElement> & {
   fill?: string
 }
 
-export const XIcon = ({
+export function XIcon({
   width = 10,
   height = 10,
   fill = 'currentColor',
   ...props
-}: XIconProps) => {
+}: XIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const MoonPayLogo = (props: React.HTMLAttributes<SVGElement>) => {
+export function MoonPayLogo(props: React.HTMLAttributes<SVGElement>) {
   return (
     <svg
       width="160"

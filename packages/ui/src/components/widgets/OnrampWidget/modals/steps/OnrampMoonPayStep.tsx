@@ -1,9 +1,5 @@
-import { lazy, memo, Suspense, useEffect, type FC } from 'react'
-import {
-  ChainTokenIcon,
-  Flex,
-  Text
-} from '../../../../primitives/index.js'
+import { lazy, memo, Suspense, useEffect } from 'react'
+import { ChainTokenIcon, Flex, Text } from '../../../../primitives/index.js'
 import type { FiatCurrency, Token } from '../../../../../types/index.js'
 import { OnrampProcessingStep, OnrampStep } from '../OnrampModal.js'
 import type { RelayChain } from '@relayprotocol/relay-sdk'
@@ -59,7 +55,7 @@ const MoonPayBuyWidget = memo(
 
 arbitrum
 
-export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
+export function OnrampMoonPayStep({
   step,
   processingStep,
   toToken,
@@ -84,7 +80,7 @@ export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
   moonpayOnUrlSignatureRequested,
   onPassthroughSuccess,
   onError
-}) => {
+}: OnrampMoonPayStepProps) {
   const moonPayExternalId = !isPassthrough
     ? (quoteRequestId ?? undefined)
     : passthroughExternalId
@@ -200,9 +196,7 @@ export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
           align="center"
           className="relay:w-full relay:overflow-hidden relay:p-4 relay:gap-2 relay:mb-2 relay:rounded-widget-card relay:border relay:border-solid relay:border-[var(--relay-colors-subtle-border-color)]"
         >
-          <div
-            className="relay:relative relay:shrink-0 relay:w-[48px] relay:h-[52px]"
-          >
+          <div className="relay:relative relay:shrink-0 relay:w-[48px] relay:h-[52px]">
             <div className="relay:absolute relay:top-0 relay:right-0 relay:z-[1]">
               <ChainTokenIcon
                 chainId={toToken?.chainId}

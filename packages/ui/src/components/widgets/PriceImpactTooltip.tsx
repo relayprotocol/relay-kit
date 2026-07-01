@@ -1,4 +1,4 @@
-import type { FC, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Anchor, Flex, Text } from '../primitives/index.js'
 import Tooltip from '../primitives/Tooltip.js'
 import type { ChildrenProps } from '../widgets/SwapWidgetRenderer.js'
@@ -14,11 +14,11 @@ const getFeeColor = (value: number | undefined) => {
   return value > 0 ? 'success' : undefined
 }
 
-export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
+export function PriceImpactTooltip({
   feeBreakdown,
   children,
   tooltipProps
-}) => {
+}: PriceImpactTooltipProps) {
   return (
     <Tooltip
       content={
@@ -41,9 +41,7 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
               ({feeBreakdown?.totalFees.priceImpactPercentage})
             </Text>
           </Flex>
-          <div
-            className="relay:w-full relay:h-px relay:bg-[var(--relay-colors-slate-6)] relay:my-2"
-          />
+          <div className="relay:w-full relay:h-px relay:bg-[var(--relay-colors-slate-6)] relay:my-2" />
           <Flex align="center" className="relay:w-full">
             <Text style="subtitle3" color="subtle" className="relay:mr-auto">
               Swap Impact
@@ -61,7 +59,11 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
             }
             return (
               <Flex key={fee.id} align="center" className="relay:w-full">
-                <Text style="subtitle3" color="subtle" className="relay:mr-auto">
+                <Text
+                  style="subtitle3"
+                  color="subtle"
+                  className="relay:mr-auto"
+                >
                   {fee.name}
                 </Text>
                 {feeBreakdown.isGasSponsored && fee.usd.value === 0 ? (

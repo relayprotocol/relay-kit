@@ -1,4 +1,4 @@
-import { useMemo, type FC } from 'react'
+import { useMemo } from 'react'
 import { useRelayClient } from '../../../../hooks/index.js'
 import type { TxHashes } from '../TransactionModalRenderer.js'
 import {
@@ -26,14 +26,14 @@ type TransactionsByChainProps = {
   fillTx?: { txHash: string; chainId: number } | null
 }
 
-export const TransactionsByChain: FC<TransactionsByChainProps> = ({
+export function TransactionsByChain({
   allTxHashes,
   fromChain,
   toChain,
   refundData,
   isSolverStatusTimeout,
   fillTx
-}) => {
+}: TransactionsByChainProps) {
   const relayClient = useRelayClient()
   const refundChain = refundData
     ? relayClient?.chains.find(

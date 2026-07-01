@@ -17,7 +17,7 @@ const SpinnerSVG: FC<SVGProps<SVGSVGElement>> = (props) => {
   )
 }
 
-export const LoadingSpinner: FC<{ className?: string }> = ({ className }) => {
+export function LoadingSpinner({ className }: { className?: string }) {
   const providerOptionsContext = useContext(ProviderOptionsContext)
   if (providerOptionsContext.loader) {
     return (
