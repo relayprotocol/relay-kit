@@ -20,7 +20,7 @@ const ChainIcon: FC<Props> = ({
   square = true,
   borderRadius = 4
 }) => {
-  const [iconError, setIconError] = useState(false)
+  const [erroredSrc, setErroredSrc] = useState<string | null>(null)
   const providerOptions = useContext(ProviderOptionsContext)
   const client = useRelayClient()
   const chain = chainId
@@ -36,7 +36,7 @@ const ChainIcon: FC<Props> = ({
   const iconUrl =
     square && icon ? icon.replace('/icons/', '/icons/square/') : icon
 
-  return iconUrl && !iconError ? (
+  return iconUrl && erroredSrc !== iconUrl ? (
     <div
       className={cn('relay:flex relay:shrink-0', className)}
       style={{
@@ -49,7 +49,7 @@ const ChainIcon: FC<Props> = ({
         <img
           src={iconUrl}
           alt={`Chain #${chainId}`}
-          onError={() => setIconError(true)}
+          onError={() => setErroredSrc(iconUrl ?? null)}
           style={{
             borderRadius: square ? borderRadius : 0,
             width: '100%',

@@ -43,9 +43,11 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
   chainRadius = 4,
   chainIconSize
 }) => {
-  const [tokenLogoError, setTokenLogoError] = useState(false)
+  const [erroredSrc, setErroredSrc] = useState<string | null>(null)
   const isValidTokenLogo =
-    tokenlogoURI && tokenlogoURI !== 'missing.png' && !tokenLogoError
+    tokenlogoURI &&
+    tokenlogoURI !== 'missing.png' &&
+    erroredSrc !== tokenlogoURI
   const dimensions = SIZES[size]
   const chainSize = chainIconSize ?? dimensions.chain
 
@@ -67,7 +69,7 @@ export const ChainTokenIcon: FC<ChainTokenProps> = ({
           src={tokenlogoURI}
           width={dimensions.token}
           height={dimensions.token}
-          onError={() => setTokenLogoError(true)}
+          onError={() => setErroredSrc(tokenlogoURI ?? null)}
           style={{
             borderRadius: 9999,
             overflow: 'hidden'
