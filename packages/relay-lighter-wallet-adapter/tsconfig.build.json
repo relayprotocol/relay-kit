@@ -9,6 +9,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "sourceMap": true,
+    "inlineSources": true,
     "rootDir": "."
   }
 }
