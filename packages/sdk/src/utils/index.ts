@@ -17,6 +17,7 @@ export {
   isSimulateContractRequest
 } from './simulateContract.js'
 export { safeStructuredClone } from './structuredClone.js'
+export { normalizeQuoteUsdFields } from './normalizeQuoteUsd.js'
 export { repeatUntilOk } from './repeatUntilOk.js'
 export { prepareHyperliquidSteps } from './hyperliquid.js'
 export { isRelayApiUrl, getApiKeyHeader } from './apiKey.js'

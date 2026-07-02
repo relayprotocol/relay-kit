@@ -142,4 +142,49 @@ describe('Should test the getQuote action.', () => {
       })
     )
   })
+
+  it('Should prefer amountUsdCurrent when quote responses provide it', async () => {
+    axiosRequestSpy.mockResolvedValueOnce({
+      data: {
+        details: {
+          currencyIn: {
+            amountUsd: '21.165148',
+            amountUsdCurrent: '23.500000'
+          },
+          currencyOut: {
+            amountUsd: '17.130605',
+            amountUsdCurrent: '20.900000'
+          }
+        },
+        fees: {
+          relayerService: {
+            amountUsd: '0.100000',
+            amountUsdCurrent: '0.250000'
+          }
+        }
+      },
+      status: 200
+    })
+
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
+    })
+
+    const quote = await client.actions.getQuote(
+      {
+        toChainId: 1,
+        chainId: 8453,
+        currency: '0x0000000000000000000000000000000000000000',
+        toCurrency: '0x0000000000000000000000000000000000000000',
+        tradeType: 'EXACT_INPUT',
+        amount: '1000000000000000'
+      },
+      true
+    )
+
+    expect(quote.details.currencyIn?.amountUsd).toBe('23.500000')
+    expect(quote.details.currencyOut?.amountUsd).toBe('20.900000')
+    expect(quote.fees?.relayerService?.amountUsd).toBe('0.250000')
+  })
 })

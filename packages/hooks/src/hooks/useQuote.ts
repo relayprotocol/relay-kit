@@ -1,6 +1,7 @@
 import {
   MAINNET_RELAY_API,
   RelayClient,
+  normalizeQuoteUsdFields,
   type AdaptedWallet,
   type Execute,
   type paths,
@@ -44,10 +45,10 @@ export const queryQuote = function (
           method: 'post',
           data: options
         }
-        resolve({
+        resolve(normalizeQuoteUsdFields({
           ...response,
           request
-        })
+        }))
       })
       .catch((e) => {
         reject(e)

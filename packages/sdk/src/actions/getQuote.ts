@@ -7,6 +7,7 @@ import {
   APIError,
   adaptViemWallet,
   getApiKeyHeader,
+  normalizeQuoteUsdFields,
   type SimulateContractRequest
 } from '../utils/index.js'
 import {
@@ -176,5 +177,5 @@ export async function getQuote(
   if (res.status !== 200) {
     throw new APIError(res?.data?.message, res.status, res.data)
   }
-  return { ...res.data, request } as Execute
+  return normalizeQuoteUsdFields({ ...res.data, request } as Execute)
 }
