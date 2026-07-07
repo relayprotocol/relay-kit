@@ -6,7 +6,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "~relay-sui-wallet-adapter/*": ["./src/*"],
+      "~relay-ton-wallet-adapter/*": ["./src/*"],
     },
   },
   "watchOptions": {

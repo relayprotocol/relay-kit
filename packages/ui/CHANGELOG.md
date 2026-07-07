@@ -1,5 +1,70 @@
 # @reservoir0x/relay-kit-ui
 
+## 9.1.2
+
+### Patch Changes
+
+- Updated dependencies [88a63b6]
+- Updated dependencies [88a63b6]
+  - @relayprotocol/relay-sdk@6.1.2
+  - @relayprotocol/relay-kit-hooks@3.0.23
+
+## 9.1.1
+
+### Patch Changes
+
+- Updated dependencies [ce4d192]
+  - @relayprotocol/relay-sdk@6.1.1
+  - @relayprotocol/relay-kit-hooks@3.0.22
+
+## 9.1.0
+
+### Minor Changes
+
+- 4711f4b: Add TON support: new `@relayprotocol/relay-ton-wallet-adapter` package exporting `adaptTonWallet`, plus `tonvm` support across the SDK (vmType, TON receipt, transaction step messages, dead address) and UI kit (native TON balance, token selector).
+
+### Patch Changes
+
+- Updated dependencies [4711f4b]
+  - @relayprotocol/relay-sdk@6.1.0
+  - @relayprotocol/relay-kit-hooks@3.0.21
+
+## 9.0.1
+
+### Patch Changes
+
+- Updated dependencies [bb7b1bb]
+  - @relayprotocol/relay-sdk@6.0.1
+  - @relayprotocol/relay-kit-hooks@3.0.20
+
+## 9.0.0
+
+### Major Changes
+
+- 4149ded: Remove Sui support
+
+### Patch Changes
+
+- b61e540: Fix native TRX handling on Tron: forward call_value on the deposit transaction (was sending 0 TRX) and fix the native-TRX sentinel address (the wrong sentinel made native TRX fall through to a failing balanceOf call).
+- Updated dependencies [4149ded]
+- Updated dependencies [b61e540]
+  - @relayprotocol/relay-sdk@6.0.0
+  - @relayprotocol/relay-kit-hooks@3.0.19
+
+## 8.0.12
+
+### Patch Changes
+
+- Updated dependencies [1fc8190]
+  - @relayprotocol/relay-sdk@5.2.8
+  - @relayprotocol/relay-kit-hooks@3.0.18
+
+## 8.0.11
+
+### Patch Changes
+
+- d3eda06: Support TON destination bridging
+
 ## 8.0.10
 
 ### Patch Changes

@@ -7,9 +7,9 @@ const WALLET_VM_TYPES = [
   'evm',
   'bvm',
   'svm',
-  'suivm',
   'tvm',
-  'hypevm'
+  'hypevm',
+  'tonvm'
 ] as const
 
 type CustomizeSidebarProps = {
@@ -231,11 +231,7 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
   const defaults = isDark ? DARK_DEFAULTS : LIGHT_DEFAULTS
-  const {
-    themeOverrides,
-    updateThemeValue,
-    setThemeOverrides
-  } = useCustomize()
+  const { themeOverrides, updateThemeValue, setThemeOverrides } = useCustomize()
 
   const getNestedValue = (path: string): string => {
     const keys = path.split('.')
@@ -273,461 +269,459 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
   )
 
   const sidebarBg = isDark ? '#111' : '#fff'
-  const sidebarBorder = isDark
-    ? 'rgba(255,255,255,0.1)'
-    : 'rgba(0,0,0,0.08)'
+  const sidebarBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'
   const sidebarText = isDark ? '#e5e5e5' : '#1a1a1a'
 
   return (
     <>
       <style>{`.customize-sidebar { display: none; } @media (min-width: 768px) { .customize-sidebar { display: contents; } }`}</style>
       <div className="customize-sidebar">
-      {/* Toggle button */}
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          position: 'fixed',
-          left: open ? 296 : 0,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          zIndex: 1000,
-          background: isDark ? '#222' : '#fff',
-          border: `1px solid ${sidebarBorder}`,
-          borderLeft: open ? 'none' : `1px solid ${sidebarBorder}`,
-          borderRadius: '0 8px 8px 0',
-          padding: '12px 8px',
-          cursor: 'pointer',
-          writingMode: 'vertical-rl',
-          fontSize: 12,
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          color: sidebarText,
-          transition: 'left 0.2s ease',
-          boxShadow: isDark
-            ? '2px 0 8px rgba(0,0,0,0.3)'
-            : '2px 0 8px rgba(0,0,0,0.06)'
-        }}
-      >
-        Customize
-      </button>
-
-      {/* Sidebar panel */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: open ? 0 : -296,
-          width: 296,
-          height: '100vh',
-          background: sidebarBg,
-          borderRight: `1px solid ${sidebarBorder}`,
-          color: sidebarText,
-          zIndex: 999,
-          transition: 'left 0.2s ease',
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        {/* Header */}
-        <div
+        {/* Toggle button */}
+        <button
+          onClick={() => setOpen(!open)}
           style={{
-            padding: '16px 20px',
-            borderBottom: `1px solid ${sidebarBorder}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
+            position: 'fixed',
+            left: open ? 296 : 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 1000,
+            background: isDark ? '#222' : '#fff',
+            border: `1px solid ${sidebarBorder}`,
+            borderLeft: open ? 'none' : `1px solid ${sidebarBorder}`,
+            borderRadius: '0 8px 8px 0',
+            padding: '12px 8px',
+            cursor: 'pointer',
+            writingMode: 'vertical-rl',
+            fontSize: 12,
+            fontWeight: 600,
+            letterSpacing: '0.5px',
+            color: sidebarText,
+            transition: 'left 0.2s ease',
+            boxShadow: isDark
+              ? '2px 0 8px rgba(0,0,0,0.3)'
+              : '2px 0 8px rgba(0,0,0,0.06)'
           }}
         >
-          <span style={{ fontSize: 15, fontWeight: 600 }}>Customize</span>
-          <button
-            onClick={() => setOpen(false)}
+          Customize
+        </button>
+
+        {/* Sidebar panel */}
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: open ? 0 : -296,
+            width: 296,
+            height: '100vh',
+            background: sidebarBg,
+            borderRight: `1px solid ${sidebarBorder}`,
+            color: sidebarText,
+            zIndex: 999,
+            transition: 'left 0.2s ease',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          {/* Header */}
+          <div
             style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 18,
-              color: sidebarText,
-              opacity: 0.5,
-              padding: '0 4px'
+              padding: '16px 20px',
+              borderBottom: `1px solid ${sidebarBorder}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}
           >
-            ×
-          </button>
-        </div>
+            <span style={{ fontSize: 15, fontWeight: 600 }}>Customize</span>
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 18,
+                color: sidebarText,
+                opacity: 0.5,
+                padding: '0 4px'
+              }}
+            >
+              ×
+            </button>
+          </div>
 
-        {/* Theme Colors */}
-        <div
-          style={{
-            padding: '16px 20px',
-            borderBottom: `1px solid ${sidebarBorder}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10
-          }}
-        >
-          <SectionTitle>Colors</SectionTitle>
-
-          <ColorInput
-            label="Primary Color"
-            value={getNestedValue('primaryColor')}
-            defaultValue={defaults['primaryColor']}
-            onChange={(v) => updateThemeValue('primaryColor', v)}
-            onClear={() => updateThemeValue('primaryColor', undefined)}
-          />
-
-          <ColorInput
-            label="Focus Color"
-            value={getNestedValue('focusColor')}
-            defaultValue={defaults['focusColor']}
-            onChange={(v) => updateThemeValue('focusColor', v)}
-            onClear={() => updateThemeValue('focusColor', undefined)}
-          />
-
-          <SubLabel>Text</SubLabel>
-
-          <ColorInput
-            label="Default Text"
-            value={getNestedValue('text.default')}
-            defaultValue={defaults['text.default']}
-            onChange={(v) => updateThemeValue('text.default', v)}
-            onClear={() => updateThemeValue('text.default', undefined)}
-          />
-
-          <ColorInput
-            label="Subtle Text"
-            value={getNestedValue('text.subtle')}
-            defaultValue={defaults['text.subtle']}
-            onChange={(v) => updateThemeValue('text.subtle', v)}
-            onClear={() => updateThemeValue('text.subtle', undefined)}
-          />
-
-          <ColorInput
-            label="Anchor/Link"
-            value={getNestedValue('anchor.color')}
-            defaultValue={defaults['anchor.color']}
-            onChange={(v) => {
-              updateThemeValue('anchor.color', v)
-              updateThemeValue('anchor.hover.color', deriveHover(v))
+          {/* Theme Colors */}
+          <div
+            style={{
+              padding: '16px 20px',
+              borderBottom: `1px solid ${sidebarBorder}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10
             }}
-            onClear={() => {
-              updateThemeValue('anchor.color', undefined)
-              updateThemeValue('anchor.hover.color', undefined)
+          >
+            <SectionTitle>Colors</SectionTitle>
+
+            <ColorInput
+              label="Primary Color"
+              value={getNestedValue('primaryColor')}
+              defaultValue={defaults['primaryColor']}
+              onChange={(v) => updateThemeValue('primaryColor', v)}
+              onClear={() => updateThemeValue('primaryColor', undefined)}
+            />
+
+            <ColorInput
+              label="Focus Color"
+              value={getNestedValue('focusColor')}
+              defaultValue={defaults['focusColor']}
+              onChange={(v) => updateThemeValue('focusColor', v)}
+              onClear={() => updateThemeValue('focusColor', undefined)}
+            />
+
+            <SubLabel>Text</SubLabel>
+
+            <ColorInput
+              label="Default Text"
+              value={getNestedValue('text.default')}
+              defaultValue={defaults['text.default']}
+              onChange={(v) => updateThemeValue('text.default', v)}
+              onClear={() => updateThemeValue('text.default', undefined)}
+            />
+
+            <ColorInput
+              label="Subtle Text"
+              value={getNestedValue('text.subtle')}
+              defaultValue={defaults['text.subtle']}
+              onChange={(v) => updateThemeValue('text.subtle', v)}
+              onClear={() => updateThemeValue('text.subtle', undefined)}
+            />
+
+            <ColorInput
+              label="Anchor/Link"
+              value={getNestedValue('anchor.color')}
+              defaultValue={defaults['anchor.color']}
+              onChange={(v) => {
+                updateThemeValue('anchor.color', v)
+                updateThemeValue('anchor.hover.color', deriveHover(v))
+              }}
+              onClear={() => {
+                updateThemeValue('anchor.color', undefined)
+                updateThemeValue('anchor.hover.color', undefined)
+              }}
+            />
+          </div>
+
+          {/* Buttons */}
+          <div
+            style={{
+              padding: '16px 20px',
+              borderBottom: `1px solid ${sidebarBorder}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10
             }}
-          />
-        </div>
+          >
+            <SectionTitle>Buttons</SectionTitle>
 
-        {/* Buttons */}
-        <div
-          style={{
-            padding: '16px 20px',
-            borderBottom: `1px solid ${sidebarBorder}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10
-          }}
-        >
-          <SectionTitle>Buttons</SectionTitle>
+            <SubLabel>Primary (hover auto-derived)</SubLabel>
 
-          <SubLabel>Primary (hover auto-derived)</SubLabel>
-
-          <ColorInput
-            label="Background"
-            value={getNestedValue('buttons.primary.background')}
-            defaultValue={defaults['buttons.primary.background']}
-            onChange={(v) =>
-              setWithHover(
-                'buttons.primary.background',
-                'buttons.primary.hover.background',
-                v
-              )
-            }
-            onClear={() =>
-              clearWithHover(
-                'buttons.primary.background',
-                'buttons.primary.hover.background'
-              )
-            }
-          />
-
-          <ColorInput
-            label="Text Color"
-            value={getNestedValue('buttons.primary.color')}
-            defaultValue={defaults['buttons.primary.color']}
-            onChange={(v) => {
-              updateThemeValue('buttons.primary.color', v)
-              updateThemeValue('buttons.primary.hover.color', v)
-            }}
-            onClear={() => {
-              updateThemeValue('buttons.primary.color', undefined)
-              updateThemeValue('buttons.primary.hover.color', undefined)
-            }}
-          />
-
-          <SubLabel>Secondary (hover auto-derived)</SubLabel>
-
-          <ColorInput
-            label="Background"
-            value={getNestedValue('buttons.secondary.background')}
-            defaultValue={defaults['buttons.secondary.background']}
-            onChange={(v) =>
-              setWithHover(
-                'buttons.secondary.background',
-                'buttons.secondary.hover.background',
-                v
-              )
-            }
-            onClear={() =>
-              clearWithHover(
-                'buttons.secondary.background',
-                'buttons.secondary.hover.background'
-              )
-            }
-          />
-
-          <ColorInput
-            label="Text Color"
-            value={getNestedValue('buttons.secondary.color')}
-            defaultValue={defaults['buttons.secondary.color']}
-            onChange={(v) => {
-              updateThemeValue('buttons.secondary.color', v)
-              updateThemeValue('buttons.secondary.hover.color', v)
-            }}
-            onClear={() => {
-              updateThemeValue('buttons.secondary.color', undefined)
-              updateThemeValue('buttons.secondary.hover.color', undefined)
-            }}
-          />
-
-          {/* CTA italic toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              id="cta-italic"
-              checked={getNestedValue('buttons.cta.fontStyle') === 'italic'}
-              onChange={(e) =>
-                updateThemeValue(
-                  'buttons.cta.fontStyle',
-                  e.target.checked ? 'italic' : 'normal'
+            <ColorInput
+              label="Background"
+              value={getNestedValue('buttons.primary.background')}
+              defaultValue={defaults['buttons.primary.background']}
+              onChange={(v) =>
+                setWithHover(
+                  'buttons.primary.background',
+                  'buttons.primary.hover.background',
+                  v
+                )
+              }
+              onClear={() =>
+                clearWithHover(
+                  'buttons.primary.background',
+                  'buttons.primary.hover.background'
                 )
               }
             />
-            <label htmlFor="cta-italic" style={{ fontSize: 13 }}>
-              Italic CTA Button
-            </label>
-          </div>
-        </div>
 
-        {/* Surfaces */}
-        <div
-          style={{
-            padding: '16px 20px',
-            borderBottom: `1px solid ${sidebarBorder}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10
-          }}
-        >
-          <SectionTitle>Surfaces</SectionTitle>
-
-          <ColorInput
-            label="Widget Background"
-            value={getNestedValue('widget.background')}
-            defaultValue={defaults['widget.background']}
-            onChange={(v) => updateThemeValue('widget.background', v)}
-            onClear={() => updateThemeValue('widget.background', undefined)}
-          />
-
-          <ColorInput
-            label="Card Background"
-            value={getNestedValue('widget.card.background')}
-            defaultValue={defaults['widget.card.background']}
-            onChange={(v) => updateThemeValue('widget.card.background', v)}
-            onClear={() =>
-              updateThemeValue('widget.card.background', undefined)
-            }
-          />
-
-          <ColorInput
-            label="Selector Background"
-            value={getNestedValue('widget.selector.background')}
-            defaultValue={defaults['widget.selector.background']}
-            onChange={(v) =>
-              setWithHover(
-                'widget.selector.background',
-                'widget.selector.hover.background',
-                v
-              )
-            }
-            onClear={() =>
-              clearWithHover(
-                'widget.selector.background',
-                'widget.selector.hover.background'
-              )
-            }
-          />
-
-          <ColorInput
-            label="Input Background"
-            value={getNestedValue('input.background')}
-            defaultValue={defaults['input.background']}
-            onChange={(v) => updateThemeValue('input.background', v)}
-            onClear={() => updateThemeValue('input.background', undefined)}
-          />
-
-          <ColorInput
-            label="Modal Background"
-            value={getNestedValue('modal.background')}
-            defaultValue={defaults['modal.background']}
-            onChange={(v) => updateThemeValue('modal.background', v)}
-            onClear={() => updateThemeValue('modal.background', undefined)}
-          />
-
-          <ColorInput
-            label="Subtle BG"
-            value={getNestedValue('subtleBackgroundColor')}
-            defaultValue={defaults['subtleBackgroundColor']}
-            onChange={(v) => updateThemeValue('subtleBackgroundColor', v)}
-            onClear={() =>
-              updateThemeValue('subtleBackgroundColor', undefined)
-            }
-          />
-
-          <ColorInput
-            label="Subtle Border"
-            value={getNestedValue('subtleBorderColor')}
-            defaultValue={defaults['subtleBorderColor']}
-            onChange={(v) => updateThemeValue('subtleBorderColor', v)}
-            onClear={() => updateThemeValue('subtleBorderColor', undefined)}
-          />
-
-          {/* Border radius */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ flex: 1, fontSize: 13 }}>Border Radius</span>
-            <input
-              type="range"
-              min={0}
-              max={24}
-              value={(() => {
-                const v = parseInt(getNestedValue('widget.card.borderRadius'))
-                return isNaN(v) ? 12 : v
-              })()}
-              onChange={(e) => {
-                const val = `${e.target.value}px`
-                updateThemeValue('widget.borderRadius', val)
-                updateThemeValue('widget.card.borderRadius', val)
-                updateThemeValue('modal.borderRadius', val)
-                updateThemeValue('input.borderRadius', val)
-                updateThemeValue('dropdown.borderRadius', val)
-                updateThemeValue('widget.swap.currency.button.borderRadius', val)
-                updateThemeValue('buttons.borderRadius', val)
+            <ColorInput
+              label="Text Color"
+              value={getNestedValue('buttons.primary.color')}
+              defaultValue={defaults['buttons.primary.color']}
+              onChange={(v) => {
+                updateThemeValue('buttons.primary.color', v)
+                updateThemeValue('buttons.primary.hover.color', v)
               }}
-              style={{ width: 80 }}
+              onClear={() => {
+                updateThemeValue('buttons.primary.color', undefined)
+                updateThemeValue('buttons.primary.hover.color', undefined)
+              }}
             />
-            <span style={{ fontSize: 11, opacity: 0.5, width: 30 }}>
-              {(() => {
-                const v = parseInt(getNestedValue('widget.card.borderRadius'))
-                return isNaN(v) ? 12 : v
-              })()}px
-            </span>
-          </div>
 
-          {/* Reset all button */}
-          <button
-            onClick={() => setThemeOverrides({})}
-            style={{
-              fontSize: 12,
-              padding: '6px 12px',
-              borderRadius: 6,
-              border: `1px solid ${sidebarBorder}`,
-              background: 'transparent',
-              cursor: 'pointer',
-              color: sidebarText,
-              opacity: 0.7,
-              marginTop: 4
-            }}
-          >
-            Reset All Theme
-          </button>
-        </div>
+            <SubLabel>Secondary (hover auto-derived)</SubLabel>
 
-        {/* Widget Config */}
-        <div
-          style={{
-            padding: '16px 20px',
-            borderBottom: `1px solid ${sidebarBorder}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10
-          }}
-        >
-          <SectionTitle>Config</SectionTitle>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input
-              type="checkbox"
-              id="sidebar-single-chain"
-              checked={singleChainMode}
-              onChange={(e) => setSingleChainMode(e.target.checked)}
+            <ColorInput
+              label="Background"
+              value={getNestedValue('buttons.secondary.background')}
+              defaultValue={defaults['buttons.secondary.background']}
+              onChange={(v) =>
+                setWithHover(
+                  'buttons.secondary.background',
+                  'buttons.secondary.hover.background',
+                  v
+                )
+              }
+              onClear={() =>
+                clearWithHover(
+                  'buttons.secondary.background',
+                  'buttons.secondary.hover.background'
+                )
+              }
             />
-            <label htmlFor="sidebar-single-chain" style={{ fontSize: 13 }}>
-              Single Chain Mode
-            </label>
+
+            <ColorInput
+              label="Text Color"
+              value={getNestedValue('buttons.secondary.color')}
+              defaultValue={defaults['buttons.secondary.color']}
+              onChange={(v) => {
+                updateThemeValue('buttons.secondary.color', v)
+                updateThemeValue('buttons.secondary.hover.color', v)
+              }}
+              onClear={() => {
+                updateThemeValue('buttons.secondary.color', undefined)
+                updateThemeValue('buttons.secondary.hover.color', undefined)
+              }}
+            />
+
+            {/* CTA italic toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                id="cta-italic"
+                checked={getNestedValue('buttons.cta.fontStyle') === 'italic'}
+                onChange={(e) =>
+                  updateThemeValue(
+                    'buttons.cta.fontStyle',
+                    e.target.checked ? 'italic' : 'normal'
+                  )
+                }
+              />
+              <label htmlFor="cta-italic" style={{ fontSize: 13 }}>
+                Italic CTA Button
+              </label>
+            </div>
           </div>
 
-          <div style={{ fontSize: 12, opacity: 0.5, marginTop: 2 }}>
-            Wallet VMs
-          </div>
+          {/* Surfaces */}
           <div
             style={{
+              padding: '16px 20px',
+              borderBottom: `1px solid ${sidebarBorder}`,
               display: 'flex',
-              flexWrap: 'wrap',
-              gap: '6px 12px'
+              flexDirection: 'column',
+              gap: 10
             }}
           >
-            {WALLET_VM_TYPES.map((vm) => (
-              <div
-                key={vm}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                <input
-                  id={`sidebar-vm-${vm}`}
-                  type="checkbox"
-                  checked={supportedWalletVMs.includes(vm)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSupportedWalletVMs((prev) => [...prev, vm])
-                    } else {
-                      setSupportedWalletVMs((prev) =>
-                        prev.filter((item) => item !== vm)
-                      )
-                    }
-                  }}
-                />
-                <label
-                  htmlFor={`sidebar-vm-${vm}`}
-                  style={{ fontSize: 13 }}
+            <SectionTitle>Surfaces</SectionTitle>
+
+            <ColorInput
+              label="Widget Background"
+              value={getNestedValue('widget.background')}
+              defaultValue={defaults['widget.background']}
+              onChange={(v) => updateThemeValue('widget.background', v)}
+              onClear={() => updateThemeValue('widget.background', undefined)}
+            />
+
+            <ColorInput
+              label="Card Background"
+              value={getNestedValue('widget.card.background')}
+              defaultValue={defaults['widget.card.background']}
+              onChange={(v) => updateThemeValue('widget.card.background', v)}
+              onClear={() =>
+                updateThemeValue('widget.card.background', undefined)
+              }
+            />
+
+            <ColorInput
+              label="Selector Background"
+              value={getNestedValue('widget.selector.background')}
+              defaultValue={defaults['widget.selector.background']}
+              onChange={(v) =>
+                setWithHover(
+                  'widget.selector.background',
+                  'widget.selector.hover.background',
+                  v
+                )
+              }
+              onClear={() =>
+                clearWithHover(
+                  'widget.selector.background',
+                  'widget.selector.hover.background'
+                )
+              }
+            />
+
+            <ColorInput
+              label="Input Background"
+              value={getNestedValue('input.background')}
+              defaultValue={defaults['input.background']}
+              onChange={(v) => updateThemeValue('input.background', v)}
+              onClear={() => updateThemeValue('input.background', undefined)}
+            />
+
+            <ColorInput
+              label="Modal Background"
+              value={getNestedValue('modal.background')}
+              defaultValue={defaults['modal.background']}
+              onChange={(v) => updateThemeValue('modal.background', v)}
+              onClear={() => updateThemeValue('modal.background', undefined)}
+            />
+
+            <ColorInput
+              label="Subtle BG"
+              value={getNestedValue('subtleBackgroundColor')}
+              defaultValue={defaults['subtleBackgroundColor']}
+              onChange={(v) => updateThemeValue('subtleBackgroundColor', v)}
+              onClear={() =>
+                updateThemeValue('subtleBackgroundColor', undefined)
+              }
+            />
+
+            <ColorInput
+              label="Subtle Border"
+              value={getNestedValue('subtleBorderColor')}
+              defaultValue={defaults['subtleBorderColor']}
+              onChange={(v) => updateThemeValue('subtleBorderColor', v)}
+              onClear={() => updateThemeValue('subtleBorderColor', undefined)}
+            />
+
+            {/* Border radius */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ flex: 1, fontSize: 13 }}>Border Radius</span>
+              <input
+                type="range"
+                min={0}
+                max={24}
+                value={(() => {
+                  const v = parseInt(getNestedValue('widget.card.borderRadius'))
+                  return isNaN(v) ? 12 : v
+                })()}
+                onChange={(e) => {
+                  const val = `${e.target.value}px`
+                  updateThemeValue('widget.borderRadius', val)
+                  updateThemeValue('widget.card.borderRadius', val)
+                  updateThemeValue('modal.borderRadius', val)
+                  updateThemeValue('input.borderRadius', val)
+                  updateThemeValue('dropdown.borderRadius', val)
+                  updateThemeValue(
+                    'widget.swap.currency.button.borderRadius',
+                    val
+                  )
+                  updateThemeValue('buttons.borderRadius', val)
+                }}
+                style={{ width: 80 }}
+              />
+              <span style={{ fontSize: 11, opacity: 0.5, width: 30 }}>
+                {(() => {
+                  const v = parseInt(getNestedValue('widget.card.borderRadius'))
+                  return isNaN(v) ? 12 : v
+                })()}
+                px
+              </span>
+            </div>
+
+            {/* Reset all button */}
+            <button
+              onClick={() => setThemeOverrides({})}
+              style={{
+                fontSize: 12,
+                padding: '6px 12px',
+                borderRadius: 6,
+                border: `1px solid ${sidebarBorder}`,
+                background: 'transparent',
+                cursor: 'pointer',
+                color: sidebarText,
+                opacity: 0.7,
+                marginTop: 4
+              }}
+            >
+              Reset All Theme
+            </button>
+          </div>
+
+          {/* Widget Config */}
+          <div
+            style={{
+              padding: '16px 20px',
+              borderBottom: `1px solid ${sidebarBorder}`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10
+            }}
+          >
+            <SectionTitle>Config</SectionTitle>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                id="sidebar-single-chain"
+                checked={singleChainMode}
+                onChange={(e) => setSingleChainMode(e.target.checked)}
+              />
+              <label htmlFor="sidebar-single-chain" style={{ fontSize: 13 }}>
+                Single Chain Mode
+              </label>
+            </div>
+
+            <div style={{ fontSize: 12, opacity: 0.5, marginTop: 2 }}>
+              Wallet VMs
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '6px 12px'
+              }}
+            >
+              {WALLET_VM_TYPES.map((vm) => (
+                <div
+                  key={vm}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
                 >
-                  {vm.toUpperCase()}
-                </label>
-              </div>
-            ))}
+                  <input
+                    id={`sidebar-vm-${vm}`}
+                    type="checkbox"
+                    checked={supportedWalletVMs.includes(vm)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSupportedWalletVMs((prev) => [...prev, vm])
+                      } else {
+                        setSupportedWalletVMs((prev) =>
+                          prev.filter((item) => item !== vm)
+                        )
+                      }
+                    }}
+                  />
+                  <label htmlFor={`sidebar-vm-${vm}`} style={{ fontSize: 13 }}>
+                    {vm.toUpperCase()}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Global / Provider Settings */}
+          <div
+            style={{
+              padding: '16px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10
+            }}
+          >
+            <SectionTitle>Global</SectionTitle>
           </div>
         </div>
-
-        {/* Global / Provider Settings */}
-        <div
-          style={{
-            padding: '16px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10
-          }}
-        >
-          <SectionTitle>Global</SectionTitle>
-
-        </div>
-      </div>
       </div>
     </>
   )

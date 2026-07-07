@@ -10,8 +10,9 @@ export type SvmReceipt = {
   txHash: string
 }
 
-export type SuiReceipt = {
-  digest: string
+export type TonReceipt = {
+  hash: string
+  lt?: string
 }
 
 type HTTPMap<T extends string | number | symbol, U> = Record<T, U>[]
@@ -102,8 +103,8 @@ export type AdaptedWallet = {
   ) => Promise<
     | TransactionReceipt // evm
     | SvmReceipt // svm
-    | SuiReceipt // suivm
     | TronReceipt // tvm
+    | TonReceipt // tonvm
     | LvmReceipt // lvm
   >
   address: () => Promise<string>

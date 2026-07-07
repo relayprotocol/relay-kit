@@ -11,7 +11,6 @@ import type { QueryKey } from '@tanstack/react-query'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import useDuneBalances from './useDuneBalances.js'
 import useBitcoinBalance from './useBitcoinBalance.js'
-import useSuiBalance from './useSuiBalance.js'
 import useAdaptedWalletBalance from './useAdaptedWalletBalance.js'
 import { isValidAddress } from '../utils/address.js'
 import useRelayClient from './useRelayClient.js'
@@ -20,6 +19,7 @@ import { eclipse } from '../utils/solana.js'
 import useHyperliquidBalance from './useHyperliquidBalance.js'
 import useHyperliquidAccountMode from './useHyperliquidAccountMode.js'
 import useTronBalance from '../hooks/useTronBalance.js'
+import useTonBalance from '../hooks/useTonBalance.js'
 
 type UseBalanceProps = {
   chain?: RelayChain
@@ -144,19 +144,6 @@ const useCurrencyBalance = ({
     staleTime: refreshInterval
   })
 
-  const suiBalances = useSuiBalance(address, currency, {
-    enabled: Boolean(
-      !adaptedWalletBalanceIsEnabled &&
-        chain &&
-        chain.vmType === 'suivm' &&
-        address &&
-        _isValidAddress &&
-        enabled
-    ),
-    gcTime: refreshInterval,
-    staleTime: refreshInterval
-  })
-
   const eclipseBalances = useEclipseBalance(address, {
     enabled: Boolean(
       !adaptedWalletBalanceIsEnabled &&
@@ -204,6 +191,20 @@ const useCurrencyBalance = ({
       !adaptedWalletBalanceIsEnabled &&
         chain &&
         chain.vmType === 'tvm' &&
+        address &&
+        _isValidAddress &&
+        enabled
+    ),
+    gcTime: refreshInterval,
+    staleTime: refreshInterval
+  })
+
+  const tonBalance = useTonBalance(address, chain?.httpRpcUrl, {
+    enabled: Boolean(
+      !adaptedWalletBalanceIsEnabled &&
+        chain &&
+        chain.vmType === 'tonvm' &&
+        chain.httpRpcUrl &&
         address &&
         _isValidAddress &&
         enabled
@@ -304,15 +305,6 @@ const useCurrencyBalance = ({
         hasPendingBalance: false
       }
     }
-  } else if (chain?.vmType === 'suivm') {
-    return {
-      value: suiBalances.balance,
-      queryKey: suiBalances.queryKey,
-      isLoading: suiBalances.isLoading,
-      isError: suiBalances.isError,
-      error: suiBalances.error,
-      isDuneBalance: false
-    }
   } else if (chain?.vmType === 'hypevm') {
     return {
       value: hyperliquidBalance.balance,
@@ -329,6 +321,15 @@ const useCurrencyBalance = ({
       isLoading: tronBalance.isLoading,
       isError: tronBalance.isError,
       error: tronBalance.error,
+      isDuneBalance: false
+    }
+  } else if (chain?.vmType === 'tonvm') {
+    return {
+      value: tonBalance.balance,
+      queryKey: tonBalance.queryKey,
+      isLoading: tonBalance.isLoading,
+      isError: tonBalance.isError,
+      error: tonBalance.error,
       isDuneBalance: false
     }
   } else {

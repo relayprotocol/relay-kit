@@ -1,6 +1,6 @@
 {
     "name": "@relayprotocol/relay-lighter-wallet-adapter",
-    "version": "0.1.4",
+    "version": "2.0.2",
     "description": "A Lighter adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",

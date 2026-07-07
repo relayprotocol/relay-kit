@@ -1,7 +1,7 @@
 {
-    "name": "@relayprotocol/relay-sui-wallet-adapter",
-    "version": "13.0.7",
-    "description": "A Sui wallet adapter for use in @relayprotocol/relay-sdk",
+    "name": "@relayprotocol/relay-ton-wallet-adapter",
+    "version": "2.0.2",
+    "description": "A TON wallet adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
     "main": "./_cjs/src/index.js",
@@ -33,16 +33,17 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/relayprotocol/relay-kit.git",
-        "directory": "packages/relay-sui-wallet-adapter"
+        "directory": "packages/relay-ton-wallet-adapter"
     },
     "keywords": [
-        "sui",
-        "sui-adapter",
+        "ton",
+        "ton-adapter",
+        "tonvm",
         "reservoir",
         "relay",
         "adapter",
-        "relay-sui-wallet-adapter",
-        "reservoir-sui-wallet-adapter",
+        "relay-ton-wallet-adapter",
+        "reservoir-ton-wallet-adapter",
         "relay",
         "protocol",
         "sdk-adapter"
@@ -54,12 +55,12 @@
         "rimraf": "^5.0.5"
     },
     "dependencies": {
-        "@types/node": "^22.5.4",
-        "axios": "^1.6.5"
+        "@types/node": "^22.5.4"
     },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
-        "@mysten/sui": "1.24.0",
+        "@ton/core": "^0.61.0",
+        "@ton/ton": "^15.1.0",
         "viem": ">=2.26.0"
     }
 }

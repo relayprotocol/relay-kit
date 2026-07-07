@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-sdk",
-  "version": "5.2.7",
+  "version": "6.1.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/relayprotocol/relay-kit.git",

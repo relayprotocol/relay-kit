@@ -40,7 +40,19 @@ export type TransactionStepItem = Pick<
       owner_address: string
       contract_address: string
       data: string
+      // Native TRX amount (msg.value) for payable calls
+      call_value?: number
     }
+    // TON (internal-message fields the wallet maps into a TON Connect request)
+    messages?: {
+      from?: string
+      to: string
+      value: string
+      body?: string
+      stateInit?: string
+      bounce?: boolean
+      mode?: number
+    }[]
     // Lighter (LVM)
     action?: {
       type: 'transfer'

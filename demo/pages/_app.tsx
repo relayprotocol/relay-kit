@@ -31,7 +31,6 @@ import {
 import { EthereumWalletConnectors } from '@dynamic-labs/ethereum'
 import { SolanaWalletConnectors } from '@dynamic-labs/solana'
 import { BitcoinWalletConnectors } from '@dynamic-labs/bitcoin'
-import { SuiWalletConnectors } from '@dynamic-labs/sui'
 import { convertRelayChainToDynamicNetwork } from 'utils/dynamic'
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector'
 import { EIP1193RequestFn, fallback, Transport } from 'viem'
@@ -39,6 +38,7 @@ import { chainIdToAlchemyNetworkMap } from 'utils/chainIdToAlchemyNetworkMap'
 import { useWalletFilter, WalletFilterProvider } from 'context/walletFilter'
 import { EclipseWalletConnectors } from '@dynamic-labs/eclipse'
 import { TronWalletConnectors } from '@dynamic-labs/tron'
+import { TonWalletConnectors } from '@dynamic-labs/ton'
 import { AbstractEvmWalletConnectors } from '@dynamic-labs-connectors/abstract-global-wallet-evm'
 import { MoonPayProvider } from 'context/MoonpayProvider'
 import { CustomizeProvider, useCustomize } from 'context/customizeContext'
@@ -186,9 +186,9 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
                 SolanaWalletConnectors,
                 BitcoinWalletConnectors,
                 EclipseWalletConnectors,
-                SuiWalletConnectors,
                 AbstractEvmWalletConnectors,
-                TronWalletConnectors
+                TronWalletConnectors,
+                TonWalletConnectors
               ],
               cssOverrides: `
               [data-testid="send-balance-button"] {

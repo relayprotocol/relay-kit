@@ -1,5 +1,46 @@
 # @reservoir0x/relay-sdk
 
+## 6.1.2
+
+### Patch Changes
+
+- 88a63b6: Fix BTC dead address preview error
+- 88a63b6: Fix bitcoin dead address
+
+## 6.1.1
+
+### Patch Changes
+
+- ce4d192: Fix BTC dead address preview error
+
+## 6.1.0
+
+### Minor Changes
+
+- 4711f4b: Add TON support: new `@relayprotocol/relay-ton-wallet-adapter` package exporting `adaptTonWallet`, plus `tonvm` support across the SDK (vmType, TON receipt, transaction step messages, dead address) and UI kit (native TON balance, token selector).
+
+## 6.0.1
+
+### Patch Changes
+
+- bb7b1bb: Convert `convertViemChainToRelayChain` from an arrow function to a function declaration (no behavior change).
+
+## 6.0.0
+
+### Major Changes
+
+- 4149ded: Remove Sui support
+
+### Patch Changes
+
+- b61e540: Fix native TRX handling on Tron: forward call_value on the deposit transaction (was sending 0 TRX) and fix the native-TRX sentinel address (the wrong sentinel made native TRX fall through to a failing balanceOf call).
+
+## 5.2.8
+
+### Patch Changes
+
+- 1fc8190: Add TON dead address
+
 ## 5.2.7
 
 ### Patch Changes
