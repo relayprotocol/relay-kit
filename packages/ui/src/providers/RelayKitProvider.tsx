@@ -37,14 +37,14 @@ type RelayKitProviderOptions = {
    * An array of fee objects composing of a recipient address and the fee in BPS
    */
   appFees?: AppFees
-  duneConfig?: {
+  codexConfig?: {
     /**
-     * The base url for the dune api, if omitted the default will be used. Override this config to protect your api key via a proxy.
+     * The base url for the codex graphql api, if omitted the default (https://graph.codex.io) will be used. Override this config to protect your api key via a proxy.
      */
     apiBaseUrl?: string
     /**
      * This key is used to fetch token balances, to improve the general UX and suggest relevant tokens
-     * Can be omitted and the ui will continue to function. Refer to the dune docs on how to get an api key
+     * Can be omitted and the ui will continue to function. Refer to the codex docs (https://docs.codex.io) on how to get an api key
      */
     apiKey?: string
   }
@@ -226,7 +226,7 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
     () => ({
       appName: options.appName,
       appFees: options.appFees,
-      duneConfig: options.duneConfig,
+      codexConfig: options.codexConfig,
       vmConnectorKeyOverrides: options.vmConnectorKeyOverrides,
       privateChainIds: options.privateChainIds,
       themeScheme: options.themeScheme,
