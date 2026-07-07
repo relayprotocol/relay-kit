@@ -6,5 +6,6 @@ export const UnsupportedDepositAddressChainIds = [
   7865, //powerloom
   1996, //sanko
   1514, //story
-  660279 //xai
+  660279, //xai
+  224235520 //ton
 ]
