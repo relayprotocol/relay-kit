@@ -1,5 +1,18 @@
 # @reservoir0x/relay-sdk
 
+## 6.1.2
+
+### Patch Changes
+
+- 88a63b6: Fix BTC dead address preview error
+- 88a63b6: Fix bitcoin dead address
+
+## 6.1.1
+
+### Patch Changes
+
+- ce4d192: Fix BTC dead address preview error
+
 ## 6.1.0
 
 ### Minor Changes
