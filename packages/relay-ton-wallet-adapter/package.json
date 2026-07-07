@@ -1,7 +1,7 @@
 {
-    "name": "@relayprotocol/relay-tron-wallet-adapter",
-    "version": "8.0.2",
-    "description": "A Tron adapter for use in @relayprotocol/relay-sdk",
+    "name": "@relayprotocol/relay-ton-wallet-adapter",
+    "version": "2.0.2",
+    "description": "A TON wallet adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
     "main": "./_cjs/src/index.js",
@@ -33,18 +33,20 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/relayprotocol/relay-kit.git",
-        "directory": "packages/relay-tron-wallet-adapter"
+        "directory": "packages/relay-ton-wallet-adapter"
     },
     "keywords": [
+        "ton",
+        "ton-adapter",
+        "tonvm",
         "reservoir",
-        "relay-tvm-wallet-adapter",
-        "relay-tron-wallet-adapter",
-        "reservoir-tron-wallet-adapter",
+        "relay",
+        "adapter",
+        "relay-ton-wallet-adapter",
+        "reservoir-ton-wallet-adapter",
         "relay",
         "protocol",
-        "sdk-adapter",
-        "tvm",
-        "tron"
+        "sdk-adapter"
     ],
     "publishConfig": {
         "access": "public"
@@ -53,12 +55,12 @@
         "rimraf": "^5.0.5"
     },
     "dependencies": {
-        "@types/node": "^22.5.4",
-        "axios": "^1.6.5"
+        "@types/node": "^22.5.4"
     },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
-        "viem": ">=2.26.0",
-        "tronweb": "^6.0.4"
+        "@ton/core": "^0.61.0",
+        "@ton/ton": "^15.1.0",
+        "viem": ">=2.26.0"
     }
 }

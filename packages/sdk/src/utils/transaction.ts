@@ -7,6 +7,7 @@ import type {
   paths,
   SvmReceipt,
   TronReceipt,
+  TonReceipt,
   LvmReceipt
 } from '../types/index.js'
 import { axios } from '../utils/axios.js'
@@ -55,6 +56,7 @@ export async function sendTransactionSafely(
       | TransactionReceipt
       | SvmReceipt
       | TronReceipt
+      | TonReceipt
       | LvmReceipt
   ) => void,
   setCheckStatus?: (
@@ -83,6 +85,7 @@ export async function sendTransactionSafely(
     | TransactionReceipt
     | SvmReceipt
     | TronReceipt
+    | TonReceipt
     | LvmReceipt
     | undefined
   let transactionCancelled = false

@@ -19,6 +19,7 @@ import { eclipse } from '../utils/solana.js'
 import useHyperliquidBalance from './useHyperliquidBalance.js'
 import useHyperliquidAccountMode from './useHyperliquidAccountMode.js'
 import useTronBalance from '../hooks/useTronBalance.js'
+import useTonBalance from '../hooks/useTonBalance.js'
 
 type UseBalanceProps = {
   chain?: RelayChain
@@ -198,6 +199,20 @@ const useCurrencyBalance = ({
     staleTime: refreshInterval
   })
 
+  const tonBalance = useTonBalance(address, chain?.httpRpcUrl, {
+    enabled: Boolean(
+      !adaptedWalletBalanceIsEnabled &&
+        chain &&
+        chain.vmType === 'tonvm' &&
+        chain.httpRpcUrl &&
+        address &&
+        _isValidAddress &&
+        enabled
+    ),
+    gcTime: refreshInterval,
+    staleTime: refreshInterval
+  })
+
   if (adaptedWalletBalanceIsEnabled) {
     return {
       value: adaptedWalletBalance.data,
@@ -306,6 +321,15 @@ const useCurrencyBalance = ({
       isLoading: tronBalance.isLoading,
       isError: tronBalance.isError,
       error: tronBalance.error,
+      isDuneBalance: false
+    }
+  } else if (chain?.vmType === 'tonvm') {
+    return {
+      value: tonBalance.balance,
+      queryKey: tonBalance.queryKey,
+      isLoading: tonBalance.isLoading,
+      isError: tonBalance.isError,
+      error: tonBalance.error,
       isDuneBalance: false
     }
   } else {

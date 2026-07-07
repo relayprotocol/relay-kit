@@ -1,6 +1,7 @@
 import type {
   SvmReceipt,
   TronReceipt,
+  TonReceipt,
   LvmReceipt
 } from '../types/index.js'
 import type { paths } from './api.js'
@@ -53,6 +54,7 @@ export type Execute = {
         | TransactionReceipt
         | SvmReceipt
         | TronReceipt
+        | TonReceipt
         | LvmReceipt
       checkStatus?:
         | 'refund'

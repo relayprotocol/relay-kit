@@ -1,5 +1,24 @@
 # @reservoir0x/relay-sdk
 
+## 6.1.2
+
+### Patch Changes
+
+- 88a63b6: Fix BTC dead address preview error
+- 88a63b6: Fix bitcoin dead address
+
+## 6.1.1
+
+### Patch Changes
+
+- ce4d192: Fix BTC dead address preview error
+
+## 6.1.0
+
+### Minor Changes
+
+- 4711f4b: Add TON support: new `@relayprotocol/relay-ton-wallet-adapter` package exporting `adaptTonWallet`, plus `tonvm` support across the SDK (vmType, TON receipt, transaction step messages, dead address) and UI kit (native TON balance, token selector).
+
 ## 6.0.1
 
 ### Patch Changes

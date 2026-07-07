@@ -31,11 +31,18 @@ import { convertToLinkedWallet } from 'utils/dynamic'
 import { isEclipseWallet } from '@dynamic-labs/eclipse'
 import { type Token } from '@relayprotocol/relay-kit-ui'
 import { adaptTronWallet } from '@relayprotocol/relay-tron-wallet-adapter'
+import { adaptTonWallet } from '@relayprotocol/relay-ton-wallet-adapter'
 import Head from 'next/head'
 import { isTronWallet, TronWallet } from '@dynamic-labs/tron'
+import {
+  isTonWallet,
+  TonWallet,
+  TonWalletConnector,
+  CHAIN
+} from '@dynamic-labs/ton'
 import { CustomizeSidebar } from 'components/CustomizeSidebar'
 
-const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'tvm', 'hypevm'] as const
+const WALLET_VM_TYPES = ['evm', 'bvm', 'svm', 'tvm', 'tonvm', 'hypevm'] as const
 
 const SwapWidgetPage: NextPage = () => {
   useDynamicEvents('walletAdded', (newWallet) => {
@@ -154,6 +161,19 @@ const SwapWidgetPage: NextPage = () => {
             adaptedWallet = adaptTronWallet(
               (primaryWallet as TronWallet).address,
               tronWeb
+            )
+          } else if (isTonWallet(primaryWallet)) {
+            const tonWallet = primaryWallet as TonWallet
+            adaptedWallet = adaptTonWallet(
+              tonWallet.address,
+              async (request) => {
+                // Dynamic's connector signs + broadcasts and returns the signed
+                // external-message BOC (not an EVM-style tx hash).
+                const boc = await (
+                  tonWallet.connector as TonWalletConnector
+                ).sendTransaction({ ...request, network: CHAIN.MAINNET })
+                return { boc }
+              }
             )
           }
 
@@ -281,6 +301,8 @@ const SwapWidgetPage: NextPage = () => {
                 setWalletFilter('ECLIPSE')
               } else if (chain?.vmType === 'tvm') {
                 setWalletFilter('TRON')
+              } else if (chain?.vmType === 'tonvm') {
+                setWalletFilter('TON')
               } else {
                 setWalletFilter(undefined)
               }
