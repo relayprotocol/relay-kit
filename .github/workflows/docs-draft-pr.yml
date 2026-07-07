@@ -133,7 +133,7 @@ jobs:
 
       - name: Write draft files with Claude
         id: write-draft
-        uses: anthropics/claude-code-action@0b1b62002952733671bde978d429b50b51c51c85 # v1
+        uses: anthropics/claude-code-action@fad22eb3fa582b7357fc0ea48af6645851b884fd # v1
         with:
           github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
