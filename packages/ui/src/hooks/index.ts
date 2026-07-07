@@ -3,7 +3,8 @@ import useENSResolver from './useENSResolver.js'
 import useCurrencyBalance from './useCurrencyBalance.js'
 import useRelayClient from './useRelayClient.js'
 import useDebounceState from './useDebounceState.js'
-import useDuneBalances from './useDuneBalances.js'
+import useCodexBalances from './useCodexBalances.js'
+import useSolanaBalance from './useSolanaBalance.js'
 import { useMultiWalletBalances } from './useMultiWalletBalances.js'
 import useWalletAddress from './useWalletAddress.js'
 import useDisconnected from './useDisconnected.js'
@@ -35,7 +36,8 @@ export {
   useCurrencyBalance,
   useRelayClient,
   useDebounceState,
-  useDuneBalances,
+  useCodexBalances,
+  useSolanaBalance,
   useMultiWalletBalances,
   useWalletAddress,
   useDisconnected,

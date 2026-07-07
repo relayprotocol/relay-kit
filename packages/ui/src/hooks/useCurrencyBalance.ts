@@ -9,13 +9,10 @@ import { useBalance, useReadContract } from 'wagmi'
 import { erc20Abi } from 'viem'
 import type { QueryKey } from '@tanstack/react-query'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
-import useDuneBalances from './useDuneBalances.js'
+import useSolanaBalance from './useSolanaBalance.js'
 import useBitcoinBalance from './useBitcoinBalance.js'
 import useAdaptedWalletBalance from './useAdaptedWalletBalance.js'
 import { isValidAddress } from '../utils/address.js'
-import useRelayClient from './useRelayClient.js'
-import useEclipseBalance from '../hooks/useEclipseBalance.js'
-import { eclipse } from '../utils/solana.js'
 import useHyperliquidBalance from './useHyperliquidBalance.js'
 import useHyperliquidAccountMode from './useHyperliquidAccountMode.js'
 import useTronBalance from '../hooks/useTronBalance.js'
@@ -36,7 +33,6 @@ type UseCurrencyBalanceData = {
   isLoading: boolean
   isError: boolean | GetBalanceErrorType | null
   error: boolean | ReadContractErrorType | Error | null
-  isDuneBalance: boolean
   hasPendingBalance?: boolean
 }
 
@@ -51,7 +47,6 @@ const useCurrencyBalance = ({
 }: UseBalanceProps): UseCurrencyBalanceData => {
   const isErc20Currency = currency && currency !== zeroAddress
   const isValidEvmAddress = address && isAddress(address)
-  const relayClient = useRelayClient()
   const adaptedWalletBalanceIsEnabled =
     wallet?.getBalance !== undefined && wallet.vmType === chain?.vmType
 
@@ -113,15 +108,15 @@ const useCurrencyBalance = ({
 
   const _isValidAddress = isValidAddress(chain?.vmType, address, chain?.id)
 
-  const duneBalances = useDuneBalances(
+  const solanaBalance = useSolanaBalance(
     address,
-    relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet',
+    currency ? (currency as string) : undefined,
+    chain?.httpRpcUrl,
     {
       enabled: Boolean(
         !adaptedWalletBalanceIsEnabled &&
           chain &&
           chain.vmType === 'svm' &&
-          chain.id !== eclipse.id &&
           address &&
           _isValidAddress &&
           enabled
@@ -142,18 +137,6 @@ const useCurrencyBalance = ({
     ),
     gcTime: refreshInterval,
     staleTime: refreshInterval
-  })
-
-  const eclipseBalances = useEclipseBalance(address, {
-    enabled: Boolean(
-      !adaptedWalletBalanceIsEnabled &&
-        chain &&
-        chain.vmType === 'svm' &&
-        chain.id === eclipse.id &&
-        address &&
-        _isValidAddress &&
-        enabled
-    )
   })
 
   const isHypevm = chain?.vmType === 'hypevm'
@@ -219,8 +202,7 @@ const useCurrencyBalance = ({
       queryKey: adaptedWalletBalance.queryKey,
       isLoading: adaptedWalletBalance.isLoading,
       isError: adaptedWalletBalance.isError,
-      error: adaptedWalletBalance.error,
-      isDuneBalance: false
+      error: adaptedWalletBalance.error
     }
   } else if (chain?.vmType === 'evm') {
     const value = isErc20Currency ? erc20Balance : ethBalance?.value
@@ -230,51 +212,14 @@ const useCurrencyBalance = ({
     const isLoading = isErc20Currency
       ? erc20BalanceIsLoading
       : ethBalanceIsLoading
-    return { value, queryKey, isLoading, isError, error, isDuneBalance: false }
+    return { value, queryKey, isLoading, isError, error }
   } else if (chain?.vmType === 'svm') {
-    let value: undefined | bigint = undefined
-    let isDuneBalance = true
-    let isError = false
-    let error: Error | null = null
-
-    if (chain.id === eclipse.id) {
-      value = eclipseBalances.data?.balance
-      isDuneBalance = false
-      isError = eclipseBalances.isError
-      error = eclipseBalances.error
-    } else {
-      value =
-        currency &&
-        duneBalances.balanceMap &&
-        duneBalances.balanceMap[`${chain.id}:${currency}`] &&
-        duneBalances.balanceMap[`${chain.id}:${currency}`].amount
-          ? BigInt(
-              duneBalances.balanceMap[`${chain.id}:${currency}`].amount ?? 0
-            )
-          : undefined
-      isDuneBalance = true
-      isError = duneBalances.isError
-      error = duneBalances.error
-    }
-
-    if (_isValidAddress) {
-      return {
-        value,
-        queryKey: duneBalances.queryKey,
-        isLoading: duneBalances.isLoading,
-        isError,
-        error,
-        isDuneBalance
-      }
-    } else {
-      return {
-        value: undefined,
-        queryKey: duneBalances.queryKey,
-        isLoading: duneBalances.isLoading,
-        isError,
-        error,
-        isDuneBalance
-      }
+    return {
+      value: _isValidAddress ? solanaBalance.balance : undefined,
+      queryKey: solanaBalance.queryKey,
+      isLoading: solanaBalance.isLoading,
+      isError: solanaBalance.isError,
+      error: solanaBalance.error
     }
   } else if (chain?.vmType === 'bvm') {
     if (_isValidAddress) {
@@ -287,7 +232,7 @@ const useCurrencyBalance = ({
         isLoading: bitcoinBalances.isLoading,
         isError: bitcoinBalances.isError,
         error: bitcoinBalances.error,
-        isDuneBalance: false,
+
         hasPendingBalance:
           bitcoinBalances.data?.pendingBalance &&
           bitcoinBalances.data?.pendingBalance > 0n
@@ -301,7 +246,7 @@ const useCurrencyBalance = ({
         isLoading: bitcoinBalances.isLoading,
         isError: bitcoinBalances.isError,
         error: bitcoinBalances.error,
-        isDuneBalance: false,
+
         hasPendingBalance: false
       }
     }
@@ -311,8 +256,7 @@ const useCurrencyBalance = ({
       queryKey: hyperliquidBalance.queryKey,
       isLoading: hyperliquidBalance.isLoading,
       isError: hyperliquidBalance.isError,
-      error: hyperliquidBalance.error,
-      isDuneBalance: false
+      error: hyperliquidBalance.error
     }
   } else if (chain?.vmType === 'tvm') {
     return {
@@ -320,8 +264,7 @@ const useCurrencyBalance = ({
       queryKey: tronBalance.queryKey,
       isLoading: tronBalance.isLoading,
       isError: tronBalance.isError,
-      error: tronBalance.error,
-      isDuneBalance: false
+      error: tronBalance.error
     }
   } else if (chain?.vmType === 'tonvm') {
     return {
@@ -329,17 +272,15 @@ const useCurrencyBalance = ({
       queryKey: tonBalance.queryKey,
       isLoading: tonBalance.isLoading,
       isError: tonBalance.isError,
-      error: tonBalance.error,
-      isDuneBalance: false
+      error: tonBalance.error
     }
   } else {
     return {
       value: undefined,
-      queryKey: duneBalances.queryKey,
-      isLoading: duneBalances.isLoading,
-      isError: duneBalances.isError,
-      error: duneBalances.error,
-      isDuneBalance: false
+      queryKey: [],
+      isLoading: false,
+      isError: false,
+      error: null
     }
   }
 }
