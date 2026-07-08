@@ -1,12 +1,14 @@
 import type { FC } from 'react'
 import { Anchor, Button, Flex, Text } from '../../../primitives/index.js'
 import { LoadingSpinner } from '../../LoadingSpinner.js'
-import { useExecutionStatus } from '@relayprotocol/relay-kit-hooks'
+import { useDepositAddressStatus } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '../../../../hooks/index.js'
 
 type DepositAddressValidatingStepProps = {
   txHashes: string[]
-  status: NonNullable<ReturnType<typeof useExecutionStatus>['data']>['status']
+  status: NonNullable<
+    ReturnType<typeof useDepositAddressStatus>['data']
+  >['status']
 }
 
 export const DepositAddressValidatingStep: FC<

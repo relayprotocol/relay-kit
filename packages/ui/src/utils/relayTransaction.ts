@@ -2,6 +2,44 @@ import { type Execute, RelayClient } from '@relayprotocol/relay-sdk'
 import { type RelayTransaction } from '../types/index.js'
 import { formatSeconds } from './time.js'
 
+type RequestRoute = NonNullable<NonNullable<RelayTransaction['data']>['route']>
+type RouteAmount = NonNullable<
+  NonNullable<NonNullable<RequestRoute['quoted']>['origin']>['inputCurrency']
+>
+
+/**
+ * Resolves the input/output currency amounts to display for a request from
+ * `data.route`, preferring actual over quoted values.
+ *
+ * - currencyIn: the token deposited on the origin side.
+ * - currencyOut: the token received, preferring the destination output and
+ *   falling back to the origin output (e.g. same-chain swaps).
+ */
+export const getRequestCurrencies = (
+  transaction?: RelayTransaction | null
+): {
+  currencyIn?: RouteAmount | null
+  currencyOut?: RouteAmount | null
+  currencyGasTopup?: RouteAmount | null
+} => {
+  const route = transaction?.data?.route
+  const actual = route?.actual
+  const quoted = route?.quoted
+
+  const currencyIn =
+    actual?.origin?.inputCurrency ?? quoted?.origin?.inputCurrency
+
+  const currencyOut =
+    actual?.destination?.outputCurrency ??
+    quoted?.destination?.outputCurrency ??
+    actual?.origin?.outputCurrency ??
+    quoted?.origin?.outputCurrency
+
+  const currencyGasTopup = actual?.destination?.currencyGasTopup
+
+  return { currencyIn, currencyOut, currencyGasTopup }
+}
+
 export const extractFromChain = (
   transaction?: RelayTransaction | null,
   client?: RelayClient | null

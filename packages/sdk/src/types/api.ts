@@ -6024,10 +6024,13 @@ export interface paths {
               status?: string;
               report?: {
                 version?: string;
-                [key: string]: ({
-                  status?: string;
-                  reason?: string | null;
-                }) | undefined;
+                [key: string]:
+                  | string
+                  | ({
+                      status?: string;
+                      reason?: string | null;
+                    })
+                  | undefined;
               };
             };
           };
@@ -6039,10 +6042,13 @@ export interface paths {
               status?: string;
               report?: {
                 version?: string;
-                [key: string]: ({
-                  status?: string;
-                  reason?: string | null;
-                }) | undefined;
+                [key: string]:
+                  | string
+                  | ({
+                      status?: string;
+                      reason?: string | null;
+                    })
+                  | undefined;
               };
             };
           };

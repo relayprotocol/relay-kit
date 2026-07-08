@@ -999,7 +999,20 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                 <PercentageButtons
                                   balance={fromBalance}
                                   onPercentageClick={handleMaxAmountClicked}
-                                  getFeeBufferAmount={getFeeBufferAmount}
+                                  getFeeBufferAmount={(
+                                    vmType,
+                                    chainId,
+                                    balance,
+                                    publicClient
+                                  ) =>
+                                    getFeeBufferAmount(
+                                      vmType,
+                                      chainId,
+                                      balance,
+                                      publicClient,
+                                      relayClient?.baseApiUrl
+                                    )
+                                  }
                                   fromChain={fromChain}
                                   publicClient={publicClient}
                                   isFromNative={isFromNative}
@@ -1020,7 +1033,20 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             <PercentageButtons
                               balance={fromBalance}
                               onPercentageClick={handleMaxAmountClicked}
-                              getFeeBufferAmount={getFeeBufferAmount}
+                              getFeeBufferAmount={(
+                                vmType,
+                                chainId,
+                                balance,
+                                publicClient
+                              ) =>
+                                getFeeBufferAmount(
+                                  vmType,
+                                  chainId,
+                                  balance,
+                                  publicClient,
+                                  relayClient?.baseApiUrl
+                                )
+                              }
                               fromChain={fromChain}
                               publicClient={publicClient}
                               isFromNative={isFromNative}

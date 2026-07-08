@@ -8,7 +8,16 @@ import {
   useMemo
 } from 'react'
 import type { RelayKitTheme } from '@relayprotocol/relay-kit-ui'
-import { MAINNET_RELAY_API, TESTNET_RELAY_API } from '@relayprotocol/relay-sdk'
+
+// Client-side default routes through the demo's Relay proxy so authenticated
+// endpoints (e.g. /requests/v3) get the x-api-key. See pages/api/relay/[...path].
+// Absolute on the client because most SDK fetchers parse `new URL(baseApiUrl +
+// path)` without an origin base.
+const DEFAULT_RELAY_PROXY_PATH = '/api/relay/mainnets'
+const getDefaultRelayProxy = () =>
+  typeof window !== 'undefined'
+    ? `${window.location.origin}${DEFAULT_RELAY_PROXY_PATH}`
+    : DEFAULT_RELAY_PROXY_PATH
 
 type CustomizeState = {
   themeOverrides: Partial<RelayKitTheme>
@@ -24,7 +33,7 @@ const CustomizeContext = createContext<CustomizeState>({
   themeOverrides: {},
   setThemeOverrides: () => {},
   updateThemeValue: () => {},
-  relayApi: MAINNET_RELAY_API,
+  relayApi: DEFAULT_RELAY_PROXY_PATH,
   setRelayApi: () => {},
   websocketsEnabled: false,
   setWebsocketsEnabled: () => {}
@@ -42,7 +51,7 @@ export const CustomizeProvider: FC<{ children: ReactNode }> = ({
       }
     }
   })
-  const [relayApi, setRelayApi] = useState(MAINNET_RELAY_API)
+  const [relayApi, setRelayApi] = useState(getDefaultRelayProxy)
   const [websocketsEnabled, setWebsocketsEnabled] = useState(false)
 
   const updateThemeValue = useCallback(

@@ -329,8 +329,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       progressStep === TransactionProgressStep.Error) &&
       allTxHashes[0]
       ? {
-          user: address,
-          hash: allTxHashes[0]?.txHash
+          term: allTxHashes[0]?.txHash
         }
       : undefined,
     relayClient?.baseApiUrl,
