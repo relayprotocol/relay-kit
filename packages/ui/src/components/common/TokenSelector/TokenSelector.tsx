@@ -139,6 +139,15 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     if (!multiWalletSupportEnabled && context === 'from') {
       chains = chains.filter((chain) => chain.vmType === 'evm')
     }
+    // Hide chains without deposit-address support from the origin selector,
+    // unless we have wallet support for their VM.
+    if (context === 'from') {
+      chains = chains.filter(
+        (chain) =>
+          !UnsupportedDepositAddressChainIds.includes(chain.id) ||
+          (supportedWalletVMs?.some((vm) => vm === chain.vmType) ?? false)
+      )
+    }
     if (isReceivingDepositAddress) {
       chains = chains.filter(
         ({ id }) => !UnsupportedDepositAddressChainIds.includes(id)
@@ -151,7 +160,8 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     relayClient?.chains,
     multiWalletSupportEnabled,
     context,
-    depositAddressOnly
+    depositAddressOnly,
+    supportedWalletVMs
   ])
 
   const configuredChainIds = useMemo(() => {
