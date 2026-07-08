@@ -9376,8 +9376,6 @@ export interface paths {
                   createdAt?: string;
                   updatedAt?: string;
                 })[];
-              /** @description Total number of requests matching the current filters. */
-              total?: number;
               continuation?: string;
             };
           };
