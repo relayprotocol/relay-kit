@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 9.1.3
+
+### Patch Changes
+
+- 4ac9782: Hide non-deposit-address chains (incl. TON) from origin selector unless VM has wallet support
+- 0020895: Embed sourcesContent in published sourcemaps so they resolve without the unpublished src directory
+- Updated dependencies [0020895]
+  - @relayprotocol/relay-sdk@6.1.3
+  - @relayprotocol/relay-kit-hooks@3.0.24
+
 ## 9.1.2
 
 ### Patch Changes

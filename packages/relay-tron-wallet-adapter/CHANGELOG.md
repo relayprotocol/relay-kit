@@ -1,5 +1,13 @@
 # @relayprotocol/relay-tron-wallet-adapter
 
+## 8.0.3
+
+### Patch Changes
+
+- 0020895: Embed sourcesContent in published sourcemaps so they resolve without the unpublished src directory
+- Updated dependencies [0020895]
+  - @relayprotocol/relay-sdk@6.1.3
+
 ## 8.0.2
 
 ### Patch Changes

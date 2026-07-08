@@ -1,6 +1,6 @@
 {
     "name": "@relayprotocol/relay-ton-wallet-adapter",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "description": "A TON wallet adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
