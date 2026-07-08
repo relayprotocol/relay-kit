@@ -54,8 +54,6 @@ export const RelayKitProviderWrapper: FC<{
     [themeOverrides]
   )
 
-  console.log('relayApi', relayApi)
-
   return (
     <RelayKitProvider
       options={{
