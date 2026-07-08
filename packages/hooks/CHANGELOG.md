@@ -1,5 +1,13 @@
 # @reservoir0x/relay-kit-hooks
 
+## 3.0.24
+
+### Patch Changes
+
+- 0020895: Embed sourcesContent in published sourcemaps so they resolve without the unpublished src directory
+- Updated dependencies [0020895]
+  - @relayprotocol/relay-sdk@6.1.3
+
 ## 3.0.23
 
 ### Patch Changes

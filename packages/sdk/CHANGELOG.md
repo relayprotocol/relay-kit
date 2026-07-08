@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 6.1.3
+
+### Patch Changes
+
+- 0020895: Embed sourcesContent in published sourcemaps so they resolve without the unpublished src directory
+
 ## 6.1.2
 
 ### Patch Changes
