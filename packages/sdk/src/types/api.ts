@@ -394,7 +394,7 @@ export interface paths {
                    * @description The type of VM the chain runs on
                    * @enum {string}
                    */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
                   explorerQueryParams?: {
                     [key: string]: unknown;
                   } | null;
@@ -530,7 +530,7 @@ export interface paths {
           /** @description User address, when supplied returns user balance and max bridge amount */
           user?: string;
           /** @description Restricts the user balance and capacity to a particular currency when supplied with a currency id. Defaults to the native currency of the destination chain. */
-          currency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg";
+          currency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg" | "usdc.e-cronos";
         };
       };
       responses: {
@@ -571,39 +571,30 @@ export interface paths {
       };
     };
   };
-  "/execute/bridge": {
+  "/execute/permits": {
     post: {
+      parameters: {
+        query: {
+          /** @description The permit signature. */
+          signature: string;
+        };
+        header?: {
+          /** @description Optional API key for authentication and higher rate limits. */
+          "x-api-key"?: string;
+        };
+      };
       requestBody: {
         content: {
           "application/json": {
-            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
-            user: string;
-            /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
-            recipient?: string;
-            originChainId: number;
-            destinationChainId: number;
-            /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg";
-            /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
-            amount: string;
-            /** @description App fees to be charged for execution */
-            appFees?: string[];
-            source?: string;
-            /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
-            refundTo?: string;
+            /** @description The kind of signature. This value is returned in the quote API steps body field. e.g eip3009 */
+            kind: string;
+            /** @description The requestId of the quote this permit signature applies to. Returned in the quote API steps body field. */
+            requestId: string;
             /**
-             * @deprecated
-             * @description Always refund on the origin chain in case of any issues
+             * @description The API value returned from the quote API steps body field.
+             * @enum {string}
              */
-            refundOnOrigin?: boolean;
-            /** @description Enable this to use the exact input rather than exact output */
-            useExactInput?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
-            useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
-            useFallbacks?: boolean;
-            /** @description Enable this to use permit (eip3009), only works on supported currency such as usdc */
-            usePermit?: boolean;
+            api?: "bridge" | "swap" | "user-swap";
           };
         };
       };
@@ -612,110 +603,26 @@ export interface paths {
         200: {
           content: {
             "application/json": {
-              /**
-               * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
-               * @example [
-               *   {
-               *     "id": "deposit",
-               *     "action": "Confirm transaction in your wallet",
-               *     "description": "Deposit funds for executing the calls",
-               *     "kind": "transaction",
-               *     "items": [
-               *       {
-               *         "status": "incomplete",
-               *         "data": {
-               *           "from": "0x03508bB71268BBA25ECaCC8F620e01866650532c",
-               *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x58109c",
-               *           "value": "995010715204139091",
-               *           "maxFeePerGas": "18044119466",
-               *           "maxPriorityFeePerGas": "2060264926",
-               *           "chainId": 1,
-               *           "gas": 21064
-               *         },
-               *         "check": {
-               *           "endpoint": "/intents/status?requestId=0x341b28c6467bfbffb72ad78ec5ddf1f77b8f9c79be134223e3248a7d4fcd43b6",
-               *           "method": "GET"
-               *         }
-               *       }
-               *     ]
-               *   }
-               * ]
-               */
+              message?: string;
               steps?: {
-                  /** @description Unique identifier tied to the step */
                   id?: string;
-                  /** @description A call to action for the step */
                   action?: string;
-                  /** @description A short description of the step and what it entails */
                   description?: string;
-                  /** @description The kind of step, can either be a transaction or a signature. Transaction steps require submitting a transaction while signature steps require submitting a signature */
                   kind?: string;
-                  /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
                   items?: {
-                      /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
                       status?: string;
-                      data?: unknown;
-                      /** @description Details an endpoint and a method you should poll to get confirmation, the endpoint should return a boolean success flag which can be used to determine if the step item is complete */
+                      data?: {
+                        to?: string;
+                        data?: string;
+                        value?: string;
+                        chainId?: number;
+                      };
                       check?: {
-                        /** @description The endpoint to confirm that the step item was successfully completed */
                         endpoint?: string;
-                        /** @description The REST method to access the endpoint */
                         method?: string;
                       };
                     }[];
                 }[];
-              /**
-               * @example {
-               *   "gas": "384398515652800",
-               *   "gasCurrency": "eth",
-               *   "relayer": "-4989478842712964",
-               *   "relayerGas": "521157287036",
-               *   "relayerService": "-4990000000000000",
-               *   "relayerCurrency": "eth"
-               * }
-               */
-              fees?: {
-                /** @description Origin chain gas fee in wei */
-                gas?: string;
-                /**
-                 * @description Origin chain gas currency
-                 * @enum {string}
-                 */
-                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg" | "avax" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "ton" | "cronos" | "hype" | "mcade" | "usd" | "wbtc" | "usdc-arc";
-                /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
-                relayer?: string;
-                /** @description Destination chain gas fee in wei */
-                relayerGas?: string;
-                /** @description Fee paid to the relay solver in wei, note that this value can be negative (which represents network rewards for moving in a direction that optimizes liquidity distribution) */
-                relayerService?: string;
-                /**
-                 * @description The currency for all relayer fees (gas and service)
-                 * @enum {string}
-                 */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg";
-                app?: string;
-                /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg";
-              };
-              breakdown?: {
-                  /** @description Amount that will be bridged in the estimated time */
-                  value?: string;
-                  /** @description Estimated bridge time in seconds */
-                  timeEstimate?: number;
-                }[];
-              /**
-               * @example {
-               *   "userBalance": "54764083517303347",
-               *   "requiredToSolve": "995010521157287036"
-               * }
-               */
-              balances?: {
-                /** @description The user's balance in the given currency on the origin chain */
-                userBalance?: string;
-                /** @description The minimum balance the user needs to have to bridge */
-                requiredToSolve?: string;
-              };
             };
           };
         };
@@ -727,58 +634,157 @@ export interface paths {
             };
           };
         };
-        /** @description Default Response */
-        401: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        500: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
       };
     };
   };
-  "/execute/bridge/v2": {
+  "/quote": {
+    /**
+     * @deprecated
+     * @description This endpoint is deprecated. Use /quote/v2 instead.
+     */
     post: {
+      parameters: {
+        header?: {
+          /** @description Optional API key for authentication and higher rate limits. */
+          "x-api-key"?: string;
+        };
+      };
       requestBody: {
         content: {
           "application/json": {
-            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
+            /**
+             * @description Address that is depositing funds on the origin chain and submitting transactions or signatures
+             * @default 0x03508bb71268bba25ecacc8f620e01866650532c
+             */
             user: string;
             /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
             recipient?: string;
+            /** @default 8453 */
             originChainId: number;
+            /** @default 10 */
             destinationChainId: number;
-            /** @enum {string} */
-            currency: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg";
-            /** @description Amount to bridge as the base amount (can be switched to exact input using the dedicated flag), denoted in wei */
+            /** @default 0x0000000000000000000000000000000000000000 */
+            originCurrency: string;
+            /** @default 0x0000000000000000000000000000000000000000 */
+            destinationCurrency: string;
+            /**
+             * @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH)
+             * @default 1000000000000000000
+             */
             amount: string;
-            /** @description App fees to be charged for execution */
-            appFees?: string[];
-            source?: string;
-            /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
+            /**
+             * @description Whether to use the amount as the output or the input for the basis of the swap
+             * @default EXACT_INPUT
+             * @enum {string}
+             */
+            tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
+            txs?: {
+                to?: string;
+                value?: string;
+                data?: string;
+                originalTxValue?: string;
+              }[];
+            /** @description Total gas limit for the destination chain call transactions */
+            txsGasLimit?: number;
+            /** @description Authorization list for EIP-7702 transactions to be executed on destination chain */
+            authorizationList?: {
+                chainId: number;
+                address: string;
+                nonce: number;
+                yParity: number;
+                r: string;
+                s: string;
+              }[];
+            /** @description Additional data needed for specific routes */
+            additionalData?: {
+              /** @description If the request originates from Bitcoin and the user is a P2SH address, the public key is needed to be able to generate the transaction data */
+              userPublicKey?: string;
+            };
+            referrer?: string;
+            referrerAddress?: string;
+            /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
             refundTo?: string;
             /**
              * @deprecated
              * @description Always refund on the origin chain in case of any issues
              */
             refundOnOrigin?: boolean;
-            /** @description Enable this to use the exact input rather than exact output */
-            useExactInput?: boolean;
+            /** @description If set, the destination fill will include a gas topup to the recipient (only supported for EVM chains if the requested currency is not the gas currency on the destination chain) */
+            topupGas?: boolean;
+            /** @description The destination gas topup amount in USD decimal format, e.g 100000 = $1. topupGas is required to be enabled. Defaults to 2000000 ($2) */
+            topupGasAmount?: string;
+            /**
+             * @description Enabling will send any swap surplus when doing exact output operations to the solver EOA, otherwise it will be swept to the recipient
+             * @default false
+             */
+            enableTrueExactOutput?: boolean;
+            /**
+             * @description Enable this to avoid direct transfers to the depository (only relevant for EVM and v2 protocol flow)
+             * @default true
+             */
+            explicitDeposit?: boolean;
             /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
             useExternalLiquidity?: boolean;
             /** @description Enable this for specific fallback routes */
             useFallbacks?: boolean;
-            /** @description Enable this to use permit (eip3009), only works on supported currency such as usdc */
+            /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
             usePermit?: boolean;
+            /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
+            permitExpiry?: number;
+            /** @description Return protocol data for on-chain intent validation. This includes protocol.v2.orderSignature and may increase quote latency. */
+            includeProtocolData?: boolean;
+            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. For new requests, EXACT_OUTPUT is only supported when strict is also enabled. */
+            useDepositAddress?: boolean;
+            /** @description When used with useDepositAddress, enables a strict deposit address that is tied to a specific order. Underpayments fail and refund, exact payments fill, and overpayments fill the quoted amount while refunding the excess in a separate refund leg. EXACT_OUTPUT deposit-address requests are only supported in strict mode. Open-ended deposit addresses remain the flexible path for variable deposited amounts. Requires a refundTo address. */
+            strict?: boolean;
+            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. Must be 0–10000 bps. */
+            slippageTolerance?: string;
+            /** @description Slippage tolerance for destination gas in the event that the deposit occurs after the order deadline, and more gas is required for the solver to execute the destination transaction. Must be 0–10000 bps. */
+            latePaymentSlippageTolerance?: string;
+            appFees?: {
+                /** @description Address that will receive the app fee */
+                recipient?: string;
+                /** @description App fees to be charged for execution in basis points, e.g. 100 = 1% */
+                fee?: string;
+              }[];
+            /** @description If the request involves specifying transactions to be executed during the deposit transaction, an explicit gas limit must be set when requesting the quote */
+            gasLimitForDepositSpecifiedTxs?: number;
+            /** @description Force executing swap requests via the solver (by default, same-chain swap requests are self-executed) */
+            forceSolverExecution?: boolean;
+            /** @description If the sponsor should pay for the fees associated with the request. Includes gas topup amounts. */
+            subsidizeFees?: boolean;
+            /** @description The fee components to sponsor for swap execution kinds. Requires subsidizeFees=true. Defaults to all components when omitted. */
+            sponsoredFeeComponents?: ("execution" | "swap" | "relay" | "app")[];
+            /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. subsidizeFees must be enabled. The sponsor will cover fees up to this cap and the user pays any remainder. */
+            maxSubsidizationAmount?: string;
+            /** @description If the sponsor should pay for the solana rent associated with the request. */
+            subsidizeRent?: boolean;
+            /** @description Swap sources to include for swap routing. */
+            includedSwapSources?: string[];
+            /** @description Swap sources to exclude for swap routing. */
+            excludedSwapSources?: string[];
+            /** @description Swap sources to include for swap routing on origin. */
+            includedOriginSwapSources?: string[];
+            /** @description Swap sources to include for swap routing on destination. */
+            includedDestinationSwapSources?: string[];
+            /** @description The gas overhead for the origin chain, this is used to calculate the gas fee for the origin chain when the solver is executing a gasless transaction on the origin chain */
+            originGasOverhead?: number;
+            /** @description The payer to be set for deposit transactions on solana. This account must have enough for fees and rent. */
+            depositFeePayer?: string;
+            /** @description Maximum number of hops to use in solana swap routing. Can reduce transaction size. */
+            maxRouteLength?: number;
+            /** @description Prevents certain ATA creation instructions in solana routing */
+            useSharedAccounts?: boolean;
+            /** @description Whether to include compute unit limit instruction for solana origin requests. */
+            includeComputeUnitLimit?: boolean;
+            /** @description Whether to ignore price impact errors. */
+            overridePriceImpact?: boolean;
+            /** @description Whether to disable origin swaps. */
+            disableOriginSwaps?: boolean;
+            /** @description The rate to charge for fixed spread quotes. */
+            fixedRate?: string;
+            /** @description Time-to-live for the quote, in seconds, measured from when the quote was generated. If the request is not filled within this window it is refunded instead of filled. */
+            ttl?: number;
           };
         };
       };
@@ -793,23 +799,23 @@ export interface paths {
                *   {
                *     "id": "deposit",
                *     "action": "Confirm transaction in your wallet",
-               *     "description": "Deposit funds for executing the calls",
+               *     "description": "Depositing funds to the relayer to execute the swap for USDC",
                *     "kind": "transaction",
+               *     "requestId": "0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
                *     "items": [
                *       {
                *         "status": "incomplete",
                *         "data": {
-               *           "from": "0x03508bB71268BBA25ECaCC8F620e01866650532c",
+               *           "from": "0x0CccD55A5Ac261Ea29136831eeaA93bfE07f5Db6",
                *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x58109c",
-               *           "value": "995010715204139091",
-               *           "maxFeePerGas": "18044119466",
-               *           "maxPriorityFeePerGas": "2060264926",
-               *           "chainId": 1,
-               *           "gas": 21064
+               *           "data": "0x00fad611",
+               *           "value": "1000000000000000000",
+               *           "maxFeePerGas": "12205661344",
+               *           "maxPriorityFeePerGas": "2037863396",
+               *           "chainId": 1
                *         },
                *         "check": {
-               *           "endpoint": "/intents/status?requestId=0x341b28c6467bfbffb72ad78ec5ddf1f77b8f9c79be134223e3248a7d4fcd43b6",
+               *           "endpoint": "/intents/status?requestId=0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
                *           "method": "GET"
                *         }
                *       }
@@ -817,17 +823,24 @@ export interface paths {
                *   }
                * ]
                */
-              steps?: {
-                  /** @description Unique identifier tied to the step */
-                  id?: string;
+              steps?: ({
+                  /**
+                   * @description Unique identifier tied to the step
+                   * @enum {string}
+                   */
+                  id: "deposit" | "approve" | "authorize" | "authorize1" | "authorize2" | "swap" | "send";
                   /** @description A call to action for the step */
-                  action?: string;
+                  action: string;
                   /** @description A short description of the step and what it entails */
-                  description?: string;
+                  description: string;
                   /** @description The kind of step, can either be a transaction or a signature. Transaction steps require submitting a transaction while signature steps require submitting a signature */
-                  kind?: string;
+                  kind: string;
+                  /** @description A unique identifier for this step, tying all related transactions together */
+                  requestId?: string;
+                  /** @description The deposit address for the bridge request */
+                  depositAddress?: string;
                   /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
-                  items?: {
+                  items: {
                       /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
                       status?: string;
                       data?: unknown;
@@ -839,7 +852,7 @@ export interface paths {
                         method?: string;
                       };
                     }[];
-                }[];
+                })[];
               fees?: {
                 /**
                  * @description Origin chain gas fee
@@ -1076,23 +1089,1585 @@ export interface paths {
                   minimumAmount?: string;
                 };
               };
-              breakdown?: {
-                  /** @description Amount that will be bridged in the estimated time */
-                  value?: string;
-                  /** @description Estimated bridge time in seconds */
-                  timeEstimate?: number;
-                }[];
-              /**
-               * @example {
-               *   "userBalance": "54764083517303347",
-               *   "requiredToSolve": "995010521157287036"
-               * }
-               */
-              balances?: {
+              /** @description Granular fee sponsorship details derived from the solver's internal sponsorship resolution. */
+              feeSponsorship?: {
+                /** @description The quote-time sponsorship expectation for the request. */
+                quoted?: {
+                  /** @description The normalized sponsorship buckets selected for this request. */
+                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
+                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
+                  maxSubsidizationAmount?: string;
+                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
+                  capHit: boolean;
+                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
+                  components: {
+                    /** @description Execution fee sponsorship details. */
+                    execution: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Swap fee sponsorship details. */
+                    swap: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Relay protocol fee sponsorship details. */
+                    relay: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description App fee sponsorship details. */
+                    app: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                  };
+                  /**
+                   * @description The total amount sponsored for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  sponsoredTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                  /**
+                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  userPaysTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                };
+                /** @description The post-solve sponsorship outcome recorded for the request. */
+                actual?: {
+                  /** @description The normalized sponsorship buckets selected for this request. */
+                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
+                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
+                  maxSubsidizationAmount?: string;
+                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
+                  capHit: boolean;
+                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
+                  components: {
+                    /** @description Execution fee sponsorship details. */
+                    execution: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Swap fee sponsorship details. */
+                    swap: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Relay protocol fee sponsorship details. */
+                    relay: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description App fee sponsorship details. */
+                    app: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                  };
+                  /**
+                   * @description The total amount sponsored for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  sponsoredTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                  /**
+                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  userPaysTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                  /** @description How much the sponsor ultimately paid, denominated in the sponsor payment currency. */
+                  sponsorPayment?: {
+                    /** @description The sponsor payment amount. */
+                    amount: string;
+                    /** @description The sponsor payment currency address. */
+                    address: string;
+                    /** @description The sponsor payment chain id. */
+                    chainId: number;
+                  };
+                };
+              };
+              /** @description A summary of the swap and what the user should expect to happen given an input */
+              details?: {
+                /** @description The operation that will be performed, possible options are send, swap, wrap, unwrap, bridge */
+                operation?: string;
+                /** @description The address that deposited the funds */
+                sender?: string;
+                /** @description The address that will be receiving the swap output */
+                recipient?: string;
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyIn?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyOut?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                refundCurrency?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyGasTopup?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /** @description The difference between the input and output values, including fees */
+                totalImpact?: {
+                  usd?: string;
+                  percent?: string;
+                };
+                /** @description The impact of the swap, not factoring in fees */
+                swapImpact?: {
+                  usd?: string;
+                  percent?: string;
+                };
+                expandedPriceImpact?: {
+                  /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
+                  swap?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to cover transaction execution costs */
+                  execution?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to the protocol */
+                  relay?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
+                  app?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid by a sponsor for this request */
+                  sponsored?: {
+                    usd?: string;
+                  };
+                };
+                /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
+                rate?: string;
+                slippageTolerance?: {
+                  /** @description The slippage tolerance on the origin chain swap */
+                  origin?: {
+                    usd?: string;
+                    value?: string;
+                    percent?: string;
+                  };
+                  /** @description The slippage tolerance on the destination chain swap */
+                  destination?: {
+                    usd?: string;
+                    value?: string;
+                    percent?: string;
+                  };
+                };
+                /** @description Estimated swap time in seconds */
+                timeEstimate?: number;
                 /** @description The user's balance in the given currency on the origin chain */
                 userBalance?: string;
-                /** @description The minimum balance the user needs to have to bridge */
-                requiredToSolve?: string;
+                /** @description The type of fallback route the request uses, if any */
+                fallbackType?: string;
+                /** @description Whether the rate for the quote is fixed or dynamic (swap on origin/destination) */
+                isFixedRate?: boolean;
+                /** @description The USD cost of the fixed rate vs market rate. Positive means the fixed rate is worse than market (user pays premium), negative means better (user benefits). Only present for fixed rate quotes. */
+                fixedRateFee?: {
+                  usd?: string;
+                };
+                route?: {
+                  /** @description The route taken for the origin chain swap */
+                  origin?: {
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    inputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    outputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    router?: string;
+                    includedSwapSources?: string[];
+                  };
+                  /** @description The route taken for the origin chain swap */
+                  destination?: {
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    inputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    outputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    router?: string;
+                    includedSwapSources?: string[];
+                  };
+                };
+              };
+              /** @description Protocol information for the quote */
+              protocol?: {
+                v2?: {
+                  /** @description The underlying protocol order id */
+                  orderId?: string;
+                  /**
+                   * @description The protocol hub type. Always 'onchain' for the public protocol contract. Mirrors the requests/v3 protocol block.
+                   * @enum {string}
+                   */
+                  hubType?: "onchain";
+                  /** @description The underlying protocol order data */
+                  orderData?: unknown;
+                  /** @description Solver's ECDSA signature over the orderId, returned when includeProtocolData is set. Use ecrecover to verify the commitment on-chain. */
+                  orderSignature?: string;
+                  /** @description The details for the depository payment */
+                  paymentDetails?: {
+                    /** @description The protocol chain id for the payment */
+                    chainId?: string;
+                    /** @description The depository address */
+                    depository?: string;
+                    /** @description The currency of the payment */
+                    currency?: string;
+                    /** @description The amount of the payment */
+                    amount?: string;
+                  };
+                };
               };
             };
           };
@@ -1102,7 +2677,16 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
-              code?: string;
+              errorCode?: string;
+              errorData?: string;
+              requestId?: string;
+              approxSimulatedBlock?: number;
+              failedCallData?: {
+                from?: string;
+                to?: string;
+                data?: string;
+                value?: string;
+              };
             };
           };
         };
@@ -1111,7 +2695,15 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
-              code?: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        429: {
+          content: {
+            "application/json": {
+              message?: string;
             };
           };
         };
@@ -1120,37 +2712,158 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
-              code?: string;
+              errorCode?: string;
+              requestId?: string;
             };
           };
         };
       };
     };
   };
-  "/execute/call": {
+  "/quote/v2": {
     post: {
+      parameters: {
+        header?: {
+          /** @description Optional API key for authentication and higher rate limits. */
+          "x-api-key"?: string;
+        };
+      };
       requestBody: {
         content: {
           "application/json": {
-            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
+            /**
+             * @description Address that is depositing funds on the origin chain and submitting transactions or signatures
+             * @default 0x03508bb71268bba25ecacc8f620e01866650532c
+             */
             user: string;
+            /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
+            recipient?: string;
+            /** @default 8453 */
             originChainId: number;
+            /** @default 10 */
             destinationChainId: number;
+            /** @default 0x0000000000000000000000000000000000000000 */
+            originCurrency: string;
+            /** @default 0x0000000000000000000000000000000000000000 */
+            destinationCurrency: string;
+            /**
+             * @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH)
+             * @default 1000000000000000000
+             */
+            amount: string;
+            /**
+             * @description Whether to use the amount as the output or the input for the basis of the swap
+             * @default EXACT_INPUT
+             * @enum {string}
+             */
+            tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
             txs?: {
                 to?: string;
                 value?: string;
                 data?: string;
+                originalTxValue?: string;
               }[];
-            /** @description App fees to be charged for execution */
-            appFees?: string[];
-            /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
+            /** @description Total gas limit for the destination chain call transactions */
+            txsGasLimit?: number;
+            /** @description Authorization list for EIP-7702 transactions to be executed on destination chain */
+            authorizationList?: {
+                chainId: number;
+                address: string;
+                nonce: number;
+                yParity: number;
+                r: string;
+                s: string;
+              }[];
+            /** @description Additional data needed for specific routes */
+            additionalData?: {
+              /** @description If the request originates from Bitcoin and the user is a P2SH address, the public key is needed to be able to generate the transaction data */
+              userPublicKey?: string;
+            };
+            referrer?: string;
+            referrerAddress?: string;
+            /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
             refundTo?: string;
             /**
              * @deprecated
              * @description Always refund on the origin chain in case of any issues
              */
             refundOnOrigin?: boolean;
-            source?: string;
+            /** @description If set, the destination fill will include a gas topup to the recipient (only supported for EVM chains if the requested currency is not the gas currency on the destination chain) */
+            topupGas?: boolean;
+            /** @description The destination gas topup amount in USD decimal format, e.g 100000 = $1. topupGas is required to be enabled. Defaults to 2000000 ($2) */
+            topupGasAmount?: string;
+            /**
+             * @description Enabling will send any swap surplus when doing exact output operations to the solver EOA, otherwise it will be swept to the recipient
+             * @default false
+             */
+            enableTrueExactOutput?: boolean;
+            /**
+             * @description Enable this to avoid direct transfers to the depository (only relevant for EVM and v2 protocol flow)
+             * @default true
+             */
+            explicitDeposit?: boolean;
+            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
+            useExternalLiquidity?: boolean;
+            /** @description Enable this for specific fallback routes */
+            useFallbacks?: boolean;
+            /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
+            usePermit?: boolean;
+            /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
+            permitExpiry?: number;
+            /** @description Return protocol data for on-chain intent validation. This includes protocol.v2.orderSignature and may increase quote latency. */
+            includeProtocolData?: boolean;
+            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. For new requests, EXACT_OUTPUT is only supported when strict is also enabled. */
+            useDepositAddress?: boolean;
+            /** @description When used with useDepositAddress, enables a strict deposit address that is tied to a specific order. Underpayments fail and refund, exact payments fill, and overpayments fill the quoted amount while refunding the excess in a separate refund leg. EXACT_OUTPUT deposit-address requests are only supported in strict mode. Open-ended deposit addresses remain the flexible path for variable deposited amounts. Requires a refundTo address. */
+            strict?: boolean;
+            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. Must be 0–10000 bps. */
+            slippageTolerance?: string;
+            /** @description Slippage tolerance for destination gas in the event that the deposit occurs after the order deadline, and more gas is required for the solver to execute the destination transaction. Must be 0–10000 bps. */
+            latePaymentSlippageTolerance?: string;
+            appFees?: {
+                /** @description Address that will receive the app fee */
+                recipient?: string;
+                /** @description App fees to be charged for execution in basis points, e.g. 100 = 1% */
+                fee?: string;
+              }[];
+            /** @description If the request involves specifying transactions to be executed during the deposit transaction, an explicit gas limit must be set when requesting the quote */
+            gasLimitForDepositSpecifiedTxs?: number;
+            /** @description Force executing swap requests via the solver (by default, same-chain swap requests are self-executed) */
+            forceSolverExecution?: boolean;
+            /** @description If the sponsor should pay for the fees associated with the request. Includes gas topup amounts. */
+            subsidizeFees?: boolean;
+            /** @description The fee components to sponsor for swap execution kinds. Requires subsidizeFees=true. Defaults to all components when omitted. */
+            sponsoredFeeComponents?: ("execution" | "swap" | "relay" | "app")[];
+            /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. subsidizeFees must be enabled. The sponsor will cover fees up to this cap and the user pays any remainder. */
+            maxSubsidizationAmount?: string;
+            /** @description If the sponsor should pay for the solana rent associated with the request. */
+            subsidizeRent?: boolean;
+            /** @description Swap sources to include for swap routing. */
+            includedSwapSources?: string[];
+            /** @description Swap sources to exclude for swap routing. */
+            excludedSwapSources?: string[];
+            /** @description Swap sources to include for swap routing on origin. */
+            includedOriginSwapSources?: string[];
+            /** @description Swap sources to include for swap routing on destination. */
+            includedDestinationSwapSources?: string[];
+            /** @description The gas overhead for the origin chain, this is used to calculate the gas fee for the origin chain when the solver is executing a gasless transaction on the origin chain */
+            originGasOverhead?: number;
+            /** @description The payer to be set for deposit transactions on solana. This account must have enough for fees and rent. */
+            depositFeePayer?: string;
+            /** @description Maximum number of hops to use in solana swap routing. Can reduce transaction size. */
+            maxRouteLength?: number;
+            /** @description Prevents certain ATA creation instructions in solana routing */
+            useSharedAccounts?: boolean;
+            /** @description Whether to include compute unit limit instruction for solana origin requests. */
+            includeComputeUnitLimit?: boolean;
+            /** @description Whether to ignore price impact errors. */
+            overridePriceImpact?: boolean;
+            /** @description Whether to disable origin swaps. */
+            disableOriginSwaps?: boolean;
+            /** @description The rate to charge for fixed spread quotes. */
+            fixedRate?: string;
+            /** @description Time-to-live for the quote, in seconds, measured from when the quote was generated. If the request is not filled within this window it is refunded instead of filled. */
+            ttl?: number;
           };
         };
       };
@@ -1165,23 +2878,23 @@ export interface paths {
                *   {
                *     "id": "deposit",
                *     "action": "Confirm transaction in your wallet",
-               *     "description": "Deposit funds for executing the calls",
+               *     "description": "Depositing funds to the relayer to execute the swap for USDC",
                *     "kind": "transaction",
+               *     "requestId": "0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
                *     "items": [
                *       {
                *         "status": "incomplete",
                *         "data": {
-               *           "from": "0x03508bB71268BBA25ECaCC8F620e01866650532c",
+               *           "from": "0x0CccD55A5Ac261Ea29136831eeaA93bfE07f5Db6",
                *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x58109c",
-               *           "value": "995010715204139091",
-               *           "maxFeePerGas": "18044119466",
-               *           "maxPriorityFeePerGas": "2060264926",
-               *           "chainId": 1,
-               *           "gas": 21064
+               *           "data": "0x00fad611",
+               *           "value": "1000000000000000000",
+               *           "maxFeePerGas": "12205661344",
+               *           "maxPriorityFeePerGas": "2037863396",
+               *           "chainId": 1
                *         },
                *         "check": {
-               *           "endpoint": "/intents/status?requestId=0x341b28c6467bfbffb72ad78ec5ddf1f77b8f9c79be134223e3248a7d4fcd43b6",
+               *           "endpoint": "/intents/status?requestId=0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
                *           "method": "GET"
                *         }
                *       }
@@ -1189,17 +2902,24 @@ export interface paths {
                *   }
                * ]
                */
-              steps?: {
-                  /** @description Unique identifier tied to the step */
-                  id?: string;
+              steps?: ({
+                  /**
+                   * @description Unique identifier tied to the step
+                   * @enum {string}
+                   */
+                  id: "deposit" | "approve" | "authorize" | "authorize1" | "authorize2" | "swap" | "send";
                   /** @description A call to action for the step */
-                  action?: string;
+                  action: string;
                   /** @description A short description of the step and what it entails */
-                  description?: string;
+                  description: string;
                   /** @description The kind of step, can either be a transaction or a signature. Transaction steps require submitting a transaction while signature steps require submitting a signature */
-                  kind?: string;
+                  kind: string;
+                  /** @description A unique identifier for this step, tying all related transactions together */
+                  requestId?: string;
+                  /** @description The deposit address for the bridge request */
+                  depositAddress?: string;
                   /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
-                  items?: {
+                  items: {
                       /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
                       status?: string;
                       data?: unknown;
@@ -1211,189 +2931,7 @@ export interface paths {
                         method?: string;
                       };
                     }[];
-                }[];
-              /**
-               * @example {
-               *   "gas": "384398515652800",
-               *   "gasCurrency": "eth",
-               *   "relayer": "-4989478842712964",
-               *   "relayerGas": "521157287036",
-               *   "relayerService": "-4990000000000000",
-               *   "relayerCurrency": "eth"
-               * }
-               */
-              fees?: {
-                /** @description Origin chain gas fee in wei */
-                gas?: string;
-                /**
-                 * @description Origin chain gas currency
-                 * @enum {string}
-                 */
-                gasCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg" | "avax" | "matic" | "sei" | "mnt" | "trx" | "bera" | "ip" | "s" | "lrds" | "celo" | "flow" | "ron" | "metis" | "btcn" | "core" | "ton" | "cronos" | "hype" | "mcade" | "usd" | "wbtc" | "usdc-arc";
-                /** @description Combination of the relayerGas and relayerService to give you the full relayer fee in wei */
-                relayer?: string;
-                /** @description Destination chain gas fee in wei */
-                relayerGas?: string;
-                /** @description Fee paid to the relay solver in wei, note that this value can be negative (which represents network rewards for moving in a direction that optimizes liquidity distribution) */
-                relayerService?: string;
-                /**
-                 * @description The currency for all relayer fees (gas and service)
-                 * @enum {string}
-                 */
-                relayerCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg";
-                app?: string;
-                /** @enum {string} */
-                appCurrency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "apeeth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg";
-              };
-              /**
-               * @example {
-               *   "value": "1000000000000000000",
-               *   "timeEstimate": 10
-               * }
-               */
-              breakdown?: {
-                  /** @description Amount that will be executed in the estimated time */
-                  value?: string;
-                  /** @description Estimated execution time in seconds */
-                  timeEstimate?: number;
-                }[];
-              /**
-               * @example {
-               *   "userBalance": "54764083517303347",
-               *   "requiredToSolve": "995010521157287036"
-               * }
-               */
-              balances?: {
-                /** @description The user's balance in the given currency on the origin chain */
-                userBalance?: string;
-                /** @description The minimum balance the user needs to have to bridge */
-                requiredToSolve?: string;
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-              tx?: {
-                to?: string;
-                value?: string;
-                data?: string;
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        401: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        500: {
-          content: {
-            "application/json": {
-              message?: string;
-              tx?: {
-                to?: string;
-                value?: string;
-                data?: string;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-  "/execute/call/v2": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
-            user: string;
-            originChainId: number;
-            destinationChainId: number;
-            txs?: {
-                to?: string;
-                value?: string;
-                data?: string;
-              }[];
-            /** @description App fees to be charged for execution */
-            appFees?: string[];
-            /** @description Address to send the refund to in the case of failure, if not specified then the receipient address or user address is used */
-            refundTo?: string;
-            /**
-             * @deprecated
-             * @description Always refund on the origin chain in case of any issues
-             */
-            refundOnOrigin?: boolean;
-            source?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              /**
-               * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
-               * @example [
-               *   {
-               *     "id": "deposit",
-               *     "action": "Confirm transaction in your wallet",
-               *     "description": "Deposit funds for executing the calls",
-               *     "kind": "transaction",
-               *     "items": [
-               *       {
-               *         "status": "incomplete",
-               *         "data": {
-               *           "from": "0x03508bB71268BBA25ECaCC8F620e01866650532c",
-               *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x58109c",
-               *           "value": "995010715204139091",
-               *           "maxFeePerGas": "18044119466",
-               *           "maxPriorityFeePerGas": "2060264926",
-               *           "chainId": 1,
-               *           "gas": 21064
-               *         },
-               *         "check": {
-               *           "endpoint": "/intents/status?requestId=0x341b28c6467bfbffb72ad78ec5ddf1f77b8f9c79be134223e3248a7d4fcd43b6",
-               *           "method": "GET"
-               *         }
-               *       }
-               *     ]
-               *   }
-               * ]
-               */
-              steps?: {
-                  /** @description Unique identifier tied to the step */
-                  id?: string;
-                  /** @description A call to action for the step */
-                  action?: string;
-                  /** @description A short description of the step and what it entails */
-                  description?: string;
-                  /** @description The kind of step, can either be a transaction or a signature. Transaction steps require submitting a transaction while signature steps require submitting a signature */
-                  kind?: string;
-                  /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
-                  items?: {
-                      /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
-                      status?: string;
-                      data?: unknown;
-                      /** @description Details an endpoint and a method you should poll to get confirmation, the endpoint should return a boolean success flag which can be used to determine if the step item is complete */
-                      check?: {
-                        /** @description The endpoint to confirm that the step item was successfully completed */
-                        endpoint?: string;
-                        /** @description The REST method to access the endpoint */
-                        method?: string;
-                      };
-                    }[];
-                }[];
+                })[];
               fees?: {
                 /**
                  * @description Origin chain gas fee
@@ -1630,29 +3168,1585 @@ export interface paths {
                   minimumAmount?: string;
                 };
               };
-              /**
-               * @example {
-               *   "value": "1000000000000000000",
-               *   "timeEstimate": 10
-               * }
-               */
-              breakdown?: {
-                  /** @description Amount that will be executed in the estimated time */
-                  value?: string;
-                  /** @description Estimated execution time in seconds */
-                  timeEstimate?: number;
-                }[];
-              /**
-               * @example {
-               *   "userBalance": "54764083517303347",
-               *   "requiredToSolve": "995010521157287036"
-               * }
-               */
-              balances?: {
+              /** @description Granular fee sponsorship details derived from the solver's internal sponsorship resolution. */
+              feeSponsorship?: {
+                /** @description The quote-time sponsorship expectation for the request. */
+                quoted?: {
+                  /** @description The normalized sponsorship buckets selected for this request. */
+                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
+                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
+                  maxSubsidizationAmount?: string;
+                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
+                  capHit: boolean;
+                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
+                  components: {
+                    /** @description Execution fee sponsorship details. */
+                    execution: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Swap fee sponsorship details. */
+                    swap: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Relay protocol fee sponsorship details. */
+                    relay: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description App fee sponsorship details. */
+                    app: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                  };
+                  /**
+                   * @description The total amount sponsored for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  sponsoredTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                  /**
+                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  userPaysTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                };
+                /** @description The post-solve sponsorship outcome recorded for the request. */
+                actual?: {
+                  /** @description The normalized sponsorship buckets selected for this request. */
+                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
+                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
+                  maxSubsidizationAmount?: string;
+                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
+                  capHit: boolean;
+                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
+                  components: {
+                    /** @description Execution fee sponsorship details. */
+                    execution: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Swap fee sponsorship details. */
+                    swap: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description Relay protocol fee sponsorship details. */
+                    relay: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                    /** @description App fee sponsorship details. */
+                    app: {
+                      /** @description Whether this fee bucket was selected for sponsorship. */
+                      selected: boolean;
+                      /**
+                       * @description The full amount charged for this fee bucket.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      total: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket covered by the sponsor.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      sponsored: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      /**
+                       * @description The portion of this fee bucket that remained user-paid.
+                       * @example {
+                       *   "currency": {
+                       *     "chainId": 8453,
+                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                       *     "symbol": "USDC",
+                       *     "name": "USD Coin",
+                       *     "decimals": 6,
+                       *     "metadata": {
+                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                       *       "verified": false,
+                       *       "isNative": false
+                       *     }
+                       *   },
+                       *   "amount": "30754920",
+                       *   "amountFormatted": "30.75492",
+                       *   "amountUsd": "30.901612",
+                       *   "minimumAmount": "30454920"
+                       * }
+                       */
+                      userPays: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                    };
+                  };
+                  /**
+                   * @description The total amount sponsored for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  sponsoredTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                  /**
+                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
+                   * @example {
+                   *   "currency": {
+                   *     "chainId": 8453,
+                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                   *     "symbol": "USDC",
+                   *     "name": "USD Coin",
+                   *     "decimals": 6,
+                   *     "metadata": {
+                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                   *       "verified": false,
+                   *       "isNative": false
+                   *     }
+                   *   },
+                   *   "amount": "30754920",
+                   *   "amountFormatted": "30.75492",
+                   *   "amountUsd": "30.901612",
+                   *   "minimumAmount": "30454920"
+                   * }
+                   */
+                  userPaysTotal: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                    minimumAmount?: string;
+                  };
+                  /** @description How much the sponsor ultimately paid, denominated in the sponsor payment currency. */
+                  sponsorPayment?: {
+                    /** @description The sponsor payment amount. */
+                    amount: string;
+                    /** @description The sponsor payment currency address. */
+                    address: string;
+                    /** @description The sponsor payment chain id. */
+                    chainId: number;
+                  };
+                };
+              };
+              /** @description A summary of the swap and what the user should expect to happen given an input */
+              details?: {
+                /** @description The operation that will be performed, possible options are send, swap, wrap, unwrap, bridge */
+                operation?: string;
+                /** @description The address that deposited the funds */
+                sender?: string;
+                /** @description The address that will be receiving the swap output */
+                recipient?: string;
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyIn?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyOut?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                refundCurrency?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyGasTopup?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /** @description The difference between the input and output values, including fees */
+                totalImpact?: {
+                  usd?: string;
+                  percent?: string;
+                };
+                /** @description The impact of the swap, not factoring in fees */
+                swapImpact?: {
+                  usd?: string;
+                  percent?: string;
+                };
+                expandedPriceImpact?: {
+                  /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
+                  swap?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to cover transaction execution costs */
+                  execution?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to the protocol */
+                  relay?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
+                  app?: {
+                    usd?: string;
+                  };
+                  /** @description Fees paid by a sponsor for this request */
+                  sponsored?: {
+                    usd?: string;
+                  };
+                };
+                /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
+                rate?: string;
+                slippageTolerance?: {
+                  /** @description The slippage tolerance on the origin chain swap */
+                  origin?: {
+                    usd?: string;
+                    value?: string;
+                    percent?: string;
+                  };
+                  /** @description The slippage tolerance on the destination chain swap */
+                  destination?: {
+                    usd?: string;
+                    value?: string;
+                    percent?: string;
+                  };
+                };
+                /** @description Estimated swap time in seconds */
+                timeEstimate?: number;
                 /** @description The user's balance in the given currency on the origin chain */
                 userBalance?: string;
-                /** @description The minimum balance the user needs to have to bridge */
-                requiredToSolve?: string;
+                /** @description The type of fallback route the request uses, if any */
+                fallbackType?: string;
+                /** @description Whether the rate for the quote is fixed or dynamic (swap on origin/destination) */
+                isFixedRate?: boolean;
+                /** @description The USD cost of the fixed rate vs market rate. Positive means the fixed rate is worse than market (user pays premium), negative means better (user benefits). Only present for fixed rate quotes. */
+                fixedRateFee?: {
+                  usd?: string;
+                };
+                route?: {
+                  /** @description The route taken for the origin chain swap */
+                  origin?: {
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    inputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    outputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    router?: string;
+                    includedSwapSources?: string[];
+                  };
+                  /** @description The route taken for the origin chain swap */
+                  destination?: {
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    inputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    /**
+                     * @example {
+                     *   "currency": {
+                     *     "chainId": 8453,
+                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                     *     "symbol": "USDC",
+                     *     "name": "USD Coin",
+                     *     "decimals": 6,
+                     *     "metadata": {
+                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                     *       "verified": false,
+                     *       "isNative": false
+                     *     }
+                     *   },
+                     *   "amount": "30754920",
+                     *   "amountFormatted": "30.75492",
+                     *   "amountUsd": "30.901612",
+                     *   "minimumAmount": "30454920"
+                     * }
+                     */
+                    outputCurrency?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    };
+                    router?: string;
+                    includedSwapSources?: string[];
+                  };
+                };
+              };
+              /** @description Protocol information for the quote */
+              protocol?: {
+                v2?: {
+                  /** @description The underlying protocol order id */
+                  orderId?: string;
+                  /**
+                   * @description The protocol hub type. Always 'onchain' for the public protocol contract. Mirrors the requests/v3 protocol block.
+                   * @enum {string}
+                   */
+                  hubType?: "onchain";
+                  /** @description The underlying protocol order data */
+                  orderData?: unknown;
+                  /** @description Solver's ECDSA signature over the orderId, returned when includeProtocolData is set. Use ecrecover to verify the commitment on-chain. */
+                  orderSignature?: string;
+                  /** @description The details for the depository payment */
+                  paymentDetails?: {
+                    /** @description The protocol chain id for the payment */
+                    chainId?: string;
+                    /** @description The depository address */
+                    depository?: string;
+                    /** @description The currency of the payment */
+                    currency?: string;
+                    /** @description The amount of the payment */
+                    amount?: string;
+                  };
+                };
               };
             };
           };
@@ -1662,11 +4756,15 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
-              code?: string;
-              tx?: {
+              errorCode?: string;
+              errorData?: string;
+              requestId?: string;
+              approxSimulatedBlock?: number;
+              failedCallData?: {
+                from?: string;
                 to?: string;
-                value?: string;
                 data?: string;
+                value?: string;
               };
             };
           };
@@ -1676,7 +4774,15 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
-              code?: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        429: {
+          content: {
+            "application/json": {
+              message?: string;
             };
           };
         };
@@ -1685,12 +4791,450 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
-              code?: string;
-              tx?: {
+              errorCode?: string;
+              requestId?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/price": {
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
+            user: string;
+            /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
+            recipient?: string;
+            originChainId: number;
+            destinationChainId: number;
+            originCurrency: string;
+            destinationCurrency: string;
+            /** @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH) */
+            amount: string;
+            /**
+             * @description Whether to use the amount as the output or the input for the basis of the swap
+             * @enum {string}
+             */
+            tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
+            txs?: {
                 to?: string;
                 value?: string;
                 data?: string;
+              }[];
+            referrer?: string;
+            /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
+            refundTo?: string;
+            /**
+             * @deprecated
+             * @description Always refund on the origin chain in case of any issues
+             */
+            refundOnOrigin?: boolean;
+            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
+            useExternalLiquidity?: boolean;
+            /** @description Enable this for specific fallback routes */
+            useFallbacks?: boolean;
+            /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
+            usePermit?: boolean;
+            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. */
+            useDepositAddress?: boolean;
+            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. Must be 0–10000 bps. */
+            slippageTolerance?: string;
+            appFees?: {
+                /** @description Address that will receive the app fee */
+                recipient?: string;
+                /** @description App fees to be charged for execution in basis points, e.g. 100 = 1% */
+                fee?: string;
+              }[];
+          };
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              fees?: {
+                /**
+                 * @description Origin chain gas fee
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                gas?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @description Combination of the relayerGas and relayerService to give you the full relayer fee
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                relayer?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @description Destination chain gas fee
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                relayerGas?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @description Fees paid to the relay solver, note that this value can be negative (which represents network rewards for moving in a direction that optimizes liquidity distribution)
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                relayerService?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                app?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                subsidized?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
               };
+              /** @description A summary of the swap and what the user should expect to happen given an input */
+              details?: {
+                /** @description The operation that will be performed, possible options are send, swap, wrap, unwrap, bridge */
+                operation?: string;
+                /** @description The address that deposited the funds */
+                sender?: string;
+                /** @description The address that will be receiving the swap output */
+                recipient?: string;
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyIn?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /**
+                 * @example {
+                 *   "currency": {
+                 *     "chainId": 8453,
+                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                 *     "symbol": "USDC",
+                 *     "name": "USD Coin",
+                 *     "decimals": 6,
+                 *     "metadata": {
+                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
+                 *       "verified": false,
+                 *       "isNative": false
+                 *     }
+                 *   },
+                 *   "amount": "30754920",
+                 *   "amountFormatted": "30.75492",
+                 *   "amountUsd": "30.901612",
+                 *   "minimumAmount": "30454920"
+                 * }
+                 */
+                currencyOut?: {
+                  currency?: {
+                    chainId?: number;
+                    address?: string;
+                    symbol?: string;
+                    name?: string;
+                    decimals?: number;
+                    metadata?: {
+                      logoURI?: string;
+                      verified?: boolean;
+                      isNative?: boolean;
+                    };
+                  };
+                  amount?: string;
+                  amountFormatted?: string;
+                  amountUsd?: string;
+                  minimumAmount?: string;
+                };
+                /** @description The difference between the input and output values, including fees */
+                totalImpact?: {
+                  usd?: string;
+                  percent?: string;
+                };
+                /** @description The impact of the swap, not factoring in fees */
+                swapImpact?: {
+                  usd?: string;
+                  percent?: string;
+                };
+                /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
+                rate?: string;
+                slippageTolerance?: {
+                  /** @description The slippage tolerance on the origin chain swap */
+                  origin?: {
+                    usd?: string;
+                    value?: string;
+                    percent?: string;
+                  };
+                  /** @description The slippage tolerance on the destination chain swap */
+                  destination?: {
+                    usd?: string;
+                    value?: string;
+                    percent?: string;
+                  };
+                };
+                /** @description Estimated swap time in seconds */
+                timeEstimate?: number;
+                /** @description The user's balance in the given currency on the origin chain */
+                userBalance?: string;
+              };
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
+              errorData?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        401: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        500: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
             };
           };
         };
@@ -2178,6 +5722,7 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
+              errorCode?: string;
             };
           };
         };
@@ -2194,4654 +5739,6 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/execute/permits": {
-    post: {
-      parameters: {
-        query: {
-          /** @description The permit signature. */
-          signature: string;
-        };
-        header?: {
-          /** @description Optional API key for authentication and higher rate limits. */
-          "x-api-key"?: string;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description The kind of signature. This value is returned in the quote API steps body field. e.g eip3009 */
-            kind: string;
-            /** @description The requestId of the quote this permit signature applies to. Returned in the quote API steps body field. */
-            requestId: string;
-            /**
-             * @description The API value returned from the quote API steps body field.
-             * @enum {string}
-             */
-            api?: "bridge" | "swap" | "user-swap";
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              message?: string;
-              steps?: {
-                  id?: string;
-                  action?: string;
-                  description?: string;
-                  kind?: string;
-                  items?: {
-                      status?: string;
-                      data?: {
-                        to?: string;
-                        data?: string;
-                        value?: string;
-                        chainId?: number;
-                      };
-                      check?: {
-                        endpoint?: string;
-                        method?: string;
-                      };
-                    }[];
-                }[];
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/quote": {
-    /**
-     * @deprecated
-     * @description This endpoint is deprecated. Use /quote/v2 instead.
-     */
-    post: {
-      parameters: {
-        header?: {
-          /** @description Optional API key for authentication and higher rate limits. */
-          "x-api-key"?: string;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": {
-            /**
-             * @description Address that is depositing funds on the origin chain and submitting transactions or signatures
-             * @default 0x03508bb71268bba25ecacc8f620e01866650532c
-             */
-            user: string;
-            /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
-            recipient?: string;
-            /** @default 8453 */
-            originChainId: number;
-            /** @default 10 */
-            destinationChainId: number;
-            /** @default 0x0000000000000000000000000000000000000000 */
-            originCurrency: string;
-            /** @default 0x0000000000000000000000000000000000000000 */
-            destinationCurrency: string;
-            /**
-             * @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH)
-             * @default 1000000000000000000
-             */
-            amount: string;
-            /**
-             * @description Whether to use the amount as the output or the input for the basis of the swap
-             * @default EXACT_INPUT
-             * @enum {string}
-             */
-            tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
-            txs?: {
-                to?: string;
-                value?: string;
-                data?: string;
-                originalTxValue?: string;
-              }[];
-            /** @description Total gas limit for the destination chain call transactions */
-            txsGasLimit?: number;
-            /** @description Authorization list for EIP-7702 transactions to be executed on destination chain */
-            authorizationList?: {
-                chainId: number;
-                address: string;
-                nonce: number;
-                yParity: number;
-                r: string;
-                s: string;
-              }[];
-            /** @description Additional data needed for specific routes */
-            additionalData?: {
-              /** @description If the request originates from Bitcoin and the user is a P2SH address, the public key is needed to be able to generate the transaction data */
-              userPublicKey?: string;
-            };
-            referrer?: string;
-            referrerAddress?: string;
-            /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
-            refundTo?: string;
-            /**
-             * @deprecated
-             * @description Always refund on the origin chain in case of any issues
-             */
-            refundOnOrigin?: boolean;
-            /** @description If set, the destination fill will include a gas topup to the recipient (only supported for EVM chains if the requested currency is not the gas currency on the destination chain) */
-            topupGas?: boolean;
-            /** @description The destination gas topup amount in USD decimal format, e.g 100000 = $1. topupGas is required to be enabled. Defaults to 2000000 ($2) */
-            topupGasAmount?: string;
-            /**
-             * @description Enabling will send any swap surplus when doing exact output operations to the solver EOA, otherwise it will be swept to the recipient
-             * @default false
-             */
-            enableTrueExactOutput?: boolean;
-            /**
-             * @description Enable this to avoid direct transfers to the depository (only relevant for EVM and v2 protocol flow)
-             * @default true
-             */
-            explicitDeposit?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
-            useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
-            useFallbacks?: boolean;
-            /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
-            usePermit?: boolean;
-            /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
-            permitExpiry?: number;
-            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. For new requests, EXACT_OUTPUT is only supported when strict is also enabled. */
-            useDepositAddress?: boolean;
-            /** @description When used with useDepositAddress, enables a strict deposit address that is tied to a specific order. Underpayments fail and refund, exact payments fill, and overpayments fill the quoted amount while refunding the excess in a separate refund leg. EXACT_OUTPUT deposit-address requests are only supported in strict mode. Open-ended deposit addresses remain the flexible path for variable deposited amounts. Requires a refundTo address. */
-            strict?: boolean;
-            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
-            slippageTolerance?: string;
-            /** @description Slippage tolerance for destination gas in the event that the deposit occurs after the order deadline, and more gas is required for the solver to execute the destination transaction. */
-            latePaymentSlippageTolerance?: string;
-            appFees?: {
-                /** @description Address that will receive the app fee */
-                recipient?: string;
-                /** @description App fees to be charged for execution in basis points, e.g. 100 = 1% */
-                fee?: string;
-              }[];
-            /** @description If the request involves specifying transactions to be executed during the deposit transaction, an explicit gas limit must be set when requesting the quote */
-            gasLimitForDepositSpecifiedTxs?: number;
-            /** @description Force executing swap requests via the solver (by default, same-chain swap requests are self-executed) */
-            forceSolverExecution?: boolean;
-            /** @description If the sponsor should pay for the fees associated with the request. Includes gas topup amounts. */
-            subsidizeFees?: boolean;
-            /** @description The fee components to sponsor for swap execution kinds. Requires subsidizeFees=true. Defaults to all components when omitted. */
-            sponsoredFeeComponents?: ("execution" | "swap" | "relay" | "app")[];
-            /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. subsidizeFees must be enabled. The sponsor will cover fees up to this buffered cap and the user pays any remainder. */
-            maxSubsidizationAmount?: string;
-            /** @description If the sponsor should pay for the solana rent associated with the request. */
-            subsidizeRent?: boolean;
-            /** @description Swap sources to include for swap routing. */
-            includedSwapSources?: string[];
-            /** @description Swap sources to exclude for swap routing. */
-            excludedSwapSources?: string[];
-            /** @description Swap sources to include for swap routing on origin. */
-            includedOriginSwapSources?: string[];
-            /** @description Swap sources to include for swap routing on destination. */
-            includedDestinationSwapSources?: string[];
-            /** @description The gas overhead for the origin chain, this is used to calculate the gas fee for the origin chain when the solver is executing a gasless transaction on the origin chain */
-            originGasOverhead?: number;
-            /** @description The payer to be set for deposit transactions on solana. This account must have enough for fees and rent. */
-            depositFeePayer?: string;
-            /** @description Maximum number of hops to use in solana swap routing. Can reduce transaction size. */
-            maxRouteLength?: number;
-            /** @description Prevents certain ATA creation instructions in solana routing */
-            useSharedAccounts?: boolean;
-            /** @description Whether to include compute unit limit instruction for solana origin requests. */
-            includeComputeUnitLimit?: boolean;
-            /** @description Whether to ignore price impact errors. */
-            overridePriceImpact?: boolean;
-            /** @description Whether to disable origin swaps. */
-            disableOriginSwaps?: boolean;
-            /** @description The rate to charge for fixed spread quotes. */
-            fixedRate?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              /**
-               * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
-               * @example [
-               *   {
-               *     "id": "deposit",
-               *     "action": "Confirm transaction in your wallet",
-               *     "description": "Depositing funds to the relayer to execute the swap for USDC",
-               *     "kind": "transaction",
-               *     "requestId": "0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
-               *     "items": [
-               *       {
-               *         "status": "incomplete",
-               *         "data": {
-               *           "from": "0x0CccD55A5Ac261Ea29136831eeaA93bfE07f5Db6",
-               *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x00fad611",
-               *           "value": "1000000000000000000",
-               *           "maxFeePerGas": "12205661344",
-               *           "maxPriorityFeePerGas": "2037863396",
-               *           "chainId": 1
-               *         },
-               *         "check": {
-               *           "endpoint": "/intents/status?requestId=0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
-               *           "method": "GET"
-               *         }
-               *       }
-               *     ]
-               *   }
-               * ]
-               */
-              steps?: ({
-                  /**
-                   * @description Unique identifier tied to the step
-                   * @enum {string}
-                   */
-                  id: "deposit" | "approve" | "authorize" | "authorize1" | "authorize2" | "swap" | "send";
-                  /** @description A call to action for the step */
-                  action: string;
-                  /** @description A short description of the step and what it entails */
-                  description: string;
-                  /** @description The kind of step, can either be a transaction or a signature. Transaction steps require submitting a transaction while signature steps require submitting a signature */
-                  kind: string;
-                  /** @description A unique identifier for this step, tying all related transactions together */
-                  requestId?: string;
-                  /** @description The deposit address for the bridge request */
-                  depositAddress?: string;
-                  /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
-                  items: {
-                      /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
-                      status?: string;
-                      data?: unknown;
-                      /** @description Details an endpoint and a method you should poll to get confirmation, the endpoint should return a boolean success flag which can be used to determine if the step item is complete */
-                      check?: {
-                        /** @description The endpoint to confirm that the step item was successfully completed */
-                        endpoint?: string;
-                        /** @description The REST method to access the endpoint */
-                        method?: string;
-                      };
-                    }[];
-                })[];
-              fees?: {
-                /**
-                 * @description Origin chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                gas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Combination of the relayerGas and relayerService to give you the full relayer fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayer?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Destination chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerGas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the relay solver, note that this value can be negative (which represents network rewards for moving in a direction that optimizes liquidity distribution)
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerService?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                app?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                subsidized?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-              };
-              /** @description Granular fee sponsorship details derived from the solver's internal sponsorship resolution. */
-              feeSponsorship?: {
-                /** @description The quote-time sponsorship expectation for the request. */
-                quoted?: {
-                  /** @description The normalized sponsorship buckets selected for this request. */
-                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
-                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
-                  maxSubsidizationAmount?: string;
-                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
-                  capHit: boolean;
-                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
-                  components: {
-                    /** @description Execution fee sponsorship details. */
-                    execution: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Swap fee sponsorship details. */
-                    swap: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Relay protocol fee sponsorship details. */
-                    relay: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description App fee sponsorship details. */
-                    app: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                  };
-                  /**
-                   * @description The total amount sponsored for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  sponsoredTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                  /**
-                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  userPaysTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                };
-                /** @description The post-solve sponsorship outcome recorded for the request. */
-                actual?: {
-                  /** @description The normalized sponsorship buckets selected for this request. */
-                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
-                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
-                  maxSubsidizationAmount?: string;
-                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
-                  capHit: boolean;
-                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
-                  components: {
-                    /** @description Execution fee sponsorship details. */
-                    execution: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Swap fee sponsorship details. */
-                    swap: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Relay protocol fee sponsorship details. */
-                    relay: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description App fee sponsorship details. */
-                    app: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                  };
-                  /**
-                   * @description The total amount sponsored for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  sponsoredTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                  /**
-                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  userPaysTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                  /** @description How much the sponsor ultimately paid, denominated in the sponsor payment currency. */
-                  sponsorPayment?: {
-                    /** @description The sponsor payment amount. */
-                    amount: string;
-                    /** @description The sponsor payment currency address. */
-                    address: string;
-                    /** @description The sponsor payment chain id. */
-                    chainId: number;
-                  };
-                };
-              };
-              /** @description A summary of the swap and what the user should expect to happen given an input */
-              details?: {
-                /** @description The operation that will be performed, possible options are send, swap, wrap, unwrap, bridge */
-                operation?: string;
-                /** @description The address that deposited the funds */
-                sender?: string;
-                /** @description The address that will be receiving the swap output */
-                recipient?: string;
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyIn?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyOut?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                refundCurrency?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyGasTopup?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /** @description The difference between the input and output values, including fees */
-                totalImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                /** @description The impact of the swap, not factoring in fees */
-                swapImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                expandedPriceImpact?: {
-                  /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
-                  swap?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid to cover transaction execution costs */
-                  execution?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid to the protocol */
-                  relay?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
-                  app?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid by a sponsor for this request */
-                  sponsored?: {
-                    usd?: string;
-                  };
-                };
-                /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
-                rate?: string;
-                slippageTolerance?: {
-                  /** @description The slippage tolerance on the origin chain swap */
-                  origin?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                  /** @description The slippage tolerance on the destination chain swap */
-                  destination?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                };
-                /** @description Estimated swap time in seconds */
-                timeEstimate?: number;
-                /** @description The user's balance in the given currency on the origin chain */
-                userBalance?: string;
-                /** @description The type of fallback route the request uses, if any */
-                fallbackType?: string;
-                /** @description Whether the rate for the quote is fixed or dynamic (swap on origin/destination) */
-                isFixedRate?: boolean;
-                /** @description The USD cost of the fixed rate vs market rate. Positive means the fixed rate is worse than market (user pays premium), negative means better (user benefits). Only present for fixed rate quotes. */
-                fixedRateFee?: {
-                  usd?: string;
-                };
-                route?: {
-                  /** @description The route taken for the origin chain swap */
-                  origin?: {
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    inputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    outputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    router?: string;
-                    includedSwapSources?: string[];
-                  };
-                  /** @description The route taken for the origin chain swap */
-                  destination?: {
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    inputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    outputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    router?: string;
-                    includedSwapSources?: string[];
-                  };
-                };
-              };
-              /** @description Protocol information for the quote */
-              protocol?: {
-                v2?: {
-                  /** @description The underlying protocol order id */
-                  orderId?: string;
-                  /** @description The underlying protocol order data */
-                  orderData?: unknown;
-                  /** @description The details for the depository payment */
-                  paymentDetails?: {
-                    /** @description The protocol chain id for the payment */
-                    chainId?: string;
-                    /** @description The depository address */
-                    depository?: string;
-                    /** @description The currency of the payment */
-                    currency?: string;
-                    /** @description The amount of the payment */
-                    amount?: string;
-                  };
-                };
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-              errorData?: string;
-              requestId?: string;
-              approxSimulatedBlock?: number;
-              failedCallData?: {
-                from?: string;
-                to?: string;
-                data?: string;
-                value?: string;
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        401: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        429: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        500: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-              requestId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/quote/v2": {
-    post: {
-      parameters: {
-        header?: {
-          /** @description Optional API key for authentication and higher rate limits. */
-          "x-api-key"?: string;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": {
-            /**
-             * @description Address that is depositing funds on the origin chain and submitting transactions or signatures
-             * @default 0x03508bb71268bba25ecacc8f620e01866650532c
-             */
-            user: string;
-            /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
-            recipient?: string;
-            /** @default 8453 */
-            originChainId: number;
-            /** @default 10 */
-            destinationChainId: number;
-            /** @default 0x0000000000000000000000000000000000000000 */
-            originCurrency: string;
-            /** @default 0x0000000000000000000000000000000000000000 */
-            destinationCurrency: string;
-            /**
-             * @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH)
-             * @default 1000000000000000000
-             */
-            amount: string;
-            /**
-             * @description Whether to use the amount as the output or the input for the basis of the swap
-             * @default EXACT_INPUT
-             * @enum {string}
-             */
-            tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
-            txs?: {
-                to?: string;
-                value?: string;
-                data?: string;
-                originalTxValue?: string;
-              }[];
-            /** @description Total gas limit for the destination chain call transactions */
-            txsGasLimit?: number;
-            /** @description Authorization list for EIP-7702 transactions to be executed on destination chain */
-            authorizationList?: {
-                chainId: number;
-                address: string;
-                nonce: number;
-                yParity: number;
-                r: string;
-                s: string;
-              }[];
-            /** @description Additional data needed for specific routes */
-            additionalData?: {
-              /** @description If the request originates from Bitcoin and the user is a P2SH address, the public key is needed to be able to generate the transaction data */
-              userPublicKey?: string;
-            };
-            referrer?: string;
-            referrerAddress?: string;
-            /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
-            refundTo?: string;
-            /**
-             * @deprecated
-             * @description Always refund on the origin chain in case of any issues
-             */
-            refundOnOrigin?: boolean;
-            /** @description If set, the destination fill will include a gas topup to the recipient (only supported for EVM chains if the requested currency is not the gas currency on the destination chain) */
-            topupGas?: boolean;
-            /** @description The destination gas topup amount in USD decimal format, e.g 100000 = $1. topupGas is required to be enabled. Defaults to 2000000 ($2) */
-            topupGasAmount?: string;
-            /**
-             * @description Enabling will send any swap surplus when doing exact output operations to the solver EOA, otherwise it will be swept to the recipient
-             * @default false
-             */
-            enableTrueExactOutput?: boolean;
-            /**
-             * @description Enable this to avoid direct transfers to the depository (only relevant for EVM and v2 protocol flow)
-             * @default true
-             */
-            explicitDeposit?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
-            useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
-            useFallbacks?: boolean;
-            /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
-            usePermit?: boolean;
-            /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
-            permitExpiry?: number;
-            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. For new requests, EXACT_OUTPUT is only supported when strict is also enabled. */
-            useDepositAddress?: boolean;
-            /** @description When used with useDepositAddress, enables a strict deposit address that is tied to a specific order. Underpayments fail and refund, exact payments fill, and overpayments fill the quoted amount while refunding the excess in a separate refund leg. EXACT_OUTPUT deposit-address requests are only supported in strict mode. Open-ended deposit addresses remain the flexible path for variable deposited amounts. Requires a refundTo address. */
-            strict?: boolean;
-            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
-            slippageTolerance?: string;
-            /** @description Slippage tolerance for destination gas in the event that the deposit occurs after the order deadline, and more gas is required for the solver to execute the destination transaction. */
-            latePaymentSlippageTolerance?: string;
-            appFees?: {
-                /** @description Address that will receive the app fee */
-                recipient?: string;
-                /** @description App fees to be charged for execution in basis points, e.g. 100 = 1% */
-                fee?: string;
-              }[];
-            /** @description If the request involves specifying transactions to be executed during the deposit transaction, an explicit gas limit must be set when requesting the quote */
-            gasLimitForDepositSpecifiedTxs?: number;
-            /** @description Force executing swap requests via the solver (by default, same-chain swap requests are self-executed) */
-            forceSolverExecution?: boolean;
-            /** @description If the sponsor should pay for the fees associated with the request. Includes gas topup amounts. */
-            subsidizeFees?: boolean;
-            /** @description The fee components to sponsor for swap execution kinds. Requires subsidizeFees=true. Defaults to all components when omitted. */
-            sponsoredFeeComponents?: ("execution" | "swap" | "relay" | "app")[];
-            /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. subsidizeFees must be enabled. The sponsor will cover fees up to this buffered cap and the user pays any remainder. */
-            maxSubsidizationAmount?: string;
-            /** @description If the sponsor should pay for the solana rent associated with the request. */
-            subsidizeRent?: boolean;
-            /** @description Swap sources to include for swap routing. */
-            includedSwapSources?: string[];
-            /** @description Swap sources to exclude for swap routing. */
-            excludedSwapSources?: string[];
-            /** @description Swap sources to include for swap routing on origin. */
-            includedOriginSwapSources?: string[];
-            /** @description Swap sources to include for swap routing on destination. */
-            includedDestinationSwapSources?: string[];
-            /** @description The gas overhead for the origin chain, this is used to calculate the gas fee for the origin chain when the solver is executing a gasless transaction on the origin chain */
-            originGasOverhead?: number;
-            /** @description The payer to be set for deposit transactions on solana. This account must have enough for fees and rent. */
-            depositFeePayer?: string;
-            /** @description Maximum number of hops to use in solana swap routing. Can reduce transaction size. */
-            maxRouteLength?: number;
-            /** @description Prevents certain ATA creation instructions in solana routing */
-            useSharedAccounts?: boolean;
-            /** @description Whether to include compute unit limit instruction for solana origin requests. */
-            includeComputeUnitLimit?: boolean;
-            /** @description Whether to ignore price impact errors. */
-            overridePriceImpact?: boolean;
-            /** @description Whether to disable origin swaps. */
-            disableOriginSwaps?: boolean;
-            /** @description The rate to charge for fixed spread quotes. */
-            fixedRate?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              /**
-               * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
-               * @example [
-               *   {
-               *     "id": "deposit",
-               *     "action": "Confirm transaction in your wallet",
-               *     "description": "Depositing funds to the relayer to execute the swap for USDC",
-               *     "kind": "transaction",
-               *     "requestId": "0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
-               *     "items": [
-               *       {
-               *         "status": "incomplete",
-               *         "data": {
-               *           "from": "0x0CccD55A5Ac261Ea29136831eeaA93bfE07f5Db6",
-               *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x00fad611",
-               *           "value": "1000000000000000000",
-               *           "maxFeePerGas": "12205661344",
-               *           "maxPriorityFeePerGas": "2037863396",
-               *           "chainId": 1
-               *         },
-               *         "check": {
-               *           "endpoint": "/intents/status?requestId=0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
-               *           "method": "GET"
-               *         }
-               *       }
-               *     ]
-               *   }
-               * ]
-               */
-              steps?: ({
-                  /**
-                   * @description Unique identifier tied to the step
-                   * @enum {string}
-                   */
-                  id: "deposit" | "approve" | "authorize" | "authorize1" | "authorize2" | "swap" | "send";
-                  /** @description A call to action for the step */
-                  action: string;
-                  /** @description A short description of the step and what it entails */
-                  description: string;
-                  /** @description The kind of step, can either be a transaction or a signature. Transaction steps require submitting a transaction while signature steps require submitting a signature */
-                  kind: string;
-                  /** @description A unique identifier for this step, tying all related transactions together */
-                  requestId?: string;
-                  /** @description The deposit address for the bridge request */
-                  depositAddress?: string;
-                  /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
-                  items: {
-                      /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
-                      status?: string;
-                      data?: unknown;
-                      /** @description Details an endpoint and a method you should poll to get confirmation, the endpoint should return a boolean success flag which can be used to determine if the step item is complete */
-                      check?: {
-                        /** @description The endpoint to confirm that the step item was successfully completed */
-                        endpoint?: string;
-                        /** @description The REST method to access the endpoint */
-                        method?: string;
-                      };
-                    }[];
-                })[];
-              fees?: {
-                /**
-                 * @description Origin chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                gas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Combination of the relayerGas and relayerService to give you the full relayer fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayer?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Destination chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerGas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the relay solver, note that this value can be negative (which represents network rewards for moving in a direction that optimizes liquidity distribution)
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerService?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                app?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                subsidized?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-              };
-              /** @description Granular fee sponsorship details derived from the solver's internal sponsorship resolution. */
-              feeSponsorship?: {
-                /** @description The quote-time sponsorship expectation for the request. */
-                quoted?: {
-                  /** @description The normalized sponsorship buckets selected for this request. */
-                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
-                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
-                  maxSubsidizationAmount?: string;
-                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
-                  capHit: boolean;
-                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
-                  components: {
-                    /** @description Execution fee sponsorship details. */
-                    execution: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Swap fee sponsorship details. */
-                    swap: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Relay protocol fee sponsorship details. */
-                    relay: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description App fee sponsorship details. */
-                    app: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                  };
-                  /**
-                   * @description The total amount sponsored for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  sponsoredTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                  /**
-                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  userPaysTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                };
-                /** @description The post-solve sponsorship outcome recorded for the request. */
-                actual?: {
-                  /** @description The normalized sponsorship buckets selected for this request. */
-                  selectedComponents: ("execution" | "swap" | "relay" | "app")[];
-                  /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
-                  maxSubsidizationAmount?: string;
-                  /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
-                  capHit: boolean;
-                  /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
-                  components: {
-                    /** @description Execution fee sponsorship details. */
-                    execution: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Swap fee sponsorship details. */
-                    swap: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description Relay protocol fee sponsorship details. */
-                    relay: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                    /** @description App fee sponsorship details. */
-                    app: {
-                      /** @description Whether this fee bucket was selected for sponsorship. */
-                      selected: boolean;
-                      /**
-                       * @description The full amount charged for this fee bucket.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      total: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket covered by the sponsor.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      sponsored: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @description The portion of this fee bucket that remained user-paid.
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      userPays: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                    };
-                  };
-                  /**
-                   * @description The total amount sponsored for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  sponsoredTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                  /**
-                   * @description The total amount the user paid across the sponsorable fee buckets for this phase.
-                   * @example {
-                   *   "currency": {
-                   *     "chainId": 8453,
-                   *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                   *     "symbol": "USDC",
-                   *     "name": "USD Coin",
-                   *     "decimals": 6,
-                   *     "metadata": {
-                   *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                   *       "verified": false,
-                   *       "isNative": false
-                   *     }
-                   *   },
-                   *   "amount": "30754920",
-                   *   "amountFormatted": "30.75492",
-                   *   "amountUsd": "30.901612",
-                   *   "minimumAmount": "30454920"
-                   * }
-                   */
-                  userPaysTotal: {
-                    currency?: {
-                      chainId?: number;
-                      address?: string;
-                      symbol?: string;
-                      name?: string;
-                      decimals?: number;
-                      metadata?: {
-                        logoURI?: string;
-                        verified?: boolean;
-                        isNative?: boolean;
-                      };
-                    };
-                    amount?: string;
-                    amountFormatted?: string;
-                    amountUsd?: string;
-                    minimumAmount?: string;
-                  };
-                  /** @description How much the sponsor ultimately paid, denominated in the sponsor payment currency. */
-                  sponsorPayment?: {
-                    /** @description The sponsor payment amount. */
-                    amount: string;
-                    /** @description The sponsor payment currency address. */
-                    address: string;
-                    /** @description The sponsor payment chain id. */
-                    chainId: number;
-                  };
-                };
-              };
-              /** @description A summary of the swap and what the user should expect to happen given an input */
-              details?: {
-                /** @description The operation that will be performed, possible options are send, swap, wrap, unwrap, bridge */
-                operation?: string;
-                /** @description The address that deposited the funds */
-                sender?: string;
-                /** @description The address that will be receiving the swap output */
-                recipient?: string;
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyIn?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyOut?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                refundCurrency?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyGasTopup?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /** @description The difference between the input and output values, including fees */
-                totalImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                /** @description The impact of the swap, not factoring in fees */
-                swapImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                expandedPriceImpact?: {
-                  /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
-                  swap?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid to cover transaction execution costs */
-                  execution?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid to the protocol */
-                  relay?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
-                  app?: {
-                    usd?: string;
-                  };
-                  /** @description Fees paid by a sponsor for this request */
-                  sponsored?: {
-                    usd?: string;
-                  };
-                };
-                /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
-                rate?: string;
-                slippageTolerance?: {
-                  /** @description The slippage tolerance on the origin chain swap */
-                  origin?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                  /** @description The slippage tolerance on the destination chain swap */
-                  destination?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                };
-                /** @description Estimated swap time in seconds */
-                timeEstimate?: number;
-                /** @description The user's balance in the given currency on the origin chain */
-                userBalance?: string;
-                /** @description The type of fallback route the request uses, if any */
-                fallbackType?: string;
-                /** @description Whether the rate for the quote is fixed or dynamic (swap on origin/destination) */
-                isFixedRate?: boolean;
-                /** @description The USD cost of the fixed rate vs market rate. Positive means the fixed rate is worse than market (user pays premium), negative means better (user benefits). Only present for fixed rate quotes. */
-                fixedRateFee?: {
-                  usd?: string;
-                };
-                route?: {
-                  /** @description The route taken for the origin chain swap */
-                  origin?: {
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    inputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    outputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    router?: string;
-                    includedSwapSources?: string[];
-                  };
-                  /** @description The route taken for the origin chain swap */
-                  destination?: {
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    inputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    /**
-                     * @example {
-                     *   "currency": {
-                     *     "chainId": 8453,
-                     *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                     *     "symbol": "USDC",
-                     *     "name": "USD Coin",
-                     *     "decimals": 6,
-                     *     "metadata": {
-                     *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                     *       "verified": false,
-                     *       "isNative": false
-                     *     }
-                     *   },
-                     *   "amount": "30754920",
-                     *   "amountFormatted": "30.75492",
-                     *   "amountUsd": "30.901612",
-                     *   "minimumAmount": "30454920"
-                     * }
-                     */
-                    outputCurrency?: {
-                      currency?: {
-                        chainId?: number;
-                        address?: string;
-                        symbol?: string;
-                        name?: string;
-                        decimals?: number;
-                        metadata?: {
-                          logoURI?: string;
-                          verified?: boolean;
-                          isNative?: boolean;
-                        };
-                      };
-                      amount?: string;
-                      amountFormatted?: string;
-                      amountUsd?: string;
-                      minimumAmount?: string;
-                    };
-                    router?: string;
-                    includedSwapSources?: string[];
-                  };
-                };
-              };
-              /** @description Protocol information for the quote */
-              protocol?: {
-                v2?: {
-                  /** @description The underlying protocol order id */
-                  orderId?: string;
-                  /** @description The underlying protocol order data */
-                  orderData?: unknown;
-                  /** @description The details for the depository payment */
-                  paymentDetails?: {
-                    /** @description The protocol chain id for the payment */
-                    chainId?: string;
-                    /** @description The depository address */
-                    depository?: string;
-                    /** @description The currency of the payment */
-                    currency?: string;
-                    /** @description The amount of the payment */
-                    amount?: string;
-                  };
-                };
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-              errorData?: string;
-              requestId?: string;
-              approxSimulatedBlock?: number;
-              failedCallData?: {
-                from?: string;
-                to?: string;
-                data?: string;
-                value?: string;
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        401: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        429: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        500: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-              requestId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/price": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
-            user: string;
-            /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
-            recipient?: string;
-            originChainId: number;
-            destinationChainId: number;
-            originCurrency: string;
-            destinationCurrency: string;
-            /** @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH) */
-            amount: string;
-            /**
-             * @description Whether to use the amount as the output or the input for the basis of the swap
-             * @enum {string}
-             */
-            tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
-            txs?: {
-                to?: string;
-                value?: string;
-                data?: string;
-              }[];
-            referrer?: string;
-            /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
-            refundTo?: string;
-            /**
-             * @deprecated
-             * @description Always refund on the origin chain in case of any issues
-             */
-            refundOnOrigin?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
-            useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
-            useFallbacks?: boolean;
-            /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
-            usePermit?: boolean;
-            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. */
-            useDepositAddress?: boolean;
-            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
-            slippageTolerance?: string;
-            appFees?: {
-                /** @description Address that will receive the app fee */
-                recipient?: string;
-                /** @description App fees to be charged for execution in basis points, e.g. 100 = 1% */
-                fee?: string;
-              }[];
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              fees?: {
-                /**
-                 * @description Origin chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                gas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Combination of the relayerGas and relayerService to give you the full relayer fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayer?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Destination chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerGas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the relay solver, note that this value can be negative (which represents network rewards for moving in a direction that optimizes liquidity distribution)
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerService?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                app?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                subsidized?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-              };
-              /** @description A summary of the swap and what the user should expect to happen given an input */
-              details?: {
-                /** @description The operation that will be performed, possible options are send, swap, wrap, unwrap, bridge */
-                operation?: string;
-                /** @description The address that deposited the funds */
-                sender?: string;
-                /** @description The address that will be receiving the swap output */
-                recipient?: string;
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyIn?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyOut?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /** @description The difference between the input and output values, including fees */
-                totalImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                /** @description The impact of the swap, not factoring in fees */
-                swapImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
-                rate?: string;
-                slippageTolerance?: {
-                  /** @description The slippage tolerance on the origin chain swap */
-                  origin?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                  /** @description The slippage tolerance on the destination chain swap */
-                  destination?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                };
-                /** @description Estimated swap time in seconds */
-                timeEstimate?: number;
-                /** @description The user's balance in the given currency on the origin chain */
-                userBalance?: string;
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-              errorData?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        401: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        500: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
             };
           };
         };
@@ -7130,7 +6027,7 @@ export interface paths {
                 [key: string]: ({
                   status?: string;
                   reason?: string | null;
-                }) | string | undefined;
+                }) | undefined;
               };
             };
           };
@@ -7145,7 +6042,7 @@ export interface paths {
                 [key: string]: ({
                   status?: string;
                   reason?: string | null;
-                }) | string | undefined;
+                }) | undefined;
               };
             };
           };
@@ -7708,7 +6605,7 @@ export interface paths {
                     /** @description Slippage tolerance for the swap. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
                     slippageTolerance?: string;
                     /** @enum {string} */
-                    failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "N/A";
+                    failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "N/A";
                     /** @enum {string} */
                     refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP";
                     /** @description Regenerated requestId that now owns the sweep/fill for a superseded deposit-address request. */
@@ -9619,6 +8516,869 @@ export interface paths {
       };
     };
   };
+  "/requests/v3": {
+    get: {
+      parameters: {
+        query?: {
+          /** @description Maximum number of requests to return per page. */
+          limit?: number;
+          /** @description Pagination cursor returned by a previous response. Pass it back to fetch the next page. */
+          continuation?: string;
+          /** @description Filter requests by wallet address — matches requests where this address is the sender or the deposit-address depositor. */
+          user?: string;
+          /** @description Broad term search across request ID, wallet, deposit address, and all transaction hashes (deposit, fill, refund, failed, and chain entry transaction IDs). Use `id`, `depositTxHash`, `fillTxHash`, or `refundTxHash` for targeted single-field lookups. */
+          term?: string;
+          /** @description Filter by requestId — the Relay-level intent identifier returned by the quote API. */
+          id?: string;
+          /** @description Filter by protocol-level orderId. */
+          orderId?: string;
+          /** @description Filter by deposit transaction hash. */
+          depositTxHash?: string;
+          /** @description Filter by fill transaction hash. */
+          fillTxHash?: string;
+          /** @description Filter by refund transaction hash. */
+          refundTxHash?: string;
+          /** @description Filter requests where this is the origin chain. */
+          originChainId?: number;
+          /** @description Filter requests where this is the destination chain. */
+          destinationChainId?: number;
+          /** @description Get all requests for a single chain in either direction. Overridden by originChainId / destinationChainId. */
+          chainId?: number;
+          /** @description Comma-separated list of private chain UUIDs to include in results. */
+          privateChainsToInclude?: string;
+          /** @description Filter requests associated with this deposit address. */
+          depositAddress?: string;
+          /** @description Filter requests where this address is the recipient. */
+          recipient?: string;
+          /** @description Filter requests by status. */
+          status?: "success" | "failure" | "refund" | "pending" | "depositing";
+          /** @description Filter requests by failure reason. Only returns requests that failed with this specific reason. */
+          failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "N/A";
+          /** @description Filter requests by refund failure reason. */
+          refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP";
+          /** @description Filter requests by API key. Accepts a single value or a comma-separated list (e.g. key1,key2) — results include requests matching any of the supplied keys. */
+          apiKey?: string;
+          /** @description Filter requests by requestType (case-insensitive). Supported values: Bridge, Crosschain Swap, Same-chain Swap, Send, Wrap, Unwrap, Call. */
+          requestType?: string;
+          /** @description Filter by origin currency chain ID. */
+          currencyInChainId?: number;
+          /** @description Filter by destination currency chain ID. */
+          currencyOutChainId?: number;
+          /** @description Filter by origin currency contract address. */
+          currencyInAddress?: string;
+          /** @description Filter by destination currency contract address. */
+          currencyOutAddress?: string;
+          /** @description Filter by origin currency symbol (e.g. USDC). Case-insensitive; matches across all chains. */
+          currencyInSymbol?: string;
+          /** @description Filter by destination currency symbol (e.g. USDC). Case-insensitive; matches across all chains. */
+          currencyOutSymbol?: string;
+          /** @description Field to sort by. */
+          sortBy?: "createdAt" | "updatedAt" | "amountUsd";
+          /** @description Sort direction (default: desc for time fields, asc for amountUsd). */
+          sortDirection?: "asc" | "desc";
+          /** @description Filter requests with createdAt ≥ this Unix timestamp (seconds). Applied to updatedAt instead when sortBy=updatedAt. */
+          startTimestamp?: number;
+          /** @description Filter requests with createdAt ≤ this Unix timestamp (seconds). Applied to updatedAt instead when sortBy=updatedAt. */
+          endTimestamp?: number;
+          /** @description Filter by chain entry block number (inclusive lower bound). When originChainId is also set, scoped to origin-chain entries only. */
+          startBlock?: number;
+          /** @description Filter by chain entry block number (inclusive upper bound). When originChainId is also set, scoped to origin-chain entries only. */
+          endBlock?: number;
+          /** @description Filter requests with currencyIn.amountUsd ≥ this value. */
+          amountUsdMin?: number;
+          /** @description Filter requests with currencyIn.amountUsd ≤ this value. */
+          amountUsdMax?: number;
+          /** @description Filter requests with total app fees USD ≥ this value. */
+          appFeesAmountUsdMin?: number;
+          /** @description Filter requests with total app fees USD ≤ this value. */
+          appFeesAmountUsdMax?: number;
+          /** @description Filter requests with fill time ≥ this value (seconds). */
+          fillTimeMin?: number;
+          /** @description Filter requests with fill time ≤ this value (seconds). */
+          fillTimeMax?: number;
+          /** @description Comma-separated feature flags to filter by. Requests must have at least one of the specified features. Supported values: gasless_execution, gasless_swap, fast_fill, gas_top_up, fixed_rate, app_fees, deposit_address. */
+          features?: string;
+          /** @description When true, include fields available only to the authenticating integrator for their own requests. */
+          includeAuthenticatedData?: boolean;
+          /** @description Only effective when `id` is also provided. When true, returns the parent request AND any child requests. When false or omitted, only the exact `request_id` match is returned. */
+          includeChildRequests?: boolean;
+          /** @description JSON-encoded array of filter-group objects. Fields within each group are AND'd; groups are OR'd. Prefix a key with 'not:' to negate it (must_not). Values can be a scalar or an array (OR semantics within the field). Example: [{"depositAddress":"0xabc","originChainId":8453},{"depositAddress":"0x123","originChainId":1}]. Negation example: [{"not:status":"failure"}]. Array value example: [{"not:status":["failure","refund"]}]. */
+          filters?: string;
+        };
+        header: {
+          /** @description API key for authentication. */
+          "x-api-key": string;
+          /** @description Dev portal key — when present, overrides integrator identity for authenticated data. */
+          "x-dev-portal-key"?: string;
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              requests?: ({
+                  id?: string;
+                  /** @enum {string} */
+                  status?: "refund" | "waiting" | "depositing" | "failure" | "pending" | "submitted" | "success";
+                  user?: string;
+                  recipient?: string;
+                  sender?: string | null;
+                  /** @description The address refunds are sent to for deposit-address transactions. Null when not specified. */
+                  refundTo?: string | null;
+                  depositAddress?: ({
+                    address?: string;
+                    /** @enum {string} */
+                    type?: "strict" | "open";
+                    depositor?: string | null;
+                    depositTxHash?: string | null;
+                  }) | null;
+                  data?: {
+                    slippageTolerance?: string;
+                    /** @enum {string|null} */
+                    failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "N/A" | null;
+                    /** @enum {string|null} */
+                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | null;
+                    failedTxHash?: string;
+                    failedTxBlockNumber?: number;
+                    failedCallData?: {
+                      from?: string;
+                      to?: string;
+                      data?: string;
+                      value?: string;
+                    };
+                    usesExternalLiquidity?: boolean;
+                    timeEstimate?: number | null;
+                    triggeredByFastFill?: boolean | null;
+                    inTxs?: ({
+                        txHash?: string;
+                        fee?: string;
+                        feeUsd?: string;
+                        block?: number;
+                        type?: string;
+                        chainId?: number;
+                        timestamp?: number;
+                        /** @enum {string} */
+                        status?: "success" | "failure";
+                        data?: unknown;
+                        stateChanges?: unknown;
+                      })[];
+                    outTxs?: ({
+                        txHash?: string;
+                        fee?: string;
+                        feeUsd?: string;
+                        block?: number;
+                        type?: string;
+                        chainId?: number;
+                        timestamp?: number;
+                        /** @enum {string} */
+                        status?: "success" | "failure";
+                        data?: unknown;
+                        stateChanges?: unknown;
+                      })[];
+                    appFees?: {
+                      quoted?: {
+                          recipient?: string;
+                          bps?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        }[];
+                      actual?: {
+                          recipient?: string;
+                          bps?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                          amountUsd?: string;
+                        }[];
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                    };
+                    /** @description Granular fee sponsorship details derived from the solver's internal sponsorship resolution. */
+                    feeSponsorship?: ({
+                      /** @description The quote-time sponsorship expectation for the request. */
+                      quoted?: {
+                        /** @description The normalized sponsorship buckets selected for this request. */
+                        selectedComponents: ("execution" | "swap" | "platform" | "app")[];
+                        /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
+                        maxSubsidizationAmount?: string;
+                        /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
+                        capHit: boolean;
+                        /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
+                        components: {
+                          /** @description Execution fee sponsorship details. */
+                          execution: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                          /** @description Swap fee sponsorship details. */
+                          swap: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                          /** @description Platform fee sponsorship details. */
+                          platform: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                          /** @description App fee sponsorship details. */
+                          app: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                        };
+                        /** @description The total amount sponsored for this phase. */
+                        sponsoredTotal: {
+                          amount?: string;
+                          amountFormatted?: string;
+                          amountUsd?: string;
+                          minimumAmount?: string;
+                        };
+                        /** @description The total amount the user paid across the sponsorable fee buckets for this phase. */
+                        userPaysTotal: {
+                          amount?: string;
+                          amountFormatted?: string;
+                          amountUsd?: string;
+                          minimumAmount?: string;
+                        };
+                      };
+                      /** @description The post-solve sponsorship outcome recorded for the request. */
+                      actual?: {
+                        /** @description The normalized sponsorship buckets selected for this request. */
+                        selectedComponents: ("execution" | "swap" | "platform" | "app")[];
+                        /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
+                        maxSubsidizationAmount?: string;
+                        /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
+                        capHit: boolean;
+                        /** @description Per-bucket sponsorship details for the four sponsorable fee components. */
+                        components: {
+                          /** @description Execution fee sponsorship details. */
+                          execution: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                          /** @description Swap fee sponsorship details. */
+                          swap: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                          /** @description Platform fee sponsorship details. */
+                          platform: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                          /** @description App fee sponsorship details. */
+                          app: {
+                            /** @description Whether this fee bucket was selected for sponsorship. */
+                            selected: boolean;
+                            /** @description The full amount charged for this fee bucket. */
+                            total: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket covered by the sponsor. */
+                            sponsored: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                            /** @description The portion of this fee bucket that remained user-paid. */
+                            userPays: {
+                              amount?: string;
+                              amountFormatted?: string;
+                              amountUsd?: string;
+                              minimumAmount?: string;
+                            };
+                          };
+                        };
+                        /** @description The total amount sponsored for this phase. */
+                        sponsoredTotal: {
+                          amount?: string;
+                          amountFormatted?: string;
+                          amountUsd?: string;
+                          minimumAmount?: string;
+                        };
+                        /** @description The total amount the user paid across the sponsorable fee buckets for this phase. */
+                        userPaysTotal: {
+                          amount?: string;
+                          amountFormatted?: string;
+                          amountUsd?: string;
+                          minimumAmount?: string;
+                        };
+                        /** @description How much the sponsor ultimately paid, denominated in the sponsor payment currency. */
+                        sponsorPayment?: {
+                          /** @description The sponsor payment amount. */
+                          amount: string;
+                          /** @description The sponsor payment currency address. */
+                          address: string;
+                          /** @description The sponsor payment chain id. */
+                          chainId: number;
+                        };
+                      };
+                      /** @description The currency in which all sponsorship amounts are denominated. Shared across all nested amount objects. */
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                    }) | null;
+                    /** @description Breakdown of fees by component, with quoted and actual values */
+                    fees?: {
+                      /** @description Fees as estimated at quote time */
+                      quoted?: {
+                        /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
+                        swap?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid to cover transaction execution costs */
+                        execution?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid to the protocol */
+                        platform?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
+                        app?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid by a sponsor for this request */
+                        sponsored?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                      };
+                      /** @description Fees as computed at fill time */
+                      actual?: {
+                        /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
+                        swap?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid to cover transaction execution costs */
+                        execution?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid to the protocol */
+                        platform?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
+                        app?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                        /** @description Fees paid by a sponsor for this request */
+                        sponsored?: {
+                          usd?: string;
+                          amount?: string;
+                          amountFormatted?: string;
+                        };
+                      };
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                    } | null;
+                    /** @description Platform fee — only returned when the caller authenticates as the request's creator integrator. */
+                    platformFee?: Record<string, unknown> | null;
+                    /** @description Referrer — only returned when the caller authenticates as the request's creator integrator. */
+                    referrer?: string | null;
+                    route?: ({
+                      includedSwapSources?: string[];
+                      includedOriginSwapSources?: string[];
+                      includedDestinationSwapSources?: string[];
+                      quoted?: ({
+                        origin?: ({
+                          inputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          outputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          router?: string;
+                        }) | null;
+                        destination?: ({
+                          inputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          outputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          router?: string;
+                        }) | null;
+                      }) | null;
+                      actual?: ({
+                        origin?: ({
+                          inputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          outputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          router?: string;
+                        }) | null;
+                        destination?: ({
+                          inputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          outputCurrency?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          } | null;
+                          router?: string;
+                          currencyGasTopup?: {
+                            currency?: {
+                              chainId?: number;
+                              address?: string;
+                              symbol?: string;
+                              name?: string;
+                              decimals?: number;
+                              metadata?: {
+                                logoURI?: string;
+                                verified?: boolean;
+                                isNative?: boolean;
+                              };
+                            };
+                            amount?: string;
+                            amountFormatted?: string;
+                            amountUsd?: string;
+                            minimumAmount?: string;
+                          };
+                        }) | null;
+                        rate?: string;
+                      }) | null;
+                    }) | null;
+                    refundCurrencyData?: {
+                      currency?: {
+                        chainId?: number;
+                        address?: string;
+                        symbol?: string;
+                        name?: string;
+                        decimals?: number;
+                        metadata?: {
+                          logoURI?: string;
+                          verified?: boolean;
+                          isNative?: boolean;
+                        };
+                      };
+                      amount?: string;
+                      amountFormatted?: string;
+                      amountUsd?: string;
+                      minimumAmount?: string;
+                    } | null;
+                    externalMetadata?: {
+                      moonpayId?: string | null;
+                    };
+                  };
+                  protocol?: ({
+                    /** @description The protocol-level deposit identifier passed as `bytes32 id` to the Relay Depository. */
+                    orderId?: string;
+                    /** @enum {string} */
+                    hubType?: "onchain";
+                    isWithdrawable?: boolean;
+                    solver?: {
+                      address?: string;
+                      protocolChainId?: string;
+                      chainId?: number;
+                    };
+                    deposit?: {
+                      origin?: {
+                        amount?: string;
+                        chainId?: number;
+                        currency?: string;
+                        depositor?: string;
+                        depository?: string;
+                        onchainId?: string;
+                        transactionId?: string;
+                      };
+                      relay?: {
+                        amount?: string;
+                        chainId?: number;
+                        currency?: string;
+                        hash?: string;
+                        /** @enum {string} */
+                        operation?: "mint";
+                        tokenMetadata?: {
+                          decimals?: number;
+                          name?: string;
+                          symbol?: string;
+                        };
+                      };
+                      attestation?: {
+                        execution?: {
+                          actions?: string[];
+                          idempotencyKey?: string;
+                        };
+                        attestations?: {
+                            oracleChainId?: string;
+                            oracleContract?: string;
+                            signerAddress?: string;
+                            signature?: string;
+                          }[];
+                      };
+                    };
+                    settlement?: {
+                      destination?: {
+                        fills?: {
+                            chainId?: number;
+                            transactionId?: string;
+                          }[];
+                        refunds?: {
+                            chainId?: number;
+                            transactionId?: string;
+                          }[];
+                      };
+                      relay?: {
+                        amount?: string;
+                        chainId?: number;
+                        currency?: string;
+                        hash?: string;
+                        /** @enum {string} */
+                        operation?: "transfer" | "burn" | "mixed";
+                        solver?: string;
+                        tokenMetadata?: {
+                          decimals?: number;
+                          name?: string;
+                          symbol?: string;
+                        };
+                      };
+                      attestation?: {
+                        execution?: {
+                          actions?: string[];
+                          idempotencyKey?: string;
+                        };
+                        attestations?: {
+                            oracleChainId?: string;
+                            oracleContract?: string;
+                            signerAddress?: string;
+                            signature?: string;
+                          }[];
+                      };
+                    };
+                  }) | null;
+                  requestType?: string | null;
+                  features?: ("gasless_execution" | "gasless_swap" | "fast_fill" | "gas_top_up" | "fixed_rate" | "app_fees" | "deposit_address")[];
+                  createdAt?: string;
+                  updatedAt?: string;
+                })[];
+              /** @description Total number of requests matching the current filters. */
+              total?: number;
+              continuation?: string;
+            };
+          };
+        };
+      };
+    };
+  };
   "/requests/metadata": {
     post: {
       requestBody: {
@@ -10022,7 +9782,7 @@ export interface paths {
                   name?: string;
                   decimals?: number;
                   /** @enum {string} */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
                   metadata?: {
                     logoURI?: string;
                     verified?: boolean;
@@ -10084,7 +9844,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10188,7 +9948,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10219,7 +9979,7 @@ export interface paths {
               name?: string;
               decimals?: number;
               /** @enum {string} */
-              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm";
+              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
               metadata?: {
                 logoURI?: string;
                 verified?: boolean;
