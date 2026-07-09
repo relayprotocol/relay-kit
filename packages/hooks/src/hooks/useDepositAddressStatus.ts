@@ -8,7 +8,14 @@ import { MAINNET_RELAY_API } from '@relayprotocol/relay-sdk'
 import { queryRequests } from './useRequests.js'
 
 export type DepositAddressStatusResponse = {
-  status?: 'refund' | 'waiting' | 'depositing' | 'failure' | 'pending' | 'success'
+  status?:
+    | 'refund'
+    | 'waiting'
+    | 'depositing'
+    | 'submitted'
+    | 'failure'
+    | 'pending'
+    | 'success'
   details?: string
   txHashes?: string[]
   inTxHashes?: string[]
@@ -35,7 +42,7 @@ export const queryDepositAddressStatus = async function (
   }
 
   const response = await queryRequests(baseApiUrl, {
-    user: options.depositAddress
+    depositAddress: options.depositAddress
   })
 
   const request = response?.requests?.[0]
@@ -45,13 +52,13 @@ export const queryDepositAddressStatus = async function (
 
   return {
     status: request.status,
-    details: request.data?.failReason,
+    details: request.data?.failReason ?? undefined,
     txHashes: request.data?.outTxs
-      ?.map((tx) => tx.hash)
-      .filter((hash): hash is string => Boolean(hash)),
+      ?.map((tx) => tx.txHash)
+      .filter((txHash): txHash is string => Boolean(txHash)),
     inTxHashes: request.data?.inTxs
-      ?.map((tx) => tx.hash)
-      .filter((hash): hash is string => Boolean(hash))
+      ?.map((tx) => tx.txHash)
+      .filter((txHash): txHash is string => Boolean(txHash))
   }
 }
 

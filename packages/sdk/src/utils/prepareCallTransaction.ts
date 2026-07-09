@@ -2,8 +2,11 @@ import type { paths } from '../types/index.js'
 import { encodeFunctionData } from 'viem'
 import type { SimulateContractParameters } from 'viem'
 
-type CallBody = NonNullable<
-  paths['/execute/call']['post']['requestBody']['content']['application/json']
+type QuoteCallBody = Omit<
+  NonNullable<
+    paths['/quote/v2']['post']['requestBody']['content']['application/json']['txs']
+  >[0],
+  'originalTxValue'
 >
 
 export default function prepareCallTransaction(
@@ -11,7 +14,7 @@ export default function prepareCallTransaction(
     SimulateContractParameters,
     'abi' | 'functionName' | 'args' | 'address' | 'value'
   >
-): Required<NonNullable<CallBody['txs']>[0]> {
+): Required<QuoteCallBody> {
   const { abi, functionName, args } = request
 
   const data = encodeFunctionData({ abi, functionName, args })

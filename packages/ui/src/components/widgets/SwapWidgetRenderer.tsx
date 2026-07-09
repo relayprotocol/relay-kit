@@ -76,7 +76,6 @@ type SwapWidgetRendererProps = {
   onConnectWallet?: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
-  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
 }
 
 export type ChildrenProps = {
@@ -156,7 +155,6 @@ export type ChildrenProps = {
   isLoadingFromTokenPrice: boolean
   toTokenPriceData: ReturnType<typeof useTokenPrice>['data']
   isLoadingToTokenPrice: boolean
-  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
 }
 
 // shared query options for useTokenPrice
@@ -183,7 +181,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   multiWalletSupportEnabled = false,
   linkedWallets,
   supportedWalletVMs,
-  useSecureBaseUrl,
   children,
   onAnalyticEvent,
   onSwapError
@@ -594,10 +591,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         status_code: e?.response?.status ?? e?.status ?? ''
       })
     },
-    undefined,
-    useSecureBaseUrl?.(quoteParameters)
-      ? providerOptionsContext?.secureBaseUrl
-      : undefined
+    undefined
   )
 
   const invalidateQuoteQuery = useCallback(() => {

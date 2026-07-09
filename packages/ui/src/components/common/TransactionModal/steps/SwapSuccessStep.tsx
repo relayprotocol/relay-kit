@@ -32,6 +32,7 @@ import {
 } from '../../../../providers/RelayKitProvider.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import { truncateAddress } from '../../../../utils/truncate.js'
+import { getRequestCurrencies } from '../../../../utils/relayTransaction.js'
 
 type SwapSuccessStepProps = {
   fromToken?: Token
@@ -77,27 +78,30 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   // Get chains data for explorer URL generation
   const chains = relayClient?.chains
 
-  const _fromAmountFormatted = transaction?.data?.metadata?.currencyIn?.amount
+  const {
+    currencyIn: requestCurrencyIn,
+    currencyOut: requestCurrencyOut,
+    currencyGasTopup: requestCurrencyGasTopup
+  } = getRequestCurrencies(transaction)
+
+  const _fromAmountFormatted = requestCurrencyIn?.amount
     ? formatSignificantDigits(
-        transaction?.data?.metadata?.currencyIn?.amount,
-        transaction?.data?.metadata?.currencyIn?.currency?.decimals ?? 18
+        requestCurrencyIn.amount,
+        requestCurrencyIn.currency?.decimals ?? 18
       )
     : fromAmountFormatted
-  const _fromToken =
-    transaction?.data?.metadata?.currencyIn?.currency ?? fromToken
+  const _fromToken = requestCurrencyIn?.currency ?? fromToken
   const fromTokenLogoUri =
-    transaction?.data?.metadata?.currencyIn?.currency?.metadata?.logoURI ??
-    fromToken?.logoURI
-  const _toAmountFormatted = transaction?.data?.metadata?.currencyOut?.amount
+    requestCurrencyIn?.currency?.metadata?.logoURI ?? fromToken?.logoURI
+  const _toAmountFormatted = requestCurrencyOut?.amount
     ? formatSignificantDigits(
-        transaction?.data?.metadata?.currencyOut?.amount,
-        transaction?.data?.metadata?.currencyOut?.currency?.decimals ?? 18
+        requestCurrencyOut.amount,
+        requestCurrencyOut.currency?.decimals ?? 18
       )
     : toAmountFormatted
-  const _toToken = transaction?.data?.metadata?.currencyOut?.currency ?? toToken
+  const _toToken = requestCurrencyOut?.currency ?? toToken
   const toTokenLogoUri =
-    transaction?.data?.metadata?.currencyOut?.currency?.metadata?.logoURI ??
-    toToken?.logoURI
+    requestCurrencyOut?.currency?.metadata?.logoURI ?? toToken?.logoURI
 
   const baseTransactionUrl = relayClient?.baseApiUrl.includes('testnets')
     ? 'https://testnets.relay.link'
@@ -136,12 +140,10 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
       ? 10
       : Math.round(timeEstimateMs / 1000 / 60)
 
-  const gasTopUpAmountCurrency =
-    transaction?.data?.metadata?.currencyGasTopup?.currency
-  const formattedGasTopUpAmount = transaction?.data?.metadata?.currencyGasTopup
-    ?.amount
+  const gasTopUpAmountCurrency = requestCurrencyGasTopup?.currency
+  const formattedGasTopUpAmount = requestCurrencyGasTopup?.amount
     ? formatSignificantDigits(
-        BigInt(transaction?.data?.metadata?.currencyGasTopup?.amount),
+        BigInt(requestCurrencyGasTopup.amount),
         gasTopUpAmountCurrency?.decimals ?? 18
       )
     : undefined
@@ -149,7 +151,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   // Helper function to get transaction hash for a specific chain
   const getTxHashForChain = (chainId: number, skipRefundCheck = false) => {
     if (isRefund && !skipRefundCheck) {
-      const refundTxHash = transaction?.data?.outTxs?.[0]?.hash
+      const refundTxHash = transaction?.data?.outTxs?.[0]?.txHash
       const refundChainId = transaction?.data?.outTxs?.[0]?.chainId
       if (refundChainId === chainId && refundTxHash) {
         return refundTxHash
@@ -263,7 +265,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
         {(() => {
           // For refunds, show the refund tx from outTxs, not the original send tx
           if (isRefund) {
-            const refundTxHash = transaction?.data?.outTxs?.[0]?.hash
+            const refundTxHash = transaction?.data?.outTxs?.[0]?.txHash
             const refundChainId = transaction?.data?.outTxs?.[0]?.chainId
 
             // Only show if refund tx is available (don't fall back to send tx)

@@ -16,7 +16,10 @@ import {
   useRequests,
   useTokenPrice
 } from '@relayprotocol/relay-kit-hooks'
-import { extractDepositRequestId } from '../../../../utils/relayTransaction.js'
+import {
+  extractDepositRequestId,
+  getRequestCurrencies
+} from '../../../../utils/relayTransaction.js'
 import { parseUnits, zeroAddress } from 'viem'
 import {
   appendMetadataToRequest,
@@ -257,8 +260,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   const { data: transactions, isLoading: isLoadingTransaction } = useRequests(
     step === OnrampStep.Success && fillTxHash
       ? {
-          user: recipient,
-          hash: fillTxHash
+          fillTxHash
         }
       : undefined,
     client?.baseApiUrl,
@@ -272,12 +274,12 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   )
 
   const transaction = transactions && transactions[0] ? transactions[0] : null
-  const toAmountFormatted = transaction?.data?.metadata?.currencyOut
-    ?.amountFormatted
+  const { currencyOut: requestCurrencyOut } = getRequestCurrencies(transaction)
+  const toAmountFormatted = requestCurrencyOut?.amountFormatted
     ? (formatBN(
-        +transaction.data.metadata.currencyOut.amountFormatted,
+        +requestCurrencyOut.amountFormatted,
         5,
-        transaction?.data?.metadata?.currencyOut?.currency?.decimals ?? 18
+        requestCurrencyOut.currency?.decimals ?? 18
       ) ?? undefined)
     : amountToTokenFormatted
 

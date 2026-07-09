@@ -8,10 +8,10 @@ import type { paths } from './api.js'
 import type { AxiosRequestConfig } from 'axios'
 import type { TransactionReceipt } from 'viem'
 
-export type CallFees =
-  paths['/execute/call/v2']['post']['responses']['200']['content']['application/json']['fees']
-export type CallBreakdown =
-  paths['/execute/call/v2']['post']['responses']['200']['content']['application/json']['breakdown']
+export type QuoteFees =
+  paths['/quote/v2']['post']['responses']['200']['content']['application/json']['fees']
+export type SwapBreakdown =
+  paths['/execute/swap']['post']['responses']['200']['content']['application/json']['breakdown']
 export type CheckApi = NonNullable<
   NonNullable<
     paths['/quote/v2']['post']['responses']['200']['content']['application/json']['steps']
@@ -33,8 +33,8 @@ export type SignatureStepState =
 
 export type Execute = {
   errors?: { message?: string; orderId?: string }[]
-  fees?: CallFees
-  breakdown?: CallBreakdown
+  fees?: QuoteFees
+  breakdown?: SwapBreakdown
   details?: QuoteDetails
   error?: any // Manually added client error
   refunded?: boolean
