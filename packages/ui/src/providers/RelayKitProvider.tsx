@@ -89,11 +89,6 @@ type RelayKitProviderOptions = {
     fill?: string
   }) => ReactElement
   /**
-   * The secure base url for the relay api, if omitted the default will be used. Override this config to protect your api key via a proxy.
-   * Currently only relevant for the quote api in the SwapWidget
-   */
-  secureBaseUrl?: string
-  /**
    * Optional callback for haptic feedback on UI interactions.
    * Relay Kit does not bundle any haptics library — integrators provide their own implementation.
    *
@@ -279,7 +274,6 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
       privateChainIds: options.privateChainIds,
       themeScheme: options.themeScheme,
       loader: options.loader,
-      secureBaseUrl: options.secureBaseUrl,
       onHapticEvent: options.onHapticEvent
     }),
     [options]

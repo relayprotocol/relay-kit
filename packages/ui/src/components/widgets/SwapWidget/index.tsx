@@ -74,7 +74,6 @@ type BaseSwapWidgetProps = {
   disableInputAutoFocus?: boolean
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean
-  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
   onOpenSlippageConfig?: () => void
   onFromTokenChange?: (token?: Token) => void
   onToTokenChange?: (token?: Token) => void
@@ -125,7 +124,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   disableInputAutoFocus = false,
   popularChainIds,
   disablePasteWalletAddressOption,
-  useSecureBaseUrl,
   onSetPrimaryWallet,
   onLinkNewWallet,
   onFromTokenChange,
@@ -202,7 +200,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
       onSwapError={onSwapError}
       onAnalyticEvent={onAnalyticEvent}
       supportedWalletVMs={supportedWalletVMs}
-      useSecureBaseUrl={useSecureBaseUrl}
     >
       {({
         quote,

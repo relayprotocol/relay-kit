@@ -75,7 +75,6 @@ export const RelayKitProviderWrapper: FC<{
           enabled: websocketsEnabled,
           url: MAINNET_RELAY_WS
         },
-        secureBaseUrl: process.env.NEXT_PUBLIC_RELAY_SECURE_API_URL,
         appFees: appFeesEnabled ? DEFAULT_APP_FEES : undefined,
         onHapticEvent,
         logger: (message, level) => {
