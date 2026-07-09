@@ -237,16 +237,12 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         step === OnrampStep.Processing &&
         open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending']
-
-        if (
-          !query.state.data?.status ||
-          (depositAddress &&
-            observableStates.includes(query.state.data?.status))
-        ) {
-          return 1000
-        }
-        return 0
+        // Keep polling until the request reaches a terminal state. Non-terminal
+        // states (waiting, pending, depositing, submitted) and an unknown
+        // status all continue polling.
+        const terminalStates = ['success', 'failure', 'refund']
+        const status = query.state.data?.status
+        return status && terminalStates.includes(status) ? 0 : 1000
       }
     }
   )
@@ -293,7 +289,9 @@ export const OnrampModal: FC<OnrampModalProps> = ({
 
   useEffect(() => {
     if (
-      executionStatus?.status === 'pending' &&
+      (executionStatus?.status === 'pending' ||
+        executionStatus?.status === 'depositing' ||
+        executionStatus?.status === 'submitted') &&
       (step !== OnrampStep.Processing ||
         processingStep !== OnrampProcessingStep.Relaying)
     ) {

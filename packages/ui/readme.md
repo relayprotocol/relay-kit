@@ -9,7 +9,7 @@ Head over to the <a href="https://docs.relay.link/references/sdk/getting-started
 
 ## Requirements: Relay API key + proxy
 
-Relay Kit reads transaction history from the Requests API, which was upgraded to `GET /requests/v3`. **v3 requires a Relay API key** sent via the `x-api-key` header.
+Relay Kit reads transaction history from the Requests API, which was upgraded to `GET /requests/v3`. **v3 requires a Relay API key** ([how to get one](https://docs.relay.link/references/api/api-keys#how-to-get-an-api-key)) sent via the `x-api-key` header.
 
 Because Relay Kit's hooks (`useRequests`, `useDepositAddressStatus`) run in the browser, the API key must **not** be shipped to the client. Instead, run a lightweight proxy that injects the `x-api-key` header server-side and point Relay Kit at it via `baseApiUrl`:
 

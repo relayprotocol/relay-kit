@@ -1,7 +1,7 @@
 ---
 '@relayprotocol/relay-kit-hooks': major
 '@relayprotocol/relay-kit-ui': major
-'@relayprotocol/relay-sdk': minor
+'@relayprotocol/relay-sdk': major
 ---
 
 Migrate the Requests API from v2 to v3 (breaking).
