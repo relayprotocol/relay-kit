@@ -12,11 +12,11 @@ const appendQueryParams = (
   return url
 }
 
-export const getTxBlockExplorerUrl = (
+export function getTxBlockExplorerUrl(
   chainId?: number,
   chains?: RelayChain[],
   txHash?: string
-) => {
+) {
   const chain = chains?.find((chain) => chain.id === chainId)
   let blockExplorerUrl = getChainBlockExplorerUrl(chainId, chains)
 

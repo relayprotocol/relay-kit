@@ -1,4 +1,3 @@
-import { type FC } from 'react'
 import { Anchor, Box, Button, Flex, Text } from '../../../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons/faCircleExclamation'
@@ -33,7 +32,7 @@ type ErrorStepProps = {
   onOpenChange: (open: boolean) => void
 }
 
-export const ErrorStep: FC<ErrorStepProps> = ({
+export function ErrorStep({
   error,
   address,
   allTxHashes,
@@ -45,7 +44,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
   fromAmountFormatted,
   toAmountFormatted,
   onOpenChange
-}) => {
+}: ErrorStepProps) {
   const parsedError = JSONToError(error)
   const errorMessage = transaction?.data?.failReason ?? parsedError?.message
   const isRefund =

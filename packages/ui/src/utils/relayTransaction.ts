@@ -2,23 +2,23 @@ import { type Execute, RelayClient } from '@relayprotocol/relay-sdk'
 import { type RelayTransaction } from '../types/index.js'
 import { formatSeconds } from './time.js'
 
-export const extractFromChain = (
+export function extractFromChain(
   transaction?: RelayTransaction | null,
   client?: RelayClient | null
-) => {
+) {
   const chainId = transaction?.data?.inTxs?.[0]?.chainId
   return client?.chains.find((chain) => chain.id === chainId)
 }
 
-export const extractToChain = (
+export function extractToChain(
   transaction?: RelayTransaction | null,
   client?: RelayClient | null
-) => {
+) {
   const chainId = transaction?.data?.outTxs?.[0]?.chainId
   return client?.chains.find((chain) => chain.id === chainId)
 }
 
-export const calculateFillTime = (transaction?: RelayTransaction | null) => {
+export function calculateFillTime(transaction?: RelayTransaction | null) {
   let fillTime = '-'
   let seconds = 0
   if (transaction?.status !== 'pending' && transaction?.status !== 'waiting') {
@@ -51,7 +51,7 @@ export const calculateFillTime = (transaction?: RelayTransaction | null) => {
   return { fillTime, seconds }
 }
 
-export const extractDepositRequestId = (steps?: Execute['steps'] | null) => {
+export function extractDepositRequestId(steps?: Execute['steps'] | null) {
   if (!steps?.length) return null
 
   // Find the first step that has a requestId

@@ -1,4 +1,4 @@
-import { useContext, type FC } from 'react'
+import { useContext } from 'react'
 import {
   Box,
   Button,
@@ -51,7 +51,7 @@ type SwapSuccessStepProps = {
   currentCheckStatus?: ExecuteStepItem['checkStatus']
 }
 
-export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
+export function SwapSuccessStep({
   fromToken,
   toToken,
   fromAmountFormatted,
@@ -67,7 +67,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
   requestId,
   isGasSponsored,
   currentCheckStatus
-}) => {
+}: SwapSuccessStepProps) {
   const relayClient = useRelayClient()
   const haptic = useHapticEvent()
   const isWrap = details?.operation === 'wrap'
@@ -198,18 +198,13 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
               />
             </svg>
 
-            <Box
-              className="relay:z-[1] relay:text-[color:var(--relay-colors-amber9)] relay:mr-2"
-            >
+            <Box className="relay:z-[1] relay:text-[color:var(--relay-colors-amber9)] relay:mr-2">
               <FontAwesomeIcon icon={faClockFour} style={{ height: 32 }} />
             </Box>
           </Flex>
         </div>
 
-        <Text
-          style="subtitle1"
-          className="relay:my-4 relay:text-center"
-        >
+        <Text style="subtitle1" className="relay:my-4 relay:text-center">
           {isBitcoinOrigin || isBitcoinDestination
             ? `Bitcoin confirmation takes ${estimatedMinutes} minutes. Track progress on the transaction page.`
             : `Processing bridge, this will take ~${estimatedMinutes} ${estimatedMinutes === 1 ? 'min' : 'mins'}.`}
@@ -217,7 +212,10 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
 
         <Flex align="center" className="relay:gap-2 relay:mb-[24px]">
           {fromChain ? (
-            <Pill color="gray" className="relay:items-center relay:py-2 relay:px-3">
+            <Pill
+              color="gray"
+              className="relay:items-center relay:py-2 relay:px-3"
+            >
               <ChainTokenIcon
                 chainId={fromChain.id}
                 tokenlogoURI={fromTokenLogoUri}
@@ -236,7 +234,10 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
             <FontAwesomeIcon style={{ width: 14 }} icon={faArrowRight} />
           </Flex>
           {toChain ? (
-            <Pill color="gray" className="relay:items-center relay:py-2 relay:px-3">
+            <Pill
+              color="gray"
+              className="relay:items-center relay:py-2 relay:px-3"
+            >
               <ChainTokenIcon
                 chainId={toChain.id}
                 tokenlogoURI={toTokenLogoUri}
@@ -406,9 +407,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainRadius={2.5}
                   />
                   {isLoadingTransaction ? (
-                    <Skeleton
-                      className="relay:h-[24px] relay:w-[60px] relay:bg-[var(--relay-colors-gray5)]"
-                    />
+                    <Skeleton className="relay:h-[24px] relay:w-[60px] relay:bg-[var(--relay-colors-gray5)]" />
                   ) : (
                     <Text style="h6">
                       {_fromAmountFormatted} {_fromToken.symbol}
@@ -454,9 +453,7 @@ export const SwapSuccessStep: FC<SwapSuccessStepProps> = ({
                     chainRadius={2.5}
                   />
                   {isLoadingTransaction ? (
-                    <Skeleton
-                      className="relay:h-[24px] relay:w-[60px] relay:bg-[var(--relay-colors-gray5)]"
-                    />
+                    <Skeleton className="relay:h-[24px] relay:w-[60px] relay:bg-[var(--relay-colors-gray5)]" />
                   ) : (
                     <Text style="h6">
                       {_toAmountFormatted} {_toToken.symbol}

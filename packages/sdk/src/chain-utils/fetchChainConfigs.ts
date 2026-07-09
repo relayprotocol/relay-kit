@@ -3,11 +3,11 @@ import type { RelayChain } from '../types/index.js'
 import { axios } from '../utils/axios.js'
 import { isRelayApiUrl } from '../utils/apiKey.js'
 
-export const fetchChainConfigs = async (
+export async function fetchChainConfigs(
   baseApiUrl: string,
   referrer?: string,
   apiKey?: string
-): Promise<RelayChain[]> => {
+): Promise<RelayChain[]> {
   let queryString = ''
   if (referrer) {
     const queryParams = new URLSearchParams()
@@ -28,4 +28,3 @@ export const fetchChainConfigs = async (
   }
   throw 'No Chain Data'
 }
-

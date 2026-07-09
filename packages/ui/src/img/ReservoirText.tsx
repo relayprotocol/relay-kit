@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const ReservoirText = (props: React.HTMLAttributes<SVGElement>) => {
+export function ReservoirText(props: React.HTMLAttributes<SVGElement>) {
   return (
     <svg
       width="auto"

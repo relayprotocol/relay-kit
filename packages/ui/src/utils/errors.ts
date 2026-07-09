@@ -1,4 +1,4 @@
-export const errorToJSON = (error: any) => {
+export function errorToJSON(error: any) {
   if (!(error instanceof Error)) {
     return error
   }
@@ -16,7 +16,7 @@ export const errorToJSON = (error: any) => {
   }
 }
 
-export const JSONToError = <T>(json?: T): Error | T | undefined => {
+export function JSONToError<T>(json?: T): Error | T | undefined {
   if (!json || typeof json !== 'string') {
     return json
   }

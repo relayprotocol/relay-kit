@@ -1,4 +1,4 @@
-import React, { forwardRef, type FC } from 'react'
+import React, { forwardRef } from 'react'
 import * as ToggleGroup from '@radix-ui/react-toggle-group'
 import { cn } from '../../utils/cn.js'
 
@@ -8,11 +8,11 @@ type AccessibleListProps = {
   className?: string
 }
 
-export const AccessibleList: FC<AccessibleListProps> = ({
+export function AccessibleList({
   children,
   onSelect,
   className
-}) => {
+}: AccessibleListProps) {
   return (
     <ToggleGroup.Root
       type="single"

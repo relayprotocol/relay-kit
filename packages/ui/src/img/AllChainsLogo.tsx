@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const AllChainsLogo = (props: React.HTMLAttributes<SVGElement>) => {
+export function AllChainsLogo(props: React.HTMLAttributes<SVGElement>) {
   return (
     <svg
       width="269"

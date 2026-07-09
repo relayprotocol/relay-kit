@@ -17,9 +17,9 @@ const viemChainMap = Object.values(viemChains).reduce(
   {} as Record<number, Chain>
 )
 
-export const configureViemChain = (
+export function configureViemChain(
   chain: RelayAPIChain
-): RelayChain & Required<Pick<RelayChain, 'viemChain'>> => {
+): RelayChain & Required<Pick<RelayChain, 'viemChain'>> {
   let viemChain: Chain
   const overriddenChains = [999, 1337]
   const staticChain = overriddenChains.includes(chain.id)

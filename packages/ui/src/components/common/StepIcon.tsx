@@ -1,4 +1,3 @@
-import { type FC } from 'react'
 import { Flex, ChainIcon } from '../primitives/index.js'
 import {
   FileSignature,
@@ -12,7 +11,7 @@ type StepIconProps = {
   chainId?: number
 }
 
-export const StepIcon: FC<StepIconProps> = ({ stepId, chainId }) => {
+export function StepIcon({ stepId, chainId }: StepIconProps) {
   const getIconForStep = () => {
     if (stepId.includes('approve')) {
       return <FileSignature width={14} height={16} fill="currentColor" />
@@ -38,9 +37,7 @@ export const StepIcon: FC<StepIconProps> = ({ stepId, chainId }) => {
   }
 
   return (
-    <Flex
-      className="relay:rounded-[100px] relay:p-2 relay:w-8 relay:h-8 relay:gap-2"
-    >
+    <Flex className="relay:rounded-[100px] relay:p-2 relay:w-8 relay:h-8 relay:gap-2">
       {getIconForStep()}
     </Flex>
   )

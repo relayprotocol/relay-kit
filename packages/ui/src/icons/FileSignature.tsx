@@ -6,12 +6,12 @@ type FileSignatureProps = React.SVGProps<SVGSVGElement> & {
   fill?: string
 }
 
-export const FileSignature = ({
+export function FileSignature({
   width = 19,
   height = 16,
   fill = '#5A45DF',
   ...props
-}: FileSignatureProps) => {
+}: FileSignatureProps) {
   return (
     <svg
       width={width}

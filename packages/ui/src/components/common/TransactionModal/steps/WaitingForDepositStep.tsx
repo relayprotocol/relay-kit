@@ -1,4 +1,3 @@
-import { type FC } from 'react'
 import {
   Button,
   ChainIcon,
@@ -37,13 +36,13 @@ type WaitingForDepositStepProps = {
   depositAddress?: string
 }
 
-export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
+export function WaitingForDepositStep({
   fromToken,
   fromChain,
   fromAmountFormatted,
   isFetchingQuote,
   depositAddress
-}) => {
+}: WaitingForDepositStepProps) {
   const qrcodeUrl = generateQrWalletDeeplink(
     fromChain?.vmType,
     fromAmountFormatted,
@@ -152,7 +151,13 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
                         boxShadow: '0px 1px 5px rgba(0,0,0,0.2)'
                       }}
                     >
-                      <div style={{ position: 'relative', width: 105, height: 105 }}>
+                      <div
+                        style={{
+                          position: 'relative',
+                          width: 105,
+                          height: 105
+                        }}
+                      >
                         <QRCodeCanvas
                           value={qrcodeUrl}
                           width={105}
@@ -215,9 +220,7 @@ export const WaitingForDepositStep: FC<WaitingForDepositStepProps> = ({
         disabled={true}
         className="relay:text-[color:var(--relay-colors-button-disabled-color)_!important] relay:mt-2 relay:justify-center"
       >
-        <LoadingSpinner
-          className="relay:h-4 relay:w-4 relay:fill-[var(--relay-colors-button-disabled-color)]"
-        />
+        <LoadingSpinner className="relay:h-4 relay:w-4 relay:fill-[var(--relay-colors-button-disabled-color)]" />
         Waiting for you to transfer funds
       </Button>
     </>

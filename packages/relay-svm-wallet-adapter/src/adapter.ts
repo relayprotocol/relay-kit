@@ -38,7 +38,7 @@ const assertBase58TransactionSignature = (
  * @param payerKey - Optional public key of the account that will pay for transaction fees (defaults to walletAddress)
  * @returns An AdaptedWallet object that conforms to the Relay SDK interface
  */
-export const adaptSolanaWallet = (
+export function adaptSolanaWallet(
   walletAddress: string,
   chainId: number,
   connection: Connection,
@@ -51,7 +51,7 @@ export const adaptSolanaWallet = (
     signature: TransactionSignature
   }>,
   payerKey?: string
-): AdaptedWallet => {
+): AdaptedWallet {
   let _chainId = chainId
   const getChainId = async () => {
     return _chainId

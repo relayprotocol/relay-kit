@@ -6,12 +6,12 @@ type RelayIconProps = React.SVGProps<SVGSVGElement> & {
   fill?: string
 }
 
-export const RelayIcon = ({
+export function RelayIcon({
   width = 41,
   height = 40,
   fill = 'none',
   ...props
-}: RelayIconProps) => {
+}: RelayIconProps) {
   return (
     <svg
       width={width}

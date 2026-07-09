@@ -2,12 +2,12 @@ import type { RelayChain } from '@relayprotocol/relay-sdk'
 import type { Token } from '../types/index.js'
 import { getStarredChainIds, setRelayUiKitData } from './localStorage.js'
 
-export const isChainLocked = (
+export function isChainLocked(
   chainId: number | undefined,
   lockChainId: number | undefined,
   otherTokenChainId: number | undefined,
   lockToken: boolean
-) => {
+) {
   if (lockToken) {
     return true
   }
@@ -31,11 +31,11 @@ type GroupedChains = {
   alphabeticalChains: RelayChain[]
 }
 
-export const groupChains = (
+export function groupChains(
   chains: ChainOption[],
   popularChainIds?: number[],
   currentStarredChainIds?: number[] | undefined
-): GroupedChains => {
+): GroupedChains {
   // Get starred chains from localStorage or use provided ones
   let starredChainIds = currentStarredChainIds ?? getStarredChainIds()
 
@@ -90,7 +90,7 @@ export const groupChains = (
   }
 }
 
-export const sortChains = (chains: RelayChain[]) => {
+export function sortChains(chains: RelayChain[]) {
   return chains.sort((a, b) => {
     // First sort by priority chains
     const aIsPriority = POPULAR_CHAIN_IDS.has(a.id)
@@ -109,13 +109,13 @@ export const sortChains = (chains: RelayChain[]) => {
   })
 }
 
-export const getInitialChainFilter = (
+export function getInitialChainFilter(
   chainFilterOptions: RelayChain[],
   context: 'from' | 'to',
   depositAddressOnly: boolean,
   token?: Token,
   alwaysShowAllChains?: boolean
-) => {
+) {
   const defaultFilter = { id: undefined, name: 'All Chains' }
 
   // If there is only one chain, return it

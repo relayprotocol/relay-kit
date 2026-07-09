@@ -8,7 +8,7 @@ export const ratingToColor = {
   low: undefined
 } as const
 
-export const getSlippageRating = (slippage: string): SlippageRating => {
+export function getSlippageRating(slippage: string): SlippageRating {
   const slippageNumber = parseFloat(slippage)
   if (slippageNumber >= 40) return 'very-high'
   if (slippageNumber >= 6) return 'high'

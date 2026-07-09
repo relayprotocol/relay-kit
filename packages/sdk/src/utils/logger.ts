@@ -6,7 +6,7 @@ export enum LogLevel {
   None = 0
 }
 
-export const log = (params: any[], level: LogLevel, currentLevel: LogLevel) => {
+export function log(params: any[], level: LogLevel, currentLevel: LogLevel) {
   if (currentLevel >= level) {
     const data = params.reduce((params, param, i) => {
       if ((i + 1) % 2) {

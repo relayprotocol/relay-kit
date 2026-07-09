@@ -26,11 +26,11 @@ const fetchPromises: Record<string, Promise<bigint>> = {}
  * @param gasLimit - Optional: The gas limit to use for estimation (defaults to 400000n).
  * @returns The calculated gas buffer amount as a bigint, or 0n if estimation fails or balance is zero.
  */
-export const calculateEvmNativeGasBuffer = async (
+export async function calculateEvmNativeGasBuffer(
   publicClient: PublicClient,
   balance: bigint,
   gasLimit: bigint = 400000n
-): Promise<bigint> => {
+): Promise<bigint> {
   if (!balance || balance <= 0n) {
     return 0n
   }
@@ -88,9 +88,9 @@ export const calculateEvmNativeGasBuffer = async (
  * @param chainId - The chain ID of the SVM or Eclipse network.
  * @returns The calculated fee buffer amount (in lamports for Solana, Wei for Eclipse) as a bigint, or a fallback buffer if estimation fails.
  */
-export const calculateSvmNativeFeeBuffer = async (
+export async function calculateSvmNativeFeeBuffer(
   chainId: number
-): Promise<bigint> => {
+): Promise<bigint> {
   const isEclipseChain = chainId === 9286185
   const multiplier = isEclipseChain
     ? ECLIPSE_FEE_BUFFER_MULTIPLIER
@@ -155,12 +155,12 @@ export const calculateSvmNativeFeeBuffer = async (
  * @param publicClient - VIEM PublicClient (required for EVM calculation).
  * @returns A promise that resolves to the fee buffer amount as a bigint.
  */
-export const getFeeBufferAmount = async (
+export async function getFeeBufferAmount(
   vmType: ChainVM | undefined | null,
   chainId: number | undefined | null,
   balance: bigint,
   publicClient: PublicClient | null
-): Promise<bigint> => {
+): Promise<bigint> {
   const cacheKey = `${vmType}FeeBuffer:${chainId}`
   const cachedBufferStr = getCacheEntry(cacheKey)
 

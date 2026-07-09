@@ -1,11 +1,10 @@
-import { type FC } from 'react'
 import { Text } from '../../primitives/index.js'
 
 type TagPillProps = {
   tag: string
 }
 
-export const TagPill: FC<TagPillProps> = ({ tag }) => {
+export function TagPill({ tag }: TagPillProps) {
   return (
     <Text
       style="subtitle3"

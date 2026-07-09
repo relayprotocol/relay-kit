@@ -27,7 +27,7 @@ export type UseSwapButtonCtaParams = {
  * @param params - Configuration object containing swap state
  * @returns The appropriate button CTA text
  */
-export const useSwapButtonCta = ({
+export function useSwapButtonCta({
   fromToken,
   toToken,
   multiWalletSupportEnabled,
@@ -44,7 +44,7 @@ export const useSwapButtonCta = ({
   isInsufficientLiquidityError,
   quote,
   operation
-}: UseSwapButtonCtaParams): string => {
+}: UseSwapButtonCtaParams): string {
   const firstStep = quote?.steps?.[0]
   const firstStepItem = firstStep?.items?.[0]
 

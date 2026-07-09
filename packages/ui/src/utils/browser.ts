@@ -1,4 +1,7 @@
-export const isSafariBrowser = () =>
-  typeof window !== 'undefined' &&
-  navigator.userAgent.indexOf('Safari') > -1 &&
-  navigator.userAgent.indexOf('Chrome') <= -1
+export function isSafariBrowser() {
+  return (
+    typeof window !== 'undefined' &&
+    navigator.userAgent.indexOf('Safari') > -1 &&
+    navigator.userAgent.indexOf('Chrome') <= -1
+  )
+}

@@ -11,8 +11,9 @@ export type HyperliquidAccountMode =
   | 'default'
   | 'dexAbstraction'
 
-export const isUnifiedMode = (mode?: HyperliquidAccountMode) =>
-  mode === 'unifiedAccount' || mode === 'portfolioMargin'
+export function isUnifiedMode(mode?: HyperliquidAccountMode) {
+  return mode === 'unifiedAccount' || mode === 'portfolioMargin'
+}
 
 const useHyperliquidAccountMode = (address?: string, enabled = true) => {
   const isEvmAddress = isAddress(address ?? '')

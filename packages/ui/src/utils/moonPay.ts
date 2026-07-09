@@ -6,9 +6,9 @@ import defaultMoonPayCurrencies from '../constants/moonPayCurrencies.js'
 import { bitcoin } from './bitcoin.js'
 import { solana } from './solana.js'
 
-export const convertSupportedCurrencies = (
+export function convertSupportedCurrencies(
   currencies?: [MoonPayCryptoCurrency | MoonPayFiatCurrency] | null
-) => {
+) {
   if (currencies) {
     return currencies
       .filter(

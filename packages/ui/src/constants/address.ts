@@ -5,7 +5,7 @@ export const evmDeadAddress =
 export const solDeadAddress =
   'CbKGgVKLJFb8bBrf58DnAkdryX6ubewVytn7X957YwNr' as const
 
-export const getDeadAddress = (vmType?: ChainVM) => {
+export function getDeadAddress(vmType?: ChainVM) {
   if (vmType === 'svm') {
     return solDeadAddress
   } else {

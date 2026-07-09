@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import { Flex, Skeleton, Text } from '../primitives/index.js'
 import { formatBN } from '../../utils/numbers.js'
 
@@ -15,7 +14,7 @@ type BalanceDisplayProps = {
   size?: 'sm' | 'md'
 }
 
-export const BalanceDisplay: FC<BalanceDisplayProps> = ({
+export function BalanceDisplay({
   balance,
   decimals,
   symbol,
@@ -26,7 +25,7 @@ export const BalanceDisplay: FC<BalanceDisplayProps> = ({
   pending,
   hideBalanceLabel = false,
   size = 'sm'
-}) => {
+}: BalanceDisplayProps) {
   const compactBalance = Boolean(
     balance && decimals && balance.toString().length - decimals > 4
   )

@@ -1,4 +1,3 @@
-import type { FC } from 'react'
 import { Modal } from './Modal.js'
 import type { Token } from '../../types/index.js'
 import { Anchor, Box, Button, Flex, Text } from '../primitives/index.js'
@@ -25,14 +24,14 @@ type UnverifiedTokenModalProps = {
   onAnalyticEvent?: (eventName: string, data?: any) => void
 }
 
-export const UnverifiedTokenModal: FC<UnverifiedTokenModalProps> = ({
+export function UnverifiedTokenModal({
   open,
   onOpenChange,
   data,
   onAcceptToken,
   onDecline,
   onAnalyticEvent
-}) => {
+}: UnverifiedTokenModalProps) {
   const haptic = useHapticEvent()
   const client = useRelayClient()
   const chain = client?.chains?.find(

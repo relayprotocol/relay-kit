@@ -7,10 +7,10 @@ type ApiCurrency = NonNullable<
   paths['/chains']['get']['responses']['200']['content']['application/json']['chains']
 >[0]['currency']
 
-export const convertApiCurrencyToToken = (
+export function convertApiCurrencyToToken(
   currency: ApiCurrency | undefined | null,
   chainId: number
-): Token => {
+): Token {
   return {
     chainId: Number(chainId),
     address: currency?.address ?? '',
@@ -24,7 +24,7 @@ export const convertApiCurrencyToToken = (
   }
 }
 
-export const findBridgableToken = (chain?: RelayChain, token?: Token) => {
+export function findBridgableToken(chain?: RelayChain, token?: Token) {
   if (chain && token && token.chainId === chain.id) {
     const toCurrencies = [
       ...(chain?.erc20Currencies ?? []),
@@ -47,18 +47,20 @@ export const findBridgableToken = (chain?: RelayChain, token?: Token) => {
 /**
  * Generates a standard token image URL from symbol or metadata
  */
-export const generateTokenImageUrl = (token: { 
-  symbol?: string, 
-  metadata?: { logoURI?: string } 
-}): string => {
-  return token.metadata?.logoURI ||
+export function generateTokenImageUrl(token: {
+  symbol?: string
+  metadata?: { logoURI?: string }
+}): string {
+  return (
+    token.metadata?.logoURI ||
     `${ASSETS_RELAY_API}/icons/currencies/${token.symbol?.toLowerCase()}.png`
+  )
 }
 
 /**
  * Compares two tokens for equality based on chainId and address
  */
-export const tokensAreEqual = (a?: Token, b?: Token): boolean => {
+export function tokensAreEqual(a?: Token, b?: Token): boolean {
   if (!a && !b) return true
   if (!a || !b) return false
   return (
@@ -70,12 +72,16 @@ export const tokensAreEqual = (a?: Token, b?: Token): boolean => {
 /**
  * Normalizes token address for cross-chain consistency
  */
-export const normalizeTokenAddress = (chainId: number, address: string, vmType?: string): string => {
+export function normalizeTokenAddress(
+  chainId: number,
+  address: string,
+  vmType?: string
+): string {
   const normalizedAddress = vmType === 'evm' ? address.toLowerCase() : address
   return `${chainId}:${normalizedAddress}`
 }
 
-export const mergeTokenLists = (lists: (CurrencyList | undefined)[]) => {
+export function mergeTokenLists(lists: (CurrencyList | undefined)[]) {
   const mergedList: CurrencyList = []
   const seenTokens = new Set<string>()
 

@@ -3,17 +3,17 @@ import time from 'dayjs/plugin/relativeTime.js'
 
 dayjs.extend(time)
 
-export const relativeTime = (
+export function relativeTime(
   timeString?: string | number,
   from?: string | number,
   withoutSuffix?: boolean
-): string => {
+): string {
   return from
     ? `${dayjs(timeString).from(from, withoutSuffix)}`
     : `${dayjs(timeString).fromNow(withoutSuffix)}`
 }
 
-export const formatSeconds = (seconds: number): string => {
+export function formatSeconds(seconds: number): string {
   seconds = Number(seconds)
   const d = Math.floor(seconds / (3600 * 24))
   const h = Math.floor((seconds % (3600 * 24)) / 3600)
@@ -29,7 +29,7 @@ export const formatSeconds = (seconds: number): string => {
   return parts.join(' ')
 }
 
-export const get15MinuteInterval = () => {
+export function get15MinuteInterval() {
   const now = new Date()
   const minutes = now.getUTCMinutes()
   const interval = Math.floor(minutes / 15)
