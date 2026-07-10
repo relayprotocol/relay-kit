@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 9.1.4
+
+### Patch Changes
+
+- a29e409: Block base wallet from receiving / sending on rh chain
+
 ## 9.1.3
 
 ### Patch Changes
