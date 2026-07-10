@@ -14,7 +14,8 @@ export const WalletChainRestricted: Record<string, number[]> = {
 
 export const WalletChainIncompatible: Record<string, number[]> = {
   binance: [7777777, 8453],
-  binanceus: [7777777, 8453]
+  binanceus: [7777777, 8453],
+  coinbase: [4663]
 }
 
 export const NormalizedWalletName: Record<string, string> = {
@@ -23,5 +24,7 @@ export const NormalizedWalletName: Record<string, string> = {
   magicedensol: 'magiceden',
   roninwallet: 'ronin',
   portoevm: 'porto',
-  trusttron: 'trust'
+  trusttron: 'trust',
+  coinbasewalletevm: 'coinbase',
+  baseevm: 'coinbase'
 }
