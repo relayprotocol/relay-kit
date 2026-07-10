@@ -259,8 +259,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const fromChainWalletVMSupported =
     isChainVmTypeSupported(fromChain?.vmType, supportedWalletVMs) ||
     fromChain?.id === 1337
-  const toChainWalletVMSupported =
-    isChainVmTypeSupported(toChain?.vmType, supportedWalletVMs)
+  const toChainWalletVMSupported = isChainVmTypeSupported(
+    toChain?.vmType,
+    supportedWalletVMs
+  )
 
   const defaultRecipient = useMemo(() => {
     const _linkedWallet = linkedWallets?.find(
@@ -793,11 +795,12 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           ? new Error(error?.response?.data?.message)
           : error
       )
+
       if (
         error &&
         ((typeof error.message === 'string' &&
-          error.message.includes('rejected')) ||
-          (typeof error === 'string' && error.includes('rejected')) ||
+          error.message.includes('reject')) ||
+          (typeof error === 'string' && error.includes('reject')) ||
           (typeof error === 'string' && error.includes('Approval Denied')) ||
           (typeof error === 'string' && error.includes('denied transaction')) ||
           (typeof error.message === 'string' &&
