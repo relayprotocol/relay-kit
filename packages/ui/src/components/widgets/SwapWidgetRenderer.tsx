@@ -796,8 +796,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       if (
         error &&
         ((typeof error.message === 'string' &&
-          error.message.includes('rejected')) ||
-          (typeof error === 'string' && error.includes('rejected')) ||
+          error.message.toLowerCase().includes('reject')) ||
+          (typeof error === 'string' &&
+            error.toLowerCase().includes('reject')) ||
           (typeof error === 'string' && error.includes('Approval Denied')) ||
           (typeof error === 'string' && error.includes('denied transaction')) ||
           (typeof error.message === 'string' &&
