@@ -560,6 +560,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
             </Button>
             <CustomAddressModal
               open={addressModalOpen}
+              toToken={token}
               toAddress={recipient}
               toChain={toChain}
               isConnected={
