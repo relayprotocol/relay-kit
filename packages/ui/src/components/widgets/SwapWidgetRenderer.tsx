@@ -425,21 +425,19 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const recipientIsDestinationToken = Boolean(
     toChain &&
       toToken &&
+      toToken.chainId === toChain.id &&
       addressesEqual(toChain.vmType ?? 'evm', recipient, toToken.address)
   )
 
   // Check custom recipients against the destination chain's known currencies
-  const {
-    isKnownTokenContract: recipientMatchesKnownToken,
-    isChecking: isCheckingRecipientTokenContract
-  } = useKnownTokenContract(
-    toChain,
-    customToAddress,
-    customToAddress !== undefined && !recipientIsDestinationToken
-  )
+  const { isKnownTokenContract: recipientMatchesKnownToken } =
+    useKnownTokenContract(
+      toChain,
+      customToAddress,
+      customToAddress !== undefined && !recipientIsDestinationToken
+    )
 
-  // Only confirmed matches invalidate the recipient; pending checks are
-  // handled in swap()
+  // Only confirmed matches invalidate the recipient
   const recipientIsKnownTokenContract = recipientMatchesKnownToken
 
   const isValidToAddress =
@@ -925,7 +923,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         throw new Error('Missing a wallet')
       }
 
-      if (recipientMatchesKnownToken || isCheckingRecipientTokenContract) {
+      if (recipientMatchesKnownToken) {
         throw new Error('Recipient address is a token contract, not a wallet')
       }
 
@@ -1096,8 +1094,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     invalidateBalanceQueries,
     linkedWallet,
     abortController,
-    recipientMatchesKnownToken,
-    isCheckingRecipientTokenContract
+    recipientMatchesKnownToken
   ])
 
   return (
