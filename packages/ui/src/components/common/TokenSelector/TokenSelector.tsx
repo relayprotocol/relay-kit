@@ -16,7 +16,7 @@ import type { Token } from '../../../types/index.js'
 import { type ChainFilterValue } from './ChainFilter.js'
 import useRelayClient from '../../../hooks/useRelayClient.js'
 import { type Address } from 'viem'
-import { useDebounceState, useDuneBalances } from '../../../hooks/index.js'
+import { useDebounceState, useCodexBalances } from '../../../hooks/index.js'
 import { useMediaQuery } from 'usehooks-ts'
 import {
   type Currency,
@@ -221,10 +221,10 @@ const TokenSelector: FC<TokenSelectorProps> = ({
 
   // Get user's token balances
   const {
-    data: duneTokens,
+    data: walletTokens,
     balanceMap: tokenBalances,
     isLoading: isLoadingBalances
-  } = useDuneBalances(
+  } = useCodexBalances(
     address &&
       address !== evmDeadAddress &&
       address !== solDeadAddress &&
@@ -232,27 +232,26 @@ const TokenSelector: FC<TokenSelectorProps> = ({
       isValidAddress
       ? address
       : undefined,
-    relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet',
     {
       staleTime: 60000,
       gcTime: 60000
     }
   )
 
-  // Filter dune token balances based on configured chains
-  const filteredDuneTokenBalances = useMemo(() => {
-    return duneTokens?.balances?.filter((balance) =>
+  // Filter wallet token balances based on configured chains
+  const filteredTokenBalances = useMemo(() => {
+    return walletTokens?.balances?.filter((balance) =>
       configuredChainIds.includes(balance.chain_id)
     )
-  }, [duneTokens?.balances, configuredChainIds])
+  }, [walletTokens?.balances, configuredChainIds])
 
   const userTokensQuery = useMemo(() => {
     if (depositAddressOnly) {
       return undefined
     }
 
-    if (filteredDuneTokenBalances && filteredDuneTokenBalances.length > 0) {
-      const sortedBalances = [...filteredDuneTokenBalances]
+    if (filteredTokenBalances && filteredTokenBalances.length > 0) {
+      const sortedBalances = [...filteredTokenBalances]
         .sort((a, b) => (b.value_usd ?? 0) - (a.value_usd ?? 0))
         .slice(0, 100)
 
@@ -261,7 +260,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
       )
     }
     return undefined
-  }, [filteredDuneTokenBalances, depositAddressOnly])
+  }, [filteredTokenBalances, depositAddressOnly])
 
   const solverUserTokens = useMemo<Currency[] | undefined>(() => {
     if (!depositAddressOnly) {

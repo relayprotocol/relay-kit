@@ -259,8 +259,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const fromChainWalletVMSupported =
     isChainVmTypeSupported(fromChain?.vmType, supportedWalletVMs) ||
     fromChain?.id === 1337
-  const toChainWalletVMSupported =
-    isChainVmTypeSupported(toChain?.vmType, supportedWalletVMs)
+  const toChainWalletVMSupported = isChainVmTypeSupported(
+    toChain?.vmType,
+    supportedWalletVMs
+  )
 
   const defaultRecipient = useMemo(() => {
     const _linkedWallet = linkedWallets?.find(
@@ -310,7 +312,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     queryKey: fromBalanceQueryKey,
     isLoading: isLoadingFromBalance,
     isError: fromBalanceErrorFetching,
-    isDuneBalance: fromBalanceIsDune,
     hasPendingBalance: fromBalancePending
   } = useCurrencyBalance({
     chain: fromChain,
@@ -325,7 +326,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     value: toBalance,
     queryKey: toBalanceQueryKey,
     isLoading: isLoadingToBalance,
-    isDuneBalance: toBalanceIsDune,
     hasPendingBalance: toBalancePending
   } = useCurrencyBalance({
     chain: toChain,
@@ -337,45 +337,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   })
 
   const invalidateBalanceQueries = useCallback(() => {
-    const invalidatePeriodically = (invalidateFn: () => void) => {
-      let maxRefreshes = 4
-      let refreshCount = 0
-      const timer = setInterval(() => {
-        if (maxRefreshes === refreshCount) {
-          clearInterval(timer)
-          return
-        }
-        refreshCount++
-        invalidateFn()
-      }, 3000)
-    }
-
-    queryClient.invalidateQueries({ queryKey: ['useDuneBalances'] })
-
-    // Dune balances are sometimes stale, because of this we need to aggressively fetch them
-    // for a predetermined period to make sure we get back a fresh response
-    if (fromBalanceIsDune) {
-      invalidatePeriodically(() => {
-        queryClient.invalidateQueries({ queryKey: fromBalanceQueryKey })
-      })
-    } else {
-      queryClient.invalidateQueries({ queryKey: fromBalanceQueryKey })
-    }
-    if (toBalanceIsDune) {
-      invalidatePeriodically(() => {
-        queryClient.invalidateQueries({ queryKey: toBalanceQueryKey })
-      })
-    } else {
-      queryClient.invalidateQueries({ queryKey: toBalanceQueryKey })
-    }
-  }, [
-    queryClient,
-    fromBalanceQueryKey,
-    toBalanceQueryKey,
-    toBalanceIsDune,
-    fromBalanceIsDune,
-    address
-  ])
+    queryClient.invalidateQueries({ queryKey: ['useCodexBalances'] })
+    queryClient.invalidateQueries({ queryKey: fromBalanceQueryKey })
+    queryClient.invalidateQueries({ queryKey: toBalanceQueryKey })
+  }, [queryClient, fromBalanceQueryKey, toBalanceQueryKey, address])
   const { data: capabilities } = useCapabilities({
     query: {
       enabled:

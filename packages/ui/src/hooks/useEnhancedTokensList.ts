@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { BalanceMap } from './useDuneBalances'
+import type { BalanceMap } from './useCodexBalances.js'
 import { type Currency } from '@relayprotocol/relay-kit-hooks'
 import { useInternalRelayChains } from '../hooks/index.js'
 import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
