@@ -36,7 +36,7 @@ const ChainIcon: FC<Props> = ({
   const iconUrl =
     square && icon ? icon.replace('/icons/', '/icons/square/') : icon
 
-  return iconUrl && erroredSrc !== iconUrl ? (
+  return iconUrl ? (
     <div
       className={cn('relay:flex relay:shrink-0', className)}
       style={{
@@ -45,7 +45,7 @@ const ChainIcon: FC<Props> = ({
         borderRadius: borderRadius
       }}
     >
-      {iconUrl ? (
+      {iconUrl && erroredSrc !== iconUrl ? (
         <img
           src={iconUrl}
           alt={`Chain #${chainId}`}
