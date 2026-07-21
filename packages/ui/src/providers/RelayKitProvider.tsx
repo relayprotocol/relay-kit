@@ -1,6 +1,13 @@
-import { createContext, useCallback, useContext, useMemo } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo
+} from 'react'
 import type { FC, ReactElement, ReactNode } from 'react'
 import { RelayClientProvider } from './RelayClientProvider.js'
+import { isRelayApiUrl, MAINNET_RELAY_API } from '@relayprotocol/relay-sdk'
 import type { RelayClientOptions, paths } from '@relayprotocol/relay-sdk'
 import type { RelayKitTheme } from '../themes/index.js'
 import { generateCssVars } from '../utils/theme.js'
@@ -29,6 +36,19 @@ export type HapticEventType =
   | 'warning'
 
 type RelayKitProviderOptions = {
+  /**
+   * Silences the client-side API key warnings shown when `baseApiUrl` points
+   * directly at the Relay API instead of a proxy.
+   *
+   * This only silences the warnings — it does not change behavior. A proxy is
+   * the only supported configuration: the requests hooks never send
+   * `x-api-key` from the browser, so `GET /requests/v3` requires `baseApiUrl`
+   * to point at your backend proxy (which injects the key server-side). Setting
+   * an `apiKey` alongside a Relay `baseApiUrl` also exposes that key via other
+   * SDK calls (e.g. quotes). Only set this to `true` if you accept that
+   * exposure (e.g. a public, rate-limited key).
+   */
+  acknowledgeApiKeyExposure?: boolean
   /**
    * The name of the application
    */
@@ -72,11 +92,6 @@ type RelayKitProviderOptions = {
     height?: number | string
     fill?: string
   }) => ReactElement
-  /**
-   * The secure base url for the relay api, if omitted the default will be used. Override this config to protect your api key via a proxy.
-   * Currently only relevant for the quote api in the SwapWidget
-   */
-  secureBaseUrl?: string
   /**
    * Optional callback for haptic feedback on UI interactions.
    * Relay Kit does not bundle any haptics library — integrators provide their own implementation.
@@ -217,11 +232,43 @@ export const themeOverrides: ThemeOverridesMap = {
   }
 }
 
+// Tracks base URLs we've already warned about so the message logs once, not on
+// every mount/render (incl. React StrictMode double-invocation).
+const warnedApiKeyExposure = new Set<string>()
+
 export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
   children,
   options,
   theme
 }: RelayKitProviderProps) {
+  // Warn when the Relay API is called directly instead of through a proxy.
+  // GET /requests/v3 requires an API key, which must not be shipped to the
+  // browser — integrators should proxy Relay API calls through their own
+  // backend and point `baseApiUrl` at it. Runs client-side only (useEffect) and
+  // re-checks only when the relevant options change.
+  useEffect(() => {
+    if (options.acknowledgeApiKeyExposure) return
+    const baseApiUrl = options.baseApiUrl ?? MAINNET_RELAY_API
+    // A proxy setup uses a non-Relay baseApiUrl, which is the desired state.
+    if (!isRelayApiUrl(baseApiUrl)) return
+    if (warnedApiKeyExposure.has(baseApiUrl)) return
+    warnedApiKeyExposure.add(baseApiUrl)
+
+    if (options.apiKey) {
+      console.error(
+        '[RelayKit] Your Relay API key is being sent from the browser because `baseApiUrl` points directly at the Relay API. ' +
+          'Proxy Relay API calls through your own backend that injects the `x-api-key` header, and set `baseApiUrl` to that proxy. ' +
+          'Pass `acknowledgeApiKeyExposure: true` to silence this.'
+      )
+    } else {
+      console.warn(
+        '[RelayKit] `baseApiUrl` points directly at the Relay API with no proxy. ' +
+          'GET /requests/v3 requires an API key and will fail without one — set `baseApiUrl` to a proxy on your backend that injects the `x-api-key` header. ' +
+          'Pass `acknowledgeApiKeyExposure: true` to silence this.'
+      )
+    }
+  }, [options.acknowledgeApiKeyExposure, options.baseApiUrl, options.apiKey])
+
   const providerOptions = useMemo(
     () => ({
       appName: options.appName,
@@ -231,7 +278,6 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
       privateChainIds: options.privateChainIds,
       themeScheme: options.themeScheme,
       loader: options.loader,
-      secureBaseUrl: options.secureBaseUrl,
       onHapticEvent: options.onHapticEvent
     }),
     [options]

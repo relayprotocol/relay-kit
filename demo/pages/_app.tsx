@@ -16,10 +16,31 @@ import {
 
 const DEV_RELAY_API = 'https://api.dev.relay.link'
 
+// Direct upstream URL — used server-side (getInitialProps) where a relative
+// proxy path can't be resolved into an absolute URL.
 const resolveRelayApi = (api: unknown): string => {
   if (api === 'testnets') return TESTNET_RELAY_API
   if (api === 'mainnets-dev') return DEV_RELAY_API
   return MAINNET_RELAY_API
+}
+
+// Client-side base URL — routes through our server-side proxy
+// (`pages/api/relay/[...path]`) so the x-api-key required by authenticated
+// endpoints (e.g. /requests/v3) is injected server-side and never shipped to
+// the client. The env segment maps back to the correct upstream in the proxy.
+//
+// Returned as an absolute URL: most SDK fetchers build `new URL(baseApiUrl +
+// path)` without an origin base, so a relative path would fail to parse.
+const resolveRelayProxy = (api: unknown): string => {
+  const path =
+    api === 'testnets'
+      ? '/api/relay/testnets'
+      : api === 'mainnets-dev'
+        ? '/api/relay/mainnets-dev'
+        : '/api/relay/mainnets'
+  return typeof window !== 'undefined'
+    ? `${window.location.origin}${path}`
+    : path
 }
 import { configureViemChain } from '@relayprotocol/relay-sdk/chain-utils'
 import { ThemeProvider } from 'next-themes'
@@ -86,7 +107,7 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
   const router = useRouter()
 
   useEffect(() => {
-    const newApi = resolveRelayApi(router.query.api)
+    const newApi = resolveRelayProxy(router.query.api)
     if (relayApi !== newApi) {
       setRelayApi(newApi)
     }

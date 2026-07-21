@@ -1,5 +1,4 @@
 import { NextPage } from 'next'
-import { MAINNET_RELAY_API } from '@relayprotocol/relay-sdk'
 
 import { useRequests } from '@relayprotocol/relay-kit-hooks'
 import { useState } from 'react'
@@ -20,7 +19,9 @@ const UseRequests: NextPage = () => {
       limit,
       user
     },
-    MAINNET_RELAY_API
+    // Routes through the demo's server-side proxy so the required x-api-key is
+    // injected. See pages/api/relay/[...path].ts.
+    '/api/relay/mainnets'
   )
 
   return (

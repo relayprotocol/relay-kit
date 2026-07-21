@@ -13,12 +13,10 @@ import {
 import fetcher from '../fetcher.js'
 
 export type UserTransactionQuery =
-  paths['/requests/v2']['get']['parameters']['query'] & {
-    id?: string
-  }
+  paths['/requests/v3']['get']['parameters']['query']
 
 export type UserTransactionsResponse =
-  paths['/requests/v2']['get']['responses']['200']['content']['application/json']
+  paths['/requests/v3']['get']['responses']['200']['content']['application/json']
 
 type InfiniteQueryType = typeof useInfiniteQuery<
   UserTransactionsResponse,
@@ -29,6 +27,9 @@ type InfiniteQueryType = typeof useInfiniteQuery<
 >
 type QueryOptions = Parameters<InfiniteQueryType>['0']
 
+// NOTE: GET /requests/v3 requires a Relay API key (x-api-key). These hooks run
+// client-side, so the key is NOT sent from here — point `baseApiUrl` at a proxy
+// that injects the `x-api-key` header server-side. See the package README.
 export const queryRequests = function (
   baseApiUrl: string = MAINNET_RELAY_API,
   options?: UserTransactionQuery | false,
@@ -37,7 +38,7 @@ export const queryRequests = function (
 ): Promise<UserTransactionsResponse> {
   const baseUrl =
     typeof window !== 'undefined' ? window.location.origin : undefined
-  const url = new URL(`${baseApiUrl}/requests/v2`, baseUrl)
+  const url = new URL(`${baseApiUrl}/requests/v3`, baseUrl)
 
   let query: UserTransactionQuery = { ...options }
 
