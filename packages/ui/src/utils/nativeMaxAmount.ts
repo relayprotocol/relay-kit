@@ -89,7 +89,8 @@ export const calculateEvmNativeGasBuffer = async (
  * @returns The calculated fee buffer amount (in lamports for Solana, Wei for Eclipse) as a bigint, or a fallback buffer if estimation fails.
  */
 export const calculateSvmNativeFeeBuffer = async (
-  chainId: number
+  chainId: number,
+  baseApiUrl?: string
 ): Promise<bigint> => {
   const isEclipseChain = chainId === 9286185
   const multiplier = isEclipseChain
@@ -106,7 +107,7 @@ export const calculateSvmNativeFeeBuffer = async (
       originChainId: chainId
     } as const
 
-    const resp = await queryRequests(MAINNET_RELAY_API, queryOptions)
+    const resp = await queryRequests(baseApiUrl ?? MAINNET_RELAY_API, queryOptions)
 
     if (!resp || !Array.isArray(resp.requests) || resp.requests.length === 0) {
       console.warn('No valid fees found in response. Using fallback buffer.')
@@ -159,7 +160,8 @@ export const getFeeBufferAmount = async (
   vmType: ChainVM | undefined | null,
   chainId: number | undefined | null,
   balance: bigint,
-  publicClient: PublicClient | null
+  publicClient: PublicClient | null,
+  baseApiUrl?: string
 ): Promise<bigint> => {
   const cacheKey = `${vmType}FeeBuffer:${chainId}`
   const cachedBufferStr = getCacheEntry(cacheKey)
@@ -187,7 +189,7 @@ export const getFeeBufferAmount = async (
     const fallbackBuffer = isEclipseChain
       ? ECLIPSE_DEFAULT_FEE_WEI * ECLIPSE_FEE_BUFFER_MULTIPLIER
       : SOLANA_DEFAULT_FEE_LAMPORTS * SOLANA_FEE_BUFFER_MULTIPLIER
-    calculationPromise = calculateSvmNativeFeeBuffer(chainId!).catch(
+    calculationPromise = calculateSvmNativeFeeBuffer(chainId!, baseApiUrl).catch(
       (error) => {
         console.error(
           `Failed to calculate SVM fee buffer for chain ${chainId}:`,

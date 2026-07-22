@@ -13,7 +13,7 @@ permissions:
 jobs:
   docs-drift-check:
     if: github.event.pull_request.draft == false
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
@@ -60,7 +60,7 @@ jobs:
       - name: Draft docs update
         if: steps.diff-check.outputs.skip != 'true'
         id: drift-check
-        uses: anthropics/claude-code-action@fad22eb3fa582b7357fc0ea48af6645851b884fd # v1
+        uses: anthropics/claude-code-action@1298632ce7736903d02a1435002705aa2a594a6c # v1
         with:
           github_token: ${{ github.token }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

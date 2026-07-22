@@ -75,7 +75,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
       transaction.data.outTxs.length > 0
     ) {
       fillTx = {
-        txHash: transaction.data.outTxs[0].hash as Address,
+        txHash: transaction.data.outTxs[0].txHash as Address,
         chainId: transaction.data.outTxs[0].chainId as number
       }
     }
@@ -104,7 +104,7 @@ export const ErrorStep: FC<ErrorStepProps> = ({
   const isWithdrawable = Boolean(transaction?.protocol?.isWithdrawable)
   const depositOrigin = transaction?.protocol?.deposit?.origin
   const inTx = transaction?.data?.inTxs?.[0]
-  const withdrawTxHash = depositOrigin?.transactionId ?? inTx?.hash
+  const withdrawTxHash = depositOrigin?.transactionId ?? inTx?.txHash
   const withdrawChainId = depositOrigin?.chainId ?? inTx?.chainId
   const showWithdrawLink =
     !isRefund && isWithdrawable && withdrawTxHash && withdrawChainId

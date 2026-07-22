@@ -4,7 +4,7 @@ import Anchor from '../primitives/Anchor.js'
 type RefundReasonProps = {
   reasonCode: NonNullable<
     NonNullable<
-      paths['/requests/v2']['get']['responses']['200']['content']['application/json']['requests']
+      paths['/requests/v3']['get']['responses']['200']['content']['application/json']['requests']
     >[0]['data']
   >['failReason']
 }

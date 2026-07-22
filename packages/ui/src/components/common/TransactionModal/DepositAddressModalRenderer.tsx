@@ -235,16 +235,12 @@ export const DepositAddressModalRenderer: FC<Props> = ({
     {
       enabled: depositAddress !== undefined && open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending', 'depositing']
-
-        if (
-          !query.state.data?.status ||
-          (depositAddress &&
-            observableStates.includes(query.state.data?.status))
-        ) {
-          return 1000
-        }
-        return 0
+        // Keep polling until the request reaches a terminal state. Non-terminal
+        // states (waiting, pending, depositing, submitted) and an unknown
+        // status all continue polling.
+        const terminalStates = ['success', 'failure', 'refund']
+        const status = query.state.data?.status
+        return status && terminalStates.includes(status) ? 0 : 1000
       }
     }
   )
@@ -284,7 +280,11 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       }
       setProgressStep(TransactionProgressStep.Success)
       invalidateBalanceQueries()
-    } else if (executionStatus?.status === 'pending' || executionStatus?.status === 'depositing') {
+    } else if (
+      executionStatus?.status === 'pending' ||
+      executionStatus?.status === 'depositing' ||
+      executionStatus?.status === 'submitted'
+    ) {
       const timeEstimateMs =
         ((quote?.details?.timeEstimate ?? 0) +
           (fromChain && fromChain.id === bitcoin.id ? 600 : 0)) *
@@ -329,8 +329,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       progressStep === TransactionProgressStep.Error) &&
       allTxHashes[0]
       ? {
-          user: address,
-          hash: allTxHashes[0]?.txHash
+          term: allTxHashes[0]?.txHash
         }
       : undefined,
     relayClient?.baseApiUrl,

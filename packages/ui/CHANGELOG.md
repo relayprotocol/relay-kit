@@ -1,5 +1,41 @@
 # @reservoir0x/relay-kit-ui
 
+## 10.0.0
+
+### Major Changes
+
+- 07dda45: Migrate the Requests API from v2 to v3 (breaking).
+
+  - `useRequests` / `queryRequests` and `useDepositAddressStatus` now call `GET /requests/v3` and return the v3 response shape.
+  - `GET /requests/v3` requires a Relay API key (`x-api-key`). Since these hooks run client-side, the key is not sent from Relay Kit — you must point `baseApiUrl` at a proxy that injects `x-api-key` server-side. This is now required to use the UI kit. See the package README.
+  - Response shape changes handled across the SDK/hooks/UI: `inTxs[].hash`/`outTxs[].hash` → `txHash`; `data.metadata.currencyIn/currencyOut/currencyGasTopup` removed — currencies for display are now derived from `data.route` (origin `inputCurrency` / destination `outputCurrency`, with `actual` → `quoted` and same-chain fallbacks); `failReason`/`refundFailReason` are `null` instead of `"N/A"`; new `submitted` status.
+  - `hash` request filter removed; lookups by transaction hash now use the unified `term` search.
+  - `RelayKitProvider` now warns (client-side) when `baseApiUrl` points directly at the Relay API instead of a proxy: a `console.error` if an `apiKey` is also set (it would be exposed in the browser), otherwise a `console.warn` that `/requests/v3` will fail without a proxy. Suppress with `acknowledgeApiKeyExposure: true`.
+  - **Removed** the `secureBaseUrl` option from `RelayKitProvider` and the `useSecureBaseUrl` prop from `SwapWidget`. All Relay API traffic now flows through the single `baseApiUrl`, which must be a proxy — the proxy is responsible for any gas-sponsorship logic (and injecting `x-api-key`) server-side.
+
+### Patch Changes
+
+- b4a3f7c: fix: update wallet rejection errors in swap widget
+- Updated dependencies [07dda45]
+  - @relayprotocol/relay-kit-hooks@4.0.0
+  - @relayprotocol/relay-sdk@7.0.0
+
+## 9.1.4
+
+### Patch Changes
+
+- a29e409: Block base wallet from receiving / sending on rh chain
+
+## 9.1.3
+
+### Patch Changes
+
+- 4ac9782: Hide non-deposit-address chains (incl. TON) from origin selector unless VM has wallet support
+- 0020895: Embed sourcesContent in published sourcemaps so they resolve without the unpublished src directory
+- Updated dependencies [0020895]
+  - @relayprotocol/relay-sdk@6.1.3
+  - @relayprotocol/relay-kit-hooks@3.0.24
+
 ## 9.1.2
 
 ### Patch Changes

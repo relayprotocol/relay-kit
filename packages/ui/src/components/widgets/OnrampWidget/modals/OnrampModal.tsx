@@ -16,7 +16,10 @@ import {
   useRequests,
   useTokenPrice
 } from '@relayprotocol/relay-kit-hooks'
-import { extractDepositRequestId } from '../../../../utils/relayTransaction.js'
+import {
+  extractDepositRequestId,
+  getRequestCurrencies
+} from '../../../../utils/relayTransaction.js'
 import { parseUnits, zeroAddress } from 'viem'
 import {
   appendMetadataToRequest,
@@ -234,16 +237,12 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         step === OnrampStep.Processing &&
         open,
       refetchInterval(query) {
-        const observableStates = ['waiting', 'pending']
-
-        if (
-          !query.state.data?.status ||
-          (depositAddress &&
-            observableStates.includes(query.state.data?.status))
-        ) {
-          return 1000
-        }
-        return 0
+        // Keep polling until the request reaches a terminal state. Non-terminal
+        // states (waiting, pending, depositing, submitted) and an unknown
+        // status all continue polling.
+        const terminalStates = ['success', 'failure', 'refund']
+        const status = query.state.data?.status
+        return status && terminalStates.includes(status) ? 0 : 1000
       }
     }
   )
@@ -257,8 +256,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   const { data: transactions, isLoading: isLoadingTransaction } = useRequests(
     step === OnrampStep.Success && fillTxHash
       ? {
-          user: recipient,
-          hash: fillTxHash
+          fillTxHash
         }
       : undefined,
     client?.baseApiUrl,
@@ -272,12 +270,12 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   )
 
   const transaction = transactions && transactions[0] ? transactions[0] : null
-  const toAmountFormatted = transaction?.data?.metadata?.currencyOut
-    ?.amountFormatted
+  const { currencyOut: requestCurrencyOut } = getRequestCurrencies(transaction)
+  const toAmountFormatted = requestCurrencyOut?.amountFormatted
     ? (formatBN(
-        +transaction.data.metadata.currencyOut.amountFormatted,
+        +requestCurrencyOut.amountFormatted,
         5,
-        transaction?.data?.metadata?.currencyOut?.currency?.decimals ?? 18
+        requestCurrencyOut.currency?.decimals ?? 18
       ) ?? undefined)
     : amountToTokenFormatted
 
@@ -291,7 +289,9 @@ export const OnrampModal: FC<OnrampModalProps> = ({
 
   useEffect(() => {
     if (
-      executionStatus?.status === 'pending' &&
+      (executionStatus?.status === 'pending' ||
+        executionStatus?.status === 'depositing' ||
+        executionStatus?.status === 'submitted') &&
       (step !== OnrampStep.Processing ||
         processingStep !== OnrampProcessingStep.Relaying)
     ) {

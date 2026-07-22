@@ -1,6 +1,6 @@
 {
   "name": "@relayprotocol/relay-kit-hooks",
-  "version": "3.0.23",
+  "version": "4.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/relayprotocol/relay-kit.git",

@@ -76,7 +76,6 @@ type SwapWidgetRendererProps = {
   onConnectWallet?: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
-  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
 }
 
 export type ChildrenProps = {
@@ -156,7 +155,6 @@ export type ChildrenProps = {
   isLoadingFromTokenPrice: boolean
   toTokenPriceData: ReturnType<typeof useTokenPrice>['data']
   isLoadingToTokenPrice: boolean
-  useSecureBaseUrl?: (parameters: Parameters<typeof useQuote>['2']) => boolean
 }
 
 // shared query options for useTokenPrice
@@ -183,7 +181,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   multiWalletSupportEnabled = false,
   linkedWallets,
   supportedWalletVMs,
-  useSecureBaseUrl,
   children,
   onAnalyticEvent,
   onSwapError
@@ -629,10 +626,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         status_code: e?.response?.status ?? e?.status ?? ''
       })
     },
-    undefined,
-    useSecureBaseUrl?.(quoteParameters)
-      ? providerOptionsContext?.secureBaseUrl
-      : undefined
+    undefined
   )
 
   const invalidateQuoteQuery = useCallback(() => {
@@ -796,8 +790,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       if (
         error &&
         ((typeof error.message === 'string' &&
-          error.message.includes('rejected')) ||
-          (typeof error === 'string' && error.includes('rejected')) ||
+          error.message.toLowerCase().includes('reject')) ||
+          (typeof error === 'string' &&
+            error.toLowerCase().includes('reject')) ||
           (typeof error === 'string' && error.includes('Approval Denied')) ||
           (typeof error === 'string' && error.includes('denied transaction')) ||
           (typeof error.message === 'string' &&
