@@ -148,6 +148,7 @@ const WidgetContainer: FC<WidgetContainerProps> = ({
 
       <CustomAddressModal
         open={addressModalOpen}
+        toToken={toToken}
         toAddress={customToAddress}
         toChain={toChain}
         isConnected={wallet !== undefined || isConnected ? true : false}

@@ -8,6 +8,7 @@ import {
   useDisconnected,
   usePreviousValueChange,
   useIsWalletCompatible,
+  useKnownTokenContract,
   useFallbackState,
   useGasTopUpRequired,
   useExplicitDeposit,
@@ -40,6 +41,7 @@ import type { DebouncedState } from 'usehooks-ts'
 import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
 import {
+  addressesEqual,
   addressWithFallback,
   isValidAddress,
   findSupportedWallet,
@@ -416,15 +418,35 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     connectorKeyOverrides
   )
 
-  const isValidToAddress = isValidAddress(
-    toChain?.vmType,
-    recipient ?? '',
-    toChain?.id
+  // Never allow the destination token's contract address as the recipient
+  const recipientIsDestinationToken = Boolean(
+    toChain &&
+      toToken &&
+      toToken.chainId === toChain.id &&
+      addressesEqual(toChain.vmType ?? 'evm', recipient, toToken.address)
   )
+
+  // Check custom recipients against the destination chain's known currencies
+  const { isKnownTokenContract: recipientMatchesKnownToken } =
+    useKnownTokenContract(
+      toChain,
+      customToAddress,
+      customToAddress !== undefined && !recipientIsDestinationToken
+    )
+
+  // Only confirmed matches invalidate the recipient
+  const recipientIsKnownTokenContract = recipientMatchesKnownToken
+
+  const isValidToAddress =
+    !recipientIsDestinationToken &&
+    !recipientIsKnownTokenContract &&
+    isValidAddress(toChain?.vmType, recipient ?? '', toChain?.id)
 
   const toAddressWithFallback = addressWithFallback(
     toChain?.vmType,
-    recipient,
+    recipientIsDestinationToken || recipientIsKnownTokenContract
+      ? undefined
+      : recipient,
     toChain?.id
   )
 
@@ -895,6 +917,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         throw new Error('Missing a wallet')
       }
 
+      if (recipientMatchesKnownToken) {
+        throw new Error('Recipient address is a token contract, not a wallet')
+      }
+
       setSteps(quote?.steps as Execute['steps'])
       setQuoteInProgress(quote as Execute)
       setTransactionModalOpen(true)
@@ -1061,7 +1087,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     setQuoteInProgress,
     invalidateBalanceQueries,
     linkedWallet,
-    abortController
+    abortController,
+    recipientMatchesKnownToken
   ])
 
   return (
