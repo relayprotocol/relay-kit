@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-hooks
 
+## 4.0.1
+
+### Patch Changes
+
+- 23e4ecf: fix: block token contract addresses in recipient field
+
 ## 4.0.0
 
 ### Major Changes

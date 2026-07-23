@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 10.0.1
+
+### Patch Changes
+
+- 628ad74: Gracefully handle broken token/chain logo images. ChainTokenIcon now falls back to the token symbol avatar and ChainIcon hides itself when the logo fails to load, instead of rendering a broken-image placeholder.
+- 23e4ecf: fix: block token contract addresses in recipient field
+- Updated dependencies [23e4ecf]
+  - @relayprotocol/relay-kit-hooks@4.0.1
+
 ## 10.0.0
 
 ### Major Changes
