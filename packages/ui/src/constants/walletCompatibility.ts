@@ -9,7 +9,8 @@ export const WalletChainRestricted: Record<string, number[]> = {
   ],
   abstract: [2741],
   ronin: [1, 56, 137, 42161, 8453, 2020],
-  porto: [8453, 42161, 56, 42220, 1, 10, 137, 80094]
+  porto: [8453, 42161, 56, 42220, 1, 10, 137, 80094],
+  robinhood: [1, 10, 137, 4663, 8453, 42161, 8253038, 792703809]
 }
 
 export const WalletChainIncompatible: Record<string, number[]> = {
@@ -23,6 +24,7 @@ export const NormalizedWalletName: Record<string, string> = {
   phantombtc: 'phantom',
   magicedensol: 'magiceden',
   roninwallet: 'ronin',
+  robinhoodwallet: 'robinhood',
   portoevm: 'porto',
   trusttron: 'trust',
   coinbasewalletevm: 'coinbase',
