@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 10.0.1
+
+### Patch Changes
+
+- f1a9fd8: Complete the RefundReason error mapping. Every failReason code in the API schema now resolves to a specific user-facing explanation instead of falling back to the generic unknown-issue message, matching the copy used on relay.link and the developer dashboard.
+- 628ad74: Gracefully handle broken token/chain logo images. ChainTokenIcon now falls back to the token symbol avatar and ChainIcon hides itself when the logo fails to load, instead of rendering a broken-image placeholder.
+- 23e4ecf: fix: block token contract addresses in recipient field
+- Updated dependencies [23e4ecf]
+  - @relayprotocol/relay-kit-hooks@4.0.1
+
 ## 10.0.0
 
 ### Major Changes
