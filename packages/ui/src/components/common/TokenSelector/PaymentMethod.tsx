@@ -189,21 +189,17 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
 
   const {
     balanceMap: tokenBalances,
-    data: duneTokens,
+    data: walletTokens,
     isLoading: isLoadingBalances
-  } = useMultiWalletBalances(
-    linkedWallets,
-    address,
-    relayClient?.baseApiUrl?.includes('testnet') ? 'testnet' : 'mainnet'
-  )
+  } = useMultiWalletBalances(linkedWallets, address)
 
-  const filteredDuneTokenBalances = useMemo(() => {
-    return duneTokens?.balances
-  }, [duneTokens?.balances])
+  const filteredTokenBalances = useMemo(() => {
+    return walletTokens?.balances
+  }, [walletTokens?.balances])
 
   const userTokensQuery = useMemo(() => {
-    if (filteredDuneTokenBalances && filteredDuneTokenBalances.length > 0) {
-      const sortedBalances = [...filteredDuneTokenBalances]
+    if (filteredTokenBalances && filteredTokenBalances.length > 0) {
+      const sortedBalances = [...filteredTokenBalances]
         .sort((a, b) => {
           const aValue = a.value_usd || 0
           const bValue = b.value_usd || 0
@@ -216,7 +212,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
       )
     }
     return undefined
-  }, [filteredDuneTokenBalances])
+  }, [filteredTokenBalances])
 
   const { data: userTokens, isLoading: isLoadingUserTokens } = useTokenList(
     relayClient?.baseApiUrl,
@@ -229,7 +225,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
         }
       : undefined,
     {
-      enabled: !!filteredDuneTokenBalances
+      enabled: !!filteredTokenBalances
     }
   )
 
@@ -516,9 +512,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
         </Button>
       </Flex>
 
-      <Flex
-        className="relay:flex-1 relay:gap-3 relay:overflow-hidden relay:min-w-0 relay:max-w-full"
-      >
+      <Flex className="relay:flex-1 relay:gap-3 relay:overflow-hidden relay:min-w-0 relay:max-w-full">
         {/* Main Token Content */}
         <AccessibleList
           onSelect={(value) => {
@@ -648,7 +642,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
             ) : (
               <Flex direction="column" className="relay:gap-3">
                 {(() => {
-                  const hasLoadedBalanceData = Boolean(duneTokens)
+                  const hasLoadedBalanceData = Boolean(walletTokens)
                   const userTokensReady = !isLoadingUserTokens
                   const isWaitingForBalanceData =
                     address &&
@@ -761,9 +755,7 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
         <>
           <div onClick={() => onOpenChange(true)}>{trigger}</div>
           {open && (
-            <Box
-              className="relay:absolute relay:top-0 relay:left-0 relay:right-0 relay:bottom-0 relay:z-[100] relay:bg-[var(--relay-colors-widget-background)] relay:flex relay:flex-col relay:overflow-hidden"
-            >
+            <Box className="relay:absolute relay:top-0 relay:left-0 relay:right-0 relay:bottom-0 relay:z-[100] relay:bg-[var(--relay-colors-widget-background)] relay:flex relay:flex-col relay:overflow-hidden">
               {paymentMethodContent}
             </Box>
           )}
