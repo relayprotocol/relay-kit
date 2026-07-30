@@ -25,6 +25,7 @@ export const NormalizedWalletName: Record<string, string> = {
   magicedensol: 'magiceden',
   roninwallet: 'ronin',
   robinhoodwallet: 'robinhood',
+  uniswapwallet: 'uniswap',
   portoevm: 'porto',
   trusttron: 'trust',
   coinbasewalletevm: 'coinbase',
