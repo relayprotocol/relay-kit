@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 11.0.1
+
+### Patch Changes
+
+- 4ed6905: Normalize Uniswap Wallet connector name so its chain restrictions apply
+
 ## 11.0.0
 
 ### Major Changes
