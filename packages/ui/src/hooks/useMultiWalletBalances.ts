@@ -1,6 +1,14 @@
 import { useMemo, useContext } from 'react'
 import { useQueries } from '@tanstack/react-query'
-import { type BalanceMap, type DuneBalanceResponse } from './useDuneBalances.js'
+import {
+  CODEX_SVM_NETWORK_ID,
+  fetchCodexBalances,
+  getEvmNetworkIds,
+  getSvmNativeChains,
+  type BalanceMap,
+  type WalletBalanceResponse
+} from './useCodexBalances.js'
+import useRelayClient from './useRelayClient.js'
 import { isDeadAddress } from '@relayprotocol/relay-sdk'
 import { ProviderOptionsContext } from '../providers/RelayKitProvider.js'
 import { isAddress } from 'viem'
@@ -13,8 +21,7 @@ import type { LinkedWallet } from '../types/index.js'
  */
 export const useMultiWalletBalances = (
   linkedWallets?: LinkedWallet[],
-  primaryAddress?: string,
-  evmChainIds: 'mainnet' | 'testnet' = 'mainnet'
+  primaryAddress?: string
 ) => {
   const walletAddresses = useMemo(() => {
     const addresses = new Set<string>()
@@ -45,64 +52,37 @@ export const useMultiWalletBalances = (
   }, [primaryAddress, linkedWallets])
 
   const providerOptions = useContext(ProviderOptionsContext)
+  const relayClient = useRelayClient()
 
   const balanceQueries = useQueries({
     queries: walletAddresses.map((address) => {
       const isEvmAddress = isAddress(address)
       const isSvmAddress = isSolanaAddress(address)
-
-      let url = `${
-        providerOptions?.duneConfig?.apiBaseUrl ?? 'https://api.sim.dune.com'
-      }/v1/evm/balances/${address.toLowerCase()}?chain_ids=${evmChainIds}&exclude_spam_tokens=true`
-
-      if (isSvmAddress) {
-        url = `${
-          providerOptions?.duneConfig?.apiBaseUrl ?? 'https://api.sim.dune.com'
-        }/beta/svm/balances/${address}?chain_ids=all&exclude_spam_tokens=true`
-      }
+      const networks = isSvmAddress
+        ? [CODEX_SVM_NETWORK_ID]
+        : getEvmNetworkIds(relayClient?.chains)
 
       return {
-        queryKey: ['useDuneBalances', address],
-        queryFn: async (): Promise<DuneBalanceResponse> => {
+        queryKey: ['useCodexBalances', address],
+        queryFn: async (): Promise<WalletBalanceResponse> => {
           if (!isSvmAddress && !isEvmAddress) {
             return null
           }
 
-          const response = await fetch(url, {
-            headers: providerOptions?.duneConfig?.apiKey
-              ? {
-                  'X-Sim-Api-Key': providerOptions.duneConfig.apiKey
-                }
-              : {}
-          })
-
-          if (!response.ok) {
-            throw new Error(`Failed to fetch balance for ${address}`)
-          }
-
-          const data = await response.json()
-
-          if (data?.balances) {
-            // Filter out invalid amounts like useDuneBalances does
-            const validBalances = data.balances.filter((balance: any) => {
-              try {
-                BigInt(balance.amount)
-                return true
-              } catch (e) {
-                return false
-              }
-            })
-
-            return {
-              ...data,
-              balances: validBalances
-            } as DuneBalanceResponse
-          }
-
-          return data as DuneBalanceResponse
+          return fetchCodexBalances(
+            address,
+            providerOptions?.codexConfig ?? {},
+            networks,
+            isSvmAddress ? getSvmNativeChains(relayClient?.chains) : undefined
+          )
         },
         enabled: Boolean(
-          address && address.trim() !== '' && (isEvmAddress || isSvmAddress)
+          address &&
+            address.trim() !== '' &&
+            (isEvmAddress || isSvmAddress) &&
+            networks.length > 0 &&
+            (providerOptions?.codexConfig?.apiKey !== undefined ||
+              providerOptions?.codexConfig?.apiBaseUrl !== undefined)
         ),
         staleTime: 60000,
         gcTime: 60000,
@@ -112,55 +92,54 @@ export const useMultiWalletBalances = (
   })
 
   // Merge all balance data with proper parallelization - no more 5-wallet limit!
-  const { mergedBalanceMap, mergedDuneTokens, isLoadingBalances } =
-    useMemo(() => {
-      const mergedMap: BalanceMap = {}
-      const allBalances: NonNullable<DuneBalanceResponse>['balances'] = []
-      let anyLoading = false
+  const { mergedBalanceMap, mergedTokens, isLoadingBalances } = useMemo(() => {
+    const mergedMap: BalanceMap = {}
+    const allBalances: NonNullable<WalletBalanceResponse>['balances'] = []
+    let anyLoading = false
 
-      balanceQueries.forEach((query) => {
-        if (query.isLoading) anyLoading = true
+    balanceQueries.forEach((query) => {
+      if (query.isLoading) anyLoading = true
 
-        if (query.data?.balances) {
-          const balanceMap: BalanceMap = {}
-          query.data.balances.forEach((balance) => {
-            const key = `${balance.chain_id}:${balance.address.toLowerCase()}`
-            balanceMap[key] = balance
-          })
+      if (query.data?.balances) {
+        const balanceMap: BalanceMap = {}
+        query.data.balances.forEach((balance) => {
+          const key = `${balance.chain_id}:${balance.address.toLowerCase()}`
+          balanceMap[key] = balance
+        })
 
-          Object.entries(balanceMap).forEach(([key, balance]) => {
-            if (mergedMap[key]) {
-              // Token exists in multiple wallets - sum the amounts
-              const existingAmount = BigInt(mergedMap[key].amount)
-              const newAmount = BigInt(balance.amount)
-              const totalAmount = existingAmount + newAmount
+        Object.entries(balanceMap).forEach(([key, balance]) => {
+          if (mergedMap[key]) {
+            // Token exists in multiple wallets - sum the amounts
+            const existingAmount = BigInt(mergedMap[key].amount)
+            const newAmount = BigInt(balance.amount)
+            const totalAmount = existingAmount + newAmount
 
-              mergedMap[key] = {
-                ...balance,
-                amount: totalAmount.toString(),
-                value_usd:
-                  (mergedMap[key].value_usd || 0) + (balance.value_usd || 0)
-              }
-            } else {
-              mergedMap[key] = balance
+            mergedMap[key] = {
+              ...balance,
+              amount: totalAmount.toString(),
+              value_usd:
+                (mergedMap[key].value_usd || 0) + (balance.value_usd || 0)
             }
-          })
+          } else {
+            mergedMap[key] = balance
+          }
+        })
 
-          allBalances.push(...query.data.balances)
-        }
-      })
-
-      return {
-        mergedBalanceMap: mergedMap,
-        mergedDuneTokens:
-          allBalances.length > 0 ? { balances: allBalances } : undefined,
-        isLoadingBalances: anyLoading
+        allBalances.push(...query.data.balances)
       }
-    }, [balanceQueries])
+    })
+
+    return {
+      mergedBalanceMap: mergedMap,
+      mergedTokens:
+        allBalances.length > 0 ? { balances: allBalances } : undefined,
+      isLoadingBalances: anyLoading
+    }
+  }, [balanceQueries])
 
   return {
     balanceMap: mergedBalanceMap,
-    data: mergedDuneTokens,
+    data: mergedTokens,
     isLoading: isLoadingBalances
   }
 }
