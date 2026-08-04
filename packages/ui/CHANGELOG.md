@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 11.0.2
+
+### Patch Changes
+
+- 78bf766: Add Robinhood Chain, Linea, Monad, Soneium, MegaETH, and Tempo to Uniswap Wallet's supported chains
+- Updated dependencies [fb843c4]
+  - @relayprotocol/relay-sdk@7.0.1
+  - @relayprotocol/relay-kit-hooks@4.0.2
+
 ## 11.0.1
 
 ### Patch Changes
