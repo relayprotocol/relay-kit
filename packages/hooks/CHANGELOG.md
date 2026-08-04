@@ -1,5 +1,12 @@
 # @reservoir0x/relay-kit-hooks
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies [fb843c4]
+  - @relayprotocol/relay-sdk@7.0.1
+
 ## 4.0.1
 
 ### Patch Changes

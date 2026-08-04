@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 7.0.1
+
+### Patch Changes
+
+- fb843c4: Sync SDK types
+
 ## 7.0.0
 
 ### Major Changes
