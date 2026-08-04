@@ -8,6 +8,7 @@ export const routes = [
   "/chains/health",
   "/config",
   "/config/v2",
+  "/deposit-addresses/v1",
   "/execute/permits",
   "/quote",
   "/quote/v2",
@@ -46,5 +47,6 @@ export const routes = [
   "/wallets/screen/info",
   "/withdrawals/attest-deposit",
   "/withdrawals/request",
-  "/withdrawals/status"
+  "/withdrawals/status",
+  "/metrics/usage"
 ];
