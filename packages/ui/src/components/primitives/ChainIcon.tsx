@@ -1,4 +1,4 @@
-import { useContext, type FC } from 'react'
+import { useContext, useState, type FC } from 'react'
 import useRelayClient from '../../hooks/useRelayClient.js'
 import { ProviderOptionsContext } from '../../providers/RelayKitProvider.js'
 import { cn } from '../../utils/cn.js'
@@ -20,6 +20,7 @@ const ChainIcon: FC<Props> = ({
   square = true,
   borderRadius = 4
 }) => {
+  const [erroredSrc, setErroredSrc] = useState<string | null>(null)
   const providerOptions = useContext(ProviderOptionsContext)
   const client = useRelayClient()
   const chain = chainId
@@ -44,10 +45,11 @@ const ChainIcon: FC<Props> = ({
         borderRadius: borderRadius
       }}
     >
-      {iconUrl ? (
+      {iconUrl && erroredSrc !== iconUrl ? (
         <img
           src={iconUrl}
           alt={`Chain #${chainId}`}
+          onError={() => setErroredSrc(iconUrl ?? null)}
           style={{
             borderRadius: square ? borderRadius : 0,
             width: '100%',

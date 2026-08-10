@@ -6,7 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   useENSResolver,
   useWalletAddress,
-  useLighterAccount
+  useLighterAccount,
+  useKnownTokenContract
 } from '../../hooks/index.js'
 import { isENSName } from '../../utils/ens.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
@@ -20,7 +21,7 @@ import { AnchorButton } from '../primitives/Anchor.js'
 import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
 import { truncateAddress } from '../../utils/truncate.js'
-import { isValidAddress } from '../../utils/address.js'
+import { addressesEqual, isValidAddress } from '../../utils/address.js'
 import {
   ProviderOptionsContext,
   useHapticEvent
@@ -48,6 +49,7 @@ type Props = {
 
 export const CustomAddressModal: FC<Props> = ({
   open,
+  toToken,
   toAddress,
   toChain,
   linkedWallets,
@@ -148,7 +150,25 @@ export const CustomAddressModal: FC<Props> = ({
     isENSName(input) ? input : ''
   )
 
-  const isLoading = isLoadingENS || isResolvingLighter
+  // Synchronously block the selected destination token's contract address
+  const matchesToToken = Boolean(
+    toToken &&
+      toChain &&
+      toToken.chainId === toChain.id &&
+      addressesEqual(toChain.vmType ?? 'evm', address, toToken.address)
+  )
+
+  // Asynchronously check if the address is a known token contract on the
+  // destination chain
+  const { tokenContract: knownCurrencyMatch, isChecking: isCheckingTokenContract } =
+    useKnownTokenContract(toChain, address, !matchesToToken)
+
+  const knownTokenContract = matchesToToken ? toToken : knownCurrencyMatch
+
+  const isKnownTokenContract = Boolean(knownTokenContract)
+
+  const isLoading =
+    isLoadingENS || isResolvingLighter || isCheckingTokenContract
 
   useEffect(() => {
     if (isLighterChain && isEvmInput) {
@@ -229,7 +249,13 @@ export const CustomAddressModal: FC<Props> = ({
               </div>
             )}
           </Flex>
-          {isLighterError ? (
+          {isKnownTokenContract ? (
+            <Text color="red" style="subtitle2">
+              This address is the contract for{' '}
+              {knownTokenContract?.symbol ?? 'a token'}, not a wallet. To
+              continue, enter a wallet address or use the token selector.
+            </Text>
+          ) : isLighterError ? (
             <Text color="red" style="subtitle2">
               Failed to resolve Lighter address
             </Text>
@@ -321,12 +347,15 @@ export const CustomAddressModal: FC<Props> = ({
                     className="relay:flex relay:items-center relay:gap-[6px] relay:cursor-pointer relay:px-2"
                     onClick={() => {
                       haptic('light')
-                      onConfirmed(address)
-                      onOpenChange(false)
-                      onAnalyticEvent?.(EventNames.ADDRESS_MODAL_CONFIRMED, {
-                        address: address,
-                        context: 'custom_address'
-                      })
+                      // Route recent addresses through input validation
+                      setInput(address)
+                      onAnalyticEvent?.(
+                        EventNames.ADDRESS_MODAL_RECENT_SELECTED,
+                        {
+                          address: address,
+                          context: 'custom_address'
+                        }
+                      )
                     }}
                   >
                     <FontAwesomeIcon
@@ -345,11 +374,17 @@ export const CustomAddressModal: FC<Props> = ({
         <Button
           cta={true}
           disabled={
-            isLoading || !isValidAddress(toChain?.vmType, address, toChain?.id)
+            isLoading ||
+            isKnownTokenContract ||
+            !isValidAddress(toChain?.vmType, address, toChain?.id)
           }
           className="relay:justify-center"
           onClick={() => {
-            if (isValidAddress(toChain?.vmType, address, toChain?.id)) {
+            if (
+              !isKnownTokenContract &&
+              !isCheckingTokenContract &&
+              isValidAddress(toChain?.vmType, address, toChain?.id)
+            ) {
               // Save the address to custom addresses if it's not a connected wallet address
               const isConnectedWallet = availableWallets.some(
                 (wallet) => wallet.address === address

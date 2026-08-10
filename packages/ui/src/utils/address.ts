@@ -16,6 +16,7 @@ import type { RelayKitProviderProps } from '../providers/RelayKitProvider.js'
 import { isTronAddress } from './tron.js'
 import { isTonAddress } from './ton.js'
 import { isLighterAddress } from './lighter.js'
+import { isXrpAddress } from './xrp.js'
 
 export const isWalletVmTypeCompatible = (
   walletVmType?: ChainVM,
@@ -35,7 +36,7 @@ export const isWalletVmTypeCompatible = (
 
 export const isChainVmTypeSupported = (
   chainVmType: ChainVM | undefined,
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
 ) => {
   if (!chainVmType) {
     return true
@@ -46,7 +47,7 @@ export const isChainVmTypeSupported = (
   }
 
   return supportedWalletVMs.includes(
-    chainVmType as Omit<ChainVM, 'hypevm' | 'lvm'>
+    chainVmType as Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>
   )
 }
 
@@ -92,6 +93,8 @@ export const isValidAddress = (
       return isTonAddress(address)
     } else if (vmType === 'lvm') {
       return isLighterAddress(address)
+    } else if (vmType === 'xrpvm') {
+      return isXrpAddress(address)
     }
   }
   return false

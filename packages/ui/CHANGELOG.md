@@ -1,5 +1,74 @@
 # @reservoir0x/relay-kit-ui
 
+## 11.0.2
+
+### Patch Changes
+
+- 78bf766: Add Robinhood Chain, Linea, Monad, Soneium, MegaETH, and Tempo to Uniswap Wallet's supported chains
+- Updated dependencies [fb843c4]
+  - @relayprotocol/relay-sdk@7.0.1
+  - @relayprotocol/relay-kit-hooks@4.0.2
+
+## 11.0.1
+
+### Patch Changes
+
+- 4ed6905: Normalize Uniswap Wallet connector name so its chain restrictions apply
+
+## 11.0.0
+
+### Major Changes
+
+- e426f05: Migrate wallet balance fetching from Dune (sunset) to Codex
+
+  Breaking changes:
+
+  - `duneConfig` provider option removed — use `codexConfig` (`{ apiBaseUrl?, apiKey? }`). The default api base url is `https://graph.codex.io`; override it to proxy requests and protect your api key.
+  - `useDuneBalances` hook removed — use `useCodexBalances(address, queryOptions)`. The mainnet/testnet parameter is gone; balances are fetched from Codex-supported networks and filtered by your configured chains.
+  - `isDuneBalance` removed from `useCurrencyBalance`'s return value.
+  - `useMultiWalletBalances` no longer takes the mainnet/testnet parameter.
+
+  Other changes:
+
+  - New `useSolanaBalance` hook: selected SVM tokens (Solana and Eclipse) now fetch balances directly from the chain's RPC (native via `getBalance`, SPL via `getTokenAccountsByOwner`) instead of an indexer, so post-swap balances are fresh and the aggressive periodic refetch workaround is gone. The internal eclipse-only balance hook is gone; Eclipse flows through the same path.
+  - Native SVM balances (SOL, Eclipse ETH) in the consolidated token selector list are fetched from their RPCs and merged with Codex results, since Codex does not index native SVM balances (nor Eclipse at all). Their USD values come from Codex prices for wrapped SOL / mainnet WETH.
+  - Spam filtering: Codex's `removeScams` plus an `isScam` drop, and a liquidity heuristic replacing Dune's spam scoring — tokens whose pool liquidity is under $1k or below the balance's usd value have their usd value stripped so they can't crowd out real holdings in the token selector (balances still display).
+  - Known loss: Soon balances are gone from the token selector list; Soon is no longer a supported chain.
+
+### Patch Changes
+
+- d8c713c: Restrict Robinhood Wallet to its supported chains
+
+## 10.0.1
+
+### Patch Changes
+
+- f1a9fd8: Complete the RefundReason error mapping. Every failReason code in the API schema now resolves to a specific user-facing explanation instead of falling back to the generic unknown-issue message, matching the copy used on relay.link and the developer dashboard.
+- 628ad74: Gracefully handle broken token/chain logo images. ChainTokenIcon now falls back to the token symbol avatar and ChainIcon hides itself when the logo fails to load, instead of rendering a broken-image placeholder.
+- 23e4ecf: fix: block token contract addresses in recipient field
+- Updated dependencies [23e4ecf]
+  - @relayprotocol/relay-kit-hooks@4.0.1
+
+## 10.0.0
+
+### Major Changes
+
+- 07dda45: Migrate the Requests API from v2 to v3 (breaking).
+
+  - `useRequests` / `queryRequests` and `useDepositAddressStatus` now call `GET /requests/v3` and return the v3 response shape.
+  - `GET /requests/v3` requires a Relay API key (`x-api-key`). Since these hooks run client-side, the key is not sent from Relay Kit — you must point `baseApiUrl` at a proxy that injects `x-api-key` server-side. This is now required to use the UI kit. See the package README.
+  - Response shape changes handled across the SDK/hooks/UI: `inTxs[].hash`/`outTxs[].hash` → `txHash`; `data.metadata.currencyIn/currencyOut/currencyGasTopup` removed — currencies for display are now derived from `data.route` (origin `inputCurrency` / destination `outputCurrency`, with `actual` → `quoted` and same-chain fallbacks); `failReason`/`refundFailReason` are `null` instead of `"N/A"`; new `submitted` status.
+  - `hash` request filter removed; lookups by transaction hash now use the unified `term` search.
+  - `RelayKitProvider` now warns (client-side) when `baseApiUrl` points directly at the Relay API instead of a proxy: a `console.error` if an `apiKey` is also set (it would be exposed in the browser), otherwise a `console.warn` that `/requests/v3` will fail without a proxy. Suppress with `acknowledgeApiKeyExposure: true`.
+  - **Removed** the `secureBaseUrl` option from `RelayKitProvider` and the `useSecureBaseUrl` prop from `SwapWidget`. All Relay API traffic now flows through the single `baseApiUrl`, which must be a proxy — the proxy is responsible for any gas-sponsorship logic (and injecting `x-api-key`) server-side.
+
+### Patch Changes
+
+- b4a3f7c: fix: update wallet rejection errors in swap widget
+- Updated dependencies [07dda45]
+  - @relayprotocol/relay-kit-hooks@4.0.0
+  - @relayprotocol/relay-sdk@7.0.0
+
 ## 9.1.4
 
 ### Patch Changes

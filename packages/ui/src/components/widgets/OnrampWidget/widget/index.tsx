@@ -26,7 +26,7 @@ import {
 
 type BaseOnrampWidgetProps = {
   defaultWalletAddress?: string
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
   moonPayApiKey: string
   moonPayThemeId?: string
   moonPayThemeMode?: 'dark' | 'light'
@@ -560,6 +560,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
             </Button>
             <CustomAddressModal
               open={addressModalOpen}
+              toToken={token}
               toAddress={recipient}
               toChain={toChain}
               isConnected={

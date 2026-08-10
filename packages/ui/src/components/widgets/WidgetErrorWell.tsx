@@ -1,5 +1,5 @@
 import { type Execute } from '@relayprotocol/relay-sdk'
-import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
+import { isDeadAddress } from '@relayprotocol/relay-sdk'
 import { type FC } from 'react'
 import { Box, Flex, Text } from '../primitives/index.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -98,7 +98,6 @@ export const WidgetErrorWell: FC<Props> = ({
     !recipientWalletSupportsChain &&
     recipient &&
     !isDeadAddress(recipient) &&
-    recipient !== tronDeadAddress &&
     toChainWalletVMSupported &&
     (!recipientLinkedWallet || recipientLinkedWallet.vmType === toChainVmType)
   ) {

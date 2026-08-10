@@ -7,5 +7,6 @@ export const UnsupportedDepositAddressChainIds = [
   1996, //sanko
   1514, //story
   660279, //xai
-  224235520 //ton
+  224235520, //ton
+  537724 //xrp
 ]

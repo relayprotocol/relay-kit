@@ -29,6 +29,7 @@ import useTransactionCount from './useTransactionCount.js'
 import useTronBalance from './useTronBalance.js'
 import useLighterAccount from './useLighterAccount.js'
 import useDisplayName from './useDisplayName.js'
+import useKnownTokenContract from './useKnownTokenContract.js'
 
 export {
   useMounted,
@@ -61,5 +62,6 @@ export {
   useTransactionCount,
   useTronBalance,
   useLighterAccount,
-  useDisplayName
+  useDisplayName,
+  useKnownTokenContract
 }
