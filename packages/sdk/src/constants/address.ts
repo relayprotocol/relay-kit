@@ -11,6 +11,10 @@ export const tronDeadAddress = 'THa7BwoPfacfiELa63pbmm3g5PGKYmtJyt'
 export const zeroDeadAddress = '0x00000000000000000000000000000000000dead0'
 export const tonDeadAddress =
   'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADerZ0z' as const
+// XRPL ACCOUNT_ONE, a checksum-valid blackhole account with no known key.
+// Deliberately not ACCOUNT_ZERO (rrrrrrrrrrrrrrrrrrrrrhoLvTp), which the
+// settlement layer already uses as the native-XRP sentinel.
+export const xrpDeadAddress = 'rrrrrrrrrrrrrrrrrrrrBZbvji' as const
 
 const eclipseId = 9286185
 const zeroChainId = 543210
@@ -26,6 +30,8 @@ export const getDeadAddress = (vmType?: ChainVM, chainId?: number) => {
     return tronDeadAddress
   } else if (vmType === 'tonvm') {
     return tonDeadAddress
+  } else if (vmType === 'xrpvm') {
+    return xrpDeadAddress
   } else {
     return evmDeadAddress
   }
@@ -41,7 +47,10 @@ export const isDeadAddress = (address?: string) => {
     address === solDeadAddress ||
     address === bitcoinDeadAddress ||
     address === evmDeadAddress ||
-    address === tonDeadAddress
+    address === tonDeadAddress ||
+    address === tronDeadAddress ||
+    address === zeroDeadAddress ||
+    address === xrpDeadAddress
   ) {
     return true
   }

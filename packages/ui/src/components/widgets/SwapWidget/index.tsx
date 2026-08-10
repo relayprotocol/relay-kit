@@ -41,7 +41,7 @@ import {
   findSupportedWallet,
   isChainVmTypeSupported
 } from '../../../utils/address.js'
-import { isDeadAddress, tronDeadAddress } from '@relayprotocol/relay-sdk'
+import { isDeadAddress } from '@relayprotocol/relay-sdk'
 import {
   ProviderOptionsContext,
   useHapticEvent
@@ -70,7 +70,7 @@ type BaseSwapWidgetProps = {
   lockChainId?: number
   singleChainMode?: boolean
   wallet?: AdaptedWallet
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
   disableInputAutoFocus?: boolean
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean
@@ -977,7 +977,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                 displaySymbol={false}
                                 isConnected={
                                   !isDeadAddress(address) &&
-                                  address !== tronDeadAddress &&
                                   address !== undefined
                                 }
                                 pending={fromBalancePending}
@@ -1389,7 +1388,6 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               displaySymbol={false}
                               isConnected={
                                 !isDeadAddress(address) &&
-                                address !== tronDeadAddress &&
                                 address !== undefined
                               }
                               pending={toBalancePending}

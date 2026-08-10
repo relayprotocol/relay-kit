@@ -66,7 +66,7 @@ export type ChildrenProps = {
 
 type OnrampWidgetRendererProps = {
   defaultWalletAddress?: string
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
   linkedWallets?: LinkedWallet[]
   multiWalletSupportEnabled?: boolean
   moonPayApiKey: string

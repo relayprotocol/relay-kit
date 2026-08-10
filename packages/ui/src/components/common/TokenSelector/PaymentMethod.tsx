@@ -57,7 +57,7 @@ export type PaymentMethodProps = {
   isValidAddress?: boolean
   multiWalletSupportEnabled?: boolean
   fromChainWalletVMSupported?: boolean
-  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm'>[]
+  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
   popularChainIds?: number[]
   linkedWallets?: any[]
   setToken: (token: Token) => void

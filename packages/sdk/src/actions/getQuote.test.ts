@@ -11,10 +11,25 @@ import {
   arbitrumNova
 } from 'viem/chains'
 import { MAINNET_RELAY_API } from '../constants'
+import { xrpDeadAddress } from '../constants/address'
 import { axios } from '../utils'
+import type { RelayChain } from '../types'
 
 const viemChains = [mainnet, base, zora, optimism, arbitrum, arbitrumNova]
-const relayChains = viemChains.map(convertViemChainToRelayChain)
+const xrpChain: RelayChain = {
+  id: 537724,
+  name: 'xrp',
+  displayName: 'XRP Ledger',
+  vmType: 'xrpvm',
+  currency: {
+    id: 'xrp',
+    symbol: 'XRP',
+    name: 'XRP',
+    address: 'xrp',
+    decimals: 6
+  }
+}
+const relayChains = [...viemChains.map(convertViemChainToRelayChain), xrpChain]
 
 let client: RelayClient | undefined
 let wallet = {
@@ -138,6 +153,37 @@ describe('Should test the getQuote action.', () => {
           recipient: '0x000000000000000000000000000000000000dead',
           tradeType: 'EXACT_INPUT',
           txs: [{ data: '0x', value: '0', to: '0x' }]
+        })
+      })
+    )
+  })
+
+  it('Should use the XRP dead address as the default recipient for XRP destinations', async () => {
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
+    })
+
+    await client?.actions?.getQuote(
+      {
+        toChainId: 537724,
+        chainId: 8453,
+        currency: '0x0000000000000000000000000000000000000000',
+        toCurrency: 'xrp',
+        tradeType: 'EXACT_INPUT',
+        amount: '1000000000000000' // 0.001 ETH
+      },
+      true
+    )
+
+    expect(axiosRequestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: expect.stringContaining('quote'),
+        data: expect.objectContaining({
+          // Origin is still EVM, so the user stays the EVM dead address
+          user: '0x000000000000000000000000000000000000dead',
+          destinationChainId: 537724,
+          recipient: xrpDeadAddress
         })
       })
     )
