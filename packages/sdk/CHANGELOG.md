@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 7.0.2
+
+### Patch Changes
+
+- e9dbac1: Add XRP dead address and include the Tron, Zero and XRP dead addresses in isDeadAddress
+
 ## 7.0.1
 
 ### Patch Changes
