@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 11.0.3
+
+### Patch Changes
+
+- e9dbac1: Add XRP vm support for destination transactions
+- Updated dependencies [e9dbac1]
+  - @relayprotocol/relay-sdk@7.0.2
+  - @relayprotocol/relay-kit-hooks@4.0.3
+
 ## 11.0.2
 
 ### Patch Changes
