@@ -4,13 +4,11 @@
 
 ### Patch Changes
 
-- e9dbac1: Add XRP dead address and include the Tron, Zero and XRP dead addresses in isDeadAddress
+- e9dbac1: Relay Kit now supports XRP as a destination for transactions. The SDK also recognizes the XRP, Tron, and Zero dead addresses through `isDeadAddress`.
 
 ## 7.0.1
 
 ### Patch Changes
-
-- fb843c4: Sync SDK types
 
 ## 7.0.0
 

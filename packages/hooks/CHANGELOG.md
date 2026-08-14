@@ -18,7 +18,7 @@
 
 ### Patch Changes
 
-- 23e4ecf: fix: block token contract addresses in recipient field
+- 23e4ecf: Relay Kit now prevents supported token contract addresses from being entered as transaction recipients, reducing transactions sent to addresses that cannot receive the selected token.
 
 ## 4.0.0
 

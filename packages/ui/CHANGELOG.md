@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- e9dbac1: Add XRP vm support for destination transactions
+- e9dbac1: Relay Kit now supports XRP as a destination for transactions. The SDK also recognizes the XRP, Tron, and Zero dead addresses through `isDeadAddress`.
 - Updated dependencies [e9dbac1]
   - @relayprotocol/relay-sdk@7.0.2
   - @relayprotocol/relay-kit-hooks@4.0.3
@@ -13,7 +13,7 @@
 
 ### Patch Changes
 
-- 78bf766: Add Robinhood Chain, Linea, Monad, Soneium, MegaETH, and Tempo to Uniswap Wallet's supported chains
+- 78bf766: Uniswap Wallet can now be used with Robinhood Chain, Linea, Monad, Soneium, MegaETH, and Tempo in Relay Kit.
 - Updated dependencies [fb843c4]
   - @relayprotocol/relay-sdk@7.0.1
   - @relayprotocol/relay-kit-hooks@4.0.2
@@ -52,9 +52,9 @@
 
 ### Patch Changes
 
-- f1a9fd8: Complete the RefundReason error mapping. Every failReason code in the API schema now resolves to a specific user-facing explanation instead of falling back to the generic unknown-issue message, matching the copy used on relay.link and the developer dashboard.
-- 628ad74: Gracefully handle broken token/chain logo images. ChainTokenIcon now falls back to the token symbol avatar and ChainIcon hides itself when the logo fails to load, instead of rendering a broken-image placeholder.
-- 23e4ecf: fix: block token contract addresses in recipient field
+- f1a9fd8: The UI now gives a specific explanation for each supported execution failure instead of falling back to an unknown-issue message.
+- 628ad74: If a token or chain logo cannot load, Relay Kit displays a symbol fallback or hides the broken image rather than showing a browser placeholder.
+- 23e4ecf: Relay Kit now prevents supported token contract addresses from being entered as transaction recipients, reducing transactions sent to addresses that cannot receive the selected token.
 - Updated dependencies [23e4ecf]
   - @relayprotocol/relay-kit-hooks@4.0.1
 
