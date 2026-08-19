@@ -31,7 +31,8 @@
     "sdk": "pnpm run -C packages/sdk dev",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "lint": "pnpm run -C packages/ui lint && pnpm run -C packages/hooks lint"
+    "lint": "pnpm run -C packages/ui lint && pnpm run -C packages/hooks lint",
+    "lint:changesets": "node scripts/lint-changesets.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

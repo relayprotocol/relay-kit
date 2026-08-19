@@ -95,6 +95,54 @@ haptic('light') // fire haptic
 - Data fetching: TanStack Query v5 via hooks package (`useQuote`, `useTokenList`, `useRelayChains`)
 - localStorage key: `relay-ui-kit` (starred chains, accepted unverified tokens)
 
+## Writing changesets
+
+Every changeset becomes a public changelog entry at
+[docs.relay.link/changelog](https://docs.relay.link/changelog). Write it for someone
+*using* the package, not for someone reading the diff.
+
+**Required shape** — lead with the outcome, then the effect, then any action:
+
+```md
+---
+'@relayprotocol/relay-sdk': minor
+---
+
+Add TON support: new `@relayprotocol/relay-ton-wallet-adapter` package exporting
+`adaptTonWallet`, plus `tonvm` support across the SDK and UI kit.
+```
+
+### Rules
+
+1. **State what changed for the reader**, not the mechanics. "Sync SDK types" and "Refactor
+   the token selector" describe the diff; "Suggested tokens now use the API's `logoURI`"
+   describes the change.
+2. **No commit-style prefixes** — `feat:`, `fix:`, `chore:` belong in the commit, not here.
+3. **Name the surface exactly** — endpoint, hook, prop, error code, parameter. Preserve exact
+   identifiers and versions.
+4. **Breaking changes state the migration.** What was removed or renamed, what to use
+   instead, in the same entry. A breaking change without migration guidance is incomplete.
+5. **One changeset per customer outcome.** A change spanning SDK, UI kit, and hooks is one
+   changeset naming all three packages — not three changesets.
+6. **Nothing customer-visible?** Start the body with `[internal]`. That keeps it out of the
+   public changelog and skips the prose checks. Use it for refactors, test-only changes, and
+   dependency bumps — not as a way past the linter.
+7. **Don't guess at impact.** If you cannot state the user-visible effect, say what changed
+   and let review fill in the rest, or mark it `[internal]`.
+
+### Anti-patterns
+
+| Don't | Do |
+|---|---|
+| `Sync api types` | `[internal] Sync generated API types` |
+| `fix: dead address` | `Fix the Bitcoin dead-address preview error on same-chain quotes` |
+| `Refactor EOA detection` | `Detect EOAs before quoting so smart-account routes are not offered to EOAs` |
+| `Add mappings` | `Add TRANSACTION_SUBMISSION_FAILED and TRANSACTION_NOT_INCLUDED to the failure reasons surfaced on the transaction page` |
+
+`pnpm lint:changesets` enforces the mechanical minimums — prefixes, weak openers, and a
+length floor. It cannot tell whether the writing is good, only whether it is obviously not
+prose, so passing it is the floor rather than the goal.
+
 ## Build
 
 ```bash
