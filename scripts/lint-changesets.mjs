@@ -7,9 +7,11 @@
 // A change with genuinely nothing customer-visible to say starts its body with [internal];
 // that skips the prose rules and keeps the entry off the public changelog.
 //
-// Usage: node scripts/lint-changesets.mjs [file...]   (defaults to .changeset/*.md)
+// Usage: node scripts/lint-changesets.mjs [file...]     every pending changeset
+//        node scripts/lint-changesets.mjs --staged       only the ones being committed
 
-import { readdirSync, readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 
 const MIN_CHARS = 20
@@ -21,12 +23,37 @@ const COMMIT_PREFIX = /^(feat|fix|chore|refactor|docs|test|tests|ci|build|perf|s
 const WEAK_OPENER =
   /^(sync|syncs|synced|bump|bumps|bumped|upgrade deps|update deps|update dependencies|cleanup|clean up|wip|misc|various|minor (fixes|changes)|small (fixes|changes)|update types)\b/i
 
-const files =
-  process.argv.slice(2).length > 0
-    ? process.argv.slice(2)
-    : readdirSync('.changeset')
-        .filter((file) => file.endsWith('.md') && basename(file).toLowerCase() !== 'readme.md')
-        .map((file) => join('.changeset', file))
+const args = process.argv.slice(2)
+
+// A pre-commit hook must judge only what is being committed. Anything else pending — a
+// teammate's changeset that arrived through a merge, say — is not this commit's problem.
+function stagedChangesets() {
+  const output = execFileSync(
+    'git',
+    ['diff', '--cached', '--name-only', '--diff-filter=ACM', '--', '.changeset/*.md'],
+    { encoding: 'utf8' }
+  )
+  return output
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line && basename(line).toLowerCase() !== 'readme.md')
+    // A staged file can still be deleted from the working tree before the commit lands.
+    .filter((line) => existsSync(line))
+}
+
+function pendingChangesets() {
+  if (!existsSync('.changeset')) return []
+  return readdirSync('.changeset')
+    .filter((file) => file.endsWith('.md') && basename(file).toLowerCase() !== 'readme.md')
+    .map((file) => join('.changeset', file))
+}
+
+const explicit = args.filter((arg) => !arg.startsWith('--'))
+const files = args.includes('--staged')
+  ? stagedChangesets()
+  : explicit.length > 0
+    ? explicit
+    : pendingChangesets()
 
 const problems = []
 const fail = (file, rule, detail) => problems.push({ file, rule, detail })
@@ -65,6 +92,11 @@ for (const file of files) {
   if (body.split(/\s+/).filter(Boolean).length < MIN_WORDS) {
     fail(file, 'too-short', `${body.split(/\s+/).filter(Boolean).length} words, minimum ${MIN_WORDS}`)
   }
+}
+
+if (files.length === 0) {
+  console.log('no changesets to check')
+  process.exit(0)
 }
 
 if (problems.length === 0) {

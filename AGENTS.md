@@ -139,9 +139,12 @@ Add TON support: new `@relayprotocol/relay-ton-wallet-adapter` package exporting
 | `Refactor EOA detection` | `Detect EOAs before quoting so smart-account routes are not offered to EOAs` |
 | `Add mappings` | `Add TRANSACTION_SUBMISSION_FAILED and TRANSACTION_NOT_INCLUDED to the failure reasons surfaced on the transaction page` |
 
-`pnpm lint:changesets` enforces the mechanical minimums — prefixes, weak openers, and a
-length floor. It cannot tell whether the writing is good, only whether it is obviously not
-prose, so passing it is the floor rather than the goal.
+A pre-commit hook runs the mechanical checks on the changesets in the commit — prefixes, weak
+openers, and a length floor — so `pnpm package:change` fails before it commits and pushes
+rather than after. `pnpm lint:changesets` checks everything pending, and the same check runs
+on pull requests as a backstop for a bypassed or uninstalled hook. None of it can tell whether
+the writing is good, only whether it is obviously not prose, so passing is the floor rather
+than the goal.
 
 ## Build
 

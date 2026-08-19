@@ -1,1 +1,2 @@
 pnpm lint
+node scripts/lint-changesets.mjs --staged
