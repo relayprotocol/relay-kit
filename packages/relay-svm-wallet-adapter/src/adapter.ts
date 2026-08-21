@@ -83,22 +83,48 @@ export const adaptSolanaWallet = (
             })
         ) ?? []
 
+      const addressLookupTableAddresses =
+        stepItem?.data?.addressLookupTableAddresses ?? []
+
+      const resolvedLookupTables = await Promise.all(
+        addressLookupTableAddresses.map((address: string) =>
+          connection
+            .getAddressLookupTable(new PublicKey(address))
+            .then((res) => res.value)
+        )
+      )
+
+      // A lookup table address returned by the API may not exist on the
+      // connected chain (e.g. a Solana mainnet table referenced in an Eclipse
+      // swap). Passing null into compileToV0Message crashes in
+      // extractTableLookup before the wallet ever prompts, so skip any table
+      // that can't be resolved and compile without it — lookup tables only
+      // compress the message, the transaction is still valid without them.
+      const addressLookupTableAccounts = resolvedLookupTables.filter(
+        (table): table is AddressLookupTableAccount => table !== null
+      )
+
+      const missingLookupTables = addressLookupTableAddresses.filter(
+        (_, i) => !resolvedLookupTables[i]
+      )
+      if (missingLookupTables.length > 0) {
+        client.log(
+          [
+            'Skipping address lookup tables that could not be resolved on the current chain',
+            missingLookupTables,
+            _chainId
+          ],
+          LogLevel.Warn
+        )
+      }
+
       const messageV0 = new TransactionMessage({
         payerKey: new PublicKey(payerKey ?? walletAddress),
         instructions,
         recentBlockhash: await connection
           .getLatestBlockhash()
           .then((b) => b.blockhash)
-      }).compileToV0Message(
-        await Promise.all(
-          stepItem?.data?.addressLookupTableAddresses?.map(
-            async (address: string) =>
-              await connection
-                .getAddressLookupTable(new PublicKey(address))
-                .then((res) => res.value as AddressLookupTableAccount)
-          ) ?? []
-        )
-      )
+      }).compileToV0Message(addressLookupTableAccounts)
 
       const transaction = new VersionedTransaction(messageV0)
       const signature = await signAndSendTransaction(
