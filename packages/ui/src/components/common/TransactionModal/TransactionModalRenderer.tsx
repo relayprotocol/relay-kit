@@ -247,6 +247,15 @@ export const TransactionModalRenderer: FC<Props> = ({
           if (!transaction) {
             return 2500
           }
+          // Keep polling until the request reaches a terminal status so the
+          // success view can replace quoted values with the final actual ones
+          const isTerminalStatus =
+            transaction.status === 'success' ||
+            transaction.status === 'failure' ||
+            transaction.status === 'refund'
+          if (!isTerminalStatus) {
+            return 2500
+          }
           // If this is a refund but outTxs is not populated yet, keep polling
           const isRefund =
             transaction.status === 'refund' ||
