@@ -14,6 +14,12 @@ type RouteAmount = NonNullable<
  * - currencyIn: the token deposited on the origin side.
  * - currencyOut: the token received, preferring the destination output and
  *   falling back to the origin output (e.g. same-chain swaps).
+ *
+ * `route.actual` is populated progressively while a request is in flight, so
+ * before the request status is `success` it can hold provisional values (e.g.
+ * the intermediate origin swap output). Output-side actual values are only
+ * used once the request status is `success`; until then the quoted values are
+ * returned so the UI never presents a provisional token/amount as received.
  */
 export const getRequestCurrencies = (
   transaction?: RelayTransaction | null
@@ -29,13 +35,16 @@ export const getRequestCurrencies = (
   const currencyIn =
     actual?.origin?.inputCurrency ?? quoted?.origin?.inputCurrency
 
+  // Only trust output-side actual values once the request has succeeded
+  const settledActual = transaction?.status === 'success' ? actual : undefined
+
   const currencyOut =
-    actual?.destination?.outputCurrency ??
+    settledActual?.destination?.outputCurrency ??
     quoted?.destination?.outputCurrency ??
-    actual?.origin?.outputCurrency ??
+    settledActual?.origin?.outputCurrency ??
     quoted?.origin?.outputCurrency
 
-  const currencyGasTopup = actual?.destination?.currencyGasTopup
+  const currencyGasTopup = settledActual?.destination?.currencyGasTopup
 
   return { currencyIn, currencyOut, currencyGasTopup }
 }
