@@ -6,7 +6,7 @@ export const solana = {
 export const eclipse = {
   id: 9286185
 }
-export const eclipseWallets = ['backpackeclipse']
+export const eclipseWallets = ['nightlyeclipse', 'okxeclipse']
 
 export function isSolanaAddress(address: string): boolean {
   return solanaAddressRegex.test(address)
