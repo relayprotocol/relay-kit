@@ -1,5 +1,11 @@
 # @reservoir0x/relay-svm-wallet-adapter
 
+## 21.0.3
+
+### Patch Changes
+
+- 8fb110e: Skip address lookup tables that can't be resolved on the connected chain instead of crashing before signing
+
 ## 21.0.2
 
 ### Patch Changes
