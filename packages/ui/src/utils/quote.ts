@@ -28,7 +28,7 @@ const formatUsdFee = (
   if (finalValue === 0) {
     formatted = '$0.00'
   } else if (Math.abs(finalValue) < 0.01) {
-    formatted = '< $0.01'
+    formatted = `${finalValue > 0 ? '+' : '-'}< $0.01`
   } else {
     formatted = formatDollar(finalValue)
     if (finalValue > 0) {
