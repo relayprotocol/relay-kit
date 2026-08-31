@@ -5,6 +5,7 @@ on:
     types:
       - opened
       - synchronize
+      - edited
 
 permissions:
   contents: read
@@ -45,3 +46,17 @@ jobs:
       # needs no install, so this stays fast enough to be a required check.
       - name: Lint pending changesets
         run: node scripts/lint-changesets.mjs
+
+  pr-title:
+    name: PR title format
+    # Squash merges land on main with the PR title, so it must follow the
+    # commit-message standard too. Bot PRs (dependabot, changesets) are exempt.
+    if: github.actor != 'dependabot[bot]' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Check PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: node scripts/check-commit-message.mjs --message "$PR_TITLE"

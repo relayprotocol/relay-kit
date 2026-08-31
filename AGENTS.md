@@ -95,6 +95,24 @@ haptic('light') // fire haptic
 - Data fetching: TanStack Query v5 via hooks package (`useQuote`, `useTokenList`, `useRelayChains`)
 - localStorage key: `relay-ui-kit` (starred chains, accepted unverified tokens)
 
+## Commit messages
+
+Commits and PR titles follow the backend (solver) standard — conventional commits:
+
+```
+type(scope): subject
+```
+
+- **Types**: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `obs`, `perf`, `refactor`, `revert`, `style`, `test`
+- **Scope is optional** — use the package or area (`fix(ui): ...`, `feat(sdk): ...`)
+- **`!` marks breaking changes** — `feat(sdk)!: ...`
+- PRs are squash-merged, so **the PR title must follow the same format** — it becomes the
+  commit on `main`. CI checks this (`PR title format` job); the `commit-msg` hook checks
+  local commits (`scripts/check-commit-message.mjs`).
+
+Examples from history: `feat(ui): add XRP destination support`, `fix: block token contract
+addresses in recipient field`, `chore(sdk): sync api types`.
+
 ## Writing changesets
 
 Every changeset becomes a public changelog entry at
