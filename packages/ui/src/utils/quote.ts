@@ -22,9 +22,22 @@ const formatUsdFee = (
 ) => {
   const value = Number(amountUsd ?? 0)
   const finalValue = shouldFlipSign ? -value : value
+  // Explicit zero and sub-cent forms: formatDollar renders 0 as "-" and
+  // sub-cent negatives as "-$0.00".
+  let formatted: string
+  if (finalValue === 0) {
+    formatted = '$0.00'
+  } else if (Math.abs(finalValue) < 0.01) {
+    formatted = `${finalValue > 0 ? '+' : '-'}< $0.01`
+  } else {
+    formatted = formatDollar(finalValue)
+    if (finalValue > 0) {
+      formatted = `+${formatted}`
+    }
+  }
   return {
     value: finalValue,
-    formatted: formatDollar(finalValue)
+    formatted
   }
 }
 
@@ -46,9 +59,8 @@ export const parseFees = (
   // Execution fee
   const executionFeeUsd = expandedPriceImpact?.execution?.usd
 
-  // Relay fee
+  // Platform fee (v2 name: relay fee)
   const relayFeeUsd = expandedPriceImpact?.relay?.usd
-  const relayFeeIsReward = Number(relayFeeUsd ?? 0) > 0
 
   // App fee
   const appFeeUsd = expandedPriceImpact?.app?.usd
@@ -63,7 +75,7 @@ export const parseFees = (
       raw: gasFee,
       formatted: `${formattedGasFee}`,
       usd: formatUsdFee(fees?.gas?.amountUsd, true),
-      name: `Deposit Gas (${selectedFrom.displayName})`,
+      name: `Deposit gas (${selectedFrom.displayName})`,
       tooltip: null,
       type: 'gas',
       id: 'origin-gas',
@@ -75,7 +87,7 @@ export const parseFees = (
       usd: _isGasSponsored
         ? { value: 0, formatted: '0' }
         : formatUsdFee(executionFeeUsd, false),
-      name: `Execution Fee (${selectedTo.displayName})`,
+      name: `Execution Cost (${selectedTo.displayName})`,
       tooltip: null,
       type: 'gas',
       id: 'destination-gas',
@@ -87,7 +99,7 @@ export const parseFees = (
       usd: _isGasSponsored
         ? { value: 0, formatted: '0' }
         : formatUsdFee(relayFeeUsd, false),
-      name: relayFeeIsReward ? 'Reward' : 'Relay Fee',
+      name: 'Platform Fee',
       tooltip: null,
       type: 'relayer',
       id: 'relayer-fee',

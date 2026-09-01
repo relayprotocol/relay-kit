@@ -46,7 +46,7 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
           />
           <Flex align="center" className="relay:w-full">
             <Text style="subtitle3" color="subtle" className="relay:mr-auto">
-              Swap Impact
+              Swap Cost
             </Text>
             <Text
               style="subtitle3"
@@ -59,11 +59,20 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
             if (fee.id === 'origin-gas') {
               return null
             }
+            // Positive platform fee = rebalancing reward paid to the user.
+            const isReward = fee.id === 'relayer-fee' && fee.usd.value > 0
             return (
               <Flex key={fee.id} align="center" className="relay:w-full">
-                <Text style="subtitle3" color="subtle" className="relay:mr-auto">
-                  {fee.name}
-                </Text>
+                <Flex align="center" className="relay:mr-auto relay:gap-1">
+                  <Text style="subtitle3" color="subtle">
+                    {fee.name}
+                  </Text>
+                  {isReward && (
+                    <Text style="subtitle3" color="success">
+                      (Reward)
+                    </Text>
+                  )}
+                </Flex>
                 {feeBreakdown.isGasSponsored && fee.usd.value === 0 ? (
                   <Text style="subtitle3" color="success">
                     Free

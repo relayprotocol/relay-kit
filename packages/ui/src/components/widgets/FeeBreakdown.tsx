@@ -118,7 +118,7 @@ const FeeBreakdown: FC<Props> = ({
       )
     },
     {
-      title: 'Network cost',
+      title: 'Deposit gas',
       value: (
         <Flex align="center" className="relay:gap-1">
           <FontAwesomeIcon
@@ -174,7 +174,10 @@ const FeeBreakdown: FC<Props> = ({
           className="relay:rounded-[var(--relay-radii-widget-card-border-radius)] relay:bg-[var(--relay-colors-widget-background)] relay:border-widget-card relay:overflow-hidden relay:mb-[var(--relay-spacing-widget-card-section-gutter)]"
         >
           <div className="relay:mt-0 relay:mb-0 relay:px-3 relay:py-[12px] relay:w-full relay:flex relay:justify-center">
-            <FetchingQuoteLoader isLoading={isFetchingQuote} containerClassName="relay:!my-0 relay:!py-0" />
+            <FetchingQuoteLoader
+              isLoading={isFetchingQuote}
+              containerClassName="relay:!my-0 relay:!py-0"
+            />
           </div>
         </Box>
       )
