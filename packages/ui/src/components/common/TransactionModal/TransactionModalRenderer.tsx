@@ -223,53 +223,52 @@ export const TransactionModalRenderer: FC<Props> = ({
 
   const requestId = useMemo(() => extractDepositRequestId(steps), [steps])
 
-  // Fetch Success Tx
-  const { data: transactions, isInitialLoading: isLoadingTransaction } =
-    useRequests(
+  // Enabling this query without an id fetches an unfiltered request list, so
+  // `enabled` must track the filter rather than test conditions of its own.
+  const requestQuery = useMemo(
+    () =>
       (progressStep === TransactionProgressStep.Success ||
         progressStep === TransactionProgressStep.Error) &&
-        requestId
+      requestId
         ? { id: requestId }
         : undefined,
-      relayClient?.baseApiUrl,
-      {
-        enabled:
-          (progressStep === TransactionProgressStep.Success ||
-            progressStep === TransactionProgressStep.Error) &&
-          (requestId || allTxHashes[0])
-            ? true
-            : false,
-        refetchInterval(query) {
-          if (query.state.dataUpdateCount > 10) {
-            return 0
-          }
-          const transaction = query.state.data?.pages[0].requests?.[0]
-          if (!transaction) {
-            return 2500
-          }
-          // Keep polling until the request reaches a terminal status so the
-          // success view can replace quoted values with the final actual ones
-          const isTerminalStatus =
-            transaction.status === 'success' ||
-            transaction.status === 'failure' ||
-            transaction.status === 'refund'
-          if (!isTerminalStatus) {
-            return 2500
-          }
-          // If this is a refund but outTxs is not populated yet, keep polling
-          const isRefund =
-            transaction.status === 'refund' ||
-            transaction.data?.refundCurrencyData
-          if (
-            isRefund &&
-            (!transaction.data?.outTxs || transaction.data.outTxs.length === 0)
-          ) {
-            return 2500
-          }
+    [progressStep, requestId]
+  )
+
+  // Fetch Success Tx
+  const { data: transactions, isInitialLoading: isLoadingTransaction } =
+    useRequests(requestQuery, relayClient?.baseApiUrl, {
+      enabled: Boolean(requestQuery),
+      refetchInterval(query) {
+        if (query.state.dataUpdateCount > 10) {
           return 0
         }
+        const transaction = query.state.data?.pages[0].requests?.[0]
+        if (!transaction) {
+          return 2500
+        }
+        // Keep polling until the request reaches a terminal status so the
+        // success view can replace quoted values with the final actual ones
+        const isTerminalStatus =
+          transaction.status === 'success' ||
+          transaction.status === 'failure' ||
+          transaction.status === 'refund'
+        if (!isTerminalStatus) {
+          return 2500
+        }
+        // If this is a refund but outTxs is not populated yet, keep polling
+        const isRefund =
+          transaction.status === 'refund' ||
+          transaction.data?.refundCurrencyData
+        if (
+          isRefund &&
+          (!transaction.data?.outTxs || transaction.data.outTxs.length === 0)
+        ) {
+          return 2500
+        }
+        return 0
       }
-    )
+    })
   const transaction = transactions[0]
   const { fillTime, seconds } = calculateFillTime(transaction)
 
