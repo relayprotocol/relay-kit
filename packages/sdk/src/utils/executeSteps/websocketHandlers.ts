@@ -17,6 +17,7 @@ interface WebSocketUpdateHandlerParams {
     websocketFailureTimeoutId?: ReturnType<typeof setTimeout> | null
   }
   onTerminalError?: (error: Error) => void
+  onTerminalSuccess?: () => void
 }
 
 export function handleWebSocketUpdate({
@@ -27,7 +28,8 @@ export function handleWebSocketUpdate({
   json,
   client,
   statusControl,
-  onTerminalError
+  onTerminalError,
+  onTerminalSuccess
 }: WebSocketUpdateHandlerParams): void {
   statusControl.lastKnownStatus = data.status
 
@@ -52,6 +54,7 @@ export function handleWebSocketUpdate({
     switch (data.status) {
       case 'success':
         handleSuccessStatus(data, stepItems, chainId, setState, json, client)
+        onTerminalSuccess?.()
         break
       case 'refund':
         handleRefundStatus(client, stepItems, onTerminalError)
