@@ -101,6 +101,11 @@ export async function executeSteps(
   let terminalStatusPromise: Promise<never> | null = null
   let rejectTerminalStatus: ((error: Error) => void) | null = null
 
+  // Resolves when the websocket reports a terminal success, so step execution
+  // doesn't stay blocked on (or fail because of) the RPC receipt lookup
+  let successStatusPromise: Promise<void> | null = null
+  let resolveSuccessStatus: (() => void) | null = null
+
   // Promise-based approach for WebSocket failure handling
   let websocketFailedPromise: Promise<void> | null = null
   let resolveWebsocketFailed: (() => void) | null = null
@@ -228,6 +233,10 @@ export async function executeSteps(
         rejectTerminalStatus = reject
       })
 
+      successStatusPromise = new Promise<void>((resolve) => {
+        resolveSuccessStatus = resolve
+      })
+
       statusControl.closeWebSocket = trackRequestStatus({
         event: 'request.status.updated',
         requestId: requestId,
@@ -249,6 +258,10 @@ export async function executeSteps(
             onTerminalError: (error: Error) => {
               // Immediately reject when terminal status received
               rejectTerminalStatus?.(error)
+            },
+            onTerminalSuccess: () => {
+              // Immediately resolve when the backend confirms success
+              resolveSuccessStatus?.()
             }
           })
         },
@@ -360,9 +373,14 @@ export async function executeSteps(
               }
             })()
 
-            // Allow WebSocket terminal status (failure/refund) to immediately interrupt and stop step execution
+            // Allow WebSocket terminal status to immediately settle step execution:
+            // failure/refund rejects, success resolves without waiting on the RPC receipt
             if (statusControl.websocketActive && terminalStatusPromise) {
-              await Promise.race([stepExecutionPromise, terminalStatusPromise])
+              await Promise.race([
+                stepExecutionPromise,
+                terminalStatusPromise,
+                ...(successStatusPromise ? [successStatusPromise] : [])
+              ])
             } else {
               await stepExecutionPromise
             }
@@ -379,6 +397,32 @@ export async function executeSteps(
             })
             resolve(stepItem)
           } catch (e) {
+            // If the backend already marked this item complete (e.g. via websocket),
+            // a late error from the execution promise must not flip it to a failure
+            if (
+              stepItem.status === 'complete' ||
+              statusControl.lastKnownStatus === 'success'
+            ) {
+              client.log(
+                [
+                  'Execute Steps: Ignoring error for step item already confirmed complete',
+                  e
+                ],
+                LogLevel.Warn
+              )
+              stepItem.status = 'complete'
+              stepItem.progressState = 'complete'
+              stepItem.isValidatingSignature = false
+              setState({
+                steps: [...json?.steps],
+                fees: { ...json?.fees },
+                breakdown: json?.breakdown,
+                details: json?.details
+              })
+              resolve(stepItem)
+              return
+            }
+
             const error = e as Error
             const errorMessage = error
               ? error.message

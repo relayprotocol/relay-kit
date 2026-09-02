@@ -1485,6 +1485,105 @@ describe('Should test WebSocket functionality', () => {
     expect(mockWebSocket.close).toHaveBeenCalled()
   })
 
+  it('Should resolve execution on WebSocket success without waiting for the RPC receipt', async () => {
+    // handleConfirmTransactionStep never resolves (see beforeEach), so the only
+    // way execution can finish is via the websocket success message
+    const execution = executeSteps(
+      1,
+      {},
+      wallet,
+      () => {},
+      bridgeData,
+      undefined
+    )
+
+    await vi.waitFor(() => {
+      expect(wsConstructorSpy).toHaveBeenCalled()
+    })
+    mockWebSocket.onopen?.()
+
+    mockWebSocket.onmessage?.({
+      data: JSON.stringify({
+        event: 'request.status.updated',
+        data: {
+          status: 'success',
+          txHashes: ['0x123'],
+          inTxHashes: ['0xabc'],
+          destinationChainId: 8453,
+          originChainId: 1
+        }
+      })
+    })
+
+    const result = await execution
+    expect(result.error).toBeUndefined()
+    expect(
+      result.steps.every((step) =>
+        step.items?.every((item) => item.status === 'complete')
+      )
+    ).toBe(true)
+  })
+
+  it('Should not fail when the RPC receipt errors after WebSocket success', async () => {
+    // Make the receipt lookup controllable so we can fail it after the backend
+    // has already confirmed success over the websocket
+    let rejectReceipt: ((error: Error) => void) | undefined
+    wallet.handleConfirmTransactionStep = vi.fn().mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectReceipt = reject
+        })
+    )
+
+    const progressSpy = vi.fn()
+    const execution = executeSteps(
+      1,
+      {},
+      wallet,
+      (data) => progressSpy(data),
+      bridgeData,
+      undefined
+    )
+
+    await vi.waitFor(() => {
+      expect(wsConstructorSpy).toHaveBeenCalled()
+      expect(rejectReceipt).toBeDefined()
+    })
+    mockWebSocket.onopen?.()
+
+    mockWebSocket.onmessage?.({
+      data: JSON.stringify({
+        event: 'request.status.updated',
+        data: {
+          status: 'success',
+          txHashes: ['0x123'],
+          inTxHashes: ['0xabc'],
+          destinationChainId: 8453,
+          originChainId: 1
+        }
+      })
+    })
+
+    // Now the RPC "fails" (e.g. node error / receipt not found) after success
+    rejectReceipt?.(new Error('HTTP request failed: 502 Bad Gateway'))
+
+    const result = await execution
+    expect(result.error).toBeUndefined()
+    expect(result.steps[0].items?.[0].status).toBe('complete')
+    expect(result.steps[0].items?.[0].error).toBeUndefined()
+
+    // No progress update should ever have carried an error
+    const erroredUpdates = progressSpy.mock.calls.filter(
+      ([data]) =>
+        data?.error ||
+        data?.steps?.some(
+          (step: Execute['steps'][0]) =>
+            step.error || step.items?.some((item) => item.error)
+        )
+    )
+    expect(erroredUpdates).toHaveLength(0)
+  })
+
   it('Should fall back to polling on WebSocket error', async () => {
     const stateUpdates: any[] = []
 
