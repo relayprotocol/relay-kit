@@ -118,7 +118,11 @@ export const TransactionModalRenderer: FC<Props> = ({
 
   useEffect(() => {
     if (swapError) {
-      setProgressStep(TransactionProgressStep.Error)
+      // Once the swap has been confirmed successful, a late error (e.g. an RPC
+      // failure while fetching the receipt) must not flip the modal to an error state
+      if (progressStep !== TransactionProgressStep.Success) {
+        setProgressStep(TransactionProgressStep.Error)
+      }
       return
     }
     if (!steps) {

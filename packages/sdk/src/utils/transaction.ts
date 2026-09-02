@@ -452,6 +452,21 @@ export async function sendTransactionSafely(
             return
           }
 
+          // The backend (via websocket) has already confirmed the request succeeded.
+          // A late RPC receipt error at this point is a node/RPC issue, not a failed
+          // transaction, so don't surface it as a TransactionConfirmationError.
+          if (statusControl?.lastKnownStatus === 'success') {
+            waitingForConfirmation = false
+            getClient()?.log(
+              [
+                'Ignoring receipt error, request already confirmed successful by backend',
+                error
+              ],
+              LogLevel.Warn
+            )
+            return
+          }
+
           let tenderlyError: TenderlyErrorInfo | null = null
 
           if (receipt && (receipt as TransactionReceipt).transactionHash) {
