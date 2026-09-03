@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 7.0.3
+
+### Patch Changes
+
+- 581e9d8: Fix swap showing an error after already succeeding. When the websocket confirmed a request as successful, step execution stayed blocked on the RPC receipt lookup; if that RPC call then failed, executeSteps rejected with a TransactionConfirmationError and the swap widget flipped from Success to Error. Websocket success now resolves the step directly, late receipt errors are ignored once the backend has confirmed success, and the transaction modal no longer downgrades a Success state to Error.
+
 ## 7.0.2
 
 ### Patch Changes
