@@ -1,5 +1,19 @@
 # @reservoir0x/relay-kit-ui
 
+## 11.0.6
+
+### Patch Changes
+
+- 581e9d8: Fix swap showing an error after already succeeding. When the websocket confirmed a request as successful, step execution stayed blocked on the RPC receipt lookup; if that RPC call then failed, executeSteps rejected with a TransactionConfirmationError and the swap widget flipped from Success to Error. Websocket success now resolves the step directly, late receipt errors are ignored once the backend has confirmed success, and the transaction modal no longer downgrades a Success state to Error.
+- 1326d6d: Stop firing an unfiltered `GET /requests` when the swap success modal is closed. The
+  transaction lookup in `TransactionModal` is only ever filtered by `id`, but it stayed
+  enabled on the tx hashes alone — so clearing `steps` on close dropped the `requestId`
+  while the query was still enabled, sending a request with no filters. It is now enabled
+  only when a `requestId` is present.
+- Updated dependencies [581e9d8]
+  - @relayprotocol/relay-sdk@7.0.3
+  - @relayprotocol/relay-kit-hooks@4.0.4
+
 ## 11.0.5
 
 ### Patch Changes
