@@ -1,4 +1,5 @@
 import type { Execute, RelayChain } from '@relayprotocol/relay-sdk'
+import { isSolverFilledStep } from '@relayprotocol/relay-sdk'
 import type { Token, LinkedWallet } from '../types/index.js'
 import { NormalizedWalletName } from '../constants/walletCompatibility.js'
 
@@ -187,8 +188,10 @@ export const formatTransactionSteps = ({
     (step) => step.id === 'approve' || (step.id as any) === 'approval'
   )
 
-  // Determine transaction type
-  const isSameChain = fromChain?.id === toChain?.id
+  // Determine transaction type. Same-chain intents (deposit) are filled by the
+  // solver, so they take the cross-chain sequence despite matching chain ids.
+  const isSameChainId = fromChain?.id === toChain?.id
+  const usesSolverFill = executableSteps.some(isSolverFilledStep)
 
   // Find current active step and its state
   const currentActiveStep = executableSteps.find((step) =>
@@ -211,8 +214,10 @@ export const formatTransactionSteps = ({
     toChain?.id ||
     quote?.details?.currencyOut?.currency?.chainId
 
+  // Keyed on chain ids, not the step sequence: when they match, an origin hash
+  // is indistinguishable from a destination one.
   const hasDestinationTxHashes =
-    !isSameChain &&
+    !isSameChainId &&
     !!destinationChainId &&
     executableSteps.some((step) =>
       step.items?.some(
@@ -445,7 +450,7 @@ export const formatTransactionSteps = ({
   }
 
   // Create fixed step sequence based on transaction type
-  if (isSameChain) {
+  if (isSameChainId && !usesSolverFill) {
     // Same-chain: 1-2 steps (approval + swap, or just swap)
     if (hasApproval) {
       // Step 1: Approval
