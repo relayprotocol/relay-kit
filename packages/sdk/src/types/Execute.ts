@@ -10,8 +10,13 @@ import type { TransactionReceipt } from 'viem'
 
 export type QuoteFees =
   paths['/quote/v2']['post']['responses']['200']['content']['application/json']['fees']
+// Inlined from the dropped /execute/swap schema; still returned on execute step payloads.
 export type SwapBreakdown =
-  paths['/execute/swap']['post']['responses']['200']['content']['application/json']['breakdown']
+  | {
+      value?: string
+      timeEstimate?: number
+    }[]
+  | undefined
 export type CheckApi = NonNullable<
   NonNullable<
     paths['/quote/v2']['post']['responses']['200']['content']['application/json']['steps']
