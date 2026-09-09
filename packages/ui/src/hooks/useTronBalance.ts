@@ -147,7 +147,7 @@ export default (
     queryFn: async () => {
       if (address) {
         if (currency === trxAddress || !currency) {
-          const response = await fetch(`${rpcUrl}/walletsolidity/getaccount`, {
+          const response = await fetch(`${rpcUrl}/wallet/getaccount`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -173,20 +173,17 @@ export default (
           const owner20 = await tronBase58ToHex20Async(address)
           const parameter = pad32(owner20.slice(2))
 
-          const res = await fetch(
-            `${rpcUrl}/walletsolidity/triggerconstantcontract`,
-            {
-              method: 'POST',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify({
-                owner_address: address,
-                contract_address: currency,
-                function_selector: 'balanceOf(address)',
-                parameter,
-                visible: true
-              })
-            }
-          )
+          const res = await fetch(`${rpcUrl}/wallet/triggerconstantcontract`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              owner_address: address,
+              contract_address: currency,
+              function_selector: 'balanceOf(address)',
+              parameter,
+              visible: true
+            })
+          })
           const data = await res.json()
 
           if (data.error) {

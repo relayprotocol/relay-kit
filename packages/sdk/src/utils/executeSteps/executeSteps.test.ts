@@ -20,6 +20,7 @@ import { postSignatureExtraSteps } from '../../../tests/data/postSignatureExtraS
 import { swapWithApproval } from '../../../tests/data/swapWithApproval'
 import { swapWithZeroResetApproval } from '../../../tests/data/swapWithZeroResetApproval'
 import { adaptViemWallet } from '../viemWallet'
+import { sameChainDeposit } from '../../../tests/data/sameChainDeposit'
 
 const viemChains = [mainnet, base, zora, optimism, arbitrum, arbitrumNova]
 const relayChains = viemChains.map(convertViemChainToRelayChain)
@@ -1754,5 +1755,99 @@ describe('Should test WebSocket functionality', () => {
         })
       )
     })
+  })
+})
+
+describe('Same-chain step completion.', () => {
+  let statusSpy: ReturnType<typeof vi.spyOn>
+
+  const mockStatusSequence = (statuses: string[]) => {
+    let index = 0
+    statusSpy = vi.spyOn(axios, 'request').mockImplementation((config: any) => {
+      if (config.url?.includes('/intents/status')) {
+        const status = statuses[Math.min(index, statuses.length - 1)]
+        index++
+        return Promise.resolve({
+          data: { status, txHashes: ['0x'] },
+          status: 200
+        }) as any
+      }
+      return Promise.resolve({
+        data: { status: 'success' },
+        status: 200
+      }) as any
+    })
+    return statusSpy
+  }
+
+  const statusCallCount = () =>
+    statusSpy.mock.calls.filter((call: any) =>
+      call[0]?.url?.includes('/intents/status')
+    ).length
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.resetAllMocks()
+    axiosPostSpy = mockAxiosPost()
+    wallet = {
+      vmType: 'evm',
+      getChainId: () => Promise.resolve(1),
+      transport: http(mainnet.rpcUrls.default.http[0]),
+      address: () => Promise.resolve('0x'),
+      handleSignMessageStep: vi.fn().mockResolvedValue('0x'),
+      handleSendTransactionStep: vi.fn().mockResolvedValue('0x'),
+      handleConfirmTransactionStep: vi.fn().mockResolvedValue('0x'),
+      switchChain: vi.fn().mockResolvedValue('0x'),
+      supportsAtomicBatch: vi.fn().mockResolvedValue(false),
+      handleBatchTransactionStep: vi.fn().mockResolvedValue('0x')
+    }
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains,
+      pollingInterval: 10
+    })
+  })
+
+  it('Should complete an atomic same-chain swap without waiting for a solver fill.', async () => {
+    mockStatusSequence(['pending', 'pending', 'success'])
+
+    await executeSteps(
+      1,
+      {},
+      wallet,
+      () => {},
+      JSON.parse(JSON.stringify(swapWithApproval)) as Execute,
+      undefined
+    )
+
+    // The origin receipt settles the swap, so the fill status is never awaited.
+    expect(statusCallCount()).toBeLessThanOrEqual(1)
+  })
+
+  it('Should wait for the solver fill on a same-chain deposit step.', async () => {
+    mockStatusSequence(['pending', 'pending', 'success'])
+
+    await executeSteps(
+      1,
+      {},
+      wallet,
+      () => {},
+      JSON.parse(JSON.stringify(sameChainDeposit)) as Execute,
+      undefined
+    )
+
+    expect(statusCallCount()).toBeGreaterThanOrEqual(3)
+  })
+
+  it('Should complete an atomic same-chain send without waiting for a solver fill.', async () => {
+    mockStatusSequence(['pending', 'pending', 'success'])
+
+    const quote = JSON.parse(JSON.stringify(sameChainDeposit)) as Execute
+    quote.steps[0].id = 'send'
+
+    await executeSteps(1, {}, wallet, () => {}, quote, undefined)
+
+    expect(statusCallCount()).toBeLessThanOrEqual(1)
+    expect(quote.steps[0].items?.[0].status).toBe('complete')
   })
 })
