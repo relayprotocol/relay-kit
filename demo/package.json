@@ -41,7 +41,7 @@
     "@ton/ton": "^15.1.0",
     "@tanstack/react-query": "^5.20.2",
     "@types/node": "^22.5.4",
-    "next": "15.5.9",
+    "next": "15.5.21",
     "next-remote-watch": "^1.0.0",
     "next-themes": "^0.2.0",
     "porto": "^0.0.85",
