@@ -217,7 +217,7 @@ export interface paths {
           /** @description Restrict to one currency (use chainId for non-EVM) */
           currency?: string | null;
           /** @description Restrict to one balance update context */
-          context?: "set-pending-amount" | "unset-pending-amount" | "reset-pending-amount" | "pay-fees" | "claim" | "fast-fill-reduce-balance" | "fast-fill-increase-balance" | "balance-topup" | "execute-transaction-request" | "fixed-rate-accounting" | "integrator-fixed-bps-accounting" | null;
+          context?: "set-pending-amount" | "unset-pending-amount" | "reset-pending-amount" | "pay-fees" | "claim" | "fast-fill-reduce-balance" | "fast-fill-increase-balance" | "balance-topup" | "execute-transaction-request" | "fixed-rate-accounting" | "integrator-fixed-bps-accounting" | "admin-manual-adjustment" | null;
           /** @description Restrict to a specific request id */
           requestId?: string | null;
           /** @description Page size for events (max 250, default 50) */
@@ -394,7 +394,7 @@ export interface paths {
                    * @description The type of VM the chain runs on
                    * @enum {string}
                    */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
                   explorerQueryParams?: {
                     [key: string]: unknown;
                   } | null;
@@ -435,7 +435,7 @@ export interface paths {
         200: {
           content: {
             "application/json": {
-              /** @description Solver balances per currency on the requested chain */
+              /** @description Available solver balances per configured currency on the requested chain. */
               liquidity?: {
                   chainId?: number;
                   currencyId?: string;
@@ -530,7 +530,7 @@ export interface paths {
           /** @description User address, when supplied returns user balance and max bridge amount */
           user?: string;
           /** @description Restricts the user balance and capacity to a particular currency when supplied with a currency id. Defaults to the native currency of the destination chain. */
-          currency?: "anime" | "btc" | "cgt" | "dai" | "degen" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "usdh" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg" | "pathusd" | "usdc.e-cronos";
+          currency?: "anime" | "btc" | "cgt" | "dai" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg" | "pathusd" | "ausd" | "usdc.e-cronos";
         };
       };
       responses: {
@@ -623,6 +623,226 @@ export interface paths {
           content: {
             "application/json": {
               message?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/deposit-addresses/v2": {
+    get: {
+      parameters: {
+        query?: {
+          address?: string;
+          depositAddressId?: string;
+          pageSize?: number;
+          pageToken?: string;
+        };
+        header?: {
+          /** @description API key for authentication. */
+          "x-api-key"?: string;
+          /** @description Developer portal key for authentication. */
+          "x-dev-portal-key"?: string;
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              data: {
+                depositAddress: {
+                  id: string;
+                  address: string;
+                  originChainId: number;
+                  originCurrency: string;
+                  destinationChainId: number;
+                  destinationCurrency: string;
+                  destinationRecipient: string;
+                  refundTo: string;
+                  oneTimeUse: boolean;
+                  isEnabled: boolean;
+                  createdAt: string;
+                };
+                deposits: ({
+                    id: string;
+                    chainId: number;
+                    transactionHash: string;
+                    eventIndex: string;
+                    sender: string | null;
+                    currency: string;
+                    amount: string;
+                    amountFormatted: string | null;
+                    amountUsd: string | null;
+                    detectedAt: string;
+                  })[];
+                sweeps: ({
+                    id: string;
+                    depositId: string;
+                    /** @enum {string} */
+                    purpose: "fill" | "refund";
+                    /** @enum {string} */
+                    status: "pending" | "submitted" | "confirmed" | "failed";
+                    chainId: number;
+                    recipient: string;
+                    currency: string;
+                    amount: string;
+                    amountFormatted: string | null;
+                    amountUsd: string | null;
+                    transactionHash: string | null;
+                    createdAt: string;
+                    updatedAt: string;
+                  })[];
+                fills: ({
+                    sweepId: string;
+                    requestId: string | null;
+                    orderId: string | null;
+                    chainId: number | null;
+                    recipient: string | null;
+                    currency: string | null;
+                    amount: string | null;
+                    amountFormatted: string | null;
+                    amountUsd: string | null;
+                    transactions: {
+                        chainId: number;
+                        hash: string;
+                      }[];
+                    updatedAt: string;
+                    /** @enum {string} */
+                    status: "submitted" | "success" | "failure";
+                    /** @enum {string|null} */
+                    failureReason: "fill_failed" | null;
+                  })[];
+                refunds: ({
+                    sweepId: string;
+                    requestId: string | null;
+                    orderId: string | null;
+                    chainId: number | null;
+                    recipient: string | null;
+                    currency: string | null;
+                    amount: string | null;
+                    amountFormatted: string | null;
+                    amountUsd: string | null;
+                    transactions: {
+                        chainId: number;
+                        hash: string;
+                      }[];
+                    updatedAt: string;
+                    /** @enum {string} */
+                    status: "pending" | "success" | "failure";
+                    /** @enum {string|null} */
+                    failureReason: "refund_failed" | null;
+                  })[];
+                nextPageToken: string | null;
+              };
+              timestamp: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        401: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        404: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        500: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        503: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/deposit-addresses/{depositAddressId}/disable/v2": {
+    post: {
+      parameters: {
+        header?: {
+          /** @description API key for authentication. */
+          "x-api-key"?: string;
+          /** @description Developer portal key for authentication. */
+          "x-dev-portal-key"?: string;
+        };
+        path: {
+          depositAddressId: string;
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        401: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        404: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        500: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        503: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
             };
           };
         };
@@ -793,9 +1013,9 @@ export interface paths {
             permitExpiry?: number;
             /** @description Return protocol data for on-chain intent validation. This includes protocol.v2.orderSignature and may increase quote latency. */
             includeProtocolData?: boolean;
-            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. For new requests, EXACT_OUTPUT is only supported when strict is also enabled. */
+            /** @description Use a deposit address when calldata cannot be sent with the origin transaction. In /quote/v2, creation follows the requested trade type. */
             useDepositAddress?: boolean;
-            /** @description When used with useDepositAddress, enables a strict deposit address that is tied to a specific order. Underpayments fail and refund, exact payments fill, and overpayments fill the quoted amount while refunding the excess in a separate refund leg. EXACT_OUTPUT deposit-address requests are only supported in strict mode. Open-ended deposit addresses remain the flexible path for variable deposited amounts. Requires a refundTo address. */
+            /** @description Deprecated and ignored by /quote/v2. Deprecated quote endpoints retain their existing strict behavior. */
             strict?: boolean;
             /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. Must be 0–10000 bps. */
             slippageTolerance?: string;
@@ -817,6 +1037,8 @@ export interface paths {
             sponsoredFeeComponents?: ("execution" | "swap" | "relay" | "app" | "rent")[];
             /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. subsidizeFees must be enabled. The sponsor will cover fees up to this cap and the user pays any remainder. */
             maxSubsidizationAmount?: string;
+            /** @description The share of each sponsored fee component the sponsor covers, in bps, e.g 10000 = 100% and 2500 = 25%. subsidizeFees must be enabled. Defaults to full coverage when omitted; the user pays the remainder. Applied before maxSubsidizationAmount, which still caps the sponsor's total. */
+            subsidizationBps?: number;
             /**
              * @deprecated
              * @description Deprecated compatibility alias that adds "rent" to sponsoredFeeComponents.
@@ -846,8 +1068,16 @@ export interface paths {
             disableSwapProviderPreference?: boolean;
             /** @description Whether to disable origin swaps. */
             disableOriginSwaps?: boolean;
+            /** @description Whether to return an inexecutable quote meant to be used as a preview. */
+            indicativeQuote?: boolean;
             /** @description The rate to charge for fixed spread quotes. */
             fixedRate?: string;
+            /** @description Requester-provided price (destination-leg output units per input unit) to compare router quotes against when fastestInPriceRange is enabled for the API key. Quotes more than 20% below it are skipped; quotes above it are always accepted. */
+            referencePrice?: string;
+            /** @description Whether to use route racing for this quote (executing multiple candidate routes on-chain and keeping the best), when the API key is authorized for it. */
+            useRouteRacing?: boolean;
+            /** @description Minimum fill size in USD eligible for route racing. Defaults to 100. Route racing has no maximum fill size. */
+            routeRacingMinUsdSize?: number;
             /** @description Time-to-live for the quote, in seconds, measured from when the quote was generated. If the request is not filled within this window it is refunded instead of filled. */
             ttl?: number;
           };
@@ -858,6 +1088,8 @@ export interface paths {
         200: {
           content: {
             "application/json": {
+              /** @description A unique identifier for the quote */
+              requestId?: string;
               /**
                * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
                * @example [
@@ -904,6 +1136,8 @@ export interface paths {
                   requestId?: string;
                   /** @description The deposit address for the bridge request */
                   depositAddress?: string;
+                  /** @description The Deposit Address service resource identifier */
+                  depositAddressId?: string;
                   /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
                   items: {
                       /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
@@ -1162,6 +1396,8 @@ export interface paths {
                   selectedComponents: ("execution" | "swap" | "relay" | "app" | "rent")[];
                   /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                   maxSubsidizationAmount?: string;
+                  /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                  subsidizationBps?: number;
                   /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                   capHit: boolean;
                   /** @description Per-bucket sponsorship details for the sponsorable fee components. */
@@ -1862,6 +2098,8 @@ export interface paths {
                   selectedComponents: ("execution" | "swap" | "relay" | "app" | "rent")[];
                   /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                   maxSubsidizationAmount?: string;
+                  /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                  subsidizationBps?: number;
                   /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                   capHit: boolean;
                   /** @description Per-bucket sponsorship details for the sponsorable fee components. */
@@ -3125,9 +3363,9 @@ export interface paths {
             permitExpiry?: number;
             /** @description Return protocol data for on-chain intent validation. This includes protocol.v2.orderSignature and may increase quote latency. */
             includeProtocolData?: boolean;
-            /** @description Enable this to use a deposit address when bridging, in scenarios where calldata cannot be sent alongside the transaction. only works on native currency bridges. For new requests, EXACT_OUTPUT is only supported when strict is also enabled. */
+            /** @description Use a deposit address when calldata cannot be sent with the origin transaction. In /quote/v2, creation follows the requested trade type. */
             useDepositAddress?: boolean;
-            /** @description When used with useDepositAddress, enables a strict deposit address that is tied to a specific order. Underpayments fail and refund, exact payments fill, and overpayments fill the quoted amount while refunding the excess in a separate refund leg. EXACT_OUTPUT deposit-address requests are only supported in strict mode. Open-ended deposit addresses remain the flexible path for variable deposited amounts. Requires a refundTo address. */
+            /** @description Deprecated and ignored by /quote/v2. Deprecated quote endpoints retain their existing strict behavior. */
             strict?: boolean;
             /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. Must be 0–10000 bps. */
             slippageTolerance?: string;
@@ -3149,6 +3387,8 @@ export interface paths {
             sponsoredFeeComponents?: ("execution" | "swap" | "relay" | "app" | "rent")[];
             /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. subsidizeFees must be enabled. The sponsor will cover fees up to this cap and the user pays any remainder. */
             maxSubsidizationAmount?: string;
+            /** @description The share of each sponsored fee component the sponsor covers, in bps, e.g 10000 = 100% and 2500 = 25%. subsidizeFees must be enabled. Defaults to full coverage when omitted; the user pays the remainder. Applied before maxSubsidizationAmount, which still caps the sponsor's total. */
+            subsidizationBps?: number;
             /**
              * @deprecated
              * @description Deprecated compatibility alias that adds "rent" to sponsoredFeeComponents.
@@ -3178,8 +3418,16 @@ export interface paths {
             disableSwapProviderPreference?: boolean;
             /** @description Whether to disable origin swaps. */
             disableOriginSwaps?: boolean;
+            /** @description Whether to return an inexecutable quote meant to be used as a preview. */
+            indicativeQuote?: boolean;
             /** @description The rate to charge for fixed spread quotes. */
             fixedRate?: string;
+            /** @description Requester-provided price (destination-leg output units per input unit) to compare router quotes against when fastestInPriceRange is enabled for the API key. Quotes more than 20% below it are skipped; quotes above it are always accepted. */
+            referencePrice?: string;
+            /** @description Whether to use route racing for this quote (executing multiple candidate routes on-chain and keeping the best), when the API key is authorized for it. */
+            useRouteRacing?: boolean;
+            /** @description Minimum fill size in USD eligible for route racing. Defaults to 100. Route racing has no maximum fill size. */
+            routeRacingMinUsdSize?: number;
             /** @description Time-to-live for the quote, in seconds, measured from when the quote was generated. If the request is not filled within this window it is refunded instead of filled. */
             ttl?: number;
           };
@@ -3190,6 +3438,8 @@ export interface paths {
         200: {
           content: {
             "application/json": {
+              /** @description A unique identifier for the quote */
+              requestId?: string;
               /**
                * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
                * @example [
@@ -3236,6 +3486,8 @@ export interface paths {
                   requestId?: string;
                   /** @description The deposit address for the bridge request */
                   depositAddress?: string;
+                  /** @description The Deposit Address service resource identifier */
+                  depositAddressId?: string;
                   /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
                   items: {
                       /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
@@ -3494,6 +3746,8 @@ export interface paths {
                   selectedComponents: ("execution" | "swap" | "relay" | "app" | "rent")[];
                   /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                   maxSubsidizationAmount?: string;
+                  /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                  subsidizationBps?: number;
                   /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                   capHit: boolean;
                   /** @description Per-bucket sponsorship details for the sponsorable fee components. */
@@ -4194,6 +4448,8 @@ export interface paths {
                   selectedComponents: ("execution" | "swap" | "relay" | "app" | "rent")[];
                   /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                   maxSubsidizationAmount?: string;
+                  /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                  subsidizationBps?: number;
                   /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                   capHit: boolean;
                   /** @description Per-bucket sponsorship details for the sponsorable fee components. */
@@ -5807,512 +6063,6 @@ export interface paths {
       };
     };
   };
-  "/execute/swap": {
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Address that is depositing funds on the origin chain and submitting transactions or signatures */
-            user: string;
-            /** @description Address that is receiving the funds on the destination chain, if not specified then this will default to the user address */
-            recipient?: string;
-            originChainId: number;
-            destinationChainId: number;
-            originCurrency: string;
-            destinationCurrency: string;
-            /** @description Amount to swap as the base amount (can be switched to exact input/output using the dedicated flag), denoted in the smallest unit of the specified currency (e.g., wei for ETH) */
-            amount: string;
-            /**
-             * @description Whether to use the amount as the output or the input for the basis of the swap
-             * @enum {string}
-             */
-            tradeType: "EXACT_INPUT" | "EXACT_OUTPUT" | "EXPECTED_OUTPUT";
-            txs?: {
-                to?: string;
-                value?: string;
-                data?: string;
-              }[];
-            source?: string;
-            /** @description Address to send the refund to in the case of failure, if not specified then the recipient address or user address is used */
-            refundTo?: string;
-            /**
-             * @deprecated
-             * @description Always refund on the origin chain in case of any issues
-             */
-            refundOnOrigin?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
-            useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
-            useFallbacks?: boolean;
-            /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
-            usePermit?: boolean;
-            /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
-            slippageTolerance?: string;
-            appFees?: {
-                /** @description Address that will receive the app fee */
-                recipient?: string;
-                /** @description App fees to be charged for execution in basis points, e.g. 100 = 1% */
-                fee?: string;
-              }[];
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              /**
-               * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
-               * @example [
-               *   {
-               *     "id": "deposit",
-               *     "action": "Confirm transaction in your wallet",
-               *     "description": "Depositing funds to the relayer to execute the swap for USDC",
-               *     "kind": "transaction",
-               *     "requestId": "0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
-               *     "items": [
-               *       {
-               *         "status": "incomplete",
-               *         "data": {
-               *           "from": "0x0CccD55A5Ac261Ea29136831eeaA93bfE07f5Db6",
-               *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x00fad611",
-               *           "value": "1000000000000000000",
-               *           "maxFeePerGas": "12205661344",
-               *           "maxPriorityFeePerGas": "2037863396",
-               *           "chainId": 1
-               *         },
-               *         "check": {
-               *           "endpoint": "/intents/status?requestId=0x92b99e6e1ee1deeb9531b5ad7f87091b3d71254b3176de9e8b5f6c6d0bd3a331",
-               *           "method": "GET"
-               *         }
-               *       }
-               *     ]
-               *   }
-               * ]
-               */
-              steps?: {
-                  /** @description Unique identifier tied to the step */
-                  id?: string;
-                  /** @description A call to action for the step */
-                  action?: string;
-                  /** @description A short description of the step and what it entails */
-                  description?: string;
-                  /** @description The kind of step, can either be a transaction or a signature. Transaction steps require submitting a transaction while signature steps require submitting a signature */
-                  kind?: string;
-                  /** @description A unique identifier for this step, tying all related transactions together */
-                  requestId?: string;
-                  /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
-                  items?: {
-                      /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
-                      status?: string;
-                      data?: unknown;
-                      /** @description Details an endpoint and a method you should poll to get confirmation, the endpoint should return a boolean success flag which can be used to determine if the step item is complete */
-                      check?: {
-                        /** @description The endpoint to confirm that the step item was successfully completed */
-                        endpoint?: string;
-                        /** @description The REST method to access the endpoint */
-                        method?: string;
-                      };
-                    }[];
-                }[];
-              fees?: {
-                /**
-                 * @description Origin chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                gas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Combination of the relayerGas and relayerService to give you the full relayer fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayer?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Destination chain gas fee
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerGas?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the relay solver, note that this value can be negative (which represents network rewards for moving in a direction that optimizes liquidity distribution)
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                relayerService?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                app?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @description The amount of fees for the request that are subsidized by the request sponsor. Does not include deposit origin gas unless it is a permit based deposit.
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                subsidized?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-              };
-              breakdown?: {
-                  /** @description Amount that will be swapped in the estimated time */
-                  value?: string;
-                  /** @description Estimated swap time in seconds */
-                  timeEstimate?: number;
-                }[];
-              balances?: {
-                /** @description The user's balance in the given currency on the origin chain */
-                userBalance?: string;
-                /** @description The minimum balance the user needs to have to swap */
-                requiredToSolve?: string;
-              };
-              /** @description A summary of the swap and what the user should expect to happen given an input */
-              details?: {
-                /** @description The operation that will be performed, possible options are send, swap, wrap, unwrap, bridge */
-                operation?: string;
-                /** @description Estimated swap time in seconds */
-                timeEstimate?: number;
-                /** @description The user's balance in the given currency on the origin chain */
-                userBalance?: string;
-                /** @description The address that deposited the funds */
-                sender?: string;
-                /** @description The address that will be receiving the swap output */
-                recipient?: string;
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyIn?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /**
-                 * @example {
-                 *   "currency": {
-                 *     "chainId": 8453,
-                 *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                 *     "symbol": "USDC",
-                 *     "name": "USD Coin",
-                 *     "decimals": 6,
-                 *     "metadata": {
-                 *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                 *       "verified": false,
-                 *       "isNative": false
-                 *     }
-                 *   },
-                 *   "amount": "30754920",
-                 *   "amountFormatted": "30.75492",
-                 *   "amountUsd": "30.901612",
-                 *   "minimumAmount": "30454920"
-                 * }
-                 */
-                currencyOut?: {
-                  currency?: {
-                    chainId?: number;
-                    address?: string;
-                    symbol?: string;
-                    name?: string;
-                    decimals?: number;
-                    metadata?: {
-                      logoURI?: string;
-                      verified?: boolean;
-                      isNative?: boolean;
-                    };
-                  };
-                  amount?: string;
-                  amountFormatted?: string;
-                  amountUsd?: string;
-                  minimumAmount?: string;
-                };
-                /** @description The difference between the input and output values, including fees */
-                totalImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                /** @description The impact of the swap, not factoring in fees */
-                swapImpact?: {
-                  usd?: string;
-                  percent?: string;
-                };
-                /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
-                rate?: string;
-                slippageTolerance?: {
-                  /** @description The total slippage tolerance applied to the order, in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. The origin and destination breakdowns are alternative allocations of this budget and are not additive. */
-                  total?: string;
-                  /** @description The slippage tolerance on the origin chain swap */
-                  origin?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                  /** @description The slippage tolerance on the destination chain swap */
-                  destination?: {
-                    usd?: string;
-                    value?: string;
-                    percent?: string;
-                  };
-                };
-              };
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-              errorCode?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        401: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        500: {
-          content: {
-            "application/json": {
-              message?: string;
-            };
-          };
-        };
-      };
-    };
-  };
   "/execute": {
     post: {
       parameters: {
@@ -6352,7 +6102,7 @@ export interface paths {
             /** @description Options related to gas fee sponsorship, app referrer and destination calls */
             executionOptions: {
               /** @description The referrer of the app which is executing the gasless transaction */
-              referrer: string;
+              referrer?: string;
               /** @description If the app should pay for the fees associated with the request */
               subsidizeFees: boolean;
               /** @description Destination execution data for the gasless transaction */
@@ -6467,7 +6217,7 @@ export interface paths {
             });
           };
         };
-        /** @description Unauthorized - Missing or invalid API key or referrer */
+        /** @description Unauthorized - Missing or invalid API key */
         401: {
           content: {
             "application/json": {
@@ -6721,79 +6471,10 @@ export interface paths {
               destinationChainId?: number;
               /** @description The timestamp when the quote request was created */
               quoteCreatedAt?: number;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/requests/{requestId}/signature": {
-    get: {
-      parameters: {
-        path: {
-          requestId: string;
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              requestData?: {
-                originChainId?: number;
-                originUser?: string;
-                originCurrency?: string;
-                originAmount?: string;
-                originTransferDestination?: string;
-                destinationChainId?: number;
-                destinationUser?: string;
-              };
-              signature?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-              code?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/requests/{requestId}/signature/v2": {
-    get: {
-      parameters: {
-        path: {
-          requestId: string;
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              requestData?: {
-                originChainId?: number;
-                originUser?: string;
-                originCurrency?: string;
-                destinationChainId?: number;
-                destinationUser?: string;
-                destinationCurrency?: string;
-              };
-              signature?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              message?: string;
-              code?: string;
+              /** @enum {string|null} */
+              failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A" | null;
+              /** @enum {string|null} */
+              refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED" | null;
             };
           };
         };
@@ -7175,7 +6856,7 @@ export interface paths {
                     /** @enum {string} */
                     failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A";
                     /** @enum {string} */
-                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP";
+                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED";
                     /** @description Regenerated requestId that now owns the sweep/fill for a superseded deposit-address request. */
                     supersededByRequestId?: string | null;
                     failedTxHash?: string;
@@ -7293,13 +6974,13 @@ export interface paths {
                       amountUsd?: string;
                       minimumAmount?: string;
                     };
-                    appFees?: {
-                        recipient?: string;
-                        bps?: string;
-                        amount?: string;
-                        amountUsd?: string;
-                        amountUsdCurrent?: string;
-                      }[];
+                    appFees?: ({
+                        recipient?: string | null;
+                        bps?: string | null;
+                        amount?: string | null;
+                        amountUsd?: string | null;
+                        amountUsdCurrent?: string | null;
+                      })[];
                     subsidizedFee?: {
                       origin?: {
                         amount?: string;
@@ -7322,6 +7003,8 @@ export interface paths {
                         selectedComponents: ("execution" | "swap" | "relay" | "app" | "rent")[];
                         /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                         maxSubsidizationAmount?: string;
+                        /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                        subsidizationBps?: number;
                         /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                         capHit: boolean;
                         /** @description Per-bucket sponsorship details for the sponsorable fee components. */
@@ -8022,6 +7705,8 @@ export interface paths {
                         selectedComponents: ("execution" | "swap" | "relay" | "app" | "rent")[];
                         /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                         maxSubsidizationAmount?: string;
+                        /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                        subsidizationBps?: number;
                         /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                         capHit: boolean;
                         /** @description Per-bucket sponsorship details for the sponsorable fee components. */
@@ -8775,13 +8460,13 @@ export interface paths {
                         };
                       };
                     } | null;
-                    paidAppFees?: {
-                        recipient?: string;
-                        bps?: string;
-                        amount?: string;
-                        amountUsd?: string;
-                        amountUsdCurrent?: string;
-                      }[];
+                    paidAppFees?: ({
+                        recipient?: string | null;
+                        bps?: string | null;
+                        amount?: string | null;
+                        amountUsd?: string | null;
+                        amountUsdCurrent?: string | null;
+                      })[];
                     platformFee?: ({
                       bucket?: string;
                       ruleId?: string;
@@ -9322,6 +9007,14 @@ export interface paths {
                   updatedAt?: string;
                 })[];
               continuation?: string;
+              deprecation?: {
+                message: string;
+                deprecatedAt: string;
+                throttledFrom: string;
+                sunsetAt: string;
+                successor: string;
+                migrationGuide: string;
+              };
             };
           };
         };
@@ -9369,11 +9062,13 @@ export interface paths {
           /** @description Filter requests by failure reason. Only returns requests that failed with this specific reason. */
           failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A";
           /** @description Filter requests by refund failure reason. */
-          refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP";
+          refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED";
           /** @description Filter requests by API key. Accepts a single value or a comma-separated list (e.g. key1,key2) — results include requests matching any of the supplied keys. */
           apiKey?: string;
           /** @description Filter requests by requestType (case-insensitive). Supported values: Bridge, Crosschain Swap, Same-chain Swap, Send, Wrap, Unwrap, Call. */
           requestType?: string;
+          /** @description Filter requests by the exact `referrer` value supplied at quote time. Must be combined with the `apiKey` parameter, and every supplied key must belong to the authenticating integrator — referrer filtering only exposes your own requests. */
+          referrer?: string;
           /** @description Filter by origin currency chain ID. */
           currencyInChainId?: number;
           /** @description Filter by destination currency chain ID. */
@@ -9416,7 +9111,7 @@ export interface paths {
           includeAuthenticatedData?: boolean;
           /** @description Only effective when `id` is also provided. When true, returns the parent request AND any child requests. When false or omitted, only the exact `request_id` match is returned. */
           includeChildRequests?: boolean;
-          /** @description JSON-encoded array of filter-group objects. Fields within each group are AND'd; groups are OR'd. Prefix a key with 'not:' to negate it (must_not). Values can be a scalar or an array (OR semantics within the field). Example: [{"depositAddress":"0xabc","originChainId":8453},{"depositAddress":"0x123","originChainId":1}]. Negation example: [{"not:status":"failure"}]. Array value example: [{"not:status":["failure","refund"]}]. */
+          /** @description JSON-encoded array of filter-group objects. Fields within each group are AND'd; groups are OR'd. Prefix a key with 'not:' to negate it (must_not). Values can be a scalar or an array (OR semantics within the field). Example: [{"depositAddress":"0xabc","originChainId":8453},{"depositAddress":"0x123","originChainId":1}]. Negation example: [{"not:status":"failure"}]. Array value example: [{"not:status":["failure","refund"]}]. A value of null is a null-check ("is empty"/"is not empty") instead of an equality test, for any key. Null-check example: [{"depositAddress":null}] (is empty / does not exist), [{"not:depositAddress":null}] (is not empty / exists). null cannot be combined with real values in an array. Using a `referrer` key (or `not:referrer`) in any group requires the top-level `apiKey` parameter with keys owned by the authenticating integrator, which scopes the entire result set to your own requests. */
           filters?: string;
         };
         header: {
@@ -9454,7 +9149,7 @@ export interface paths {
                     /** @enum {string|null} */
                     failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A" | null;
                     /** @enum {string|null} */
-                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | null;
+                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED" | null;
                     failedTxHash?: string;
                     failedTxBlockNumber?: number;
                     failedCallData?: {
@@ -9493,19 +9188,19 @@ export interface paths {
                         stateChanges?: unknown;
                       })[];
                     appFees?: {
-                      quoted?: {
-                          recipient?: string;
-                          bps?: string;
-                          amount?: string;
-                          amountFormatted?: string;
-                        }[];
-                      actual?: {
-                          recipient?: string;
-                          bps?: string;
-                          amount?: string;
-                          amountFormatted?: string;
-                          amountUsd?: string;
-                        }[];
+                      quoted?: ({
+                          recipient?: string | null;
+                          bps?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
+                        })[];
+                      actual?: ({
+                          recipient?: string | null;
+                          bps?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
+                          amountUsd?: string | null;
+                        })[];
                       currency?: {
                         chainId?: number;
                         address?: string;
@@ -9527,6 +9222,8 @@ export interface paths {
                         selectedComponents: ("execution" | "swap" | "platform" | "app" | "rent")[];
                         /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                         maxSubsidizationAmount?: string;
+                        /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                        subsidizationBps?: number;
                         /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                         capHit: boolean;
                         /** @description Per-bucket sponsorship details for the five sponsorable fee components. */
@@ -9537,24 +9234,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description Swap fee sponsorship details. */
@@ -9563,24 +9260,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description Platform fee sponsorship details. */
@@ -9589,24 +9286,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description App fee sponsorship details. */
@@ -9615,24 +9312,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description Solana ATA rent sponsorship details. */
@@ -9641,40 +9338,40 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                         };
                         /** @description The total amount sponsored for this phase. */
                         sponsoredTotal: {
-                          amount?: string;
-                          amountFormatted?: string;
-                          amountUsd?: string;
-                          minimumAmount?: string;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
+                          amountUsd?: string | null;
+                          minimumAmount?: string | null;
                         };
                         /** @description The total amount the user paid across the sponsorable fee buckets for this phase. */
                         userPaysTotal: {
-                          amount?: string;
-                          amountFormatted?: string;
-                          amountUsd?: string;
-                          minimumAmount?: string;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
+                          amountUsd?: string | null;
+                          minimumAmount?: string | null;
                         };
                       };
                       /** @description The post-solve sponsorship outcome recorded for the request. */
@@ -9683,6 +9380,8 @@ export interface paths {
                         selectedComponents: ("execution" | "swap" | "platform" | "app" | "rent")[];
                         /** @description The requested sponsorship cap in USD micro-units, when one was configured for the request. */
                         maxSubsidizationAmount?: string;
+                        /** @description The requested share of each selected fee bucket the sponsor covers, in bps (10000 = 100%), when one was configured for the request. */
+                        subsidizationBps?: number;
                         /** @description Whether the configured sponsorship cap limited the selected fee buckets for this phase. */
                         capHit: boolean;
                         /** @description Per-bucket sponsorship details for the five sponsorable fee components. */
@@ -9693,24 +9392,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description Swap fee sponsorship details. */
@@ -9719,24 +9418,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description Platform fee sponsorship details. */
@@ -9745,24 +9444,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description App fee sponsorship details. */
@@ -9771,24 +9470,24 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                           /** @description Solana ATA rent sponsorship details. */
@@ -9797,40 +9496,40 @@ export interface paths {
                             selected: boolean;
                             /** @description The full amount charged for this fee bucket. */
                             total: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket covered by the sponsor. */
                             sponsored: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                             /** @description The portion of this fee bucket that remained user-paid. */
                             userPays: {
-                              amount?: string;
-                              amountFormatted?: string;
-                              amountUsd?: string;
-                              minimumAmount?: string;
+                              amount?: string | null;
+                              amountFormatted?: string | null;
+                              amountUsd?: string | null;
+                              minimumAmount?: string | null;
                             };
                           };
                         };
                         /** @description The total amount sponsored for this phase. */
                         sponsoredTotal: {
-                          amount?: string;
-                          amountFormatted?: string;
-                          amountUsd?: string;
-                          minimumAmount?: string;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
+                          amountUsd?: string | null;
+                          minimumAmount?: string | null;
                         };
                         /** @description The total amount the user paid across the sponsorable fee buckets for this phase. */
                         userPaysTotal: {
-                          amount?: string;
-                          amountFormatted?: string;
-                          amountUsd?: string;
-                          minimumAmount?: string;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
+                          amountUsd?: string | null;
+                          minimumAmount?: string | null;
                         };
                         /** @description How much the sponsor ultimately paid, denominated in the sponsor payment currency. */
                         sponsorPayment?: {
@@ -9857,71 +9556,71 @@ export interface paths {
                       };
                     }) | null;
                     /** @description Breakdown of fees by component, with quoted and actual values */
-                    fees?: {
+                    fees?: ({
                       /** @description Fees as estimated at quote time */
                       quoted?: {
                         /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
                         swap?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid to cover transaction execution costs */
                         execution?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid to the protocol */
                         platform?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
                         app?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid by a sponsor for this request */
                         sponsored?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                       };
                       /** @description Fees as computed at fill time */
                       actual?: {
                         /** @description Cost to execute swap or bridge depending on available liquidity. This value can be negative (representing network rewards for improving liquidity distribution) */
                         swap?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid to cover transaction execution costs */
                         execution?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid to the protocol */
                         platform?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid to the app. Currency will be the same as the relayer fee currency. This needs to be claimed later by the app owner and is not immediately distributed to the app */
                         app?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                         /** @description Fees paid by a sponsor for this request */
                         sponsored?: {
-                          usd?: string;
-                          amount?: string;
-                          amountFormatted?: string;
+                          usd?: string | null;
+                          amount?: string | null;
+                          amountFormatted?: string | null;
                         };
                       };
                       currency?: {
@@ -9936,11 +9635,15 @@ export interface paths {
                           isNative?: boolean;
                         };
                       };
-                    } | null;
+                    }) | null;
                     /** @description Platform fee — only returned when the caller authenticates as the request's creator integrator. */
                     platformFee?: Record<string, unknown> | null;
                     /** @description Referrer — only returned when the caller authenticates as the request's creator integrator. */
                     referrer?: string | null;
+                    /** @description API key name — only returned when the caller authenticates as the request's creator integrator. */
+                    apiKeyName?: string | null;
+                    /** @description Address(es) that failed wallet screening and caused a BLOCKED_WALLET failure. Only returned when the caller authenticates as the request's creator integrator. Never includes screening-provider scores or reasons. */
+                    blockedAddresses?: string[] | null;
                     route?: ({
                       includedSwapSources?: string[];
                       includedOriginSwapSources?: string[];
@@ -10622,7 +10325,6 @@ export interface paths {
             "application/json": {
               AVAX?: number;
               ETH?: number;
-              DEGEN?: number;
               MATIC?: number;
               USDC?: number;
               XAI?: number;
@@ -10691,7 +10393,7 @@ export interface paths {
                   name?: string;
                   decimals?: number;
                   /** @enum {string} */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
                   metadata?: {
                     logoURI?: string;
                     verified?: boolean;
@@ -10753,7 +10455,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10857,7 +10559,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10888,7 +10590,7 @@ export interface paths {
               name?: string;
               decimals?: number;
               /** @enum {string} */
-              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm";
+              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
               metadata?: {
                 logoURI?: string;
                 verified?: boolean;
@@ -11293,6 +10995,7 @@ export interface paths {
               withdrawal?: {
                 [key: string]: unknown;
               } | null;
+              txHash?: string | null;
               reason?: string | null;
             };
           };

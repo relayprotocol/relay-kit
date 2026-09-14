@@ -72,7 +72,7 @@ export const adaptTronWallet = (
     },
     handleConfirmTransactionStep: async (txId) => {
       const pollMs = 1500
-      const timeoutMs = 60_000
+      const timeoutMs = 90_000
       const targetConfs = 1
 
       const start = Date.now()
@@ -81,9 +81,10 @@ export const adaptTronWallet = (
         0
 
       while (true) {
-        // 1) Ask for the execution receipt (appears once included in a block)
+        // 1) Ask for the execution receipt (appears once included in a block).
+        // Fullnode variant: the solidity node only serves it after solidification (~57s).
         const info = await tronWeb.trx
-          .getTransactionInfo(txId)
+          .getUnconfirmedTransactionInfo(txId)
           .catch(() => undefined)
 
         if (info && typeof info.blockNumber === 'number') {

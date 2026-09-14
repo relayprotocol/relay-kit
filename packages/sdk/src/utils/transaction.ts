@@ -17,6 +17,7 @@ import type {
   AxiosResponse
 } from 'axios'
 import { getClient } from '../client.js'
+import { isSolverFilledStep } from './solverFill.js'
 import {
   DepositTransactionTimeoutError,
   SolverStatusTimeoutError,
@@ -524,10 +525,14 @@ export async function sendTransactionSafely(
     const confirmationPromise = pollForConfirmation(receiptController)
 
     await Promise.race([receiptPromise, confirmationPromise])
-    const isSameChain = details?.currencyOut?.currency?.chainId === chainId
+    // Same-chain intents (deposit) still need a solver fill, so only atomic
+    // same-chain steps are complete once the origin receipt lands.
+    const isSameChainAtomic =
+      details?.currencyOut?.currency?.chainId === chainId &&
+      !isSolverFilledStep(step)
 
     if (waitingForConfirmation) {
-      if (!isSameChain) {
+      if (!isSameChainAtomic) {
         await confirmationPromise
       } else {
         waitingForConfirmation = false

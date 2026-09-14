@@ -14,6 +14,7 @@ export type ChainVM =
   | 'lvm'
   | 'tonvm'
   | 'xrpvm'
+  | 'hederavm'
 
 export type RelayChain = {
   id: number

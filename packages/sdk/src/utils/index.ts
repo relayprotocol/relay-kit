@@ -12,6 +12,7 @@ export {
 } from './viemWallet.js'
 export { convertViemChainToRelayChain, type RelayAPIChain } from './chain.js'
 export { getCurrentStepData } from './getCurrentStepData.js'
+export { isSolverFilledStep } from './solverFill.js'
 export {
   type SimulateContractRequest,
   isSimulateContractRequest
