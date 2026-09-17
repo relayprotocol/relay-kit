@@ -47,7 +47,7 @@ import {
   findSupportedWallet,
   isChainVmTypeSupported
 } from '../../utils/address.js'
-import { adaptViemWallet, isDeadAddress } from '@relayprotocol/relay-sdk'
+import { adaptViemWallet } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
@@ -502,9 +502,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           referrer: relayClient?.source ?? undefined,
           useDepositAddress,
           indicativeQuote:
-            !useDepositAddress &&
-            (isDeadAddress(fromAddressWithFallback) ||
-              isDeadAddress(toAddressWithFallback))
+            !useDepositAddress && (!isValidFromAddress || !isValidToAddress)
               ? true
               : undefined,
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
@@ -541,7 +539,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   }
 
   const onQuoteReceived: Parameters<typeof useQuote>['4'] = (
-    { details, steps },
+    { details, steps, requestId },
     options
   ) => {
     const interval = get15MinuteInterval()
@@ -563,7 +561,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         details?.slippageTolerance?.origin?.percent,
       steps,
       quote_request_id: quoteRequestId,
-      quote_id: steps ? extractQuoteId(steps) : undefined
+      quote_id: extractQuoteId(steps, requestId)
     })
   }
 
@@ -814,7 +812,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           quote?.fees,
           currentSteps ?? null,
           linkedWallet?.connector,
-          quoteParameters
+          quoteParameters,
+          quote?.requestId
         ),
         error_message: errorMessage
       }
@@ -876,12 +875,13 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         quote?.fees,
         quote?.steps ? (quote?.steps as Execute['steps']) : null,
         linkedWallet?.connector,
-        quoteParameters
+        quoteParameters,
+        quote?.requestId
       )
       onAnalyticEvent?.(EventNames.SWAP_CTA_CLICKED, swapEventData)
       setWaitingForSteps(true)
 
-      if (!executeSwap) {
+      if (!executeSwap || !quote?.steps?.length) {
         throw new Error('Missing a quote')
       }
 
@@ -931,7 +931,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           quote?.fees,
           currentSteps,
           linkedWallet?.connector,
-          quoteParameters
+          quoteParameters,
+          quote?.requestId
         )
         if (step && stepItem) {
           //@ts-ignore

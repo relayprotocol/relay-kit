@@ -205,9 +205,11 @@ export const isHighRelayerServiceFeeUsd = (quote?: QuoteResponse) => {
 }
 
 export const extractQuoteId = (
-  steps?: Execute['steps'] | QuoteResponse['steps']
+  steps?: Execute['steps'] | QuoteResponse['steps'],
+  // Indicative quotes return no steps, so the id only exists at the top level
+  requestId?: string
 ) => {
-  return steps && steps[0] ? steps[0].requestId : undefined
+  return (steps && steps[0] ? steps[0].requestId : undefined) ?? requestId
 }
 
 export const extractDepositAddress = (steps?: Execute['steps']) => {
@@ -281,7 +283,8 @@ export const getSwapEventData = (
   fees: Execute['fees'],
   steps: Execute['steps'] | null,
   connector?: string,
-  quoteParameters?: Parameters<typeof useQuote>['2']
+  quoteParameters?: Parameters<typeof useQuote>['2'],
+  requestId?: string
 ) => {
   let operation: string | undefined = details?.operation
 
@@ -306,7 +309,7 @@ export const getSwapEventData = (
   return {
     wallet_connector: connector,
     quote_request_id: quoteRequestId,
-    quote_id: steps ? extractQuoteId(steps) : undefined,
+    quote_id: extractQuoteId(steps ?? undefined, requestId),
     amount_in: details?.currencyIn?.amount,
     amount_in_formatted: parseFloat(
       `${details?.currencyIn?.amountFormatted ?? '0'}`
