@@ -1,5 +1,28 @@
 # @reservoir0x/relay-kit-ui
 
+## 12.0.1
+
+### Patch Changes
+
+- cbbf9c9: Fix Tron swap UX in the TRX/USDT flow. Tron balances now read from TronGrid's
+  fullnode endpoints (`wallet/getaccount`, `wallet/triggerconstantcontract`)
+  instead of the solidity node, so they reflect a completed swap without waiting
+  roughly a minute for solidification or needing a manual refresh.
+  `adaptTronWallet` confirms transactions with `getUnconfirmedTransactionInfo`,
+  which returns the receipt seconds after inclusion, so a successful approval no
+  longer hangs or reports a false "Transaction confirmation timed out".
+
+  Same-chain swaps that the solver has to fill — Tron TRX/USDT, deposit-address
+  routes, and forced solver execution — now show the cross-chain pending states
+  and wait for the fill to be confirmed before reporting success. Previously any
+  route whose origin and destination chain ids matched was assumed to settle with
+  the user's own transaction. The new `isSolverFilledStep` export identifies these
+  routes from the step the API returns.
+
+- Updated dependencies [cbbf9c9]
+  - @relayprotocol/relay-sdk@8.0.1
+  - @relayprotocol/relay-kit-hooks@5.0.1
+
 ## 12.0.0
 
 ### Major Changes

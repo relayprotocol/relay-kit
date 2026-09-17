@@ -47,7 +47,7 @@ import {
   findSupportedWallet,
   isChainVmTypeSupported
 } from '../../utils/address.js'
-import { adaptViemWallet } from '@relayprotocol/relay-sdk'
+import { adaptViemWallet, isDeadAddress } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
@@ -476,6 +476,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   )
 
   const shouldSetQuoteParameters = fromToken && toToken
+  const useDepositAddress = !fromChainWalletVMSupported
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     shouldSetQuoteParameters
@@ -499,7 +500,13 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
                   toToken.decimals
                 ).toString(),
           referrer: relayClient?.source ?? undefined,
-          useDepositAddress: !fromChainWalletVMSupported,
+          useDepositAddress,
+          indicativeQuote:
+            !useDepositAddress &&
+            (isDeadAddress(fromAddressWithFallback) ||
+              isDeadAddress(toAddressWithFallback))
+              ? true
+              : undefined,
           refundTo: fromToken?.chainId === 1337 ? address : undefined,
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
