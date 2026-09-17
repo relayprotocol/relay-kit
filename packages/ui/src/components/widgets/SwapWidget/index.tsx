@@ -1517,7 +1517,8 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                 ? (quote?.steps as Execute['steps'])
                                 : null,
                               linkedWallet?.connector,
-                              quoteParameters
+                              quoteParameters,
+                              quote?.requestId
                             )
                             onAnalyticEvent?.(
                               EventNames.SWAP_CTA_CLICKED,
