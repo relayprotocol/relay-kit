@@ -22,6 +22,7 @@ import type { AdaptedWallet, RelayChain } from '@relayprotocol/relay-sdk'
 import type { LinkedWallet } from '../../types/index.js'
 import { truncateAddress } from '../../utils/truncate.js'
 import { addressesEqual, isValidAddress } from '../../utils/address.js'
+import { isDeadAddress } from '@relayprotocol/relay-sdk'
 import {
   ProviderOptionsContext,
   useHapticEvent
@@ -108,8 +109,10 @@ export const CustomAddressModal: FC<Props> = ({
 
   const filteredRecentCustomAddresses = useMemo(
     () =>
-      recentCustomAddresses.filter((address) =>
-        isValidAddress(toChain?.vmType, address, toChain?.id)
+      recentCustomAddresses.filter(
+        (address) =>
+          isValidAddress(toChain?.vmType, address, toChain?.id) &&
+          !isDeadAddress(address)
       ),
     [recentCustomAddresses, toChain]
   )
@@ -173,7 +176,10 @@ export const CustomAddressModal: FC<Props> = ({
   useEffect(() => {
     if (isLighterChain && isEvmInput) {
       setAddress(resolvedLighterIndex ?? '')
-    } else if (isValidAddress(toChain?.vmType, input, toChain?.id)) {
+    } else if (
+      isValidAddress(toChain?.vmType, input, toChain?.id) &&
+      !isDeadAddress(input)
+    ) {
       setAddress(input)
     } else if (resolvedENS?.address) {
       setAddress(resolvedENS.address)

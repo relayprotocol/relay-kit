@@ -47,7 +47,7 @@ import {
   findSupportedWallet,
   isChainVmTypeSupported
 } from '../../utils/address.js'
-import { adaptViemWallet } from '@relayprotocol/relay-sdk'
+import { adaptViemWallet, isDeadAddress } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
@@ -368,13 +368,16 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       ? linkedWallets?.find((wallet) => wallet.address === recipient)
       : undefined) !== undefined
 
-  const isValidFromAddress = isValidAddress(
-    fromChain?.vmType,
-    address ?? '',
-    fromChain?.id,
-    linkedWallet?.connector,
-    connectorKeyOverrides
-  )
+  // A burn address is syntactically valid but is only ever a placeholder here
+  const isValidFromAddress =
+    !isDeadAddress(address) &&
+    isValidAddress(
+      fromChain?.vmType,
+      address ?? '',
+      fromChain?.id,
+      linkedWallet?.connector,
+      connectorKeyOverrides
+    )
   const fromAddressWithFallback = addressWithFallback(
     fromChain?.vmType,
     address,
@@ -405,6 +408,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   const isValidToAddress =
     !recipientIsDestinationToken &&
     !recipientIsKnownTokenContract &&
+    !isDeadAddress(recipient) &&
     isValidAddress(toChain?.vmType, recipient ?? '', toChain?.id)
 
   const toAddressWithFallback = addressWithFallback(

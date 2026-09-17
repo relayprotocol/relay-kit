@@ -1,5 +1,6 @@
 import {
   getDeadAddress,
+  isDeadAddress,
   type ChainVM,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
@@ -108,6 +109,7 @@ export const addressWithFallback = (
   connectorKeyOverrides?: Parameters<typeof isValidAddress>['4']
 ) => {
   return address &&
+    !isDeadAddress(address) &&
     isValidAddress(
       vmType ?? 'evm',
       address,
