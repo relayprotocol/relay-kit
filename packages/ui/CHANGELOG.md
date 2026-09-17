@@ -1,5 +1,11 @@
 # @reservoir0x/relay-kit-ui
 
+## 12.0.2
+
+### Patch Changes
+
+- a1f3a58: Use indicative quotes while the Swap Widget is previewing a route with placeholder sender or recipient addresses. Executable quotes are requested after valid wallet addresses are available.
+
 ## 12.0.1
 
 ### Patch Changes
