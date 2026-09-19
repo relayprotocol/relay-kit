@@ -223,7 +223,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     ? 'https://testnets.relay.link'
     : 'https://relay.link'
 
-  const requestId = useMemo(
+  const quoteRequestId = useMemo(
     () => extractDepositRequestId(quote?.steps as Execute['steps']),
     [quote]
   )
@@ -246,6 +246,10 @@ export const OnrampModal: FC<OnrampModalProps> = ({
       }
     }
   )
+
+  // A regenerated deposit-address fill leaves the quote's request pending
+  // forever; the polled request is the one that owns the active lifecycle.
+  const requestId = executionStatus?.requestId ?? quoteRequestId
 
   const fillTxHash = useMemo(() => {
     if (executionStatus?.txHashes && executionStatus?.txHashes[0]) {
@@ -306,7 +310,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         currency_in: fromToken?.symbol,
         chain_id_out: toToken?.chainId,
         currency_out: toToken?.symbol,
-        quote_id: requestId,
+        quote_id: quoteRequestId,
         txHashes: executionStatus.txHashes,
         amount,
         totalAmount,
@@ -344,7 +348,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
       setMoonPayIdAppended(true)
       appendMetadataToRequest(
         client?.baseApiUrl,
-        `${requestId}`,
+        `${quoteRequestId}`,
         {
           moonPayId: moonPayRequestId
         },
@@ -352,7 +356,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
       )
         ?.then(() => {
           client?.log(
-            ['Posting MoonPay request id', moonPayRequestId, requestId],
+            ['Posting MoonPay request id', moonPayRequestId, quoteRequestId],
             LogLevel.Verbose
           )
         })
@@ -394,7 +398,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
       onAnalyticEvent?.(EventNames.ONRAMP_ERROR, {
         error_message: errorMsg,
         wallet_connector: connector?.name,
-        quote_id: requestId,
+        quote_id: quoteRequestId,
         amount_in: amount,
         currency_in: fromToken?.symbol,
         chain_id_in: fromToken?.chainId,
@@ -408,7 +412,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     [
       executionStatus,
       connector,
-      requestId,
+      quoteRequestId,
       quote,
       toToken,
       fromToken,
@@ -484,7 +488,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         moonPayThemeId={moonPayThemeId}
         moonPayThemeMode={moonPayThemeMode}
         moonPayApiKey={moonPayApiKey}
-        quoteRequestId={requestId}
+        quoteRequestId={quoteRequestId}
         passthroughExternalId={passthroughExternalId}
         onError={(error) => {
           onOnrampError(error.message, error)
