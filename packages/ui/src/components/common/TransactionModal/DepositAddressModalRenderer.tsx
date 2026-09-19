@@ -122,7 +122,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
 
   const quote = fetchingQuote ? undefined : quoteData
 
-  const requestId = useMemo(
+  const quoteRequestId = useMemo(
     () => extractDepositRequestId(quote?.steps as Execute['steps']),
     [quote]
   )
@@ -245,6 +245,10 @@ export const DepositAddressModalRenderer: FC<Props> = ({
     }
   )
 
+  // A regenerated deposit-address fill leaves the quote's request pending
+  // forever; the polled request is the one that owns the active lifecycle.
+  const requestId = executionStatus?.requestId ?? quoteRequestId
+
   useEffect(() => {
     if (
       executionStatus?.status === 'failure' ||
@@ -263,7 +267,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
       onAnalyticEvent?.(EventNames.DEPOSIT_ADDRESS_SWAP_ERROR, {
         error_message: errorToJSON(executionStatus?.details ?? quoteError),
         wallet_connector: connector?.name,
-        quote_id: requestId,
+        quote_id: quoteRequestId,
         amount_in: parseFloat(`${debouncedInputAmountValue}`),
         currency_in: fromToken?.symbol,
         chain_id_in: fromToken?.chainId,
