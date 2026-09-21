@@ -243,7 +243,7 @@ export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
             margin: 0,
             width: '100%',
             border: 'none',
-            height: 500,
+            height: 540,
             overflowY: 'scroll'
           }}
           onUrlSignatureRequested={moonpayOnUrlSignatureRequested}
