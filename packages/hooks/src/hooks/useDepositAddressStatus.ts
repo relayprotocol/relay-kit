@@ -8,6 +8,8 @@ import { MAINNET_RELAY_API } from '@relayprotocol/relay-sdk'
 import { queryRequests } from './useRequests.js'
 
 export type DepositAddressStatusResponse = {
+  /** Id of the request that currently owns the deposit's lifecycle. */
+  requestId?: string
   status?:
     | 'refund'
     | 'waiting'
@@ -51,6 +53,7 @@ export const queryDepositAddressStatus = async function (
   }
 
   return {
+    requestId: request.id,
     status: request.status,
     details: request.data?.failReason ?? undefined,
     txHashes: request.data?.outTxs
