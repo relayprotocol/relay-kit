@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 12.0.3
+
+### Patch Changes
+
+- 47134a3: Deposit-address flows now report the request id that owns the active lifecycle. `useDepositAddressStatus` returns a `requestId` alongside `status`, and the Swap Widget's deposit-address modal and the Onramp Widget use it for the transaction link and the `requestId` passed to render props. Previously these used the request id from the quote's deposit step, which is left permanently `pending` when the fill is regenerated against the same deposit address. Analytics `quote_id` and the MoonPay metadata post still reference the quote's request id.
+- 8a4a40f: Fix the MoonPay checkout being cut off in the Onramp Widget. The embedded MoonPay iframe always fills its container and never reports its content height, so `overflowY: 'scroll'` on that container could never scroll — MoonPay's own layout is `overflow: hidden`, so anything past the 500px container was clipped. The widget now uses MoonPay's recommended 656px embedded height inside a scrollable wrapper that shrinks to fit the modal on short viewports.
+- d6344b7: Add Robinhood chain to Phantom supported chains
+- Updated dependencies [47134a3]
+  - @relayprotocol/relay-kit-hooks@5.1.0
+
 ## 12.0.2
 
 ### Patch Changes
