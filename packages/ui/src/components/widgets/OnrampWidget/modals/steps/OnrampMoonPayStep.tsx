@@ -42,6 +42,9 @@ type OnrampMoonPayStepProps = {
   onError: (error: Error) => void
 }
 
+// MoonPay's iframe always fills its container and never reports its content height.
+const MOONPAY_WIDGET_HEIGHT = 656
+
 const MoonPayBuyWidget = memo(
   lazy(() =>
     import('@moonpay/moonpay-react').then((module) => ({
@@ -88,6 +91,8 @@ export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
   const moonPayExternalId = !isPassthrough
     ? (quoteRequestId ?? undefined)
     : passthroughExternalId
+  // Modal padding, title and, outside passthrough, the token summary card.
+  const modalChromeHeight = isPassthrough ? 80 : 176
   useEffect(() => {
     if (window) {
       ;(window as any).relayOnrampStep = step
@@ -226,66 +231,73 @@ export const OnrampMoonPayStep: FC<OnrampMoonPayStepProps> = ({
         </Flex>
       ) : null}
       <Suspense fallback={<div></div>}>
-        <MoonPayBuyWidget
-          variant="embedded"
-          baseCurrencyCode={fiatCurrency.code}
-          quoteCurrencyAmount={`${totalAmount}`}
-          lockAmount="true"
-          currencyCode={moonPayCurrencyCode}
-          paymentMethod="credit_debit_card"
-          walletAddress={!isPassthrough ? depositAddress : recipient}
-          themeId={moonPayThemeId}
-          theme={moonPayThemeMode}
-          externalTransactionId={moonPayExternalId}
-          showWalletAddressForm="false"
-          visible
+        <div
           style={{
-            margin: 0,
             width: '100%',
-            border: 'none',
-            height: 500,
-            overflowY: 'scroll'
+            maxHeight: `min(${MOONPAY_WIDGET_HEIGHT}px, calc(85vh - ${modalChromeHeight}px))`,
+            overflowY: 'auto'
           }}
-          onUrlSignatureRequested={moonpayOnUrlSignatureRequested}
-          onTransactionCreated={async (props) => {
-            setMoonPayRequestId(props.id)
-            onAnalyticEvent?.(EventNames.ONRAMPING_MOONPAY_TX_START, {
-              ...props,
-              isPassthrough: (window as any).relayIsPassthrough
-            })
-            if (
-              window &&
-              (window as any).relayOnrampStep === OnrampStep.Moonpay
-            ) {
-              if (!(window as any).relayIsPassthrough) {
-                setStep(OnrampStep.Processing)
-                setProcessingStep(OnrampProcessingStep.Finalizing)
-              } else {
-                setStep(OnrampStep.ProcessingPassthrough)
+        >
+          <MoonPayBuyWidget
+            variant="embedded"
+            baseCurrencyCode={fiatCurrency.code}
+            quoteCurrencyAmount={`${totalAmount}`}
+            lockAmount="true"
+            currencyCode={moonPayCurrencyCode}
+            paymentMethod="credit_debit_card"
+            walletAddress={!isPassthrough ? depositAddress : recipient}
+            themeId={moonPayThemeId}
+            theme={moonPayThemeMode}
+            externalTransactionId={moonPayExternalId}
+            showWalletAddressForm="false"
+            visible
+            style={{
+              margin: 0,
+              width: '100%',
+              border: 'none',
+              height: MOONPAY_WIDGET_HEIGHT
+            }}
+            onUrlSignatureRequested={moonpayOnUrlSignatureRequested}
+            onTransactionCreated={async (props) => {
+              setMoonPayRequestId(props.id)
+              onAnalyticEvent?.(EventNames.ONRAMPING_MOONPAY_TX_START, {
+                ...props,
+                isPassthrough: (window as any).relayIsPassthrough
+              })
+              if (
+                window &&
+                (window as any).relayOnrampStep === OnrampStep.Moonpay
+              ) {
+                if (!(window as any).relayIsPassthrough) {
+                  setStep(OnrampStep.Processing)
+                  setProcessingStep(OnrampProcessingStep.Finalizing)
+                } else {
+                  setStep(OnrampStep.ProcessingPassthrough)
+                }
               }
-            }
-          }}
-          onTransactionCompleted={async (props) => {
-            onAnalyticEvent?.(EventNames.ONRAMPING_MOONPAY_TX_COMPLETE, {
-              ...props,
-              isPassthrough: (window as any).relayIsPassthrough
-            })
-            if (
-              window &&
-              (window as any).relayOnrampStep === OnrampStep.Processing &&
-              !(window as any).relayIsPassthrough
-            ) {
-              setProcessingStep(OnrampProcessingStep.Relaying)
-            } else if (
-              window &&
-              (window as any).relayIsPassthrough &&
-              (window as any).relayOnrampStep !== OnrampStep.Success
-            ) {
-              setProcessingStep(undefined)
-              onPassthroughSuccess()
-            }
-          }}
-        />
+            }}
+            onTransactionCompleted={async (props) => {
+              onAnalyticEvent?.(EventNames.ONRAMPING_MOONPAY_TX_COMPLETE, {
+                ...props,
+                isPassthrough: (window as any).relayIsPassthrough
+              })
+              if (
+                window &&
+                (window as any).relayOnrampStep === OnrampStep.Processing &&
+                !(window as any).relayIsPassthrough
+              ) {
+                setProcessingStep(OnrampProcessingStep.Relaying)
+              } else if (
+                window &&
+                (window as any).relayIsPassthrough &&
+                (window as any).relayOnrampStep !== OnrampStep.Success
+              ) {
+                setProcessingStep(undefined)
+                onPassthroughSuccess()
+              }
+            }}
+          />
+        </div>
       </Suspense>
     </Flex>
   )
