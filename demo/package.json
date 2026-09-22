@@ -44,7 +44,6 @@
     "next": "15.5.9",
     "next-remote-watch": "^1.0.0",
     "next-themes": "^0.2.0",
-    "porto": "^0.0.85",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tronweb": "^6.0.4",
