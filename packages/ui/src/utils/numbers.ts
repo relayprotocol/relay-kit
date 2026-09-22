@@ -347,11 +347,26 @@ function convertBpsToPercent(bps?: string) {
   return formatted.replace(/\.0+$/, '').replace(/\.00$/, '')
 }
 
+/**
+ * Adds comma thousands separators to the integer part of a plain numeric string,
+ * preserving the decimal part as typed (e.g. "1234.50" -> "1,234.50", "1000." -> "1,000.").
+ * Non-numeric strings are returned unchanged.
+ */
+function formatAmountWithCommas(amount: string) {
+  if (!/^\d*(\.\d*)?$/.test(amount)) return amount
+  const [integerPart, decimalPart] = amount.split('.')
+  const groupedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return decimalPart !== undefined
+    ? `${groupedInteger}.${decimalPart}`
+    : groupedInteger
+}
+
 export {
   formatDollar,
   formatDollarCompact,
   formatBN,
   formatFixedLength,
+  formatAmountWithCommas,
   formatNumber,
   formatSignificantDigits,
   truncateBalance,
