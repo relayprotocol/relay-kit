@@ -9,7 +9,10 @@ import type { AxiosRequestConfig } from 'axios'
 import { LogLevel } from '../logger.js'
 import type { RelayClient } from '../../client.js'
 import type { SetStateData } from './index.js'
-import { postHyperliquidSignature } from '../hyperliquid.js'
+import {
+  findHyperliquidSendHash,
+  postHyperliquidSignature
+} from '../hyperliquid.js'
 
 /**
  * Handles the execution of a signature step item, including signing, posting, and validation.
@@ -68,12 +71,14 @@ export async function handleSignatureStepItem({
     }
   }
 
+  let hyperliquidActionPosted = false
   if (
     chain.id === 1337 &&
     signature &&
     step?.id === ('hyperliquid-signature' as any)
   ) {
     await postHyperliquidSignature(client, signature, stepItem)
+    hyperliquidActionPosted = true
   }
 
   if (postData) {
@@ -159,6 +164,43 @@ export async function handleSignatureStepItem({
       details: json?.details
     })
 
+    // Hyperliquid returns no hash for the posted action. Look it up alongside
+    // status polling to report the origin confirmed while the fill is in progress.
+    let isValidationSettled = false
+    const reportHyperliquidOriginTxHash = async () => {
+      try {
+        const originTxHash = await findHyperliquidSendHash(
+          client,
+          await wallet.address(),
+          stepItem
+        )
+        // Relay may have reported a status, or validation ended, meanwhile.
+        if (!originTxHash || stepItem.checkStatus || isValidationSettled) {
+          return
+        }
+        stepItem.internalTxHashes = [
+          { txHash: originTxHash, chainId: chain.id }
+        ]
+        stepItem.checkStatus = 'pending'
+        stepItem.progressState = undefined
+        stepItem.isValidatingSignature = false
+        setState({
+          steps: [...json.steps],
+          fees: { ...json?.fees },
+          breakdown: json?.breakdown,
+          details: json?.details
+        })
+      } catch (e) {
+        client.log(
+          ['Execute Steps: Hyperliquid send hash lookup failed', e],
+          LogLevel.Verbose
+        )
+      }
+    }
+    if (hyperliquidActionPosted) {
+      void reportHyperliquidOriginTxHash()
+    }
+
     const headers = {
       'Content-Type': 'application/json',
       ...getApiKeyHeader(client, request.baseURL),
@@ -184,6 +226,7 @@ export async function handleSignatureStepItem({
           ['WebSocket failed promise rejected, skipping signature polling'],
           LogLevel.Verbose
         )
+        isValidationSettled = true
         return
       }
     }
@@ -347,6 +390,10 @@ export async function handleSignatureStepItem({
       )
     }
 
-    await pollWithCancellation()
+    try {
+      await pollWithCancellation()
+    } finally {
+      isValidationSettled = true
+    }
   }
 }
