@@ -174,16 +174,25 @@ export async function handleSignatureStepItem({
           await wallet.address(),
           stepItem
         )
-        // Relay may have reported a status, or validation ended, meanwhile.
-        if (!originTxHash || stepItem.checkStatus || isValidationSettled) {
+        if (!originTxHash || isValidationSettled) {
+          return
+        }
+        // Fill in the hash only if Relay hasn't moved past pending or supplied one.
+        if (
+          stepItem.checkStatus &&
+          (stepItem.checkStatus !== 'pending' ||
+            stepItem.internalTxHashes?.length)
+        ) {
           return
         }
         stepItem.internalTxHashes = [
           { txHash: originTxHash, chainId: chain.id }
         ]
-        stepItem.checkStatus = 'pending'
-        stepItem.progressState = undefined
-        stepItem.isValidatingSignature = false
+        if (!stepItem.checkStatus) {
+          stepItem.checkStatus = 'pending'
+          stepItem.progressState = undefined
+          stepItem.isValidatingSignature = false
+        }
         setState({
           steps: [...json.steps],
           fees: { ...json?.fees },

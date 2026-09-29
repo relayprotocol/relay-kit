@@ -161,6 +161,45 @@ describe('handleSignatureStepItem (HyperCore)', () => {
     })
   })
 
+  it('Should add the looked-up hash when Relay reports pending without one.', async () => {
+    const resolveLookup = deferredLookup()
+    const { stepItem, params } = setup({ websocket: true })
+
+    void handleSignatureStepItem(params)
+    await flush()
+    Object.assign(stepItem, {
+      checkStatus: 'pending',
+      progressState: undefined,
+      isValidatingSignature: false
+    })
+    const updates = params.setState.mock.calls.length
+    resolveLookup(SEND_HASH)
+    await flush()
+
+    expect(stepItem).toMatchObject({
+      internalTxHashes: [{ txHash: SEND_HASH, chainId: 1337 }],
+      checkStatus: 'pending'
+    })
+    expect(params.setState).toHaveBeenCalledTimes(updates + 1)
+  })
+
+  it("Should keep Relay's hash when it reports pending with one.", async () => {
+    const resolveLookup = deferredLookup()
+    const { stepItem, params } = setup({ websocket: true })
+    const relayHashes = [{ txHash: FILL_HASH, chainId: 1337 }]
+
+    void handleSignatureStepItem(params)
+    await flush()
+    Object.assign(stepItem, {
+      checkStatus: 'pending',
+      internalTxHashes: relayHashes
+    })
+    resolveLookup(SEND_HASH)
+    await flush()
+
+    expect(stepItem.internalTxHashes).toBe(relayHashes)
+  })
+
   it.each([
     ['finds nothing', {}],
     [
