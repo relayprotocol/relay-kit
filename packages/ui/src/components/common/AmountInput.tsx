@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef, FC } from 'react'
 import { Input } from '../primitives/index.js'
 import { cn } from '../../utils/cn.js'
+import { formatAmountWithCommas } from '../../utils/numbers.js'
 
 type Props = {
   value: string
@@ -21,7 +22,7 @@ const AmountInput: FC<Props> = ({
       inputMode="decimal"
       autoComplete="off"
       autoCorrect="off"
-      pattern="^[0-9]+(\.[0-9]*)?$"
+      pattern="^[0-9,]*(\.[0-9]*)?$"
       ellipsify
       size="large"
       className={cn(
@@ -33,12 +34,18 @@ const AmountInput: FC<Props> = ({
         inputProps.className
       )}
       placeholder={inputProps.placeholder ?? '0'}
-      value={prefixSymbol ? `${prefixSymbol}${value}` : value}
+      value={`${prefixSymbol ?? ''}${inputProps.onChange ? value : formatAmountWithCommas(value)}`}
       onChange={
         inputProps.onChange
           ? inputProps.onChange
           : (e) => {
               let newNumericValue = (e.target as HTMLInputElement).value
+
+              // A typed comma is treated as a decimal point, other commas are separators
+              if ((e.nativeEvent as InputEvent).data === ',') {
+                newNumericValue = newNumericValue.replace(/,$/, '.')
+              }
+              newNumericValue = newNumericValue.replace(/,/g, '')
 
               if (prefixSymbol) {
                 if (newNumericValue.startsWith(prefixSymbol)) {
@@ -52,7 +59,7 @@ const AmountInput: FC<Props> = ({
 
               // Validate and set the numeric part
               const regex = /^[0-9]+(\.[0-9]*)?$/
-              if (newNumericValue === '.' || newNumericValue.includes(',')) {
+              if (newNumericValue === '.') {
                 setValue('0.')
               } else if (
                 regex.test(newNumericValue) ||
