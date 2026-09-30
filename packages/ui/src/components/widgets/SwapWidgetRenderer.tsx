@@ -470,7 +470,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       }
     )
 
-  const isFromNative = fromToken?.address === fromChain?.currency?.address
+  const isFromNative = addressesEqual(
+    fromChain?.vmType ?? 'evm',
+    fromToken?.address,
+    fromChain?.currency?.address
+  )
 
   const explicitDeposit = useExplicitDeposit(
     wallet,

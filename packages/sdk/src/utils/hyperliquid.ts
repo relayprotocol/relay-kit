@@ -98,6 +98,72 @@ export async function postHyperliquidSignature(
   return res.data
 }
 
+const SEND_HASH_POLL_INTERVAL_MS = 1000
+const SEND_HASH_TIMEOUT_MS = 3000
+
+/**
+ * Hyperliquid acknowledges a sendAsset without a hash. The send appears in the
+ * sender's ledger about a second later, keyed by the nonce that was signed.
+ */
+export async function findHyperliquidSendHash(
+  client: RelayClient,
+  user: string,
+  stepItem: Execute['steps'][0]['items'][0]
+): Promise<string | undefined> {
+  const action = stepItem?.data?.sign?.value
+  const nonce = Number(action?.nonce)
+  // Only signer-owned sends are known to appear in the signer's ledger.
+  if (
+    action?.type !== 'sendAsset' ||
+    action?.fromSubAccount ||
+    !Number.isSafeInteger(nonce)
+  ) {
+    return undefined
+  }
+
+  const deadline = Date.now() + SEND_HASH_TIMEOUT_MS
+  while (Date.now() < deadline) {
+    try {
+      const res = await axios.post(
+        'https://api.hyperliquid.xyz/info',
+        {
+          type: 'userNonFundingLedgerUpdates',
+          user,
+          startTime: nonce - 60_000
+        },
+        { timeout: SEND_HASH_TIMEOUT_MS }
+      )
+      const match = Array.isArray(res.data)
+        ? res.data.find(
+            (update: any) =>
+              update?.delta?.type === 'send' && update?.delta?.nonce === nonce
+          )
+        : undefined
+      if (match?.hash) {
+        client.log(
+          ['Execute Steps: Found Hyperliquid send hash', match.hash],
+          LogLevel.Verbose
+        )
+        return match.hash
+      }
+    } catch (e) {
+      client.log(
+        ['Execute Steps: Hyperliquid ledger lookup failed, retrying', e],
+        LogLevel.Verbose
+      )
+    }
+    await new Promise((resolve) =>
+      setTimeout(resolve, SEND_HASH_POLL_INTERVAL_MS)
+    )
+  }
+
+  client.log(
+    ['Execute Steps: Hyperliquid send hash not found in time'],
+    LogLevel.Verbose
+  )
+  return undefined
+}
+
 function updateHyperliquidSignatureChainId(
   step: Execute['steps'][0],
   activeWalletChainId: number
