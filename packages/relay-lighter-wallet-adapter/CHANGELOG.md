@@ -1,5 +1,12 @@
 # @relayprotocol/relay-lighter-wallet-adapter
 
+## 4.0.2
+
+### Patch Changes
+
+- Updated dependencies [3181078]
+  - @relayprotocol/relay-sdk@8.0.2
+
 ## 4.0.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 8.0.2
+
+### Patch Changes
+
+- 3181078: Surface the origin tx hash with a pending status for HyperCore origins as soon as the send lands on Hyperliquid, instead of waiting for the first Relay status that carries one.
+
 ## 8.0.1
 
 ### Patch Changes
