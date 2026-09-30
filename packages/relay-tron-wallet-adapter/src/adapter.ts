@@ -66,6 +66,15 @@ export const adaptTronWallet = (
       const signed = await tronWeb.trx.sign(res.transaction as any)
       const receipt = await tronWeb.trx.sendRawTransaction(signed)
 
+      // A rejected broadcast resolves with `result` unset and an error code
+      // (e.g. TRANSACTION_EXPIRATION_ERROR) instead of throwing
+      if (!receipt?.result) {
+        const reason = receipt?.message
+          ? Buffer.from(receipt.message, 'hex').toString()
+          : (receipt?.code ?? 'Unknown broadcast error')
+        throw new Error(`Broadcast failed: ${reason}`)
+      }
+
       client.log(['Tron Transaction Broadcasted', receipt], LogLevel.Verbose)
 
       return receipt?.txid || signed?.txID || res?.transaction?.txID
