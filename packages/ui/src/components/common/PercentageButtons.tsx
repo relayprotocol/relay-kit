@@ -2,10 +2,7 @@ import { type FC } from 'react'
 import { Button, Flex } from '../primitives/index.js'
 import type { ChainVM, RelayChain } from '@relayprotocol/relay-sdk'
 import type { PublicClient } from 'viem'
-import {
-  MAX_INPUT_BUFFER_BPS,
-  MIN_INPUT_BUFFER_UNITS
-} from '../../constants/maxAmountBuffer.js'
+import { getMaxAmount } from '../../utils/maxAmount.js'
 import { cn } from '../../utils/cn.js'
 
 type PercentageButtonsProps = {
@@ -36,16 +33,6 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   percentages = [20, 50],
   buttonClassName: customButtonClassName
 }) => {
-  const getExecutionBuffer = (amount: bigint) => {
-    if (amount <= 0n) return 0n
-
-    const bpsBuffer = (amount * MAX_INPUT_BUFFER_BPS) / 10000n
-    const minimumBuffer =
-      amount > MIN_INPUT_BUFFER_UNITS ? MIN_INPUT_BUFFER_UNITS : amount
-
-    return bpsBuffer > minimumBuffer ? bpsBuffer : minimumBuffer
-  }
-
   const isMobile = variant === 'mobile'
 
   const defaultButtonClassName = cn(
@@ -70,7 +57,6 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
   const handleMaxClick = async () => {
     if (!balance || !fromChain) return
 
-    const executionBufferAmount = getExecutionBuffer(balance)
     const supportsNativeGasBuffer =
       fromChain.vmType === 'evm' || fromChain.vmType === 'svm'
 
@@ -84,9 +70,11 @@ export const PercentageButtons: FC<PercentageButtonsProps> = ({
       )
     }
 
-    const totalBufferAmount = executionBufferAmount + feeBufferAmount
-    const finalMaxAmount =
-      balance > totalBufferAmount ? balance - totalBufferAmount : 0n
+    const finalMaxAmount = getMaxAmount(
+      balance,
+      !!isFromNative,
+      feeBufferAmount
+    )
 
     onPercentageClick(
       finalMaxAmount,
