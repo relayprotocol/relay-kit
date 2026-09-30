@@ -1090,6 +1090,7 @@ describe('Base tests', () => {
       transport: http()
     })
     walletClient.sendTransaction = vi.fn().mockResolvedValue('0x')
+    walletClient.getChainId = vi.fn().mockResolvedValue(1)
     const adaptedWallet = adaptViemWallet(walletClient)
     await executeSteps(
       1,
@@ -1122,6 +1123,7 @@ describe('Base tests', () => {
       transport: http()
     })
     walletClient.sendTransaction = vi.fn().mockResolvedValue('0x')
+    walletClient.getChainId = vi.fn().mockResolvedValue(1)
     const adaptedWallet = adaptViemWallet(walletClient)
     await executeSteps(
       1,
