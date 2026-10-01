@@ -67,8 +67,12 @@ export const adaptTronWallet = (
       const receipt = await tronWeb.trx.sendRawTransaction(signed)
 
       // A rejected broadcast resolves with `result` unset and an error code
-      // (e.g. TRANSACTION_EXPIRATION_ERROR) instead of throwing
-      if (!receipt?.result) {
+      // (e.g. TRANSACTION_EXPIRATION_ERROR) instead of throwing. A duplicate
+      // means the node already has this transaction, so it still goes on to
+      // confirmation.
+      const code = String(receipt?.code ?? '')
+      const isDuplicate = code === 'DUP_TRANSACTION_ERROR' || code === '5'
+      if (!receipt?.result && !isDuplicate) {
         const reason = receipt?.message
           ? Buffer.from(receipt.message, 'hex').toString()
           : (receipt?.code ?? 'Unknown broadcast error')
