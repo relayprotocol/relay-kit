@@ -248,13 +248,14 @@ describe('handleSignatureStepItem (status polling)', () => {
 
   it('Should fail right away as refunded when the check reports a refund.', async () => {
     const request = pollReturns({ status: 'refund' })
-    const { params } = setup()
+    const { stepItem, params } = setup()
     params.maximumAttempts = 5
 
     await expect(handleSignatureStepItem(params)).rejects.toThrow(
       'Transaction failed: Refunded'
     )
     expect(request).toHaveBeenCalledOnce()
+    expect(stepItem.checkStatus).toBe('refund')
   })
 
   it('Should keep polling when the check request itself errors.', async () => {

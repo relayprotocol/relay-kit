@@ -372,6 +372,7 @@ export async function handleSignatureStepItem({
               res?.data?.details || 'Transaction failed'
             )
           } else if (res?.data?.status === 'refund') {
+            stepItem.checkStatus = 'refund'
             throw new CheckStatusError('Transaction failed: Refunded')
           } else if (res.status >= 400) {
             // Handle HTTP error responses that don't have our expected data structure
