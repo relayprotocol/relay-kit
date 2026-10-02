@@ -9,12 +9,14 @@ import {
   usePreviousValueChange,
   useIsWalletCompatible,
   useKnownTokenContract,
+  useSolanaTokenAccount,
   useFallbackState,
   useGasTopUpRequired,
   useExplicitDeposit,
   useDisplayName,
   useLighterAccount
 } from '../../hooks/index.js'
+import { checkSolanaTokenAccount } from '../../hooks/useSolanaTokenAccount.js'
 import type { Address, WalletClient } from 'viem'
 import { formatUnits, parseUnits } from 'viem'
 import { useAccount, useWalletClient } from 'wagmi'
@@ -402,20 +404,30 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       customToAddress !== undefined && !recipientIsDestinationToken
     )
 
+  const {
+    isTokenAccount: recipientIsSolanaTokenAccount,
+    isChecking: isCheckingSolanaTokenAccount
+  } = useSolanaTokenAccount(
+    toChain,
+    customToAddress,
+    customToAddress !== undefined &&
+      !recipientIsDestinationToken &&
+      !recipientMatchesKnownToken
+  )
+
   // Only confirmed matches invalidate the recipient
-  const recipientIsKnownTokenContract = recipientMatchesKnownToken
+  const recipientIsNotWallet =
+    recipientMatchesKnownToken || recipientIsSolanaTokenAccount
 
   const isValidToAddress =
     !recipientIsDestinationToken &&
-    !recipientIsKnownTokenContract &&
+    !recipientIsNotWallet &&
     !isDeadAddress(recipient) &&
     isValidAddress(toChain?.vmType, recipient ?? '', toChain?.id)
 
   const toAddressWithFallback = addressWithFallback(
     toChain?.vmType,
-    recipientIsDestinationToken || recipientIsKnownTokenContract
-      ? undefined
-      : recipient,
+    recipientIsDestinationToken || recipientIsNotWallet ? undefined : recipient,
     toChain?.id
   )
 
@@ -586,7 +598,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       fromToken !== undefined &&
       toToken !== undefined &&
       !transactionModalOpen &&
-      !depositAddressModalOpen
+      !depositAddressModalOpen &&
+      !isCheckingSolanaTokenAccount
   )
 
   const {
@@ -901,6 +914,13 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         throw new Error('Recipient address is a token contract, not a wallet')
       }
 
+      if (
+        recipientIsSolanaTokenAccount ||
+        (await checkSolanaTokenAccount(queryClient, toChain, customToAddress))
+      ) {
+        throw new Error('Recipient address is a token account, not a wallet')
+      }
+
       setSteps(quote?.steps as Execute['steps'])
       setQuoteInProgress(quote as Execute)
       setTransactionModalOpen(true)
@@ -1069,7 +1089,10 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     invalidateBalanceQueries,
     linkedWallet,
     abortController,
-    recipientMatchesKnownToken
+    recipientMatchesKnownToken,
+    recipientIsSolanaTokenAccount,
+    queryClient,
+    toChain
   ])
 
   return (

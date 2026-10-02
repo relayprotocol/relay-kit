@@ -25,3 +25,7 @@ export {
   createCaliburExecutor,
   CALIBUR_ORIGIN_GAS_OVERHEAD
 } from './caliburExecutor.js'
+export {
+  isSolanaTokenAccount,
+  SOLANA_TOKEN_PROGRAM_IDS
+} from './solanaTokenAccount.js'
