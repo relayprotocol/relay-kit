@@ -404,14 +404,16 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       customToAddress !== undefined && !recipientIsDestinationToken
     )
 
-  const { isTokenAccount: recipientIsSolanaTokenAccount } =
-    useSolanaTokenAccount(
-      toChain,
-      customToAddress,
-      customToAddress !== undefined &&
-        !recipientIsDestinationToken &&
-        !recipientMatchesKnownToken
-    )
+  const {
+    isTokenAccount: recipientIsSolanaTokenAccount,
+    isChecking: isCheckingSolanaTokenAccount
+  } = useSolanaTokenAccount(
+    toChain,
+    customToAddress,
+    customToAddress !== undefined &&
+      !recipientIsDestinationToken &&
+      !recipientMatchesKnownToken
+  )
 
   // Only confirmed matches invalidate the recipient
   const recipientIsNotWallet =
@@ -425,9 +427,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
 
   const toAddressWithFallback = addressWithFallback(
     toChain?.vmType,
-    recipientIsDestinationToken || recipientIsNotWallet
-      ? undefined
-      : recipient,
+    recipientIsDestinationToken || recipientIsNotWallet ? undefined : recipient,
     toChain?.id
   )
 
@@ -598,7 +598,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       fromToken !== undefined &&
       toToken !== undefined &&
       !transactionModalOpen &&
-      !depositAddressModalOpen
+      !depositAddressModalOpen &&
+      !isCheckingSolanaTokenAccount
   )
 
   const {
