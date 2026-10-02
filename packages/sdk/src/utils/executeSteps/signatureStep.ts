@@ -15,6 +15,12 @@ import {
 } from '../hyperliquid.js'
 
 /**
+ * A failure or refund reported by the check endpoint. It is final, whatever
+ * its message says, so polling stops instead of retrying.
+ */
+class CheckStatusError extends Error {}
+
+/**
  * Handles the execution of a signature step item, including signing, posting, and validation.
  */
 export async function handleSignatureStepItem({
@@ -362,7 +368,12 @@ export async function handleSignatureStepItem({
             client.log(['Transaction completed successfully'], LogLevel.Verbose)
             return // Success - exit polling
           } else if (res?.data?.status === 'failure') {
-            throw Error(res?.data?.details || 'Transaction failed')
+            throw new CheckStatusError(
+              res?.data?.details || 'Transaction failed'
+            )
+          } else if (res?.data?.status === 'refund') {
+            stepItem.checkStatus = 'refund'
+            throw new CheckStatusError('Transaction failed: Refunded')
           } else if (res.status >= 400) {
             // Handle HTTP error responses that don't have our expected data structure
             throw Error(
@@ -375,10 +386,11 @@ export async function handleSignatureStepItem({
         } catch (error: any) {
           // If it's a deliberate failure response, re-throw immediately
           if (
-            error.message &&
-            (error.message.includes('Transaction failed') ||
-              error.message.includes('Failed to check') ||
-              error.message === 'Failed to check')
+            error instanceof CheckStatusError ||
+            (error.message &&
+              (error.message.includes('Transaction failed') ||
+                error.message.includes('Failed to check') ||
+                error.message === 'Failed to check'))
           ) {
             throw error
           }
