@@ -8,7 +8,8 @@ import {
   custom,
   fallback,
   hexToBigInt,
-  http
+  http,
+  MethodNotSupportedRpcError
 } from 'viem'
 
 // Cache for expensive RPC calls (code, balance, tx count)
@@ -212,6 +213,9 @@ export const adaptViemWallet = (
               LogLevel.Verbose
             )
             return
+          } else if (e?.code === MethodNotSupportedRpcError.code) {
+            // Wallet rejects wallet_addEthereumChain (EIP-1474 code -32004)
+            throw new Error('Wallet does not support chain')
           } else {
             throw e
           }

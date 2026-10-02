@@ -23,9 +23,11 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
     } else if (
       error?.name &&
       (error?.message?.includes('does not support chain') ||
-        error?.message?.match(/Chain \d+ not supported/))
+        error?.message?.match(/Chain \d+ not supported/) ||
+        error?.message?.match(/wallet_addEthereumChain.*not supported/))
     ) {
-      return `Your wallet does not support ${fromChain?.displayName ?? 'this chain'}`
+      const chainName = fromChain?.displayName ?? 'this chain'
+      return `Your wallet does not support ${chainName}. Add ${chainName} to your wallet manually or connect a different wallet, then try again.`
     }
     if (
       !hasTxHashes ||
@@ -40,7 +42,7 @@ const ErrorWell: React.FC<Props> = ({ error, hasTxHashes, fromChain }) => {
       return 'Transaction Failed. Try adjusting slippage or gas limits and try again.'
     }
     return error?.message
-  }, [error?.message, hasTxHashes])
+  }, [error?.message, hasTxHashes, fromChain?.displayName])
 
   const shouldScrollErrorMessage =
     typeof renderedErrorMessage === 'string' &&
