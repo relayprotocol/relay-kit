@@ -1,5 +1,14 @@
 # @reservoir0x/relay-kit-ui
 
+## 12.0.4
+
+### Patch Changes
+
+- 18d40ba: fix: block Solana token accounts in recipient field
+- Updated dependencies [18d40ba]
+  - @relayprotocol/relay-sdk@8.0.3
+  - @relayprotocol/relay-kit-hooks@5.1.1
+
 ## 12.0.3
 
 ### Patch Changes
