@@ -5,6 +5,7 @@ import {
   type AdaptedWallet
 } from '@relayprotocol/relay-sdk'
 import * as bitcoin from 'bitcoinjs-lib'
+import * as ecc from '@bitcoinerlab/secp256k1'
 
 type DynamicSignPsbtParams = {
   allowedSighash: number[] // Only allow SIGHASH_ALL
@@ -60,7 +61,13 @@ export const adaptBitcoinWallet = (
       const signedPsbt = bitcoin.Psbt.fromBase64(
         await signPsbt(walletAddress, psbt, dynamicParams)
       )
-      signedPsbt.finalizeAllInputs()
+      bitcoin.initEccLib(ecc)
+      // Some wallets return already-finalized inputs; re-finalizing a Taproot input throws.
+      signedPsbt.data.inputs.forEach((input, index) => {
+        if (!input.finalScriptSig && !input.finalScriptWitness) {
+          signedPsbt.finalizeInput(index)
+        }
+      })
 
       const rawTransaction = signedPsbt.extractTransaction().toHex()
       client.log(['BTC Transaction', rawTransaction], LogLevel.Verbose)
