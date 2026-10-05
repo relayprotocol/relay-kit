@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
+import { axios } from './axios'
 import { isSolanaTokenAccount } from './solanaTokenAccount'
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com'
@@ -36,10 +39,9 @@ const mockRpc = (
   handler: (address: string) => unknown = (address) =>
     responses[address] ?? accountInfo(null)
 ) =>
-  vi.spyOn(globalThis, 'fetch').mockImplementation(async (_url, init) => {
-    const body = JSON.parse(init?.body as string)
-    return new Response(JSON.stringify(handler(body.params[0])))
-  })
+  vi.spyOn(axios, 'post').mockImplementation(async (_url, body: any) => ({
+    data: handler(body.params[0])
+  }))
 
 describe('isSolanaTokenAccount', () => {
   afterEach(() => {
@@ -95,5 +97,21 @@ describe('isSolanaTokenAccount', () => {
     await expect(
       isSolanaTokenAccount(RPC_URL, 'not-an-address')
     ).rejects.toThrow('Invalid param')
+  })
+
+  it('Should reject when the RPC stalls past the timeout.', async () => {
+    const server = createServer(() => {})
+    await new Promise<void>((resolve) => server.listen(0, resolve))
+    const { port } = server.address() as AddressInfo
+    try {
+      await expect(
+        isSolanaTokenAccount(`http://127.0.0.1:${port}`, USDC_TOKEN_ACCOUNT, {
+          timeoutMs: 50
+        })
+      ).rejects.toThrow()
+    } finally {
+      server.closeAllConnections()
+      server.close()
+    }
   })
 })

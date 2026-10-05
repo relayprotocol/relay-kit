@@ -5,8 +5,8 @@ import { isValidAddress } from '../utils/address.js'
 const queryOptions = (rpcUrl: string, address: string) => ({
   queryKey: ['useSolanaTokenAccount', rpcUrl, address],
   queryFn: ({ signal }: { signal?: AbortSignal }) =>
-    isSolanaTokenAccount(rpcUrl, address, signal),
-  retry: 1
+    isSolanaTokenAccount(rpcUrl, address, { signal }),
+  retry: false
 })
 
 const shouldCheck = (chain?: RelayChain, address?: string) =>
@@ -18,7 +18,7 @@ const shouldCheck = (chain?: RelayChain, address?: string) =>
   )
 
 /**
- * Imperatively checks whether an address is a Solana token account; fails open on RPC errors.
+ * Imperatively checks whether an address is a Solana token account; fails open on RPC errors and timeouts.
  */
 export async function checkSolanaTokenAccount(
   queryClient: QueryClient,
@@ -39,7 +39,7 @@ export async function checkSolanaTokenAccount(
 
 /**
  * Checks whether an address on an SVM chain is a token account rather than a wallet.
- * Keyed on the address so results are never stale; fails open on RPC errors.
+ * Keyed on the address so results are never stale; fails open on RPC errors and timeouts.
  */
 export default function useSolanaTokenAccount(
   chain?: RelayChain,
