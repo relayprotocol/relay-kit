@@ -30,6 +30,7 @@ import useTronBalance from './useTronBalance.js'
 import useLighterAccount from './useLighterAccount.js'
 import useDisplayName from './useDisplayName.js'
 import useKnownTokenContract from './useKnownTokenContract.js'
+import useSolanaTokenAccount from './useSolanaTokenAccount.js'
 
 export {
   useMounted,
@@ -63,5 +64,6 @@ export {
   useTronBalance,
   useLighterAccount,
   useDisplayName,
-  useKnownTokenContract
+  useKnownTokenContract,
+  useSolanaTokenAccount
 }

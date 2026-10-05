@@ -7,7 +7,8 @@ import {
   useENSResolver,
   useWalletAddress,
   useLighterAccount,
-  useKnownTokenContract
+  useKnownTokenContract,
+  useSolanaTokenAccount
 } from '../../hooks/index.js'
 import { isENSName } from '../../utils/ens.js'
 import { LoadingSpinner } from '../common/LoadingSpinner.js'
@@ -170,8 +171,18 @@ export const CustomAddressModal: FC<Props> = ({
 
   const isKnownTokenContract = Boolean(knownTokenContract)
 
+  const {
+    isTokenAccount: isSolanaTokenAccount,
+    isChecking: isCheckingSolanaTokenAccount
+  } = useSolanaTokenAccount(toChain, address, !isKnownTokenContract)
+
+  const isBlockedAddress = isKnownTokenContract || isSolanaTokenAccount
+
   const isLoading =
-    isLoadingENS || isResolvingLighter || isCheckingTokenContract
+    isLoadingENS ||
+    isResolvingLighter ||
+    isCheckingTokenContract ||
+    isCheckingSolanaTokenAccount
 
   useEffect(() => {
     if (isLighterChain && isEvmInput) {
@@ -260,6 +271,11 @@ export const CustomAddressModal: FC<Props> = ({
               This address is the contract for{' '}
               {knownTokenContract?.symbol ?? 'a token'}, not a wallet. To
               continue, enter a wallet address or use the token selector.
+            </Text>
+          ) : isSolanaTokenAccount ? (
+            <Text color="red" style="subtitle2">
+              This address is a token account, not a wallet. Enter the wallet
+              address that owns it.
             </Text>
           ) : isLighterError ? (
             <Text color="red" style="subtitle2">
@@ -381,14 +397,14 @@ export const CustomAddressModal: FC<Props> = ({
           cta={true}
           disabled={
             isLoading ||
-            isKnownTokenContract ||
+            isBlockedAddress ||
             !isValidAddress(toChain?.vmType, address, toChain?.id)
           }
           className="relay:justify-center"
           onClick={() => {
             if (
-              !isKnownTokenContract &&
-              !isCheckingTokenContract &&
+              !isLoading &&
+              !isBlockedAddress &&
               isValidAddress(toChain?.vmType, address, toChain?.id)
             ) {
               // Save the address to custom addresses if it's not a connected wallet address
