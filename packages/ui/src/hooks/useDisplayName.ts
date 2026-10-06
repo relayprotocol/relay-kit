@@ -38,7 +38,11 @@ export default function useDisplayName(
   const isLighterAddr = address ? isLighterAddress(address) : false
 
   const { data: lighterAccount, isLoading: isLoadingLighter } =
-    useLighterAccount(isLighterChain && address ? address : undefined)
+    useLighterAccount(
+      isLighterChain && address ? address : undefined,
+      undefined,
+      chainId
+    )
 
   const isLoading =
     (vmType === 'evm' && isLoadingENS) || (isLighterChain && isLoadingLighter)

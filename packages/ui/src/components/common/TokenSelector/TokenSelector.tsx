@@ -33,7 +33,10 @@ import {
   getRelayUiKitData,
   getStarredChainIds
 } from '../../../utils/localStorage.js'
-import { isValidAddress as isValidAddressUtil } from '../../../utils/address.js'
+import {
+  isOriginChainSupported,
+  isValidAddress as isValidAddressUtil
+} from '../../../utils/address.js'
 import {
   AccessibleList,
   AccessibleListItem
@@ -139,13 +142,10 @@ const TokenSelector: FC<TokenSelectorProps> = ({
     if (!multiWalletSupportEnabled && context === 'from') {
       chains = chains.filter((chain) => chain.vmType === 'evm')
     }
-    // Hide chains without deposit-address support from the origin selector,
-    // unless we have wallet support for their VM.
+    // Hide chains that can't be used as the origin
     if (context === 'from') {
-      chains = chains.filter(
-        (chain) =>
-          !UnsupportedDepositAddressChainIds.includes(chain.id) ||
-          (supportedWalletVMs?.some((vm) => vm === chain.vmType) ?? false)
+      chains = chains.filter((chain) =>
+        isOriginChainSupported(chain, supportedWalletVMs)
       )
     }
     if (isReceivingDepositAddress) {

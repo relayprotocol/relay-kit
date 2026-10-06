@@ -83,7 +83,9 @@ export const CustomAddressModal: FC<Props> = ({
     isLoading: isResolvingLighter,
     isError: isLighterError
   } = useLighterAccount(
-    isLighterChain && (isEvmInput || isLighterIndexInput) ? input : undefined
+    isLighterChain && (isEvmInput || isLighterIndexInput) ? input : undefined,
+    undefined,
+    toChain?.id
   )
 
   const resolvedLighterIndex = lighterAccount?.index?.toString()

@@ -5,6 +5,9 @@ import {
   type QueryKey
 } from '@tanstack/react-query'
 import { isAddress } from 'viem'
+import useRelayClient from './useRelayClient.js'
+
+const DEFAULT_LIGHTER_API_URL = 'https://mainnet.zklighter.elliot.ai'
 
 type LighterAccount = {
   code: number
@@ -35,9 +38,20 @@ type QueryOptions = Parameters<QueryType>['0']
  * Fetches Lighter account info by either account index or EVM address.
  * Auto-detects the lookup type based on the input value.
  * Caches bidirectionally (both index and l1_address point to same data).
+ * Uses the chain's API (httpRpcUrl) when a chainId is passed, since each
+ * Lighter chain has its own account indexes.
  */
-export default (value?: string, queryOptions?: Partial<QueryOptions>) => {
+export default (
+  value?: string,
+  queryOptions?: Partial<QueryOptions>,
+  chainId?: number
+) => {
   const queryClient = useQueryClient()
+  const relayClient = useRelayClient()
+  const chain = chainId
+    ? relayClient?.chains?.find((chain) => chain.id === chainId)
+    : undefined
+  const apiUrl = chain?.httpRpcUrl ?? DEFAULT_LIGHTER_API_URL
 
   // Auto-detect lookup type and normalize (lowercase for EVM addresses)
   const isEvmAddress = value ? isAddress(value) : false
@@ -46,12 +60,12 @@ export default (value?: string, queryOptions?: Partial<QueryOptions>) => {
   const normalizedValue = isEvmAddress ? value?.toLowerCase() : value
 
   return (useQuery as QueryType)({
-    queryKey: ['useLighterAccount', normalizedValue],
+    queryKey: ['useLighterAccount', apiUrl, normalizedValue],
     queryFn: async (): Promise<LighterAccount | null> => {
       // For index lookups, check if we already have data cached (from a previous EVM lookup)
       if (isLighterIndex) {
         const allQueries = queryClient.getQueriesData<LighterAccount | null>({
-          queryKey: ['useLighterAccount']
+          queryKey: ['useLighterAccount', apiUrl]
         })
         for (const [, cachedAccount] of allQueries) {
           if (cachedAccount && cachedAccount.index?.toString() === value) {
@@ -60,7 +74,7 @@ export default (value?: string, queryOptions?: Partial<QueryOptions>) => {
         }
       }
 
-      const url = new URL('https://mainnet.zklighter.elliot.ai/api/v1/account')
+      const url = new URL('/api/v1/account', apiUrl)
       url.searchParams.set('by', by)
       url.searchParams.set('value', value!)
 
@@ -78,7 +92,10 @@ export default (value?: string, queryOptions?: Partial<QueryOptions>) => {
         : account.l1_address.toLowerCase()
 
       if (otherKey && otherKey !== normalizedValue) {
-        queryClient.setQueryData(['useLighterAccount', otherKey], account)
+        queryClient.setQueryData(
+          ['useLighterAccount', apiUrl, otherKey],
+          account
+        )
       }
 
       return account
