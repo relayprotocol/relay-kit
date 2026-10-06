@@ -1,5 +1,12 @@
 # @relayprotocol/relay-tron-wallet-adapter
 
+## 10.0.3
+
+### Patch Changes
+
+- Updated dependencies [18d40ba]
+  - @relayprotocol/relay-sdk@8.0.3
+
 ## 10.0.2
 
 ### Patch Changes
