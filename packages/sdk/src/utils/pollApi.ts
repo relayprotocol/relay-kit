@@ -34,7 +34,7 @@ export async function pollUntilHasData(
   // The response is still unchanged. Check again in five seconds
   await new Promise((resolve) => setTimeout(resolve, 5000))
   attemptCount++
-  await pollUntilHasData(request, dataParser, maximumAttempts, attemptCount)
+  return pollUntilHasData(request, dataParser, maximumAttempts, attemptCount)
 }
 
 /**
@@ -69,7 +69,7 @@ export async function pollUntilOk(
     // The response is still unchanged
     await new Promise((resolve) => setTimeout(resolve, pollingInterval))
     attemptCount++
-    await pollUntilOk(
+    return pollUntilOk(
       request,
       validate,
       maximumAttempts,
