@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 8.0.3
+
+### Patch Changes
+
+- 18d40ba: fix: block Solana token accounts in recipient field
+
 ## 8.0.2
 
 ### Patch Changes
