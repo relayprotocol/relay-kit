@@ -18,6 +18,7 @@ import { isTronAddress } from './tron.js'
 import { isTonAddress } from './ton.js'
 import { isLighterAddress } from './lighter.js'
 import { isXrpAddress } from './xrp.js'
+import { UnsupportedDepositAddressChainIds } from '../constants/depositAddresses.js'
 
 export const isWalletVmTypeCompatible = (
   walletVmType?: ChainVM,
@@ -49,6 +50,26 @@ export const isChainVmTypeSupported = (
 
   return supportedWalletVMs.includes(
     chainVmType as Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>
+  )
+}
+
+// Lighter chains are destination-only, and chains without deposit address
+// support need a connected wallet VM to be used as the origin
+export const isOriginChainSupported = (
+  chain?: RelayChain,
+  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+) => {
+  if (!chain) {
+    return true
+  }
+
+  if (chain.vmType === 'lvm') {
+    return false
+  }
+
+  return (
+    !UnsupportedDepositAddressChainIds.includes(chain.id) ||
+    (supportedWalletVMs?.some((vm) => vm === chain.vmType) ?? false)
   )
 }
 

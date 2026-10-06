@@ -39,7 +39,8 @@ import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import {
   findSupportedWallet,
-  isChainVmTypeSupported
+  isChainVmTypeSupported,
+  isOriginChainSupported
 } from '../../../utils/address.js'
 import { isDeadAddress } from '@relayprotocol/relay-sdk'
 import {
@@ -1062,7 +1063,13 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           aria-label="Swap Tokens Direction"
                           size="none"
                           color="white"
-                          className="relay:mt-[4px] relay:text-[color:var(--relay-colors-gray9)] relay:self-center relay:justify-center relay:w-full relay:h-full relay:z-10 relay:border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay:border-solid relay:!border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay:rounded-swap-btn relay:hover:text-[color:var(--relay-colors-gray11)] relay:hover:bg-[var(--relay-colors-gray-2)]"
+                          disabled={
+                            !isOriginChainSupported(
+                              toChain,
+                              supportedWalletVMs
+                            )
+                          }
+                          className="relay:mt-[4px] relay:text-[color:var(--relay-colors-gray9)] relay:self-center relay:justify-center relay:w-full relay:h-full relay:z-10 relay:border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay:border-solid relay:!border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay:rounded-swap-btn relay:hover:text-[color:var(--relay-colors-gray11)] relay:hover:bg-[var(--relay-colors-gray-2)] relay:disabled:bg-[var(--relay-colors-widget-background)] relay:disabled:text-[color:var(--relay-colors-gray9)] relay:disabled:hover:bg-[var(--relay-colors-widget-background)] relay:disabled:hover:text-[color:var(--relay-colors-gray9)] relay:disabled:hover:brightness-100"
                           onClick={() => {
                             haptic('light')
                             if (fromToken || toToken) {

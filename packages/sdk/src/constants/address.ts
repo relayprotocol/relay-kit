@@ -12,9 +12,13 @@ export const zeroDeadAddress = '0x00000000000000000000000000000000000dead0'
 export const tonDeadAddress =
   'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADerZ0z' as const
 export const xrpDeadAddress = 'rrrrrrrrrrrrrrrrrrrrBZbvji' as const
+// Lighter has no burn address, so placeholder account indexes are used
+export const lighterDeadAddress = '462196' as const
+export const robinhoodLighterDeadAddress = '33627' as const
 
 const eclipseId = 9286185
 const zeroChainId = 543210
+const robinhoodLighterChainId = 548123634
 
 export const getDeadAddress = (vmType?: ChainVM, chainId?: number) => {
   if (vmType === 'svm') {
@@ -29,6 +33,10 @@ export const getDeadAddress = (vmType?: ChainVM, chainId?: number) => {
     return tonDeadAddress
   } else if (vmType === 'xrpvm') {
     return xrpDeadAddress
+  } else if (vmType === 'lvm') {
+    return chainId === robinhoodLighterChainId
+      ? robinhoodLighterDeadAddress
+      : lighterDeadAddress
   } else {
     return evmDeadAddress
   }
@@ -47,7 +55,9 @@ export const isDeadAddress = (address?: string) => {
     address === tonDeadAddress ||
     address === tronDeadAddress ||
     address === zeroDeadAddress ||
-    address === xrpDeadAddress
+    address === xrpDeadAddress ||
+    address === lighterDeadAddress ||
+    address === robinhoodLighterDeadAddress
   ) {
     return true
   }
