@@ -1,5 +1,12 @@
 # @reservoir0x/relay-sdk
 
+## 8.0.4
+
+### Patch Changes
+
+- 48d611d: Block Lighter chains as an origin, add Lighter placeholder addresses, and resolve Lighter accounts against each Lighter chain's own API
+- aa83dcf: Show an unsupported chain error instead of the locked-wallet message when a wallet rejects wallet_addEthereumChain
+
 ## 8.0.3
 
 ### Patch Changes
