@@ -39,7 +39,8 @@ import type { AdaptedWallet } from '@relayprotocol/relay-sdk'
 import { MultiWalletDropdown } from '../../common/MultiWalletDropdown.js'
 import {
   findSupportedWallet,
-  isChainVmTypeSupported
+  isChainVmTypeSupported,
+  isOriginChainSupported
 } from '../../../utils/address.js'
 import { isDeadAddress } from '@relayprotocol/relay-sdk'
 import {
@@ -349,11 +350,23 @@ const SwapWidget: FC<SwapWidgetProps> = ({
             return
           }
 
+          const newToChain = relayClient?.chains.find(
+            (chain) => token?.chainId == chain.id
+          )
+          const currentToChain = relayClient?.chains.find(
+            (chain) => toToken?.chainId == chain.id
+          )
+          // Lighter account indexes are per chain, so clear the recipient when switching Lighter chains
+          if (
+            currentToChain?.vmType === 'lvm' &&
+            newToChain?.vmType === 'lvm' &&
+            currentToChain.id !== newToChain.id
+          ) {
+            setCustomToAddress(undefined)
+          }
+
           let _token = token
           if (!fromChainWalletVMSupported) {
-            const newToChain = relayClient?.chains.find(
-              (chain) => token?.chainId == chain.id
-            )
             if (newToChain) {
               const _toToken = findBridgableToken(newToChain, _token)
               if (_toToken && _toToken.address != _token?.address) {
@@ -1062,7 +1075,13 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                           aria-label="Swap Tokens Direction"
                           size="none"
                           color="white"
-                          className="relay:mt-[4px] relay:text-[color:var(--relay-colors-gray9)] relay:self-center relay:justify-center relay:w-full relay:h-full relay:z-10 relay:border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay:border-solid relay:!border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay:rounded-swap-btn relay:hover:text-[color:var(--relay-colors-gray11)] relay:hover:bg-[var(--relay-colors-gray-2)]"
+                          disabled={
+                            !isOriginChainSupported(
+                              toChain,
+                              supportedWalletVMs
+                            )
+                          }
+                          className="relay:mt-[4px] relay:text-[color:var(--relay-colors-gray9)] relay:self-center relay:justify-center relay:w-full relay:h-full relay:z-10 relay:border-[length:var(--relay-borders-widget-swap-currency-button-border-width)] relay:border-solid relay:!border-[color:var(--relay-colors-widget-swap-currency-button-border-color)] relay:rounded-swap-btn relay:hover:text-[color:var(--relay-colors-gray11)] relay:hover:bg-[var(--relay-colors-gray-2)] relay:disabled:bg-[var(--relay-colors-widget-background)] relay:disabled:text-[color:var(--relay-colors-gray9)] relay:disabled:hover:bg-[var(--relay-colors-widget-background)] relay:disabled:hover:text-[color:var(--relay-colors-gray9)] relay:disabled:hover:brightness-100"
                           onClick={() => {
                             haptic('light')
                             if (fromToken || toToken) {

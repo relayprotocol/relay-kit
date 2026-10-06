@@ -129,6 +129,10 @@ const PaymentMethod: FC<PaymentMethodProps> = ({
     if (!multiWalletSupportEnabled && context === 'from') {
       chains = chains.filter((chain) => chain.vmType === 'evm')
     }
+    // Lighter chains are destination-only
+    if (context === 'from') {
+      chains = chains.filter((chain) => chain.vmType !== 'lvm')
+    }
     if (isReceivingDepositAddress) {
       chains = chains.filter(
         ({ id }) => !UnsupportedDepositAddressChainIds.includes(id)

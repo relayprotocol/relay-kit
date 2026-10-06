@@ -661,7 +661,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   // Auto-select Lighter account when switching to LVM chain
   const isLighterChain = toChain?.vmType === 'lvm'
   const { data: connectedLighterAccount } = useLighterAccount(
-    isLighterChain && address ? address : undefined
+    isLighterChain && address ? address : undefined,
+    undefined,
+    toChain?.id
   )
 
   useEffect(() => {
