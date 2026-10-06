@@ -350,23 +350,11 @@ const SwapWidget: FC<SwapWidgetProps> = ({
             return
           }
 
-          const newToChain = relayClient?.chains.find(
-            (chain) => token?.chainId == chain.id
-          )
-          const currentToChain = relayClient?.chains.find(
-            (chain) => toToken?.chainId == chain.id
-          )
-          // Lighter account indexes are per chain, so clear the recipient when switching Lighter chains
-          if (
-            currentToChain?.vmType === 'lvm' &&
-            newToChain?.vmType === 'lvm' &&
-            currentToChain.id !== newToChain.id
-          ) {
-            setCustomToAddress(undefined)
-          }
-
           let _token = token
           if (!fromChainWalletVMSupported) {
+            const newToChain = relayClient?.chains.find(
+              (chain) => token?.chainId == chain.id
+            )
             if (newToChain) {
               const _toToken = findBridgableToken(newToChain, _token)
               if (_toToken && _toToken.address != _token?.address) {

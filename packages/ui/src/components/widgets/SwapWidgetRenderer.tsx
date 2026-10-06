@@ -1,5 +1,12 @@
 import type { Dispatch, FC, ReactNode, SetStateAction } from 'react'
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import {
   useCurrencyBalance,
   useRelayClient,
@@ -665,6 +672,23 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
     undefined,
     toChain?.id
   )
+
+  // Lighter account indexes are per chain, so clear a Lighter recipient when the destination switches Lighter chains
+  const lighterChainId = useRef(isLighterChain ? toChain?.id : undefined)
+  useEffect(() => {
+    if (!isLighterChain) {
+      return
+    }
+    if (
+      lighterChainId.current !== undefined &&
+      lighterChainId.current !== toChain?.id &&
+      customToAddress &&
+      isLighterAddress(customToAddress)
+    ) {
+      setCustomToAddress(undefined)
+    }
+    lighterChainId.current = toChain?.id
+  }, [isLighterChain, toChain?.id])
 
   useEffect(() => {
     if (
