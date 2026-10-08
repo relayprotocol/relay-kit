@@ -346,14 +346,9 @@ export const OnrampModal: FC<OnrampModalProps> = ({
       !moonPayIdAppended
     ) {
       setMoonPayIdAppended(true)
-      appendMetadataToRequest(
-        client?.baseApiUrl,
-        `${quoteRequestId}`,
-        {
-          moonPayId: moonPayRequestId
-        },
-        client?.source
-      )
+      appendMetadataToRequest(client, `${quoteRequestId}`, {
+        moonPayId: moonPayRequestId
+      })
         ?.then(() => {
           client?.log(
             ['Posting MoonPay request id', moonPayRequestId, quoteRequestId],

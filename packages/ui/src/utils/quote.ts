@@ -1,9 +1,11 @@
-import type {
-  Execute,
-  ExecuteStep,
-  ExecuteStepItem,
-  paths,
-  RelayChain
+import {
+  getApiKeyHeader,
+  type Execute,
+  type ExecuteStep,
+  type ExecuteStepItem,
+  type paths,
+  type RelayChain,
+  type RelayClient
 } from '@relayprotocol/relay-sdk'
 import { formatBN, formatDollar } from './numbers.js'
 import type { BridgeFee } from '../types/index.js'
@@ -235,24 +237,24 @@ export const calculatePriceTimeEstimate = (
 }
 
 export const appendMetadataToRequest = (
-  baseUrl?: string,
+  client?: RelayClient | null,
   requestId?: string,
-  additionalMetadata?: paths['/requests/metadata']['post']['requestBody']['content']['application/json']['additionalMetadata'],
-  referrer?: string
+  additionalMetadata?: paths['/requests/metadata']['post']['requestBody']['content']['application/json']['additionalMetadata']
 ) => {
-  if (requestId && additionalMetadata) {
+  if (client && requestId && additionalMetadata) {
     const triggerData: paths['/requests/metadata']['post']['requestBody']['content']['application/json'] & {
       referrer?: string
     } = {
       requestId,
       additionalMetadata,
-      referrer
+      referrer: client.source
     }
 
     return axios.request({
-      url: `${baseUrl}/requests/metadata`,
+      url: `${client.baseApiUrl}/requests/metadata`,
       method: 'POST',
-      data: triggerData
+      data: triggerData,
+      headers: getApiKeyHeader(client)
     })
   }
 }

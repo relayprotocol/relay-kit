@@ -1,4 +1,5 @@
 import {
+  getApiKeyHeader,
   MAINNET_RELAY_API,
   RelayClient,
   type AdaptedWallet,
@@ -76,9 +77,11 @@ export default function (
       if (options && client?.source && !options.referrer) {
         options.referrer = client.source
       }
-      const promise = queryQuote(baseApiUrl ?? client?.baseApiUrl, options, {
+      const quoteBaseApiUrl = baseApiUrl ?? client?.baseApiUrl
+      const promise = queryQuote(quoteBaseApiUrl, options, {
         ...config,
         headers: {
+          ...getApiKeyHeader(client, quoteBaseApiUrl),
           'relay-sdk-version': client?.version ?? 'unknown',
           'relay-kit-ui-version': client?.uiVersion ?? 'unknown'
         }
