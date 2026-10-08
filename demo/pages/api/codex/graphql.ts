@@ -1,45 +1,97 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { isSameSite } from '../../../utils/proxyGuard'
 
+// The only operation the UI's Codex balance fetcher sends (see
+// packages/ui/src/hooks/useCodexBalances.ts). The proxy always forwards this
+// document, so callers can't run other queries or mutations with the key.
+const BALANCES_QUERY = `query WalletBalances($input: BalancesInput!) {
+  balances(input: $input) {
+    cursor
+    items {
+      balance
+      balanceUsd
+      tokenPriceUsd
+      liquidityUsd
+      tokenAddress
+      networkId
+      token {
+        symbol
+        decimals
+        isScam
+      }
+    }
+  }
+}`
+
+const MAX_PAGE_LIMIT = 100
+
+type BalancesInput = {
+  walletAddress: string
+  networks?: number[]
+  cursor?: string
+  limit?: number
+  includeNative?: boolean
+  removeScams?: boolean
+  sortBy?: string
+  sortDirection?: string
+}
+
+// Rebuilds the balances input from known fields only.
+function parseBalancesInput(body: any): BalancesInput | null {
+  const input = body?.variables?.input
+  if (!input || typeof input.walletAddress !== 'string') return null
+
+  const parsed: BalancesInput = { walletAddress: input.walletAddress }
+  if (Array.isArray(input.networks)) {
+    if (!input.networks.every((n: unknown) => Number.isInteger(n))) return null
+    parsed.networks = input.networks
+  }
+  if (typeof input.cursor === 'string') parsed.cursor = input.cursor
+  if (Number.isInteger(input.limit)) {
+    parsed.limit = Math.min(Math.max(input.limit, 1), MAX_PAGE_LIMIT)
+  }
+  if (typeof input.includeNative === 'boolean') {
+    parsed.includeNative = input.includeNative
+  }
+  if (typeof input.removeScams === 'boolean') {
+    parsed.removeScams = input.removeScams
+  }
+  if (typeof input.sortBy === 'string') parsed.sortBy = input.sortBy
+  if (typeof input.sortDirection === 'string') {
+    parsed.sortDirection = input.sortDirection
+  }
+  return parsed
+}
+
+/**
+ * Codex GraphQL proxy for the UI's wallet balance lookups. Injects
+ * `CODEX_API_KEY` server-side and only forwards same-site `WalletBalances`
+ * queries.
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
-  const CODEX_API_KEY = process.env.CODEX_API_KEY
-  const allowedDomains = process.env.ALLOWED_API_DOMAINS
-    ? process.env.ALLOWED_API_DOMAINS.split(',')
-    : []
-  let origin = req.headers.origin || req.headers.referer || ''
-
-  try {
-    origin = new URL(origin).origin
-  } catch (e) {}
-
-  if (allowedDomains.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
-    res.setHeader('Vary', 'Origin')
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-  }
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
-    return
-  }
-
   if (req.method !== 'POST') {
     res.status(405).json({ message: 'Method not allowed' })
     return
   }
 
-  if (!CODEX_API_KEY) {
-    res.status(500).json({
-      error: 'Server configuration error'
-    })
+  if (!isSameSite(req)) {
+    res.status(403).json({ message: 'Forbidden' })
     return
   }
 
-  if (allowedDomains.length > 0 && !allowedDomains.includes(origin)) {
-    res.status(403).json({ message: 'Forbidden: Origin not allowed' })
+  const CODEX_API_KEY = process.env.CODEX_API_KEY
+  if (!CODEX_API_KEY) {
+    res.status(500).json({ error: 'Server configuration error' })
+    return
+  }
+
+  const query = typeof req.body?.query === 'string' ? req.body.query : ''
+  const input = parseBalancesInput(req.body)
+  if (!query.trimStart().startsWith('query WalletBalances') || !input) {
+    res.status(400).json({ message: 'Unsupported operation' })
     return
   }
 
@@ -49,15 +101,9 @@ export default async function handler(
       'Content-Type': 'application/json',
       Authorization: CODEX_API_KEY
     },
-    body: JSON.stringify(req.body)
+    body: JSON.stringify({ query: BALANCES_QUERY, variables: { input } })
   })
 
   const response = await codexResponse.json()
-
-  if (!codexResponse.ok) {
-    res.status(codexResponse.status).json(response)
-    return
-  }
-
-  res.json(response)
+  res.status(codexResponse.status).json(response)
 }
