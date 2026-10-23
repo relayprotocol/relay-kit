@@ -8,7 +8,7 @@ import {
   type Dispatch,
   useContext
 } from 'react'
-import { parseUnits, type Address } from 'viem'
+import type { Address } from 'viem'
 import {
   type AdaptedWallet,
   type Execute,
@@ -39,6 +39,7 @@ import { getDeadAddress } from '@relayprotocol/relay-sdk'
 import { bitcoin } from '../../../utils/bitcoin.js'
 import { errorToJSON } from '../../../utils/errors.js'
 import { sha256 } from '../../../utils/hashing.js'
+import { parseUnitsOrZero } from '../../../utils/numbers.js'
 import { get15MinuteInterval } from '../../../utils/time.js'
 
 export enum TransactionProgressStep {
@@ -155,7 +156,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
               recipient: recipient as string,
               tradeType: 'EXACT_INPUT',
               appFees: providerOptionsContext.appFees,
-              amount: parseUnits(
+              amount: parseUnitsOrZero(
                 debouncedInputAmountValue,
                 fromToken.decimals
               ).toString(),
