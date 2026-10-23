@@ -25,7 +25,7 @@ import {
 } from '../../hooks/index.js'
 import { checkSolanaTokenAccount } from '../../hooks/useSolanaTokenAccount.js'
 import type { Address, WalletClient } from 'viem'
-import { formatUnits, parseUnits } from 'viem'
+import { formatUnits } from 'viem'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useCapabilities } from 'wagmi/experimental'
 import type { Token } from '../../types/index.js'
@@ -58,6 +58,7 @@ import {
 } from '../../utils/address.js'
 import { adaptViemWallet, isDeadAddress } from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
+import { parseUnitsOrZero } from '../../utils/numbers.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
 import { get15MinuteInterval } from '../../utils/time.js'
@@ -518,11 +519,11 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
           appFees: providerOptionsContext.appFees,
           amount:
             tradeType === 'EXACT_INPUT'
-              ? parseUnits(
+              ? parseUnitsOrZero(
                   debouncedInputAmountValue,
                   fromToken.decimals
                 ).toString()
-              : parseUnits(
+              : parseUnitsOrZero(
                   debouncedOutputAmountValue,
                   toToken.decimals
                 ).toString(),
