@@ -12,12 +12,12 @@ import {
 import { useMemo } from 'react'
 
 type TokenPriceQuery =
-  paths['/currencies/token/price']['get']['parameters']['query'] & {
+  paths['/currencies/token/price/v2']['get']['parameters']['query'] & {
     referrer?: string
   }
 
 export type TokenPriceResponse =
-  paths['/currencies/token/price']['get']['responses']['200']['content']['application/json']
+  paths['/currencies/token/price/v2']['get']['responses']['200']['content']['application/json']
 
 type QueryType = typeof useQuery<
   TokenPriceResponse,
@@ -32,7 +32,7 @@ export const queryTokenPrice = function (
   options?: TokenPriceQuery,
   headers?: HeadersInit
 ): Promise<TokenPriceResponse> {
-  const url = new URL(`${baseApiUrl}/currencies/token/price`)
+  const url = new URL(`${baseApiUrl}/currencies/token/price/v2`)
   setParams(url, options ?? {})
   return fetcher(url.href, headers)
 }

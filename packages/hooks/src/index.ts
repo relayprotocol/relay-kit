@@ -10,10 +10,6 @@ export {
   queryRelayChains
 } from './hooks/useRelayChains.js'
 export {
-  default as useRelayConfig,
-  queryRelayConfig
-} from './hooks/useRelayConfig.js'
-export {
   default as useExecutionStatus,
   queryExecutionStatus
 } from './hooks/useExecutionStatus.js'

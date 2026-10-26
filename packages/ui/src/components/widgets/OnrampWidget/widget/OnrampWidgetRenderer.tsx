@@ -32,6 +32,7 @@ import {
 import useWalletAddress from '../../../../hooks/useWalletAddress.js'
 import { useTokenPrice } from '@relayprotocol/relay-kit-hooks'
 import { formatBN } from '../../../../utils/numbers.js'
+import { parseTokenPrice } from '../../../../utils/quote.js'
 import { UnsupportedDepositAddressChainIds } from '../../../../constants/depositAddresses.js'
 
 export type ChildrenProps = {
@@ -133,7 +134,7 @@ const OnrampWidgetRenderer: FC<OnrampWidgetRendererProps> = ({
       refetchOnWindowFocus: false
     }
   )
-  const usdRate = usdTokenPriceResponse?.price ?? 0
+  const usdRate = parseTokenPrice(usdTokenPriceResponse?.price) ?? 0
   const minAmountCurrency = formatBN(20 / usdRate, 5, token.decimals, false)
 
   const toChain = useMemo(

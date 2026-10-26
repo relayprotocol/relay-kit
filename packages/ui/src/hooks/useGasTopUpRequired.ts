@@ -2,6 +2,7 @@ import type { Token } from '../types/index.js'
 import useCurrencyBalance from '../hooks/useCurrencyBalance.js'
 import { type RelayChain } from '@relayprotocol/relay-sdk'
 import { useTokenPrice } from '@relayprotocol/relay-kit-hooks'
+import { parseTokenPrice } from '../utils/quote.js'
 import { useRelayClient } from '../hooks/index.js'
 
 export default (
@@ -53,17 +54,19 @@ export default (
     }
   )
 
-  if (enabled && gasBalance !== undefined && usdTokenPriceResponse?.price) {
+  const usdTokenPrice = parseTokenPrice(usdTokenPriceResponse?.price)
+
+  if (enabled && gasBalance !== undefined && usdTokenPrice) {
     const tokenDecimals = chain?.currency?.decimals ?? 18
     const balanceThreshold =
       (BigInt(Math.floor(+balanceThresholdUsd * 10 ** 6)) *
         BigInt(10 ** tokenDecimals)) /
-      BigInt(Math.floor(usdTokenPriceResponse.price * 10 ** 6))
+      BigInt(Math.floor(usdTokenPrice * 10 ** 6))
 
     const topUpAmount =
       (BigInt(Math.floor(+topUpAmountUsd * 10 ** 6)) *
         BigInt(10 ** tokenDecimals)) /
-      BigInt(Math.floor(usdTokenPriceResponse.price * 10 ** 6))
+      BigInt(Math.floor(usdTokenPrice * 10 ** 6))
     const requiresTopUp = balanceThreshold > gasBalance
 
     return {

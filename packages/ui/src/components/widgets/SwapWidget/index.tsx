@@ -53,7 +53,11 @@ import TokenSelector from '../../common/TokenSelector/TokenSelector.js'
 import { UnverifiedTokenModal } from '../../common/UnverifiedTokenModal.js'
 import { alreadyAcceptedToken } from '../../../utils/localStorage.js'
 import GasTopUpSection from './GasTopUpSection.js'
-import { calculateUsdValue, getSwapEventData } from '../../../utils/quote.js'
+import {
+  calculateUsdValue,
+  getSwapEventData,
+  parseTokenPrice
+} from '../../../utils/quote.js'
 import { PriceImpact } from './PriceImpact.js'
 import type { useQuote } from '@relayprotocol/relay-kit-hooks'
 
@@ -274,15 +278,18 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         isLoadingFromTokenPrice,
         isLoadingToTokenPrice
       }) => {
+        const fromTokenPrice = parseTokenPrice(fromTokenPriceData?.price)
+        const toTokenPrice = parseTokenPrice(toTokenPriceData?.price)
+
         // Calculate the USD value of the input amount
         const inputAmountUsd = useMemo(() => {
-          return calculateUsdValue(fromTokenPriceData?.price, amountInputValue)
-        }, [fromTokenPriceData, amountInputValue])
+          return calculateUsdValue(fromTokenPrice, amountInputValue)
+        }, [fromTokenPrice, amountInputValue])
 
         // Calculate the USD value of the output amount
         const outputAmountUsd = useMemo(() => {
-          return calculateUsdValue(toTokenPriceData?.price, amountOutputValue)
-        }, [toTokenPriceData, amountOutputValue])
+          return calculateUsdValue(toTokenPrice, amountOutputValue)
+        }, [toTokenPrice, amountOutputValue])
 
         const handleMaxAmountClicked = async (
           amount: bigint,
@@ -447,8 +454,8 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         const conversionRate = useMemo(() => {
           if (isUsdInputMode) {
             // When in USD input mode, the conversion rate is the price of the fromToken.
-            if (fromTokenPriceData?.price && fromTokenPriceData.price > 0) {
-              return fromTokenPriceData.price
+            if (fromTokenPrice && fromTokenPrice > 0) {
+              return fromTokenPrice
             } else {
               // If no price data, or price is 0, return null to avoid stale calculations.
               return null
@@ -475,7 +482,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
           }
         }, [
           isUsdInputMode,
-          fromTokenPriceData?.price,
+          fromTokenPrice,
           quote?.details?.currencyIn?.amountUsd,
           amountInputValue
         ])
@@ -521,11 +528,11 @@ const SwapWidget: FC<SwapWidgetProps> = ({
             } else if (
               amountOutputValue &&
               Number(amountOutputValue) > 0 &&
-              toTokenPriceData?.price &&
-              toTokenPriceData.price > 0
+              toTokenPrice &&
+              toTokenPrice > 0
             ) {
               newUsdOutputValue = (
-                Number(amountOutputValue) * toTokenPriceData.price
+                Number(amountOutputValue) * toTokenPrice
               ).toFixed(2)
             }
 
@@ -576,16 +583,12 @@ const SwapWidget: FC<SwapWidgetProps> = ({
         //Update token output value when USD output changes in USD mode
         useEffect(() => {
           if (isUsdInputMode && tradeType === 'EXPECTED_OUTPUT') {
-            if (
-              toTokenPriceData?.price &&
-              toTokenPriceData.price > 0 &&
-              usdOutputValue
-            ) {
+            if (toTokenPrice && toTokenPrice > 0 && usdOutputValue) {
               const usdValue = Number(usdOutputValue)
               if (!isNaN(usdValue) && usdValue > 0) {
-                const tokenEquivalent = (
-                  usdValue / toTokenPriceData.price
-                ).toFixed(toToken?.decimals ?? 8)
+                const tokenEquivalent = (usdValue / toTokenPrice).toFixed(
+                  toToken?.decimals ?? 8
+                )
                 setAmountOutputValue(tokenEquivalent)
               }
             } else if (usdOutputValue === '' || Number(usdOutputValue) === 0) {
@@ -596,7 +599,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
           isUsdInputMode,
           tradeType,
           usdOutputValue,
-          toTokenPriceData?.price,
+          toTokenPrice,
           setAmountOutputValue,
           toToken?.decimals
         ])
@@ -618,14 +621,14 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                 setUsdOutputValue(quoteUsdValue.toFixed(2))
               }
             } else if (
-              toTokenPriceData?.price &&
-              toTokenPriceData.price > 0 &&
+              toTokenPrice &&
+              toTokenPrice > 0 &&
               amountOutputValue &&
               Number(amountOutputValue) > 0
             ) {
               // Fallback to direct token price calculation
               const tokenAmount = Number(amountOutputValue)
-              const usdEquivalent = tokenAmount * toTokenPriceData.price
+              const usdEquivalent = tokenAmount * toTokenPrice
               if (!isNaN(usdEquivalent) && usdEquivalent >= 0) {
                 setUsdOutputValue(usdEquivalent.toFixed(2))
               }
@@ -638,7 +641,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
           tradeType,
           quote?.details?.currencyOut?.amountUsd,
           isFetchingQuote,
-          toTokenPriceData?.price,
+          toTokenPrice,
           amountOutputValue
         ])
 
@@ -945,8 +948,8 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                                 />
                               ) : inputAmountUsd &&
                                 inputAmountUsd > 0 &&
-                                fromTokenPriceData?.price &&
-                                fromTokenPriceData.price > 0 ? (
+                                fromTokenPrice &&
+                                fromTokenPrice > 0 ? (
                                 formatDollar(inputAmountUsd)
                               ) : (
                                 '$0.00'
@@ -1371,8 +1374,8 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                             ) : toToken &&
                               outputAmountUsd &&
                               outputAmountUsd > 0 &&
-                              toTokenPriceData?.price &&
-                              toTokenPriceData.price > 0 ? (
+                              toTokenPrice &&
+                              toTokenPrice > 0 ? (
                               formatDollar(outputAmountUsd)
                             ) : (
                               '$0.00'
