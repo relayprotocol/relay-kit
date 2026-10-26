@@ -20,7 +20,7 @@ import {
   extractDepositRequestId,
   getRequestCurrencies
 } from '../../../../utils/relayTransaction.js'
-import { parseUnits, zeroAddress } from 'viem'
+import { zeroAddress } from 'viem'
 import {
   appendMetadataToRequest,
   extractDepositAddress,
@@ -32,7 +32,7 @@ import { OnrampProcessingStepUI } from './steps/OnrampProcessingStepUI.js'
 import { OnrampProcessingPassthroughStep } from './steps/OnrampProcessingPassthroughStep.js'
 import { OnrampSuccessStep } from './steps/OnrampSuccessStep.js'
 import { OnrampMoonPayStep } from './steps/OnrampMoonPayStep.js'
-import { formatBN } from '../../../../utils/numbers.js'
+import { formatBN, parseUnitsOrZero } from '../../../../utils/numbers.js'
 import { ErrorStep } from '../../../common/TransactionModal/steps/ErrorStep.js'
 import { errorToJSON } from '../../../../utils/errors.js'
 import { useAccount } from 'wagmi'
@@ -167,8 +167,8 @@ export const OnrampModal: FC<OnrampModalProps> = ({
       tradeType: 'EXACT_INPUT',
       amount:
         fromToken.symbol === 'USDC'
-          ? parseUnits(`${amount}`, 6).toString()
-          : parseUnits(`${ethAmount}`, fromToken.decimals).toString(),
+          ? parseUnitsOrZero(amount, 6).toString()
+          : parseUnitsOrZero(ethAmount, fromToken.decimals).toString(),
       user: getDeadAddress(),
       recipient
     },
