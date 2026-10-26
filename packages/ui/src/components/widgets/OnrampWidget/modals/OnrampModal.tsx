@@ -23,7 +23,8 @@ import {
 import { parseUnits, zeroAddress } from 'viem'
 import {
   appendMetadataToRequest,
-  extractDepositAddress
+  extractDepositAddress,
+  parseTokenPrice
 } from '../../../../utils/quote.js'
 import { getTxBlockExplorerUrl } from '../../../../utils/getTxBlockExplorerUrl.js'
 import { OnrampConfirmingStep } from './steps/OnrampConfirmingStep.js'
@@ -147,10 +148,8 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     }
   }, [open])
 
-  const ethAmount =
-    ethTokenPriceResponse && ethTokenPriceResponse.price
-      ? +(amount ?? '0') / ethTokenPriceResponse.price
-      : 0
+  const ethTokenPrice = parseTokenPrice(ethTokenPriceResponse?.price)
+  const ethAmount = ethTokenPrice ? +(amount ?? '0') / ethTokenPrice : 0
 
   const {
     data: quote,
@@ -204,7 +203,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         }`
       : amount
   const ethTotalAmount = formatBN(
-    totalAmount ? +totalAmount / (ethTokenPriceResponse?.price ?? 0) : 0,
+    totalAmount ? +totalAmount / (ethTokenPrice ?? 0) : 0,
     5,
     18
   )
