@@ -365,6 +365,15 @@ export const getSwapEventData = (
   }
 }
 
+/** Parses the decimal-string price returned by GET /currencies/token/price/v2. */
+export const parseTokenPrice = (price?: string): number | undefined => {
+  if (price === undefined || price === '') {
+    return undefined
+  }
+  const parsed = Number(price)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
 export const calculateUsdValue = (
   price?: number,
   amountString?: string
