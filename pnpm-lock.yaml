@@ -313,6 +313,9 @@ importers:
       rimraf:
         specifier: ^5.0.5
         version: 5.0.10
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@22.13.4)(@vitest/ui@1.6.1)(lightningcss@1.31.1)(terser@5.39.0)
 
   packages/relay-ton-wallet-adapter:
     dependencies:
