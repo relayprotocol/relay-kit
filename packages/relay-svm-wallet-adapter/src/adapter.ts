@@ -32,8 +32,8 @@ const assertBase58TransactionSignature = (
 /**
  * Adapts a Solana wallet to work with the Relay SDK
  * @param walletAddress - The public key address of the Solana wallet
- * @param chainId - The chain ID for the Solana network (Relay uses 792703809)
- * @param connection - The Solana web3.js Connection instance for interacting with the network
+ * @param chainId - The Relay chain ID of the SVM network the connection points to (e.g. 792703809 for Solana, 9286185 for Eclipse)
+ * @param connection - The Solana web3.js Connection instance for that network; the adapter is bound to it and cannot switch to another SVM chain
  * @param signAndSendTransaction - Function to sign and send a transaction, returning a promise with a base58 encoded transaction signature
  * @param payerKey - Optional public key of the account that will pay for transaction fees (defaults to walletAddress)
  * @returns An AdaptedWallet object that conforms to the Relay SDK interface
@@ -52,9 +52,14 @@ export const adaptSolanaWallet = (
   }>,
   payerKey?: string
 ): AdaptedWallet => {
-  let _chainId = chainId
   const getChainId = async () => {
-    return _chainId
+    return chainId
+  }
+
+  const assertBoundChain = (receivedChainId: number) => {
+    if (receivedChainId !== chainId) {
+      throw new Error('Cannot switch to an invalid svm chain id')
+    }
   }
 
   return {
@@ -66,7 +71,8 @@ export const adaptSolanaWallet = (
     handleSignMessageStep: async () => {
       throw new Error('Message signing not implemented for Solana')
     },
-    handleSendTransactionStep: async (_chainId, stepItem) => {
+    handleSendTransactionStep: async (stepChainId, stepItem) => {
+      assertBoundChain(stepChainId)
       const client = getClient()
 
       const instructions =
@@ -112,7 +118,7 @@ export const adaptSolanaWallet = (
           [
             'Skipping address lookup tables that could not be resolved on the current chain',
             missingLookupTables,
-            _chainId
+            stepChainId
           ],
           LogLevel.Warn
         )
@@ -143,9 +149,10 @@ export const adaptSolanaWallet = (
 
       return transactionSignature
     },
-    handleConfirmTransactionStep: async (txHash) => {
+    handleConfirmTransactionStep: async (txHash, stepChainId) => {
       // Solana doesn't have a concept of replaced transactions
       // So we don't need to handle onReplaced and onCancelled
+      assertBoundChain(stepChainId)
       assertBase58TransactionSignature(txHash)
 
       const { blockhash, lastValidBlockHeight } =
@@ -167,9 +174,9 @@ export const adaptSolanaWallet = (
         txHash
       }
     },
-    switchChain: (chainId: number) => {
-      _chainId = chainId
-      return new Promise((res) => res())
+    // The connection fixes the SVM cluster, so only a no-op switch is safe.
+    switchChain: async (targetChainId: number) => {
+      assertBoundChain(targetChainId)
     }
   }
 }
