@@ -1,5 +1,21 @@
 # @reservoir0x/relay-svm-wallet-adapter
 
+## 23.0.0
+
+### Major Changes
+
+- f2cfc24: `adaptSolanaWallet` is now bound to the SVM chain it was created for. `switchChain`,
+  `handleSendTransactionStep` and `handleConfirmTransactionStep` reject any other chain id
+  instead of reporting the new chain while still using the original `Connection`, so a swap
+  can no longer be signed against Solana after switching to Eclipse (or the reverse). To
+  support several SVM chains, create one adapter per chain, each with a `Connection` for that
+  chain, and pass the one matching the origin chain.
+
+### Patch Changes
+
+- Updated dependencies [d7d9ca0]
+  - @relayprotocol/relay-sdk@8.0.5
+
 ## 22.0.4
 
 ### Patch Changes
