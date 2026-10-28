@@ -1,5 +1,6 @@
 import { MAINNET_RELAY_API, TESTNET_RELAY_API } from '@relayprotocol/relay-sdk'
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { isSameSite } from '../../../utils/proxyGuard'
 
 const DEV_RELAY_API = 'https://api.dev.relay.link'
 
@@ -11,16 +12,32 @@ const ENV_TO_BASE: Record<string, string> = {
   'mainnets-dev': DEV_RELAY_API
 }
 
-// Only allow calls originating from this app itself
-function isSameSite(req: NextApiRequest): boolean {
-  const host = req.headers.host
-  const source = req.headers.origin ?? req.headers.referer
-  if (!host || !source) return false
-  try {
-    return new URL(source).host === host
-  } catch {
-    return false
-  }
+// Upstream routes the SDK, UI and demo pages call. Anything else (e.g.
+// /metrics/usage or admin paths) is rejected so the server-side key can't be
+// used against arbitrary Relay API endpoints.
+const WALLET_SEGMENT = '[A-Za-z0-9]+'
+const ALLOWED_ROUTES: Record<string, RegExp[]> = {
+  GET: [
+    /^chains$/,
+    /^config\/v2$/,
+    /^currencies\/trending$/,
+    /^currencies\/token\/price$/,
+    /^intents\/status(\/v2|\/v3)?$/,
+    /^requests\/v3$/,
+    new RegExp(`^app-fees\\/${WALLET_SEGMENT}\\/balances$`)
+  ],
+  POST: [
+    /^quote\/v2$/,
+    /^currencies\/v2$/,
+    /^execute(\/permits)?$/,
+    /^transactions\/(index|single)$/,
+    /^requests\/metadata$/,
+    new RegExp(`^app-fees\\/${WALLET_SEGMENT}\\/claim$`)
+  ]
+}
+
+function isAllowedRoute(method: string, path: string): boolean {
+  return (ALLOWED_ROUTES[method] ?? []).some((pattern) => pattern.test(path))
 }
 
 // Gas-sponsorship logic for quote requests (ported from the demo's secure
@@ -56,6 +73,7 @@ function applyGasSponsorship(body: any) {
 /**
  * Server-side proxy for the Relay API. Injects the `x-api-key` header (kept out
  * of the client bundle) so authenticated endpoints like GET /requests/v3 work.
+ * Only same-site requests to the routes in `ALLOWED_ROUTES` are forwarded.
  *
  * Point Relay Kit's `baseApiUrl` at `/api/relay/<env>` where <env> is one of
  * `mainnets`, `testnets`, or `mainnets-dev`.
@@ -84,6 +102,13 @@ export default async function handler(
   }
 
   const path = rest.join('/')
+  const method = req.method ?? 'GET'
+
+  if (!isAllowedRoute(method, path)) {
+    res.status(404).json({ message: 'Not found' })
+    return
+  }
+
   const target = new URL(`${upstreamBase}/${path}`)
 
   // Forward the SDK's query params (everything except the catch-all `path`).
@@ -96,7 +121,6 @@ export default async function handler(
     }
   }
 
-  const method = req.method ?? 'GET'
   const hasBody = method !== 'GET' && method !== 'HEAD' && Boolean(req.body)
 
   // Apply gas sponsorship to quote requests before forwarding.
