@@ -206,29 +206,36 @@ export interface paths {
       };
     };
   };
-  "/balance-events/{wallet}": {
+  "/balance/{wallet}/events": {
+    /** @description Balance movements for one wallet: fee sponsorship, fixed-rate settlement, fee credits, deposits and withdrawals. A wallet linked to your integrator returns its full ledger with running balances; any other wallet returns the events your integrator caused on it, plus deposits and settled withdrawals, which are public on-chain. For current balances rather than history, use /app-fees/:wallet/balances. */
     get: {
       parameters: {
-        query: {
-          /** @description Temporary shared secret required to access this endpoint */
-          id: string;
-          /** @description Restrict to one chain */
+        query?: {
+          /** @description Return only events belonging to this request. */
+          requestId?: string;
+          /** @description Comma-separated request ids, at most 20 per call. Use a type and time range instead for a reconciliation sweep. */
+          requestIds?: string;
+          /** @description Comma-separated event types to filter by. Events matching any of the given types are returned. Omit for all. Supported values: fee-credit, fee-sponsorship-payment, fee-sponsorship-refund, gasless-refund, balance-withdraw, balance-deposit, gas-sponsorship-payment, fixed-rate-credit, fixed-rate-debit, fixed-bps-pnl, fast-fill-hold, fast-fill-release, admin-manual-adjustment. */
+          type?: string;
+          /** @description Restrict to one chain. */
           chainId?: number | null;
-          /** @description Restrict to one currency (use chainId for non-EVM) */
+          /** @description Restrict to one currency. Pair with `chainId` for non-EVM currencies. */
           currency?: string | null;
-          /** @description Restrict to one balance update context */
-          context?: "set-pending-amount" | "unset-pending-amount" | "reset-pending-amount" | "pay-fees" | "claim" | "fast-fill-reduce-balance" | "fast-fill-increase-balance" | "balance-topup" | "execute-transaction-request" | "fixed-rate-accounting" | "integrator-fixed-bps-accounting" | "admin-manual-adjustment" | null;
-          /** @description Restrict to a specific request id */
-          requestId?: string | null;
-          /** @description Page size for events (max 250, default 50) */
+          /** @description Only events created at or after this unix timestamp, in seconds. */
+          startTimestamp?: number | null;
+          /** @description Only events created at or before this unix timestamp, in seconds. */
+          endTimestamp?: number | null;
+          /** @description Maximum number of events to return per page. */
           limit?: number | null;
-          /** @description Pagination cursor: the `id` of the last event from the previous page */
-          cursor?: string | null;
-          /** @description Include rows where the current balance is <= 0 (default true) */
-          includeNegativeBalances?: boolean | null;
+          /** @description Pagination cursor returned by a previous response. Pass it back to fetch the next page. */
+          continuation?: string | null;
+        };
+        header?: {
+          /** @description API key. Required. */
+          "x-api-key"?: string;
         };
         path: {
-          /** @description Wallet address (EVM/SVM/BVM auto-detected) */
+          /** @description Wallet address. A wallet linked to your integrator returns its full ledger; any other returns the events your integrator caused on it, plus deposits and settled withdrawals, which are public on-chain. */
           wallet: string;
         };
       };
@@ -238,21 +245,70 @@ export interface paths {
           content: {
             "application/json": {
               wallet?: string;
-              balances?: {
-                  chainId?: number;
-                  currency?: string;
-                  amount?: string;
-                }[];
               events?: ({
-                  id?: number;
-                  chainId?: number;
-                  wallet?: string;
-                  currency?: string;
-                  delta?: string;
-                  balanceAfter?: string;
-                  context?: string;
+                  /** @description Event identifier. Also the pagination cursor value. */
+                  id?: string;
+                  /** @enum {string} */
+                  type?: "fee-credit" | "fee-sponsorship-payment" | "fee-sponsorship-refund" | "gasless-refund" | "balance-withdraw" | "balance-deposit" | "gas-sponsorship-payment" | "fixed-rate-credit" | "fixed-rate-debit" | "fixed-bps-pnl" | "fast-fill-hold" | "fast-fill-release" | "admin-manual-adjustment";
+                  /** @description The request this event belongs to. Null for events that are not request-scoped, such as deposits and withdrawals. */
                   requestId?: string | null;
-                  contextData?: unknown;
+                  wallet?: string;
+                  /** @description Signed change to the balance. Negative amounts are debits. */
+                  delta?: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                  };
+                  /** @description Balance after this event. Returned only for a wallet linked to your integrator, where the whole ledger is visible and the running balance reconciles. */
+                  balanceAfter?: {
+                    currency?: {
+                      chainId?: number;
+                      address?: string;
+                      symbol?: string;
+                      name?: string;
+                      decimals?: number;
+                      metadata?: {
+                        logoURI?: string;
+                        verified?: boolean;
+                        isNative?: boolean;
+                      };
+                    };
+                    amount?: string;
+                    amountFormatted?: string;
+                    amountUsd?: string;
+                  } | null;
+                  /** @description Type-specific context. Present only where the event carries it; absent on rows written before the field existed. */
+                  details?: ({
+                    /** @description Withdrawal identifier. Present on `balance-withdraw` events only. */
+                    claimId?: string | null;
+                    /** @description The fixed rate the request was quoted at, e.g. `1:1`. */
+                    fixedRate?: string | null;
+                    currencyIn?: {
+                      chainId?: number;
+                      address?: string;
+                    } | null;
+                    currencyOut?: {
+                      chainId?: number;
+                      address?: string;
+                    } | null;
+                    currencyOutAmount?: string | null;
+                    /** @description What the output would have been at market. The settled delta is the difference between this and the amount delivered at the fixed rate. */
+                    marketAmountOut?: string | null;
+                    /** @description Requests covered by an event that spans more than one, such as a fast-fill write-off. */
+                    requestIds?: string[] | null;
+                  }) | null;
                   createdAt?: string;
                 })[];
               continuation?: string | null;
@@ -269,6 +325,14 @@ export interface paths {
         };
         /** @description Default Response */
         401: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        403: {
           content: {
             "application/json": {
               message?: string;
@@ -310,6 +374,8 @@ export interface paths {
                   } | null;
                   /** @description If the network supports depositing to this chain, e.g. allows this chain to be set as the destination chain */
                   depositEnabled?: boolean;
+                  /** @description If any token on this chain can be a deposit-address input. Routes still require a quote. */
+                  depositAddressEnabled?: boolean;
                   /** @enum {string} */
                   tokenSupport?: "All" | "Limited";
                   /** @description If relaying to and from this chain is disabled */
@@ -389,12 +455,17 @@ export interface paths {
                       erc20Router?: string;
                       approvalProxy?: string;
                     };
+                    /** @description RelayRouter 3.2 and its approval proxy. Relay routes through them on a chain when erc20Router and approvalProxy show these addresses */
+                    "v3.2"?: {
+                      erc20Router?: string;
+                      approvalProxy?: string;
+                    };
                   };
                   /**
                    * @description The type of VM the chain runs on
                    * @enum {string}
                    */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm" | "atlasvm";
                   explorerQueryParams?: {
                     [key: string]: unknown;
                   } | null;
@@ -513,7 +584,10 @@ export interface paths {
                 /** @description How much of the given currency is available to be bridged per bridge request. Denoted in wei */
                 capacityPerRequest?: string;
               };
-              /** @description This denotes if the chain combination supports canonical plus bridging */
+              /**
+               * @deprecated
+               * @description Deprecated: canonical plus bridging has been removed, so this is always false
+               */
               supportsExternalLiquidity?: boolean;
             };
           };
@@ -530,7 +604,7 @@ export interface paths {
           /** @description User address, when supplied returns user balance and max bridge amount */
           user?: string;
           /** @description Restricts the user balance and capacity to a particular currency when supplied with a currency id. Defaults to the native currency of the destination chain. */
-          currency?: "anime" | "btc" | "cgt" | "dai" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "synd" | "xpl" | "usde" | "mon" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg" | "pathusd" | "ausd" | "usdc.e-cronos";
+          currency?: "anime" | "btc" | "kbtc" | "cirbtc" | "cgt" | "dai" | "eth" | "omi" | "pop" | "tg7" | "tia" | "usdc" | "usdc.e" | "usdt" | "sol" | "weth" | "ape" | "g7" | "pengu" | "plume" | "plumeusd" | "gun" | "somi" | "xpl" | "usde" | "mon" | "musd" | "usdm" | "pyusd" | "cash" | "eusd" | "pusd" | "bnb" | "usdg" | "pathusd" | "ausd" | "ousd" | "usdc.e-cronos";
         };
       };
       responses: {
@@ -554,7 +628,10 @@ export interface paths {
                 /** @description How much of the given currency is available to be bridged per bridge request. Denoted in wei */
                 capacityPerRequest?: string;
               };
-              /** @description This denotes if the chain combination supports canonical plus bridging */
+              /**
+               * @deprecated
+               * @description Deprecated: canonical plus bridging has been removed, so this is always false
+               */
               supportsExternalLiquidity?: boolean;
             };
           };
@@ -666,6 +743,8 @@ export interface paths {
                 };
                 deposits: ({
                     id: string;
+                    /** @enum {string} */
+                    status: "detected" | "sweeping" | "swept" | "filled" | "refunded" | "failed" | "needs_manual";
                     chainId: number;
                     transactionHash: string;
                     eventIndex: string;
@@ -731,7 +810,20 @@ export interface paths {
                     /** @enum {string} */
                     status: "pending" | "success" | "failure";
                     /** @enum {string|null} */
-                    failureReason: "refund_failed" | null;
+                    failureReason: "refund_failed" | "refund_below_fees" | null;
+                  })[];
+                recoveryCases?: ({
+                    id: string;
+                    depositId: string;
+                    sweepId: string | null;
+                    reason: string;
+                    /** @enum {string} */
+                    status: "open" | "manual_review_required" | "resolved";
+                    recipient: string | null;
+                    currency: string;
+                    amount: string;
+                    createdAt: string;
+                    updatedAt: string;
                   })[];
                 nextPageToken: string | null;
               };
@@ -849,6 +941,94 @@ export interface paths {
       };
     };
   };
+  "/deposit-addresses/{depositAddressId}/update/v2": {
+    /** @description Update a Deposit Address V2 that the caller's integrator owns. Omitted fields keep their current value. New pricing applies to deposits quoted after the update. A first deposit that matches the original quote keeps that quote until it expires. */
+    post: {
+      parameters: {
+        header?: {
+          /** @description API key for authentication. */
+          "x-api-key"?: string;
+          /** @description Developer portal key for authentication. It cannot change pricing. */
+          "x-dev-portal-key"?: string;
+        };
+        path: {
+          depositAddressId: string;
+        };
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /** @description Whether the address accepts new deposits. A one-time address cannot be enabled after it receives a deposit. */
+            isEnabled?: boolean;
+            /** @description Fixed rate as 'input:output', for example '1:1'. Use null to remove it. Only the API key that created the address can change it. */
+            fixedRate?: string | null;
+            /** @description Whether the API key's sponsoring wallet pays the fees. Only the API key that created the address can change it. */
+            subsidizeFees?: boolean;
+            /** @description Fee components to sponsor. Requires subsidizeFees: true. If omitted, the address keeps its current components. */
+            sponsoredFeeComponents?: ("execution" | "swap" | "relay" | "app" | "rent")[];
+            /** @description The max subsidization amount in USDC decimal format, e.g 1000000 = $1. Use null to remove the cap. Requires subsidizeFees: true. If omitted, the address keeps its current cap. */
+            maxSubsidizationAmount?: string | null;
+          };
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        401: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        403: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        404: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        500: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        503: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode?: string;
+            };
+          };
+        };
+      };
+    };
+  };
   "/execute/permits": {
     post: {
       parameters: {
@@ -864,7 +1044,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
-            /** @description The kind of signature. This value is returned in the quote API steps body field. e.g eip3009 */
+            /** @description The kind of signature. This value is returned in the quote API steps body field. e.g eip3009, permit2 or multicall-authorization (the extra EIP-712 signature of the approval proxy 3.1+ EIP-3009 flow, to be posted before the eip3009 signature) */
             kind: string;
             /** @description The requestId of the quote this permit signature applies to. Returned in the quote API steps body field. */
             requestId: string;
@@ -1003,19 +1183,32 @@ export interface paths {
              * @default true
              */
             explicitDeposit?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
+            /**
+             * @deprecated
+             * @description Deprecated: canonical+ bridging has been removed and this flag is ignored
+             */
             useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
+            /**
+             * @deprecated
+             * @description Deprecated: fallback routes have been removed and this flag is ignored
+             */
             useFallbacks?: boolean;
             /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
             usePermit?: boolean;
             /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
             permitExpiry?: number;
+            /** @description Opt into the two signature EIP-3009 permit flow of approval proxy 3.1+. The authorize step then starts with a MulticallAuthorization signature item (posted to /execute/permits with kind multicall-authorization, no status check) followed by the EIP-3009 authorization item. Without it, EIP-3009 permits keep the single signature flow on the chain's 3.0 contracts. */
+            useMulticallAuthorization?: boolean;
             /** @description Return protocol data for on-chain intent validation. This includes protocol.v2.orderSignature and may increase quote latency. */
             includeProtocolData?: boolean;
+            /**
+             * @description Require exact swap contracts on each EVM leg, overriding the App pin. v3 means 3.0. Unavailable versions and incompatible permit flows return 400 instead of falling back. Only supported for swap execution kinds.
+             * @enum {string}
+             */
+            swapContractsVersion?: "v3" | "v3.2";
             /** @description Use a deposit address when calldata cannot be sent with the origin transaction. In /quote/v2, creation follows the requested trade type. */
             useDepositAddress?: boolean;
-            /** @description Deprecated and ignored by /quote/v2. Deprecated quote endpoints retain their existing strict behavior. */
+            /** @description Makes the deposit address one-time use. On /quote/v2, EXACT_OUTPUT addresses are always one-time use. */
             strict?: boolean;
             /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. Must be 0–10000 bps. */
             slippageTolerance?: string;
@@ -1060,8 +1253,12 @@ export interface paths {
             maxRouteLength?: number;
             /** @description Prevents certain ATA creation instructions in solana routing */
             useSharedAccounts?: boolean;
+            /** @description Restricts solana swap routing to routes that are compatible with Jito bundles. Only set this when the swap will be executed inside a Jito bundle. */
+            forJitoBundle?: boolean;
             /** @description Whether to include compute unit limit instruction for solana origin requests. */
             includeComputeUnitLimit?: boolean;
+            /** @description Whether to return the solana deposit transaction in the v1 (SIMD-0385) format: no lookup tables, a 4096 byte limit, and the compute budget in `transactionConfig`. Best effort; the returned step data sets `transactionVersion` to 1 when honored. */
+            useV1Transaction?: boolean;
             /** @description Whether to ignore price impact errors. */
             overridePriceImpact?: boolean;
             /** @description Whether to disable preferred swap provider selection. */
@@ -1072,14 +1269,20 @@ export interface paths {
             indicativeQuote?: boolean;
             /** @description The rate to charge for fixed spread quotes. */
             fixedRate?: string;
-            /** @description Requester-provided price (destination-leg output units per input unit) to compare router quotes against when fastestInPriceRange is enabled for the API key. Quotes more than 20% below it are skipped; quotes above it are always accepted. */
+            /** @description Requester-provided price (output units per input unit, human units) to compare router quotes against. When fastestInPriceRange is enabled for the API key, destination-leg quotes more than 20% below it are skipped. When useRouteRacingOnOrigin is set, it anchors origin swap route selection: routes priced within a fixed band of it (20% below to 50% above) are preferred, and the best route overall is used when none is in the band. The selected route alone sets the expected and minimum output (with slippageTolerance applied to it); the reference price never sets a floor. Expects a positive decimal string such as "0.000131" (scientific notation is not parsed). Deliberately unconstrained by a schema pattern: a malformed or non-positive value, or one sent by a key without the relevant grant, is ignored and the quote is served without a reference price rather than rejected. */
             referencePrice?: string;
             /** @description Whether to use route racing for this quote (executing multiple candidate routes on-chain and keeping the best), when the API key is authorized for it. */
             useRouteRacing?: boolean;
             /** @description Minimum fill size in USD eligible for route racing. Defaults to 100. Route racing has no maximum fill size. */
             routeRacingMinUsdSize?: number;
+            /** @description Whether to use route racing for this quote's origin swap (executing multiple candidate routes on-chain and keeping the best), when the API key is authorized for it and the origin chain is configured for route racing. */
+            useRouteRacingOnOrigin?: boolean;
             /** @description Time-to-live for the quote, in seconds, measured from when the quote was generated. If the request is not filled within this window it is refunded instead of filled. */
             ttl?: number;
+            /** @description Opt-in queueing: when the destination fill hits temporarily insufficient liquidity, keep retrying it until the queueingTtl window expires (then refund) instead of refunding immediately. Requires queueingTtl. */
+            useQueueing?: boolean;
+            /** @description Queueing window, in seconds, measured from when the quote was generated. While it is open, a useQueueing request that hits insufficient destination liquidity is retried instead of refunded; once it expires the request is refunded. Independent of ttl. Only used together with useQueueing. */
+            queueingTtl?: number;
           };
         };
       };
@@ -1091,7 +1294,7 @@ export interface paths {
               /** @description A unique identifier for the quote */
               requestId?: string;
               /**
-               * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
+               * @description An array of steps detailing what needs to be done to complete the bridge or swap. Each step contains a single item, either a signature or a transaction
                * @example [
                *   {
                *     "id": "deposit",
@@ -1138,7 +1341,7 @@ export interface paths {
                   depositAddress?: string;
                   /** @description The Deposit Address service resource identifier */
                   depositAddressId?: string;
-                  /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
+                  /** @description The item to execute for this step. A step always contains exactly one item, matching the kind of the step (transaction or signature). */
                   items: {
                       /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
                       status?: string;
@@ -3018,8 +3221,6 @@ export interface paths {
                 timeEstimate?: number;
                 /** @description The user's balance in the given currency on the origin chain */
                 userBalance?: string;
-                /** @description The type of fallback route the request uses, if any */
-                fallbackType?: string;
                 /** @description Whether the rate for the quote is fixed or dynamic (swap on origin/destination) */
                 isFixedRate?: boolean;
                 /** @description The USD cost of the fixed rate vs market rate. Positive means the fixed rate is worse than market (user pays premium), negative means better (user benefits). Only present for fixed rate quotes. */
@@ -3353,19 +3554,32 @@ export interface paths {
              * @default true
              */
             explicitDeposit?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
+            /**
+             * @deprecated
+             * @description Deprecated: canonical+ bridging has been removed and this flag is ignored
+             */
             useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
+            /**
+             * @deprecated
+             * @description Deprecated: fallback routes have been removed and this flag is ignored
+             */
             useFallbacks?: boolean;
             /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
             usePermit?: boolean;
             /** @description How long the permit remains valid, in seconds. Defaults to 10 minutes. */
             permitExpiry?: number;
+            /** @description Opt into the two signature EIP-3009 permit flow of approval proxy 3.1+. The authorize step then starts with a MulticallAuthorization signature item (posted to /execute/permits with kind multicall-authorization, no status check) followed by the EIP-3009 authorization item. Without it, EIP-3009 permits keep the single signature flow on the chain's 3.0 contracts. */
+            useMulticallAuthorization?: boolean;
             /** @description Return protocol data for on-chain intent validation. This includes protocol.v2.orderSignature and may increase quote latency. */
             includeProtocolData?: boolean;
+            /**
+             * @description Require exact swap contracts on each EVM leg, overriding the App pin. v3 means 3.0. Unavailable versions and incompatible permit flows return 400 instead of falling back. Only supported for swap execution kinds.
+             * @enum {string}
+             */
+            swapContractsVersion?: "v3" | "v3.2";
             /** @description Use a deposit address when calldata cannot be sent with the origin transaction. In /quote/v2, creation follows the requested trade type. */
             useDepositAddress?: boolean;
-            /** @description Deprecated and ignored by /quote/v2. Deprecated quote endpoints retain their existing strict behavior. */
+            /** @description Makes the deposit address one-time use. On /quote/v2, EXACT_OUTPUT addresses are always one-time use. */
             strict?: boolean;
             /** @description Slippage tolerance for the swap, if not specified then the slippage tolerance is automatically calculated to avoid front-running. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage. Must be 0–10000 bps. */
             slippageTolerance?: string;
@@ -3410,8 +3624,12 @@ export interface paths {
             maxRouteLength?: number;
             /** @description Prevents certain ATA creation instructions in solana routing */
             useSharedAccounts?: boolean;
+            /** @description Restricts solana swap routing to routes that are compatible with Jito bundles. Only set this when the swap will be executed inside a Jito bundle. */
+            forJitoBundle?: boolean;
             /** @description Whether to include compute unit limit instruction for solana origin requests. */
             includeComputeUnitLimit?: boolean;
+            /** @description Whether to return the solana deposit transaction in the v1 (SIMD-0385) format: no lookup tables, a 4096 byte limit, and the compute budget in `transactionConfig`. Best effort; the returned step data sets `transactionVersion` to 1 when honored. */
+            useV1Transaction?: boolean;
             /** @description Whether to ignore price impact errors. */
             overridePriceImpact?: boolean;
             /** @description Whether to disable preferred swap provider selection. */
@@ -3422,14 +3640,20 @@ export interface paths {
             indicativeQuote?: boolean;
             /** @description The rate to charge for fixed spread quotes. */
             fixedRate?: string;
-            /** @description Requester-provided price (destination-leg output units per input unit) to compare router quotes against when fastestInPriceRange is enabled for the API key. Quotes more than 20% below it are skipped; quotes above it are always accepted. */
+            /** @description Requester-provided price (output units per input unit, human units) to compare router quotes against. When fastestInPriceRange is enabled for the API key, destination-leg quotes more than 20% below it are skipped. When useRouteRacingOnOrigin is set, it anchors origin swap route selection: routes priced within a fixed band of it (20% below to 50% above) are preferred, and the best route overall is used when none is in the band. The selected route alone sets the expected and minimum output (with slippageTolerance applied to it); the reference price never sets a floor. Expects a positive decimal string such as "0.000131" (scientific notation is not parsed). Deliberately unconstrained by a schema pattern: a malformed or non-positive value, or one sent by a key without the relevant grant, is ignored and the quote is served without a reference price rather than rejected. */
             referencePrice?: string;
             /** @description Whether to use route racing for this quote (executing multiple candidate routes on-chain and keeping the best), when the API key is authorized for it. */
             useRouteRacing?: boolean;
             /** @description Minimum fill size in USD eligible for route racing. Defaults to 100. Route racing has no maximum fill size. */
             routeRacingMinUsdSize?: number;
+            /** @description Whether to use route racing for this quote's origin swap (executing multiple candidate routes on-chain and keeping the best), when the API key is authorized for it and the origin chain is configured for route racing. */
+            useRouteRacingOnOrigin?: boolean;
             /** @description Time-to-live for the quote, in seconds, measured from when the quote was generated. If the request is not filled within this window it is refunded instead of filled. */
             ttl?: number;
+            /** @description Opt-in queueing: when the destination fill hits temporarily insufficient liquidity, keep retrying it until the queueingTtl window expires (then refund) instead of refunding immediately. Requires queueingTtl. */
+            useQueueing?: boolean;
+            /** @description Queueing window, in seconds, measured from when the quote was generated. While it is open, a useQueueing request that hits insufficient destination liquidity is retried instead of refunded; once it expires the request is refunded. Independent of ttl. Only used together with useQueueing. */
+            queueingTtl?: number;
           };
         };
       };
@@ -3441,7 +3665,7 @@ export interface paths {
               /** @description A unique identifier for the quote */
               requestId?: string;
               /**
-               * @description An array of steps detailing what needs to be done to bridge, steps includes multiple items of the same kind (signature, transaction, etc)
+               * @description An array of steps detailing what needs to be done to complete the bridge or swap. Each step contains a single item, either a signature or a transaction
                * @example [
                *   {
                *     "id": "deposit",
@@ -3488,7 +3712,7 @@ export interface paths {
                   depositAddress?: string;
                   /** @description The Deposit Address service resource identifier */
                   depositAddressId?: string;
-                  /** @description While uncommon it is possible for steps to contain multiple items of the same kind (transaction/signature) grouped together that can be executed simultaneously. */
+                  /** @description The item to execute for this step. A step always contains exactly one item, matching the kind of the step (transaction or signature). */
                   items: {
                       /** @description Can either be complete or incomplete, this can be locally controlled once the step item is completed (depending on the kind) and the check object (if returned) has been verified. Once all step items are complete, the bridge is complete */
                       status?: string;
@@ -5368,8 +5592,6 @@ export interface paths {
                 timeEstimate?: number;
                 /** @description The user's balance in the given currency on the origin chain */
                 userBalance?: string;
-                /** @description The type of fallback route the request uses, if any */
-                fallbackType?: string;
                 /** @description Whether the rate for the quote is fixed or dynamic (swap on origin/destination) */
                 isFixedRate?: boolean;
                 /** @description The USD cost of the fixed rate vs market rate. Positive means the fixed rate is worse than market (user pays premium), negative means better (user benefits). Only present for fixed rate quotes. */
@@ -5652,9 +5874,15 @@ export interface paths {
              * @description Always refund on the origin chain in case of any issues
              */
             refundOnOrigin?: boolean;
-            /** @description Enable this to use canonical+ bridging, trading speed for more liquidity */
+            /**
+             * @deprecated
+             * @description Deprecated: canonical+ bridging has been removed and this flag is ignored
+             */
             useExternalLiquidity?: boolean;
-            /** @description Enable this for specific fallback routes */
+            /**
+             * @deprecated
+             * @description Deprecated: fallback routes have been removed and this flag is ignored
+             */
             useFallbacks?: boolean;
             /** @description Enable this to use permit (eip3009) when bridging, only works on supported currency such as usdc */
             usePermit?: boolean;
@@ -6145,27 +6373,12 @@ export interface paths {
         400: {
           content: {
             "application/json": {
-              /** @example to is required */
-              error: string;
-            } | {
-              /** @example data is required */
-              error: string;
-            } | {
-              /** @example value is required */
-              error: string;
-            } | {
-              /** @example chainId is required */
-              error: string;
-            } | {
-              /** @example authorizationList cannot be empty */
-              error: string;
-            } | ({
               /** @example DELEGATION_REDEEM_FAILED */
-              error: string;
+              error?: string;
               /** @example Delegation redemption reverted without data. Verify the signed delegation is unredeemed and matches the current chain, mode, and account. */
-              message: string;
+              message?: string;
               /** @example 0xabc123... */
-              requestId: string;
+              requestId?: string;
               details?: {
                 topLevel: {
                   type: string;
@@ -6214,7 +6427,7 @@ export interface paths {
                   rawArgsHex?: string;
                 };
               };
-            });
+            };
           };
         };
         /** @description Unauthorized - Missing or invalid API key */
@@ -6472,235 +6685,9 @@ export interface paths {
               /** @description The timestamp when the quote request was created */
               quoteCreatedAt?: number;
               /** @enum {string|null} */
-              failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A" | null;
+              failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "POOL_CAP_EXCEEDED" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A" | null;
               /** @enum {string|null} */
-              refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED" | null;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/requests": {
-    get: {
-      parameters: {
-        query?: {
-          limit?: string;
-          continuation?: string;
-          user?: string;
-          hash?: string;
-          originChainId?: number;
-          destinationChainId?: number;
-          privateChainsToInclude?: string;
-          id?: string;
-          startTimestamp?: number;
-          endTimestamp?: number;
-        };
-        header?: {
-          /** @description Optional API key for authentication and higher rate limits. */
-          "x-api-key"?: string;
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              /**
-               * @example {
-               *   "id": "0xddd6c1a0340e940b7be4f5a4be076df8b7ec7de7b18f9ec6efe4bfffd2f21cf6",
-               *   "status": "success",
-               *   "user": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
-               *   "recipient": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
-               *   "data": {
-               *     "fees": {
-               *       "gas": "2622672522398",
-               *       "fixed": "10000000000000",
-               *       "price": "39000000000000"
-               *     },
-               *     "feesUsd": {
-               *       "gas": "9057",
-               *       "fixed": "34534",
-               *       "price": "134684"
-               *     },
-               *     "inTxs": [
-               *       {
-               *         "fee": "423218878900",
-               *         "data": {
-               *           "to": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "data": "0x5869d8",
-               *           "from": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
-               *           "value": "2651622672522398"
-               *         },
-               *         "hash": "0xe53021eaa63d100b08338197d26953e2219bcbad828267dd936c549ff643aad7",
-               *         "type": "onchain",
-               *         "chainId": 7777777,
-               *         "timestamp": 1713290377
-               *       }
-               *     ],
-               *     "currency": "eth",
-               *     "price": "2600000000000000",
-               *     "usesExternalLiquidity": false,
-               *     "outTxs": [
-               *       {
-               *         "fee": "1837343366480",
-               *         "data": {
-               *           "to": "0x456bccd1eaa77d5cc5ace1723b5dcca00d67cdea",
-               *           "data": "0x5869d8",
-               *           "from": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
-               *           "value": "2600000000000000"
-               *         },
-               *         "hash": "0x9da7bc54dfe6229d6980fd62250d472f23dfe0f41a1cdc870c81a08b3445f254",
-               *         "type": "onchain",
-               *         "chainId": 8453,
-               *         "timestamp": 1713290383
-               *       }
-               *     ]
-               *   },
-               *   "createdAt": "2024-04-16T17:59:39.702Z",
-               *   "updatedAt": "2024-04-16T17:59:46.145Z"
-               * }
-               */
-              requests?: ({
-                  id?: string;
-                  /**
-                   * @description Note that fallback is returned in the case of a refund
-                   * @enum {string}
-                   */
-                  status?: "failure" | "fallback" | "depositing" | "pending" | "received" | "success";
-                  user?: string;
-                  recipient?: string;
-                  data?: {
-                    fees?: {
-                      /** @description Estimated gas cost required for execution, in wei */
-                      gas?: string;
-                      /** @description The fixed fee which is always added to execution, in wei */
-                      fixed?: string;
-                      /** @description The dynamic fee which is a result of the chain and the amount, in wei */
-                      price?: string;
-                    };
-                    feesUsd?: {
-                      gas?: string;
-                      fixed?: string;
-                      price?: string;
-                    };
-                    inTxs?: {
-                        /** @description Total fees in wei */
-                        fee?: string;
-                        data?: unknown;
-                        stateChanges?: unknown;
-                        hash?: string;
-                        /** @description The type of transaction, always set to onchain */
-                        type?: string;
-                        chainId?: number;
-                        timestamp?: number;
-                      }[];
-                    currency?: string;
-                    feeCurrency?: string;
-                    appFees?: {
-                        recipient?: string;
-                        amount?: string;
-                      }[];
-                    metadata?: {
-                      sender?: string;
-                      recipient?: string;
-                      /**
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      currencyIn?: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      /**
-                       * @example {
-                       *   "currency": {
-                       *     "chainId": 8453,
-                       *     "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                       *     "symbol": "USDC",
-                       *     "name": "USD Coin",
-                       *     "decimals": 6,
-                       *     "metadata": {
-                       *       "logoURI": "https://ethereum-optimism.github.io/data/USDC/logo.png",
-                       *       "verified": false,
-                       *       "isNative": false
-                       *     }
-                       *   },
-                       *   "amount": "30754920",
-                       *   "amountFormatted": "30.75492",
-                       *   "amountUsd": "30.901612",
-                       *   "minimumAmount": "30454920"
-                       * }
-                       */
-                      currencyOut?: {
-                        currency?: {
-                          chainId?: number;
-                          address?: string;
-                          symbol?: string;
-                          name?: string;
-                          decimals?: number;
-                          metadata?: {
-                            logoURI?: string;
-                            verified?: boolean;
-                            isNative?: boolean;
-                          };
-                        };
-                        amount?: string;
-                        amountFormatted?: string;
-                        amountUsd?: string;
-                        minimumAmount?: string;
-                      };
-                      rate?: string;
-                    };
-                    price?: string;
-                    usesExternalLiquidity?: boolean;
-                    timeEstimate?: number;
-                    outTxs?: {
-                        /** @description Total fees in wei */
-                        fee?: string;
-                        data?: unknown;
-                        stateChanges?: unknown;
-                        hash?: string;
-                        /** @description The type of transaction, always set to onchain */
-                        type?: string;
-                        chainId?: number;
-                        timestamp?: number;
-                      }[];
-                  };
-                  createdAt?: string;
-                  updatedAt?: string;
-                })[];
-              continuation?: string;
+              refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "REFUND_RECIPIENT_IS_BLOCKED" | "MANUAL_REFUND_REQUIRED" | null;
             };
           };
         };
@@ -6708,6 +6695,7 @@ export interface paths {
     };
   };
   "/requests/v2": {
+    /** @deprecated */
     get: {
       parameters: {
         query?: {
@@ -6721,7 +6709,7 @@ export interface paths {
           hash?: string;
           /** @description Filter requests where this is the origin chain. */
           originChainId?: number;
-          /** @description Filter requests where this is the destination chain. */
+          /** @description Filter requests where this is the destination chain. Non-terminal requests are only returned to the API key that created them, or to a dev-portal key of the same integrator. */
           destinationChainId?: number;
           /** @description Comma-separated list of private chain UUIDs to include in the results. */
           privateChainsToInclude?: string;
@@ -6729,7 +6717,7 @@ export interface paths {
           id?: string;
           /** @description Filter by `orderId` — the protocol-level deposit identifier passed as `bytes32 id` to the Relay Depository when funds are deposited, and emitted in the deposit event. */
           orderId?: string;
-          /** @description When true, include `orderData`; public pending requests omit its output subtree. */
+          /** @description When true, include `orderData`; public non-terminal requests omit it entirely. */
           includeOrderData?: boolean;
           /** @description Filter requests created at or after this Unix timestamp (seconds). */
           startTimestamp?: number;
@@ -6739,7 +6727,7 @@ export interface paths {
           startBlock?: number;
           /** @description Filter requests by origin-chain block number (inclusive upper bound). */
           endBlock?: number;
-          /** @description Get all requests for a single chain in either direction. Setting originChainId and/or destinationChainId will override this parameter. */
+          /** @description Get all requests for a single chain in either direction. Setting originChainId and/or destinationChainId will override this parameter. Non-terminal requests are only returned to the API key that created them, or to a dev-portal key of the same integrator. */
           chainId?: string;
           /** @description Filter requests by the `referrer` value supplied at quote time. */
           referrer?: string;
@@ -6854,9 +6842,9 @@ export interface paths {
                     /** @description Slippage tolerance for the swap. This value is in basis points (1/100th of a percent), e.g. 50 for 0.5% slippage */
                     slippageTolerance?: string;
                     /** @enum {string} */
-                    failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A";
+                    failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "POOL_CAP_EXCEEDED" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A";
                     /** @enum {string} */
-                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED";
+                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "REFUND_RECIPIENT_IS_BLOCKED" | "MANUAL_REFUND_REQUIRED";
                     /** @description Regenerated requestId that now owns the sweep/fill for a superseded deposit-address request. */
                     supersededByRequestId?: string | null;
                     failedTxHash?: string;
@@ -9047,9 +9035,9 @@ export interface paths {
           refundTxHash?: string;
           /** @description Filter requests where this is the origin chain. */
           originChainId?: number;
-          /** @description Filter requests where this is the destination chain. */
+          /** @description Filter requests where this is the destination chain. Requests are limited to the caller’s integrator and requests without an API key. */
           destinationChainId?: number;
-          /** @description Get all requests for a single chain in either direction. Overridden by originChainId / destinationChainId. */
+          /** @description Get all requests for a single chain in either direction. Overridden by originChainId / destinationChainId. Requests are limited to the caller’s integrator and requests without an API key. */
           chainId?: number;
           /** @description Comma-separated list of private chain UUIDs to include in results. */
           privateChainsToInclude?: string;
@@ -9060,26 +9048,30 @@ export interface paths {
           /** @description Filter requests by status. */
           status?: "success" | "failure" | "refund" | "pending" | "depositing";
           /** @description Filter requests by failure reason. Only returns requests that failed with this specific reason. */
-          failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A";
+          failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "POOL_CAP_EXCEEDED" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A";
           /** @description Filter requests by refund failure reason. */
-          refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED";
-          /** @description Filter requests by API key. Accepts a single value or a comma-separated list (e.g. key1,key2) — results include requests matching any of the supplied keys. */
+          refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "REFUND_RECIPIENT_IS_BLOCKED" | "MANUAL_REFUND_REQUIRED";
+          /** @description Filter requests by API key. Accepts a single value or a comma-separated list (OR matching). Maximum 50 values across apiKey and apiKeyId. */
           apiKey?: string;
+          /** @description Filter by App IDs (app_id_<uuid>, comma-separated, maximum 50) owned by your integrator. Matches indexed App attribution across current and revoked keys. */
+          appId?: string;
+          /** @description Filter by API key IDs (lowercase key_id_<uuid>, comma-separated), owned by your integrator. OR matching with apiKey; maximum 50 values combined. */
+          apiKeyId?: string;
           /** @description Filter requests by requestType (case-insensitive). Supported values: Bridge, Crosschain Swap, Same-chain Swap, Send, Wrap, Unwrap, Call. */
           requestType?: string;
-          /** @description Filter requests by the exact `referrer` value supplied at quote time. Must be combined with the `apiKey` parameter, and every supplied key must belong to the authenticating integrator — referrer filtering only exposes your own requests. */
+          /** @description Filter requests by the exact `referrer` value supplied at quote time. Without `apiKeyId` or `apiKey`, returns only matching public keyless requests. Every supplied key must belong to the authenticating integrator. Includes matching requests for the selected keys and public requests with neither a recorded API key nor a legacy fill API key, regardless of age. Existing visibility restrictions still apply; public requests are not assigned to your integrator. */
           referrer?: string;
           /** @description Filter by origin currency chain ID. */
           currencyInChainId?: number;
-          /** @description Filter by destination currency chain ID. */
+          /** @description Filter by destination currency chain ID. Requests are limited to the caller’s integrator and requests without an API key. */
           currencyOutChainId?: number;
           /** @description Filter by origin currency contract address. */
           currencyInAddress?: string;
-          /** @description Filter by destination currency contract address. */
+          /** @description Filter by destination currency contract address. Requests are limited to the caller’s integrator and requests without an API key. */
           currencyOutAddress?: string;
           /** @description Filter by origin currency symbol (e.g. USDC). Case-insensitive; matches across all chains. */
           currencyInSymbol?: string;
-          /** @description Filter by destination currency symbol (e.g. USDC). Case-insensitive; matches across all chains. */
+          /** @description Filter by destination currency symbol (e.g. USDC). Case-insensitive; matches across all chains. Requests are limited to the caller’s integrator and requests without an API key. */
           currencyOutSymbol?: string;
           /** @description Field to sort by. */
           sortBy?: "createdAt" | "updatedAt" | "amountUsd";
@@ -9105,13 +9097,13 @@ export interface paths {
           fillTimeMin?: number;
           /** @description Filter requests with fill time ≤ this value (seconds). */
           fillTimeMax?: number;
-          /** @description Comma-separated feature flags to filter by. Requests must have at least one of the specified features. Supported values: gasless_execution, gasless_swap, fast_fill, gas_top_up, fixed_rate, app_fees, deposit_address. */
+          /** @description Comma-separated feature flags to filter by. Requests must have at least one of the specified features. Supported values: gasless_execution, gasless_swap, fast_fill, gas_top_up, fixed_rate, app_fees, deposit_address, fee_sponsorship. */
           features?: string;
           /** @description When true, include fields available only to the authenticating integrator for their own requests. */
           includeAuthenticatedData?: boolean;
           /** @description Only effective when `id` is also provided. When true, returns the parent request AND any child requests. When false or omitted, only the exact `request_id` match is returned. */
           includeChildRequests?: boolean;
-          /** @description JSON-encoded array of filter-group objects. Fields within each group are AND'd; groups are OR'd. Prefix a key with 'not:' to negate it (must_not). Values can be a scalar or an array (OR semantics within the field). Example: [{"depositAddress":"0xabc","originChainId":8453},{"depositAddress":"0x123","originChainId":1}]. Negation example: [{"not:status":"failure"}]. Array value example: [{"not:status":["failure","refund"]}]. A value of null is a null-check ("is empty"/"is not empty") instead of an equality test, for any key. Null-check example: [{"depositAddress":null}] (is empty / does not exist), [{"not:depositAddress":null}] (is not empty / exists). null cannot be combined with real values in an array. Using a `referrer` key (or `not:referrer`) in any group requires the top-level `apiKey` parameter with keys owned by the authenticating integrator, which scopes the entire result set to your own requests. */
+          /** @description JSON-encoded array of filter-group objects. Fields within each group are AND'd; groups are OR'd. Prefix a key with 'not:' to negate it (must_not). Values can be a scalar or an array (OR semantics within the field). Example: [{"depositAddress":"0xabc","originChainId":8453},{"depositAddress":"0x123","originChainId":1}]. Negation example: [{"not:status":"failure"}]. Array value example: [{"not:status":["failure","refund"]}]. A value of null is a null-check ("is empty"/"is not empty") instead of an equality test, for any key. Null-check example: [{"depositAddress":null}] (is empty / does not exist), [{"not:depositAddress":null}] (is not empty / exists). null cannot be combined with real values in an array. At most 50 distinct string values across id, term, and grouped id/term filters (including negations) are allowed; a top-level id with includeChildRequests is excluded from this limit. Requests are limited to the caller’s integrator and requests without an API key. A `referrer` key (or `not:referrer`) without top-level `apiKeyId` or `apiKey` limits that group to public keyless requests. Optional key parameters must contain keys owned by the authenticating integrator. Referrer groups also include matching public keyless requests regardless of age; groups without a referrer retain their existing scope unless a top-level referrer is supplied. */
           filters?: string;
         };
         header: {
@@ -9135,6 +9127,13 @@ export interface paths {
                   refundTo?: string | null;
                   /** @description Regenerated requestId that now owns the sweep/fill for a superseded deposit-address request. Currently only set for Bitcoin (BVM) deposit-address requests. */
                   supersededByRequestId?: string | null;
+                  /** @description Persisted duplicate-deposit refund relationships, or null when none are recorded. Links can exist before a refund completes; check each linked request's status for its outcome. */
+                  duplicateDeposits?: ({
+                    /** @description Original request associated with this duplicate-deposit refund request, or null for a parent request. */
+                    parentRequestId?: string | null;
+                    /** @description Request IDs tracking refunds for duplicate deposits on this request. */
+                    refundRequestIds?: string[];
+                  }) | null;
                   depositAddress?: ({
                     address?: string;
                     /** @enum {string} */
@@ -9145,11 +9144,21 @@ export interface paths {
                     recoveryAddress?: string | null;
                   }) | null;
                   data?: {
+                    /**
+                     * @description Claim status stored on the request. New claims are recorded by a background job after recovery executes on the Hub; this does not confirm withdrawal to the user's wallet. Older records may predate recovery confirmation. Null when no claim status has been recorded. Historical claims require a separate backfill. Updated asynchronously after indexing.
+                     * @enum {string|null}
+                     */
+                    claimStatus?: "unclaimed" | "claimed" | null;
+                    /**
+                     * @description Withdrawal inferred from the Hub balance for confirmed claims. Withdrawn means the depositor's Hub balance for this token is zero; not_withdrawn means it is nonzero. Cached for up to three minutes. Balances are shared across deposits; this does not confirm receipt in the destination wallet. Null if not claimed or the balance lookup or deposit identity is unavailable or ambiguous.
+                     * @enum {string|null}
+                     */
+                    withdrawalStatus?: "not_withdrawn" | "withdrawn" | null;
                     slippageTolerance?: string;
                     /** @enum {string|null} */
-                    failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A" | null;
+                    failReason?: "UNKNOWN" | "SLIPPAGE" | "AMOUNT_TOO_LOW_TO_REFUND" | "DEPOSIT_ADDRESS_MISMATCH" | "DEPOSIT_CHAIN_MISMATCH" | "INCORRECT_DEPOSIT_CURRENCY" | "DOUBLE_SPEND" | "SOLVER_CAPACITY_EXCEEDED" | "SOLVER_BALANCE_TOO_LOW" | "DEPOSITED_AMOUNT_TOO_LOW_TO_FILL" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "NO_QUOTES" | "MISSING_REVERT_DATA" | "REVERSE_SWAP_FAILED" | "GENERATE_SWAP_FAILED" | "TOO_LITTLE_RECEIVED" | "EXECUTION_REVERTED" | "NEW_CALLDATA_INCLUDES_HIGHER_RENT_FEE" | "TRANSACTION_REVERTED" | "TRANSACTION_TOO_LARGE" | "ORIGIN_CURRENCY_MISMATCH" | "NO_INTERNAL_SWAP_ROUTES_FOUND" | "SWAP_USES_TOO_MUCH_GAS" | "INSUFFICIENT_FUNDS_FOR_RENT" | "SPONSOR_BALANCE_TOO_LOW" | "ORDER_EXPIRED" | "ORDER_IS_CANCELLED" | "TRANSFER_FROM_FAILED" | "TRANSFER_FAILED" | "SIGNATURE_EXPIRED" | "INVALID_SIGNATURE" | "INSUFFICIENT_NATIVE_TOKENS_SUPPLIED" | "TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE" | "TRANSFER_AMOUNT_EXCEEDS_BALANCE" | "INVALID_SENDER" | "ACCOUNT_ABSTRACTION_INVALID_NONCE" | "ACCOUNT_ABSTRACTION_SIGNATURE_ERROR" | "SEAPORT_INEXACT_FRACTION" | "TOKEN_NOT_TRANSFERABLE" | "ZERO_SELL_AMOUNT" | "MINT_NOT_ACTIVE" | "ERC_1155_TOO_MANY_REQUESTED" | "INCORRECT_PAYMENT" | "INVALID_GAS_PRICE" | "FLUID_DEX_ERROR" | "ORDER_ALREADY_FILLED" | "SEAPORT_INVALID_FULFILLER" | "INVALID_SIGNER" | "MINT_QUANTITY_EXCEEDS_MAX_PER_WALLET" | "MINT_QUANTITY_EXCEEDS_MAX_SUPPLY" | "JUPITER_INVALID_TOKEN_ACCOUNT" | "INVALID_NONCE" | "ACCOUNT_ABSTRACTION_GAS_LIMIT" | "CONTRACT_PAUSED" | "SWAP_IMPACT_TOO_HIGH" | "INSUFFICIENT_POOL_LIQUIDITY" | "POOL_CAP_EXCEEDED" | "TTL_EXPIRED" | "DEPOSIT_CONFIRMATION_TIMEOUT" | "ORPHANED_DEPOSIT_REFUND" | "GASLESS_PERMIT_BALANCE_TOO_LOW" | "MANUAL_ADMIN_REFUND" | "QUOTED_GAS_LIMIT_EXCEEDED" | "DESTINATION_TOKEN_TRANSFER_REJECTED" | "DEPOSIT_REORGED" | "BLOCKED_WALLET" | "PROTOCOL_DEADLINE_EXPIRED" | "TRANSACTION_NOT_INCLUDED" | "TRANSACTION_SUBMISSION_FAILED" | "N/A" | null;
                     /** @enum {string|null} */
-                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "MANUAL_REFUND_REQUIRED" | null;
+                    refundFailReason?: "AMOUNT_TOO_LOW_TO_REFUND" | "NEGATIVE_NEW_AMOUNT_AFTER_FEES" | "SWAP_CURRENCY_NOT_ON_ORIGIN" | "REFUND_RECIPIENT_IS_VASP" | "REFUND_RECIPIENT_IS_BLOCKED" | "MANUAL_REFUND_REQUIRED" | null;
                     failedTxHash?: string;
                     failedTxBlockNumber?: number;
                     failedCallData?: {
@@ -9637,9 +9646,73 @@ export interface paths {
                       };
                     }) | null;
                     /** @description Platform fee — only returned when the caller authenticates as the request's creator integrator. */
-                    platformFee?: Record<string, unknown> | null;
+                    platformFee?: ({
+                      bucket?: string;
+                      ruleId?: string;
+                      relayFeeBps?: number;
+                      integratorFeeBps?: number;
+                      totalFeeBps?: number;
+                      relayFee?: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      integratorFee?: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      totalPlatformFee?: {
+                        currency?: {
+                          chainId?: number;
+                          address?: string;
+                          symbol?: string;
+                          name?: string;
+                          decimals?: number;
+                          metadata?: {
+                            logoURI?: string;
+                            verified?: boolean;
+                            isNative?: boolean;
+                          };
+                        };
+                        amount?: string;
+                        amountFormatted?: string;
+                        amountUsd?: string;
+                        minimumAmount?: string;
+                      };
+                      integratorFeeRecipient?: string | null;
+                    }) | null;
                     /** @description Referrer — only returned when the caller authenticates as the request's creator integrator. */
                     referrer?: string | null;
+                    /** @description Durable App attribution, returned only for your own requests with includeAuthenticatedData=true. Null when historical attribution is unavailable. */
+                    appId?: string | null;
+                    appName?: string | null;
                     /** @description API key name — only returned when the caller authenticates as the request's creator integrator. */
                     apiKeyName?: string | null;
                     /** @description Address(es) that failed wallet screening and caused a BLOCKED_WALLET failure. Only returned when the caller authenticates as the request's creator integrator. Never includes screening-provider scores or reasons. */
@@ -9978,7 +10051,7 @@ export interface paths {
                     };
                   }) | null;
                   requestType?: string | null;
-                  features?: ("gasless_execution" | "gasless_swap" | "fast_fill" | "gas_top_up" | "fixed_rate" | "app_fees" | "deposit_address")[];
+                  features?: ("gasless_execution" | "gasless_swap" | "fast_fill" | "gas_top_up" | "fixed_rate" | "app_fees" | "deposit_address" | "fee_sponsorship")[];
                   createdAt?: string;
                   updatedAt?: string;
                 })[];
@@ -9993,6 +10066,12 @@ export interface paths {
   };
   "/requests/metadata": {
     post: {
+      parameters: {
+        header?: {
+          /** @description API key of the integrator that created the request. Required. */
+          "x-api-key"?: string;
+        };
+      };
       requestBody: {
         content: {
           "application/json": {
@@ -10006,6 +10085,38 @@ export interface paths {
       responses: {
         /** @description Default Response */
         200: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        401: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        403: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        404: {
           content: {
             "application/json": {
               message?: string;
@@ -10057,6 +10168,14 @@ export interface paths {
             };
           };
         };
+        /** @description Default Response */
+        503: {
+          content: {
+            "application/json": {
+              message?: string;
+            };
+          };
+        };
       };
     };
   };
@@ -10090,7 +10209,7 @@ export interface paths {
     };
   };
   "/transactions/deposit-address/reindex": {
-    /** @description Re-checks the balances of a previously-registered deposit address and queues a withdrawal for any currency with a non-zero balance. Useful when funds were sent to a deposit address but the normal indexer flow did not pick them up. */
+    /** @description Re-checks the balances of a previously-registered deposit address and queues a withdrawal for any currency with a non-zero balance. Useful when funds were sent to a deposit address but the normal indexer flow did not pick them up. For a Deposit Address V2 address, queues a search for recent deposit transactions instead, at most once per hour for each currency. */
     post: {
       parameters: {
         header?: {
@@ -10111,6 +10230,8 @@ export interface paths {
             targetChainId?: number;
             /** @description Address of a specific currency to reindex. Defaults to checking every depositable currency on the chain. */
             currency?: string;
+            /** @description Deposit Address V2 only. Transaction to reindex. Without it, the endpoint finds recent deposit transactions itself. */
+            txHash?: string;
           };
         };
       };
@@ -10160,6 +10281,15 @@ export interface paths {
           content: {
             "application/json": {
               /** @description No deposit address was found for the given `chainId` and `depositAddress`. */
+              message?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        409: {
+          content: {
+            "application/json": {
+              /** @description Deposit Address V2 only. The transaction is still pending. */
               message?: string;
             };
           };
@@ -10239,83 +10369,6 @@ export interface paths {
       };
     };
   };
-  "/conduit/install": {
-    post: {
-      parameters: {
-        header: {
-          "X-CONDUIT-INTEGRATION-SECRET": string;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @enum {string} */
-            event: "INSTALLED" | "UNINSTALLED" | "NETWORK_UPDATED" | "NETWORK_DELETED";
-            id: string;
-            chain_id?: number;
-            parent_chain_id?: number;
-            /** @enum {string} */
-            type?: "OPTIMISM" | "ARBITRUM";
-            name?: string;
-            rpc?: string;
-            ws?: string;
-            explorer?: string;
-            logo_url?: string;
-            icon_url?: string;
-            brand_color?: string;
-            native_currency?: {
-              name?: string;
-              symbol?: string;
-              decimals?: number;
-              contract?: string;
-            };
-            contracts?: Record<string, never>;
-          };
-        };
-      };
-      responses: {
-        /** @description Default Response */
-        200: {
-          content: {
-            "application/json": {
-              id?: string;
-              status?: string;
-              eta_seconds?: number;
-            };
-          };
-        };
-        /** @description Default Response */
-        400: {
-          content: {
-            "application/json": {
-              failure_reason?: string;
-              code?: string;
-              status?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        401: {
-          content: {
-            "application/json": {
-              message?: string;
-              code?: string;
-            };
-          };
-        };
-        /** @description Default Response */
-        500: {
-          content: {
-            "application/json": {
-              failure_reason?: string;
-              code?: string;
-              status?: string;
-            };
-          };
-        };
-      };
-    };
-  };
   "/prices/rates": {
     get: {
       responses: {
@@ -10328,7 +10381,6 @@ export interface paths {
               MATIC?: number;
               USDC?: number;
               XAI?: number;
-              SIPHER?: number;
               TG7?: number;
               POP?: number;
               OMI?: number;
@@ -10338,7 +10390,6 @@ export interface paths {
               G?: number;
               G7?: number;
               POWER?: number;
-              SYND?: number;
             };
           };
         };
@@ -10366,6 +10417,10 @@ export interface paths {
             address?: string;
             /** @description ID to search for a currency group */
             currencyId?: string;
+            /** @description Filter by currency symbol */
+            symbol?: string;
+            /** @description Filter by currency group ID */
+            groupID?: string;
             /** @description List of token addresses, like: chainId:address */
             tokens?: string[];
             /** @description Filter verified currencies */
@@ -10393,7 +10448,7 @@ export interface paths {
                   name?: string;
                   decimals?: number;
                   /** @enum {string} */
-                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
+                  vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm" | "atlasvm";
                   metadata?: {
                     logoURI?: string;
                     verified?: boolean;
@@ -10426,6 +10481,10 @@ export interface paths {
             address?: string;
             /** @description ID to search for a currency */
             currencyId?: string;
+            /** @description Filter by currency symbol */
+            symbol?: string;
+            /** @description Filter by currency group ID */
+            groupID?: string;
             /** @description List of token addresses, like: chainId:address */
             tokens?: string[];
             /** @description Filter verified currencies */
@@ -10439,7 +10498,7 @@ export interface paths {
             includeAllChains?: boolean;
             /** @description Uses 3rd party API's to search for a token, in case relay does not have it indexed */
             useExternalSearch?: boolean;
-            /** @description Returns only currencies supported with deposit address bridging */
+            /** @description Returns eligible deposit-address input currencies for the caller's DA mode. Eligibility does not guarantee availability for every destination and amount. */
             depositAddressOnly?: boolean;
           };
         };
@@ -10455,7 +10514,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm" | "atlasvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10559,7 +10618,7 @@ export interface paths {
                 name?: string;
                 decimals?: number;
                 /** @enum {string} */
-                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
+                vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm" | "atlasvm";
                 metadata?: {
                   logoURI?: string;
                   verified?: boolean;
@@ -10590,7 +10649,7 @@ export interface paths {
               name?: string;
               decimals?: number;
               /** @enum {string} */
-              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm";
+              vmType?: "bvm" | "evm" | "svm" | "tvm" | "tonvm" | "hypevm" | "lvm" | "xrpvm" | "hederavm" | "atlasvm";
               metadata?: {
                 logoURI?: string;
                 verified?: boolean;
@@ -10702,6 +10761,21 @@ export interface paths {
             "application/json": {
               /** @description Error message */
               message?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/currencies/classifications": {
+    get: {
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              major: string[];
+              stable: string[];
             };
           };
         };
@@ -10872,6 +10946,21 @@ export interface paths {
           };
         };
         /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message: string;
+              /** @enum {string} */
+              errorCode?: "PROTECTED_RELAY_ADDRESS";
+              errorData?: {
+                address: string;
+                addressTypes: string[];
+                chainIds: number[];
+              };
+            };
+          };
+        };
+        /** @description Default Response */
         401: {
           content: {
             "application/json": {
@@ -10940,13 +11029,27 @@ export interface paths {
           "application/json": {
             chainId: number;
             transactionId: string;
+            hints?: {
+              "atlas-vm"?: {
+                depositor: string;
+              };
+            };
           };
         };
       };
       responses: {
         /** @description Default Response */
         200: {
-          content: never;
+          content: {
+            "application/json": {
+              success: boolean;
+              execution: {
+                chainId: number;
+                oracleAddress: string;
+                idempotencyKey: string;
+              };
+            };
+          };
         };
       };
     };
@@ -11003,8 +11106,142 @@ export interface paths {
       };
     };
   };
+  "/withdrawals/balances": {
+    /** @description Lists credited Hub balances for one recovery owner. Excludes deposits awaiting attestation or recovery; discovery is eventually consistent. */
+    get: {
+      parameters: {
+        query: {
+          recoveryAddress: string;
+          ownerChainId: number;
+          limit?: number;
+          continuation?: string;
+        };
+        header?: {
+          /** @description Optional API key for higher rate limits. */
+          "x-api-key"?: string;
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              balances: ({
+                  hubTokenId: string;
+                  currency: ({
+                    chainId: number;
+                    address: string;
+                    name: string | null;
+                    symbol: string | null;
+                    decimals: number | null;
+                  }) | null;
+                  amount: string;
+                  amountFormatted: string | null;
+                  amountUsd: string | null;
+                })[];
+              continuation: string | null;
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        500: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/access-tokens": {
+    /** @description Exchange a tier 2+ backend API key for a 15-minute public API session JWT. */
+    post: {
+      parameters: {
+        header: {
+          "x-api-key": string;
+        };
+      };
+      requestBody?: {
+        content: {
+          "application/json": Record<string, never>;
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              token: string;
+              /** @enum {string} */
+              tokenType: "Bearer";
+              /** Format: date-time */
+              expiresAt: string;
+              /** @enum {string} */
+              scope: "public-api";
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        401: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        403: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        429: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        500: {
+          content: {
+            "application/json": {
+              message?: string;
+              errorCode?: string;
+            };
+          };
+        };
+      };
+    };
+  };
   "/metrics/usage": {
-    /** @description Get API call counts for the authenticated API key, grouped by endpoint, status code, and error code. */
+    /** @description Get API call counts for the authenticated API key, or owned keys and Apps using x-dev-portal-key. Rows are grouped by API key, endpoint, status code, and error code. */
     get: {
       parameters: {
         query?: {
@@ -11014,10 +11251,16 @@ export interface paths {
           startTimestamp?: number;
           /** @description End of the query window as a Unix timestamp (seconds). Defaults to now. */
           endTimestamp?: number;
-          /** @description Filter metrics by API key. Accepts a single value or a comma-separated list (e.g. key1,key2) — results include metrics matching any of the supplied keys. Maximum 50 keys. */
+          /** @description Filter metrics by API key. Accepts a single value or a comma-separated list (e.g. key1,key2) — results include metrics matching any of the supplied keys. Maximum 50 values across apiKey, apiKeyId and appId. */
           apiKey?: string;
+          /** @description Filter metrics by API key IDs (key_id_<uuid>, comma-separated) owned by your integrator when using x-dev-portal-key. OR matching with apiKey and appId; maximum 50 values combined. */
+          apiKeyId?: string;
+          /** @description Filter by owned Apps (app_id_<uuid>, comma-separated); requires x-dev-portal-key. Includes all current keys, including inactive keys. OR matching with apiKey and apiKeyId; maximum 50 filter values combined before expanding Apps to keys. Rows remain grouped by API key. App attribution is resolved at read time: hard-deleted keys drop out and reassigned keys attribute all retained usage to their current App. Retention is 24h minutely, 7d hourly, and 14d daily. */
+          appId?: string;
         };
         header?: {
+          /** @description Integrator portal credential required for appId filtering. */
+          "x-dev-portal-key"?: string;
           /** @description Integrator API key. */
           "x-api-key"?: string;
         };
@@ -11027,15 +11270,124 @@ export interface paths {
         200: {
           content: {
             "application/json": {
-              metrics?: {
+              metrics?: ({
                   apiKey?: string;
+                  apiKeyId?: string | null;
+                  appId?: string | null;
                   timestamp?: string;
                   endpoint?: string;
                   statusCode?: number;
                   /** @description Only present on rows where statusCode is 400. Contains the machine-readable error code (e.g. AMOUNT_TOO_LOW). */
                   errorCode?: string;
                   count?: number;
-                }[];
+                })[];
+            };
+          };
+        };
+      };
+    };
+  };
+  "/protocol/executions/{id}": {
+    get: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              execution: {
+                chainId: number;
+                oracleAddress: string;
+                idempotencyKey: string;
+              };
+              /** @enum {string} */
+              status: "unknown" | "pending" | "executed" | "failed";
+              txHash: string | null;
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        503: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/protocol/transfers": {
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            /** Format: uuid */
+            requestId: string;
+            asset: {
+              chainId: number;
+              currency: string;
+            };
+            owner: {
+              chainId: number;
+              address: string;
+              signature?: string;
+            };
+            amount: string;
+            recipient: string;
+            expiration?: number;
+          };
+        };
+      };
+      responses: {
+        /** @description Default Response */
+        200: {
+          content: {
+            "application/json": {
+              execution: {
+                chainId: number;
+                oracleAddress: string;
+                idempotencyKey: string;
+              };
+              /** @enum {string} */
+              status: "awaiting_signature" | "pending" | "executed" | "failed";
+              txHash: string | null;
+              signing?: {
+                message: string;
+                expiration: number;
+              };
+            };
+          };
+        };
+        /** @description Default Response */
+        400: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode: string;
+            };
+          };
+        };
+        /** @description Default Response */
+        503: {
+          content: {
+            "application/json": {
+              message: string;
+              errorCode: string;
             };
           };
         };
