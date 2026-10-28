@@ -1,5 +1,11 @@
 # @reservoir0x/relay-sdk
 
+## 8.0.5
+
+### Patch Changes
+
+- d7d9ca0: Update API types to the latest Relay API: add the `atlasvm` chain VM type to `ChainVM`, add types for new endpoints (`/currencies/classifications`, `/withdrawals/balances`, `/access-tokens`, `/protocol/executions/{id}`, `/protocol/transfers`), and mark the canonical+ and fallback route quote options as deprecated, since the API now ignores them. Removes types for the `/conduit/install` endpoint.
+
 ## 8.0.4
 
 ### Patch Changes
