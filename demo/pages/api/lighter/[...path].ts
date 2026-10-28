@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { isSameSite } from '../../../utils/proxyGuard'
 
 /**
  * Lighter API proxy.
@@ -6,7 +7,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
  * Forwards `/api/lighter/*` requests to `https://lighter.fun.xyz/*`
  * injecting the `LIGHTER_API_KEY` server-side so it never ships to
  * clients. Used by the Lighter wallet adapter (pass `apiUrl: '/api/lighter'`
- * when calling `adaptLighterWallet`).
+ * when calling `adaptLighterWallet`). Only same-site requests to the
+ * adapter's endpoints are forwarded.
  *
  * Handles:
  *   - GET query params (e.g. `/api/v1/account?by=l1_address&value=0x...`)
@@ -37,46 +39,46 @@ async function readRawBody(req: NextApiRequest): Promise<Buffer | undefined> {
   return Buffer.concat(chunks)
 }
 
-// Hop-by-hop headers that should never be forwarded
-const HOP_BY_HOP = new Set([
+// Lighter endpoints the wallet adapter calls: account lookup, nonce, tx
+// submission and tx polling. Everything else is rejected.
+const ALLOWED_ROUTES: Record<string, string[]> = {
+  GET: ['/api/v1/account', '/api/v1/nextNonce', '/api/v1/tx'],
+  POST: ['/api/v1/sendTx']
+}
+
+// Response headers that should not be mirrored back to the client
+const SKIPPED_RESPONSE_HEADERS = new Set([
   'connection',
   'keep-alive',
-  'proxy-authenticate',
-  'proxy-authorization',
-  'te',
-  'trailers',
   'transfer-encoding',
-  'upgrade',
-  'host',
-  'content-length'
+  'content-length',
+  'content-encoding', // body is already decoded
+  'set-cookie'
 ])
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ): Promise<void> {
-  const LIGHTER_API_KEY = process.env.LIGHTER_API_KEY
-  const LIGHTER_API_URL = process.env.LIGHTER_API_URL
-  const allowedDomains = process.env.ALLOWED_API_DOMAINS
-    ? process.env.ALLOWED_API_DOMAINS.split(',')
-    : []
+  const method = req.method ?? 'GET'
 
-  let origin = req.headers.origin || req.headers.referer || ''
-  try {
-    origin = new URL(origin).origin
-  } catch {}
-
-  if (allowedDomains.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
-    res.setHeader('Vary', 'Origin')
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,x-api-key')
-  }
-
-  if (req.method === 'OPTIONS') {
-    res.status(200).end()
+  if (!isSameSite(req)) {
+    res.status(403).json({ message: 'Forbidden' })
     return
   }
+
+  // `req.url` is the raw path + query after Next's routing, e.g.
+  // `/api/lighter/api/v1/account?by=l1_address&value=0x...`.
+  const url = new URL(req.url ?? '/', 'http://localhost')
+  const upstreamPath = url.pathname.replace(PATH_PREFIX, '') || '/'
+
+  if (!(ALLOWED_ROUTES[method] ?? []).includes(upstreamPath)) {
+    res.status(404).json({ message: 'Not found' })
+    return
+  }
+
+  const LIGHTER_API_KEY = process.env.LIGHTER_API_KEY
+  const LIGHTER_API_URL = process.env.LIGHTER_API_URL
 
   if (!LIGHTER_API_KEY) {
     res.status(500).json({ error: 'LIGHTER_API_KEY not configured' })
@@ -88,31 +90,21 @@ export default async function handler(
     return
   }
 
-  if (allowedDomains.length > 0 && !allowedDomains.includes(origin)) {
-    res.status(403).json({ message: 'Forbidden: Origin not allowed' })
-    return
-  }
+  const upstreamUrl = `${LIGHTER_API_URL}${upstreamPath}${url.search}`
 
-  // `req.url` is the raw path + query after Next's routing, e.g.
-  // `/api/lighter/api/v1/account?by=l1_address&value=0x...`. Strip the
-  // `/api/lighter` prefix and forward the rest verbatim.
-  const suffix = (req.url ?? '').replace(PATH_PREFIX, '') || '/'
-  const upstreamUrl = `${process.env.LIGHTER_API_URL}${suffix}`
-
-  // Forward request headers minus hop-by-hop + host, plus our auth.
-  const outboundHeaders: Record<string, string> = {}
-  for (const [name, value] of Object.entries(req.headers)) {
-    if (!value) continue
-    const lower = name.toLowerCase()
-    if (HOP_BY_HOP.has(lower)) continue
-    outboundHeaders[name] = typeof value === 'string' ? value : value.join(', ')
+  // Only forward the content type; caller headers are otherwise dropped.
+  const outboundHeaders: Record<string, string> = {
+    'x-api-key': LIGHTER_API_KEY
   }
-  outboundHeaders['x-api-key'] = LIGHTER_API_KEY
+  const contentType = req.headers['content-type']
+  if (typeof contentType === 'string') {
+    outboundHeaders['content-type'] = contentType
+  }
 
   const body = await readRawBody(req)
 
   const upstreamRes = await fetch(upstreamUrl, {
-    method: req.method,
+    method,
     headers: outboundHeaders,
     body: body && body.length > 0 ? body : undefined
   })
@@ -124,17 +116,13 @@ export default async function handler(
     const cloned = upstreamRes.clone()
     const text = await cloned.text()
     console.warn(
-      `[lighter-proxy] upstream ${upstreamRes.status} ${req.method} ${upstreamUrl}\nbody: ${text.slice(0, 500)}`
+      `[lighter-proxy] upstream ${upstreamRes.status} ${method} ${upstreamPath}\nbody: ${text.slice(0, 500)}`
     )
   }
 
-  // Mirror status + content-type. Skip body/transfer-related headers
-  // so Node re-computes them correctly.
   res.status(upstreamRes.status)
   upstreamRes.headers.forEach((value, key) => {
-    const lower = key.toLowerCase()
-    if (HOP_BY_HOP.has(lower)) return
-    if (lower === 'content-encoding') return // body is already decoded
+    if (SKIPPED_RESPONSE_HEADERS.has(key.toLowerCase())) return
     res.setHeader(key, value)
   })
 

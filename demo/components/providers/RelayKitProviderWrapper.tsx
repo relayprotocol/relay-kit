@@ -60,9 +60,9 @@ export const RelayKitProviderWrapper: FC<{
         baseApiUrl: relayApi,
         source: 'relay-demo',
         logLevel: LogLevel.Verbose,
+        // Defaults to the demo's Codex proxy, which holds the key server-side
         codexConfig: {
-          apiBaseUrl: process.env.NEXT_PUBLIC_CODEX_API_URL,
-          apiKey: process.env.NEXT_PUBLIC_CODEX_API_KEY
+          apiBaseUrl: process.env.NEXT_PUBLIC_CODEX_API_URL ?? '/api/codex'
         },
         chains: dynamicChains,
         privateChainIds: process.env.NEXT_PUBLIC_INCLUDE_CHAINS?.split(','),
