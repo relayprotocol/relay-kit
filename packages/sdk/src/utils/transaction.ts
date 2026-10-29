@@ -23,7 +23,7 @@ import {
   SolverStatusTimeoutError,
   TransactionConfirmationError
 } from '../errors/index.js'
-import { getApiKeyHeader } from './apiKey.js'
+import { getApiKeyHeader, resolveApiUrl } from './apiKey.js'
 import { repeatUntilOk } from '../utils/repeatUntilOk.js'
 import {
   getTenderlyDetails,
@@ -311,9 +311,10 @@ export async function sendTransactionSafely(
             ? `${endpoint}&referrer=${client.source}`
             : `${endpoint}?referrer=${client.source}`
         }
+        const checkUrl = resolveApiUrl(request.baseURL!, endpoint)
         try {
           res = await axios.request({
-            url: `${request.baseURL}${endpoint}`,
+            url: checkUrl,
             method: check?.method,
             headers: {
               ...getApiKeyHeader(client, request.baseURL),
