@@ -13,7 +13,7 @@
   ],
   "resolutions": {
     "@solana/web3.js": "1.98.2",
-    "tronweb": "6.1.1",
+    "tronweb": "6.5.1",
     "sharp": "^0.35.5"
   },
   "scripts": {
@@ -36,7 +36,7 @@
     "lint:changesets": "node scripts/lint-changesets.mjs"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
+    "@changesets/cli": "^2.31.1",
     "concurrently": "^8.2.2",
     "husky": "^9.0.11",
     "openapi-typescript": "^6.7.3",
