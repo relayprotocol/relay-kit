@@ -53,8 +53,7 @@
         "rimraf": "^5.0.5"
     },
     "dependencies": {
-        "@types/node": "^22.5.4",
-        "axios": "^1.6.5"
+        "@types/node": "^22.5.4"
     },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",

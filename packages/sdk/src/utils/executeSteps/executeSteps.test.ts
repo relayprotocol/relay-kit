@@ -633,7 +633,7 @@ describe('Should test a signature step.', () => {
       step.items?.find((item) => item.status === 'incomplete')
     )
 
-    expect(wallet.handleSignMessageStep).toBeCalledWith(step?.items?.[0], step)
+    expect(wallet.handleSignMessageStep).toHaveBeenCalledWith(step?.items?.[0], step)
   })
   it('Should post a signature', async () => {
     const signatureStep = bridgeData.steps.find(
@@ -1304,7 +1304,7 @@ describe('Should test WebSocket functionality', () => {
       onclose: null
     }
 
-    wsConstructorSpy = vi.fn(() => {
+    wsConstructorSpy = vi.fn(function () {
       // Simulate connection opening after a brief delay
       setTimeout(() => {
         if (mockWebSocket.onopen) {

@@ -53,7 +53,6 @@
     "dependencies": {
         "@bitcoinerlab/secp256k1": "1.2.0",
         "@types/node": "^22.5.4",
-        "axios": "^1.6.5",
         "bitcoinjs-lib": "7.0.1"
     },
     "peerDependencies": {

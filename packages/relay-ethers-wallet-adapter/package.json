@@ -50,9 +50,6 @@
     "devDependencies": {
         "rimraf": "^5.0.5"
     },
-    "dependencies": {
-        "axios": "^0.27.2"
-    },
     "peerDependencies": {
         "@relayprotocol/relay-sdk": "workspace:*",
         "@ethersproject/abstract-signer": "^5.7.0",
