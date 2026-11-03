@@ -39,7 +39,7 @@
     "@changesets/cli": "^2.31.1",
     "concurrently": "^8.2.2",
     "husky": "^9.0.11",
-    "openapi-typescript": "^6.7.3",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.5.0",
     "tslib": "^2.6.2",
     "typescript": "5.4.5"

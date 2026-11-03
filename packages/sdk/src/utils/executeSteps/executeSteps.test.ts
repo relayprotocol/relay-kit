@@ -1304,7 +1304,7 @@ describe('Should test WebSocket functionality', () => {
       onclose: null
     }
 
-    wsConstructorSpy = vi.fn(() => {
+    wsConstructorSpy = vi.fn(function () {
       // Simulate connection opening after a brief delay
       setTimeout(() => {
         if (mockWebSocket.onopen) {
