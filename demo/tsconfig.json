@@ -16,7 +16,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "incremental": true,
     "allowSyntheticDefaultImports": true,
@@ -27,14 +27,14 @@
     "**/*.ts",
     "**/*.tsx",
     "next.config.cjs",
-    "pages/_app.mjs"  
+    "pages/_app.mjs"
   ],
   "exclude": [
     "node_modules"
   ],
   "paths": {
-      "@relayprotocol/relay-kit-ui/OnrampWidget": [
-        "./node_modules/@relayprotocol/relay-kit-ui/_esm/src/components/widgets/OnrampWidget/index.js"
-      ]
-    }
+    "@relayprotocol/relay-kit-ui/OnrampWidget": [
+      "./node_modules/@relayprotocol/relay-kit-ui/_esm/src/components/widgets/OnrampWidget/index.js"
+    ]
+  }
 }
