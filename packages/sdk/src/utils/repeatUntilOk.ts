@@ -11,7 +11,7 @@ export async function repeatUntilOk(
   maximumAttempts: number = 15,
   attemptCount: number = 0,
   pollingInterval: number = 5000
-) {
+): Promise<boolean> {
   if (attemptCount >= maximumAttempts) {
     throw `Failed to get an ok response after ${attemptCount} attempt(s), aborting`
   }
@@ -23,7 +23,7 @@ export async function repeatUntilOk(
   } else {
     await new Promise((resolve) => setTimeout(resolve, pollingInterval))
     attemptCount++
-    await repeatUntilOk(
+    return repeatUntilOk(
       callback,
       maximumAttempts,
       attemptCount,
