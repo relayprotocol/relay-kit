@@ -1,5 +1,15 @@
 # @reservoir0x/relay-sdk
 
+## 8.0.5
+
+### Patch Changes
+
+- 73dd007: Require axios `^1.20.0` in `@relayprotocol/relay-sdk`, `@relayprotocol/relay-kit-hooks` and
+  `@relayprotocol/relay-kit-ui`, so installs no longer resolve axios versions with published high
+  severity advisories. The bitcoin, ethers, SVM and Tron wallet adapters no longer declare their
+  own axios dependency; the ethers adapter's `axios@^0.27.2` is gone from installs.
+- d7d9ca0: Update API types to the latest Relay API: add the `atlasvm` chain VM type to `ChainVM`, add types for new endpoints (`/currencies/classifications`, `/withdrawals/balances`, `/access-tokens`, `/protocol/executions/{id}`, `/protocol/transfers`), and mark the canonical+ and fallback route quote options as deprecated, since the API now ignores them. Removes types for the `/conduit/install` endpoint.
+
 ## 8.0.4
 
 ### Patch Changes
