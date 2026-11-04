@@ -223,3 +223,55 @@ describe('handleSignatureStepItem (HyperCore)', () => {
     expect(stepItem.progressState).toBe('validating')
   })
 })
+
+describe('handleSignatureStepItem (status polling)', () => {
+  beforeEach(() => {
+    vi.mocked(findHyperliquidSendHash).mockResolvedValue(undefined)
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('Should fail right away with the failure details from the check.', async () => {
+    const request = pollReturns({
+      status: 'failure',
+      details: 'Deposit transaction reverted'
+    })
+    const { params } = setup()
+    params.maximumAttempts = 5
+
+    await expect(handleSignatureStepItem(params)).rejects.toThrow(
+      'Deposit transaction reverted'
+    )
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('Should fail right away as refunded when the check reports a refund.', async () => {
+    const request = pollReturns({ status: 'refund' })
+    const { stepItem, params } = setup()
+    params.maximumAttempts = 5
+
+    await expect(handleSignatureStepItem(params)).rejects.toThrow(
+      'Transaction failed: Refunded'
+    )
+    expect(request).toHaveBeenCalledOnce()
+    expect(stepItem.checkStatus).toBe('refund')
+  })
+
+  it('Should keep polling when the check request itself errors.', async () => {
+    const request = vi
+      .spyOn(axios, 'request')
+      .mockRejectedValueOnce(new Error('Network Error'))
+      .mockResolvedValue({
+        status: 200,
+        data: { status: 'success', txHashes: [FILL_HASH] }
+      } as never)
+    const { stepItem, params } = setup()
+    params.maximumAttempts = 2
+
+    await handleSignatureStepItem(params)
+
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(stepItem.checkStatus).toBe('success')
+  })
+})
