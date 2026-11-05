@@ -4,7 +4,6 @@ import {
   LogLevel,
   type AdaptedWallet
 } from '@relayprotocol/relay-sdk'
-import type { TriggerSmartContractResponse } from './types.js'
 
 /**
  * Adapts a Tron wallet to work with the Relay SDK
@@ -37,38 +36,40 @@ export const adaptTronWallet = (
       // TRON node expects hex strings WITHOUT "0x"
       const strip0x = (s: string) => (s.startsWith('0x') ? s.slice(2) : s)
 
-      const body = {
-        owner_address: stepItem.data.parameter?.owner_address,
-        contract_address: stepItem.data.parameter?.contract_address,
-        data: strip0x(stepItem.data.parameter?.data!),
+      const ownerAddress = stepItem.data.parameter?.owner_address
+      const contractAddress = stepItem.data.parameter?.contract_address
+      const options = {
+        input: strip0x(stepItem.data.parameter?.data!),
         // Native TRX amount rides in call_value, not calldata
-        call_value: stepItem.data.parameter?.call_value ?? 0,
-        visible: false,
-        fee_limit: 30_000_000
+        callValue: stepItem.data.parameter?.call_value ?? 0,
+        feeLimit: 30_000_000
       }
 
-      client.log(['Building Tron Transaction', body], LogLevel.Verbose)
-
-      // 1) Ask the node to build the transaction from raw calldata
-      const res = await tronWeb.fullNode.request<TriggerSmartContractResponse>(
-        'wallet/triggersmartcontract',
-        body,
-        'post'
+      client.log(
+        [
+          'Building Tron Transaction',
+          { ownerAddress, contractAddress, ...options }
+        ],
+        LogLevel.Verbose
       )
-      if (!res?.transaction) {
-        const reason = res?.result?.message
-          ? Buffer.from(res.result.message, 'hex').toString()
-          : 'Unknown trigger error'
-        throw new Error(`Trigger failed: ${reason}`)
-      }
+
+      // 1) Build via the node. tronweb rebuilds the transaction from these
+      // args and throws if the node's reply doesn't match before we sign it.
+      const res = await tronWeb.transactionBuilder.triggerSmartContract(
+        contractAddress!,
+        '',
+        options,
+        [],
+        ownerAddress
+      )
 
       //2) Send the transaction
-      const signed = await tronWeb.trx.sign(res.transaction as any)
+      const signed = await tronWeb.trx.sign(res.transaction)
       const receipt = await tronWeb.trx.sendRawTransaction(signed)
 
       client.log(['Tron Transaction Broadcasted', receipt], LogLevel.Verbose)
 
-      return receipt?.txid || signed?.txID || res?.transaction?.txID
+      return receipt?.txid || signed?.txID || res.transaction.txID
     },
     handleConfirmTransactionStep: async (txId) => {
       const pollMs = 1500
