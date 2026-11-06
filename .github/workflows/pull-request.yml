@@ -32,6 +32,8 @@ jobs:
         run: pnpm run -C packages/sdk test
       - name: SVM wallet adapter tests
         run: pnpm run -C packages/relay-svm-wallet-adapter test
+      - name: TRON wallet adapter tests
+        run: pnpm run -C packages/relay-tron-wallet-adapter test
 
   changesets:
     name: Changeset quality
