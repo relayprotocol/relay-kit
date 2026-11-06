@@ -63,7 +63,7 @@ const setup = ({
       handleSignMessageStep: async () => '0x' + '11'.repeat(65)
     } as unknown as AdaptedWallet,
     setState: vi.fn(),
-    request: {},
+    request: { baseURL: 'https://api.relay.link' },
     client: { log: vi.fn() } as unknown as RelayClient,
     json: { steps: [step] } as unknown as Execute,
     maximumAttempts: 1,
@@ -221,5 +221,24 @@ describe('handleSignatureStepItem (HyperCore)', () => {
 
     expect(stepItem.checkStatus).toBeUndefined()
     expect(stepItem.progressState).toBe('validating')
+  })
+})
+
+describe('handleSignatureStepItem (post endpoint)', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('Should not post to an endpoint outside the base API url.', async () => {
+    const { stepItem, params } = setup()
+    stepItem.data.post = {
+      endpoint: '@example.com/execute/permits',
+      method: 'POST',
+      body: {}
+    }
+    const request = vi.spyOn(axios, 'request')
+
+    await expect(handleSignatureStepItem(params)).rejects.toThrow()
+    expect(request).not.toHaveBeenCalled()
   })
 })

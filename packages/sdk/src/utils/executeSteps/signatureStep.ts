@@ -4,7 +4,7 @@ import type {
   AdaptedWallet,
   RelayChain
 } from '../../types/index.js'
-import { axios, getApiKeyHeader } from '../index.js'
+import { axios, getApiKeyHeader, resolveApiUrl } from '../index.js'
 import type { AxiosRequestConfig } from 'axios'
 import { LogLevel } from '../logger.js'
 import type { RelayClient } from '../../client.js'
@@ -90,7 +90,7 @@ export async function handleSignatureStepItem({
       breakdown: json?.breakdown,
       details: json?.details
     })
-    const postOrderUrl = new URL(`${request.baseURL}${postData.endpoint}`)
+    const postOrderUrl = resolveApiUrl(request.baseURL!, postData.endpoint)
     const headers = {
       'Content-Type': 'application/json',
       ...getApiKeyHeader(client, request.baseURL),
@@ -103,7 +103,7 @@ export async function handleSignatureStepItem({
 
     try {
       const res = await axios.request({
-        url: postOrderUrl.href,
+        url: postOrderUrl,
         data: postData.body ? JSON.stringify(postData.body) : undefined,
         method: postData.method,
         params: request.params,
@@ -280,21 +280,19 @@ export async function handleSignatureStepItem({
         stepItem.txHashes = chainTxHashes
       }
 
+      let endpoint = stepItem?.check?.endpoint || ''
+
+      // Override v2 status endpoint to v3 to get 'submitted' status
+      if (endpoint.includes('/intents/status') && !endpoint.includes('/v3')) {
+        endpoint = endpoint.replace('/intents/status', '/intents/status/v3')
+      }
+      const checkUrl = resolveApiUrl(request.baseURL!, endpoint)
+
       let attemptCount = 0
       while (attemptCount < maximumAttempts) {
         try {
-          let endpoint = stepItem?.check?.endpoint || ''
-
-          // Override v2 status endpoint to v3 to get 'submitted' status
-          if (
-            endpoint.includes('/intents/status') &&
-            !endpoint.includes('/v3')
-          ) {
-            endpoint = endpoint.replace('/intents/status', '/intents/status/v3')
-          }
-
           const res = await axios.request({
-            url: `${request.baseURL}${endpoint}`,
+            url: checkUrl,
             method: stepItem?.check?.method,
             headers,
             validateStatus: (status) => status < 500 // Don't throw on 4xx responses
