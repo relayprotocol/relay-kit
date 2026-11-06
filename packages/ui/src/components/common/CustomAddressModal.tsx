@@ -152,11 +152,15 @@ export const CustomAddressModal: FC<Props> = ({
     }
   }, [open])
 
-  const { data: ensAddress, isLoading: isLoadingENS } = useENSAddress(
-    isENSName(input) ? input : undefined
-  )
+  const {
+    data: ensAddress,
+    isLoading: isLoadingENS,
+    isError: isENSError
+  } = useENSAddress(isENSName(input) ? input : undefined)
   const resolvedENSAddress =
-    ensAddress && !isDeadAddress(ensAddress.toLowerCase())
+    ensAddress &&
+    !isDeadAddress(ensAddress.toLowerCase()) &&
+    isValidAddress(toChain?.vmType, ensAddress, toChain?.id)
       ? ensAddress
       : undefined
 
@@ -293,6 +297,10 @@ export const CustomAddressModal: FC<Props> = ({
             !resolvedLighterIndex ? (
             <Text color="red" style="subtitle2">
               No Lighter account found for this EVM address
+            </Text>
+          ) : isENSName(input) && isENSError ? (
+            <Text color="red" style="subtitle2">
+              Could not resolve this ENS name
             </Text>
           ) : !address && input.length && !isLoading ? (
             <Text color="red" style="subtitle2">

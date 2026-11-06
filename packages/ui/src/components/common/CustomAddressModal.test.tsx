@@ -7,8 +7,8 @@ import {
   waitFor
 } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider, createConfig, http } from 'wagmi'
-import { mainnet } from 'viem/chains'
+import { WagmiProvider, createConfig, http, type Config } from 'wagmi'
+import { mainnet, sepolia } from 'viem/chains'
 import {
   decodeFunctionData,
   encodeAbiParameters,
@@ -20,7 +20,8 @@ import {
 } from 'viem'
 import {
   convertViemChainToRelayChain,
-  createClient
+  createClient,
+  type RelayChain
 } from '@relayprotocol/relay-sdk'
 import { RelayClientContext } from '../../providers/RelayClientProvider.js'
 import { getCustomAddresses } from '../../utils/localStorage.js'
@@ -43,7 +44,7 @@ const toChain = {
 }
 
 let registryAddress: string
-let releaseRpc: () => void
+const pendingRpc: (() => void)[] = []
 
 const encodeResolveResult = (address: string) =>
   encodeAbiParameters(parseAbiParameters('bytes, address'), [
@@ -84,7 +85,7 @@ const fetchMock = vi.fn(
     }
     if (url === RPC_URL) {
       const { id, method, params } = JSON.parse(init!.body as string)
-      await new Promise<void>((resolve) => (releaseRpc = resolve))
+      await new Promise<void>((resolve) => pendingRpc.push(resolve))
       return Response.json({
         jsonrpc: '2.0',
         id,
@@ -95,13 +96,32 @@ const fetchMock = vi.fn(
   }
 )
 
-const renderModal = () => {
-  const onConfirmed = vi.fn()
-  const relayClient = createClient({ chains: [toChain] })
-  const wagmiConfig = createConfig({
+const solanaChain = {
+  ...toChain,
+  id: 792703809,
+  name: 'solana',
+  displayName: 'Solana',
+  vmType: 'svm' as const
+}
+
+const mainnetWagmiConfig = () =>
+  createConfig({
     chains: [mainnet],
     transports: { [mainnet.id]: http(RPC_URL) }
   })
+
+const sepoliaOnlyWagmiConfig = () =>
+  createConfig({
+    chains: [sepolia],
+    transports: { [sepolia.id]: http('https://sepolia-rpc.test/') }
+  })
+
+const renderModal = ({
+  destination = toChain,
+  wagmiConfig = mainnetWagmiConfig()
+}: { destination?: RelayChain; wagmiConfig?: Config } = {}) => {
+  const onConfirmed = vi.fn()
+  const relayClient = createClient({ chains: [toChain, solanaChain] })
   render(
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider
@@ -112,7 +132,7 @@ const renderModal = () => {
         <RelayClientContext.Provider value={relayClient}>
           <CustomAddressModal
             open={true}
-            toChain={toChain}
+            toChain={destination}
             linkedWallets={[]}
             isConnected={false}
             onOpenChange={() => {}}
@@ -127,7 +147,7 @@ const renderModal = () => {
 }
 
 const typeEnsName = () =>
-  fireEvent.change(screen.getByPlaceholderText('Address or ENS'), {
+  fireEvent.change(screen.getByRole('textbox'), {
     target: { value: 'vitalik.eth' }
   })
 
@@ -138,11 +158,12 @@ const resolveOnChain = async () => {
     expect(fetchMock).toHaveBeenCalledWith(RPC_URL, expect.anything())
   )
   expect(saveButton()).toHaveProperty('disabled', true)
-  releaseRpc()
+  pendingRpc.splice(0).forEach((release) => release())
 }
 
 beforeEach(() => {
   localStorage.clear()
+  pendingRpc.length = 0
   vi.stubGlobal('fetch', fetchMock)
   vi.stubGlobal(
     'matchMedia',
@@ -194,5 +215,37 @@ describe('CustomAddressModal ENS resolution', () => {
 
     expect(onConfirmed).not.toHaveBeenCalled()
     expect(getCustomAddresses()).toEqual([])
+  })
+
+  it("resolves through the relay client's mainnet RPC when wagmi has no mainnet", async () => {
+    registryAddress = REGISTRY_ADDRESS
+    const { onConfirmed } = renderModal({
+      wagmiConfig: sepoliaOnlyWagmiConfig()
+    })
+
+    typeEnsName()
+    await resolveOnChain()
+
+    await screen.findByText(REGISTRY_ADDRESS)
+    await waitFor(() => expect(saveButton()).toHaveProperty('disabled', false))
+    fireEvent.click(saveButton())
+
+    expect(onConfirmed).toHaveBeenCalledWith(REGISTRY_ADDRESS)
+  })
+
+  it('does not present an ENS address for a destination that cannot receive it', async () => {
+    registryAddress = REGISTRY_ADDRESS
+    const { onConfirmed } = renderModal({ destination: solanaChain })
+
+    typeEnsName()
+    await resolveOnChain()
+
+    await screen.findByText('Not a valid address')
+    expect(screen.queryByText(/Resolved address/)).toBeNull()
+    expect(saveButton()).toHaveProperty('disabled', true)
+
+    fireEvent.click(saveButton())
+
+    expect(onConfirmed).not.toHaveBeenCalled()
   })
 })
