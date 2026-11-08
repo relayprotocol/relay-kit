@@ -84,10 +84,7 @@ function formatNumber(
     }
   }
 
-  // Only strip trailing zeros from the fraction, never from the integer part
   return format(numAmount)
-    .replace(/(\.\d*?)0+$/, '$1')
-    .replace(/\.$/, '')
 }
 
 const truncateFractionAndFormat = (
