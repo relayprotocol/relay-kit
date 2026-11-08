@@ -73,9 +73,12 @@ export const adaptTronWallet = (
       const code = String(receipt?.code ?? '')
       const isDuplicate = code === 'DUP_TRANSACTION_ERROR' || code === '5'
       if (!receipt?.result && !isDuplicate) {
-        const reason = receipt?.message
+        // `message` is usually hex encoded; when it is not, the decode comes
+        // back empty, so fall back to the code.
+        const decoded = receipt?.message
           ? Buffer.from(receipt.message, 'hex').toString()
-          : (receipt?.code ?? 'Unknown broadcast error')
+          : ''
+        const reason = decoded || code || 'Unknown broadcast error'
         throw new Error(`Broadcast failed: ${reason}`)
       }
 
