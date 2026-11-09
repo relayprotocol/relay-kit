@@ -154,7 +154,7 @@ export const CustomAddressModal: FC<Props> = ({
 
   const {
     data: ensAddress,
-    isLoading: isLoadingENS,
+    isFetching: isFetchingENS,
     isError: isENSError
   } = useENSAddress(isENSName(input) ? input : undefined)
   const resolvedENSAddress =
@@ -189,7 +189,7 @@ export const CustomAddressModal: FC<Props> = ({
   const isBlockedAddress = isKnownTokenContract || isSolanaTokenAccount
 
   const isLoading =
-    isLoadingENS ||
+    isFetchingENS ||
     isResolvingLighter ||
     isCheckingTokenContract ||
     isCheckingSolanaTokenAccount
