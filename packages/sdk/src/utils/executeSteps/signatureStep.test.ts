@@ -136,7 +136,7 @@ describe('handleSignatureStepItem (HyperCore)', () => {
     resolveLookup(SEND_HASH)
     await flush()
 
-    expect(stepItem.checkStatus).toBeUndefined()
+    expect(stepItem.checkStatus).toBe('failure')
     expect(params.setState).toHaveBeenCalledTimes(updates)
   })
 
@@ -237,13 +237,14 @@ describe('handleSignatureStepItem (status polling)', () => {
       status: 'failure',
       details: 'Deposit transaction reverted'
     })
-    const { params } = setup()
+    const { stepItem, params } = setup()
     params.maximumAttempts = 5
 
     await expect(handleSignatureStepItem(params)).rejects.toThrow(
       'Deposit transaction reverted'
     )
     expect(request).toHaveBeenCalledOnce()
+    expect(stepItem.checkStatus).toBe('failure')
   })
 
   it('Should fail right away as refunded when the check reports a refund.', async () => {
