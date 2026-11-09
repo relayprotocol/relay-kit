@@ -200,6 +200,28 @@ describe('CustomAddressModal ENS resolution', () => {
     expect(getCustomAddresses()).toEqual([REGISTRY_ADDRESS])
   })
 
+  it('keeps Save disabled while a cached ENS name refetches and commits the refreshed address', async () => {
+    registryAddress = THIRD_PARTY_ADDRESS
+    const { onConfirmed } = renderModal()
+
+    typeEnsName()
+    await resolveOnChain()
+    await screen.findByText(THIRD_PARTY_ADDRESS)
+
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: '' } })
+    registryAddress = REGISTRY_ADDRESS
+    fetchMock.mockClear()
+
+    typeEnsName()
+    await resolveOnChain()
+
+    await screen.findByText(REGISTRY_ADDRESS)
+    await waitFor(() => expect(saveButton()).toHaveProperty('disabled', false))
+    fireEvent.click(saveButton())
+
+    expect(onConfirmed).toHaveBeenCalledWith(REGISTRY_ADDRESS)
+  })
+
   it('does not commit a dead address returned by the registry', async () => {
     registryAddress = '0x000000000000000000000000000000000000dEaD'
     const { onConfirmed } = renderModal()
