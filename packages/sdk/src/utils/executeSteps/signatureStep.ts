@@ -368,6 +368,7 @@ export async function handleSignatureStepItem({
             client.log(['Transaction completed successfully'], LogLevel.Verbose)
             return // Success - exit polling
           } else if (res?.data?.status === 'failure') {
+            stepItem.checkStatus = 'failure'
             throw new CheckStatusError(
               res?.data?.details || 'Transaction failed'
             )
