@@ -1,5 +1,6 @@
 import useMounted from './useMounted.js'
 import useENSResolver from './useENSResolver.js'
+import useENSAddress from './useENSAddress.js'
 import useCurrencyBalance from './useCurrencyBalance.js'
 import useRelayClient from './useRelayClient.js'
 import useDebounceState from './useDebounceState.js'
@@ -35,6 +36,7 @@ import useSolanaTokenAccount from './useSolanaTokenAccount.js'
 export {
   useMounted,
   useENSResolver,
+  useENSAddress,
   useCurrencyBalance,
   useRelayClient,
   useDebounceState,

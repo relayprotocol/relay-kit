@@ -13,16 +13,16 @@
   ],
   "resolutions": {
     "@solana/web3.js": "1.98.2",
-    "tronweb": "6.1.1",
+    "tronweb": "6.5.1",
     "sharp": "^0.35.5"
   },
   "scripts": {
     "demo": "pnpm --filter relay-sdk-demo dev",
     "demo:analyze": "ANALYZE=true pnpm run -C demo/ build",
     "package:change": "pnpm changeset && git stage ./.changeset/* && git commit --m \"feat: changeset\" && git push",
-    "package:canary": "pnpm changeset version --snapshot canary && git add -A; git commit --m \"canary: changeset\" && git push && changeset publish --tag canary && changeset tag && git push --follow-tags",
-    "package:release": "pnpm run build && changeset version && pnpm --filter=!demo -r publish --access public && changeset tag && git push --follow-tags",
-    "package:release:ci": "changeset version && pnpm --filter=!demo -r publish --access public && changeset tag && git push --follow-tags",
+    "package:canary": "pnpm changeset version --snapshot canary && git add -A; git commit --m \"canary: changeset\" && git push && changeset publish --tag canary && changeset git-tag && git push --follow-tags",
+    "package:release": "pnpm run build && changeset version && pnpm --filter=!demo -r publish --access public && changeset git-tag && git push --follow-tags",
+    "package:release:ci": "pnpm --filter=!demo -r publish --access public && changeset git-tag",
     "build": "pnpm run build:sdk && pnpm run build:hooks && pnpm run build:ui && pnpm run build:adapter",
     "build:ui": "pnpm run -C packages/ui build",
     "build:hooks": "pnpm run -C packages/hooks build",
@@ -36,10 +36,10 @@
     "lint:changesets": "node scripts/lint-changesets.mjs"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
+    "@changesets/cli": "^3.0.3",
     "concurrently": "^8.2.2",
     "husky": "^9.0.11",
-    "openapi-typescript": "^6.7.3",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.5.0",
     "tslib": "^2.6.2",
     "typescript": "5.4.5"

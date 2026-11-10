@@ -1,5 +1,24 @@
 # @reservoir0x/relay-kit-ui
 
+## 12.0.8
+
+### Patch Changes
+
+- 1b329a1: The recipient address modal now resolves ENS names on chain through the ENS Universal Resolver instead of the ensideas API, reading through your wagmi config's Ethereum mainnet transport (or the relay client's mainnet `httpRpcUrl` when wagmi has no mainnet). It shows the resolved address before you save, keeps Save disabled until the on-chain lookup returns, and rejects names that resolve to a dead address.
+
+## 12.0.7
+
+### Patch Changes
+
+- 73dd007: Require axios `^1.20.0` in `@relayprotocol/relay-sdk`, `@relayprotocol/relay-kit-hooks` and
+  `@relayprotocol/relay-kit-ui`, so installs no longer resolve axios versions with published high
+  severity advisories. The bitcoin, ethers, SVM and Tron wallet adapters no longer declare their
+  own axios dependency; the ethers adapter's `axios@^0.27.2` is gone from installs.
+- Updated dependencies [73dd007]
+- Updated dependencies [d7d9ca0]
+  - @relayprotocol/relay-sdk@8.0.5
+  - @relayprotocol/relay-kit-hooks@6.0.1
+
 ## 12.0.6
 
 ### Patch Changes

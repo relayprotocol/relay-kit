@@ -1,5 +1,17 @@
 # @reservoir0x/relay-bitcoin-wallet-adapter
 
+## 21.0.5
+
+### Patch Changes
+
+- 73dd007: Require axios `^1.20.0` in `@relayprotocol/relay-sdk`, `@relayprotocol/relay-kit-hooks` and
+  `@relayprotocol/relay-kit-ui`, so installs no longer resolve axios versions with published high
+  severity advisories. The bitcoin, ethers, SVM and Tron wallet adapters no longer declare their
+  own axios dependency; the ethers adapter's `axios@^0.27.2` is gone from installs.
+- Updated dependencies [73dd007]
+- Updated dependencies [d7d9ca0]
+  - @relayprotocol/relay-sdk@8.0.5
+
 ## 21.0.4
 
 ### Patch Changes

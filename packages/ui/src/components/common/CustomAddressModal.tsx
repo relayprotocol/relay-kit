@@ -4,7 +4,7 @@ import { Modal } from '../common/Modal.js'
 import { type Address, isAddress } from 'viem'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-  useENSResolver,
+  useENSAddress,
   useWalletAddress,
   useLighterAccount,
   useKnownTokenContract,
@@ -152,9 +152,17 @@ export const CustomAddressModal: FC<Props> = ({
     }
   }, [open])
 
-  const { data: resolvedENS, isLoading: isLoadingENS } = useENSResolver(
-    isENSName(input) ? input : ''
-  )
+  const {
+    data: ensAddress,
+    isFetching: isFetchingENS,
+    isError: isENSError
+  } = useENSAddress(isENSName(input) ? input : undefined)
+  const resolvedENSAddress =
+    ensAddress &&
+    !isDeadAddress(ensAddress.toLowerCase()) &&
+    isValidAddress(toChain?.vmType, ensAddress, toChain?.id)
+      ? ensAddress
+      : undefined
 
   // Synchronously block the selected destination token's contract address
   const matchesToToken = Boolean(
@@ -181,7 +189,7 @@ export const CustomAddressModal: FC<Props> = ({
   const isBlockedAddress = isKnownTokenContract || isSolanaTokenAccount
 
   const isLoading =
-    isLoadingENS ||
+    isFetchingENS ||
     isResolvingLighter ||
     isCheckingTokenContract ||
     isCheckingSolanaTokenAccount
@@ -194,14 +202,14 @@ export const CustomAddressModal: FC<Props> = ({
       !isDeadAddress(input)
     ) {
       setAddress(input)
-    } else if (resolvedENS?.address) {
-      setAddress(resolvedENS.address)
+    } else if (resolvedENSAddress) {
+      setAddress(resolvedENSAddress)
     } else {
       setAddress('')
     }
   }, [
     input,
-    resolvedENS,
+    resolvedENSAddress,
     resolvedLighterIndex,
     isLighterChain,
     isEvmInput,
@@ -290,6 +298,10 @@ export const CustomAddressModal: FC<Props> = ({
             <Text color="red" style="subtitle2">
               No Lighter account found for this EVM address
             </Text>
+          ) : isENSName(input) && isENSError ? (
+            <Text color="red" style="subtitle2">
+              Could not resolve this ENS name
+            </Text>
           ) : !address && input.length && !isLoading ? (
             <Text color="red" style="subtitle2">
               Not a valid address
@@ -310,6 +322,31 @@ export const CustomAddressModal: FC<Props> = ({
               <Text style="subtitle3">
                 Lighter Account ID: {resolvedLighterIndex}
               </Text>
+            </Flex>
+          ) : null}
+
+          {isENSName(input) &&
+          resolvedENSAddress &&
+          address === resolvedENSAddress ? (
+            <Flex
+              className="relay:bg-[var(--relay-colors-green2)] relay:p-2 relay:rounded-lg relay:gap-2"
+              align="center"
+            >
+              <FontAwesomeIcon
+                icon={faCircleCheck}
+                color="#30A46C"
+                width={16}
+                height={16}
+                className="relay:shrink-0"
+              />
+              <Flex direction="column">
+                <Text style="subtitle3" color="subtle">
+                  Resolved address
+                </Text>
+                <Text style="subtitle3" className="relay:break-all">
+                  {resolvedENSAddress}
+                </Text>
+              </Flex>
             </Flex>
           ) : null}
 

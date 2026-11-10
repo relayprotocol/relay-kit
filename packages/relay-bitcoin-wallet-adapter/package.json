@@ -1,6 +1,6 @@
 {
     "name": "@relayprotocol/relay-bitcoin-wallet-adapter",
-    "version": "21.0.4",
+    "version": "21.0.5",
     "description": "A Bitcoin adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
@@ -53,7 +53,6 @@
     "dependencies": {
         "@bitcoinerlab/secp256k1": "1.2.0",
         "@types/node": "^22.5.4",
-        "axios": "^1.6.5",
         "bitcoinjs-lib": "7.0.1"
     },
     "peerDependencies": {
