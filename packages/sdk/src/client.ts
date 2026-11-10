@@ -9,7 +9,7 @@ import { SDK_VERSION } from './version.js'
 /**
  * RelayClient Configuration Options
  *
- * @property {string} [baseApiUrl] - The base URL for the Relay API. Defaults to the mainnet API if not provided.
+ * @property {string} [baseApiUrl] - The base URL for the Relay API. Defaults to the mainnet API if not provided. Only set this to a proxy you control.
  * @property {string} [source] - The source to associate your onchain activity with, should be a domain.
  * @property {string} [apiKey] - The API key to use for Relay API requests. Should not be used in the client, we recommend using baseApiUrl with a proxy api.
  * @property {LogLevel} [logLevel] - Log level from 0-4, the higher the more verbose. Defaults to LogLevel.None.
