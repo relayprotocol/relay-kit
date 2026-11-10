@@ -84,7 +84,7 @@ function formatNumber(
     }
   }
 
-  return format(numAmount).replace(/\.?0+$/, '')
+  return format(numAmount)
 }
 
 const truncateFractionAndFormat = (
