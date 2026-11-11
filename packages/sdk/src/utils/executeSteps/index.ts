@@ -1,5 +1,7 @@
 import type {
   Execute,
+  ExecuteStep,
+  FlatExecuteStep,
   AdaptedWallet,
   TransactionStepItem
 } from '../../types/index.js'
@@ -34,6 +36,29 @@ export type ExecutionStatusControl = {
 }
 
 /**
+ * Put quote/v3 and Orders API steps, which carry `status`, `data` and `check`
+ * on the step, into the `items` shape that execution runs on. Legacy steps
+ * with `items` are returned unchanged. A flat step without a `requestId` takes
+ * the response's top-level one.
+ */
+function normalizeSteps(
+  steps: (ExecuteStep | FlatExecuteStep)[],
+  requestId?: string
+): Execute['steps'] {
+  return steps.map((step) => {
+    if ('items' in step && step.items) {
+      return step
+    }
+    const { status, data, check, ...rest } = step as FlatExecuteStep
+    return {
+      ...rest,
+      ...(requestId && !rest.requestId ? { requestId } : {}),
+      items: [{ status, data, check }]
+    } as ExecuteStep
+  })
+}
+
+/**
  * This function orchestrates the execution of multi-step operations returned from the Relay Quote API,
  * such as bridging, swapping tokens, or performing cross-chain calls. It handles transaction
  * signing, submission, and validation while providing real-time progress updates through the setState callback.
@@ -42,7 +67,7 @@ export type ExecutionStatusControl = {
  * @param request - AxiosRequestConfig for API requests
  * @param wallet - Wallet adapter implementing the {@link AdaptedWallet} interface
  * @param setState - Callback function to update UI state during execution progress
- * @param newJson - Execute object containing the steps, fees, and details from Relay Quote API
+ * @param newJson - Execute object containing the steps, fees, and details from Relay Quote API. Steps can be legacy steps with `items` or flat quote/v3 and Orders API steps
  * @param stepOptions - Optional configuration for specific steps (e.g., gas limits)
  * @param sharedStatusControl - Optional shared status control object for coordinating WebSocket/polling across recursive calls
  * @returns Promise<Execute> - The final execution result with updated status
@@ -53,7 +78,9 @@ export async function executeSteps(
   request: AxiosRequestConfig = {},
   wallet: AdaptedWallet,
   setState: (data: SetStateData) => any,
-  newJson: Execute,
+  newJson: Omit<Execute, 'steps'> & {
+    steps: (ExecuteStep | FlatExecuteStep)[]
+  },
   stepOptions?: {
     [stepId: string]: {
       gasLimit?: string
@@ -85,7 +112,7 @@ export async function executeSteps(
     throw `Unable to find chain: Chain id ${chainId}`
   }
 
-  let json = newJson
+  let json = newJson as Execute
   let isAtomicBatchSupported = false
 
   // Manage WebSocket and polling coordination
@@ -122,6 +149,8 @@ export async function executeSteps(
   try {
     // Handle errors
     if (json.error || !json.steps) throw json
+
+    json.steps = normalizeSteps(json.steps, json.requestId)
 
     // Check if step's transactions can be batched and if wallet supports atomic batch (EIP-5792)
     // If so, manipulate steps to batch transactions
