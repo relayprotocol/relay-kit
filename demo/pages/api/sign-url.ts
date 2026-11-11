@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import crypto from 'crypto'
+import { isSameSite } from '../../utils/proxyGuard'
 
-type ResponseData = {
-  signature: null | string
-}
+type ResponseData = { signature: null | string } | { message: string }
 
 const MOONPAY_HOSTS = new Set(['buy.moonpay.com', 'buy-sandbox.moonpay.com'])
 
@@ -15,7 +14,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  const { url: _url, ...query } = req.query
+  res.setHeader('Cache-Control', 'no-store')
+
+  if (!isSameSite(req)) {
+    res.status(403).json({ message: 'Forbidden' })
+    return
+  }
+
+  const { url: _url } = req.query
 
   if (typeof _url !== 'string') {
     res.status(400).json({ signature: null })
@@ -30,15 +36,13 @@ export default async function handler(
     return
   }
 
-  if (!isAllowedMoonPayUrl(url)) {
+  // Only sign URLs for our own MoonPay account
+  if (
+    !isAllowedMoonPayUrl(url) ||
+    url.searchParams.get('apiKey') !== process.env.NEXT_PUBLIC_MOONPAY_API_KEY
+  ) {
     res.status(400).json({ signature: null })
     return
-  }
-
-  for (const [key, value] of Object.entries(query)) {
-    if (typeof value === 'string') {
-      url.searchParams.set(key, value)
-    }
   }
 
   const moonPaySecret = process.env.NEXT_MOONPAY_SECRET
@@ -52,11 +56,5 @@ export default async function handler(
     .update(url.search)
     .digest('base64')
 
-  res
-    .status(200)
-    .setHeader(
-      'Cache-Control',
-      'public, s-maxage=60, stale-while-revalidate=60'
-    )
-    .json({ signature })
+  res.status(200).json({ signature })
 }

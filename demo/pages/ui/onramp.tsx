@@ -83,7 +83,9 @@ const OnrampPage: NextPage = () => {
           moonpayOnUrlSignatureRequested={async (
             url: string
           ): Promise<string> => {
-            const response = await fetch(`/api/sign-url?url=${url}`)
+            const response = await fetch(
+              `/api/sign-url?url=${encodeURIComponent(url)}`
+            )
             const data = await response.json()
             return data.signature
           }}
