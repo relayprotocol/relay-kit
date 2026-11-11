@@ -154,6 +154,7 @@ export async function cancelOrder({
  * order read with {@link getOrders}.
  * @param parameters - {@link ExecuteOrderParameters}
  * @returns The order after its steps, read again from the API
+ * @throws When the order is not listed for the client's API key afterwards
  */
 export async function executeOrder({
   order,
@@ -175,5 +176,10 @@ export async function executeOrder({
     { steps: safeStructuredClone(order.steps) }
   )
   const { orders } = await getOrders({ orderId: order.id })
+  if (!orders[0]) {
+    throw new Error(
+      `Order ${order.id} ran its steps but is not listed for this API key`
+    )
+  }
   return orders[0]
 }

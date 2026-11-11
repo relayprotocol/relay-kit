@@ -191,6 +191,20 @@ describe('Limit order actions', () => {
     expect(relayCalls(api)[0].headers).not.toHaveProperty('Idempotency-Key')
   })
 
+  it('fails when the order is not listed after its steps run', async () => {
+    mockApi({
+      [`POST /orders/${ORDER_ID}/signature`]: { order: order({}) },
+      'GET /orders': { orders: [] }
+    })
+
+    await expect(
+      client.actions.executeOrder({
+        order: order({ steps: [authorizeStep] }),
+        wallet: mockWallet()
+      })
+    ).rejects.toThrow(`Order ${ORDER_ID} ran its steps but is not listed`)
+  })
+
   it('lists orders with comma-separated statuses', async () => {
     const api = mockApi({ 'GET /orders': { orders: [], continuation: 'c1' } })
 
