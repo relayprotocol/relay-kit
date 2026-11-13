@@ -18,6 +18,7 @@ import {
   cx,
   formatNumber,
   isNativeToken,
+  isSolverToken,
   Json,
   toDecimalString,
   tokenKey,
@@ -294,13 +295,16 @@ export const CreateOrderForm: FC<Props> = ({
         ? 'Select tokens'
         : isNativeToken(target) || isNativeToken(settlement)
           ? 'Use the wrapped native token'
-          : !hasPrice
-            ? 'Enter a target price'
-            : !amountBase
-              ? 'Enter an amount'
-              : !body.expiresAt
-                ? 'Choose an expiry'
-                : 'Place order'
+          : !isSolverToken(client?.chains, settlement) ||
+              (side === 'buy' && !isSolverToken(client?.chains, target))
+            ? 'Pick a solver-held token'
+            : !hasPrice
+              ? 'Enter a target price'
+              : !amountBase
+                ? 'Enter an amount'
+                : !body.expiresAt
+                  ? 'Choose an expiry'
+                  : 'Place order'
 
   return (
     <div className={css.createLayout}>
@@ -388,6 +392,7 @@ export const CreateOrderForm: FC<Props> = ({
               />
               <TokenPill
                 label="Sell"
+                solverOnly={side === 'buy'}
                 value={sellToken}
                 onChange={setSellToken}
                 meta={sellMeta}
@@ -454,6 +459,7 @@ export const CreateOrderForm: FC<Props> = ({
               </span>
               <TokenPill
                 label="Buy"
+                solverOnly
                 value={buyToken}
                 onChange={setBuyToken}
                 meta={buyMeta}
