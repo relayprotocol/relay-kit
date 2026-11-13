@@ -207,7 +207,13 @@ export const Badge = ({ value, tone }: { value: string; tone?: string }) => (
 )
 
 export const Json = ({ value }: { value: unknown }) => (
-  <pre className={css.pre}>{JSON.stringify(value, null, 2)}</pre>
+  <pre className={css.pre}>
+    {JSON.stringify(
+      value,
+      (_, item) => (typeof item === 'bigint' ? item.toString() : item),
+      2
+    )}
+  </pre>
 )
 
 const UNFILLABLE_REASONS = [
