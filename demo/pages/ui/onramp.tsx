@@ -57,20 +57,8 @@ const OnrampPage: NextPage = () => {
   })
 
   return (
-    <Layout
-      styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingTop: 50,
-          paddingInline: '10px'
-        }}
-      >
+    <Layout>
+      <div className="demo-widget-stage">
         <OnrampWidget
           moonPayApiKey={process.env.NEXT_PUBLIC_MOONPAY_API_KEY as string}
           supportedWalletVMs={['evm', 'svm', 'bvm']}
@@ -83,7 +71,9 @@ const OnrampPage: NextPage = () => {
           moonpayOnUrlSignatureRequested={async (
             url: string
           ): Promise<string> => {
-            const response = await fetch(`/api/sign-url?url=${url}`)
+            const response = await fetch(
+              `/api/sign-url?url=${encodeURIComponent(url)}`
+            )
             const data = await response.json()
             return data.signature
           }}

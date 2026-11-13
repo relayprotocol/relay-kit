@@ -6,7 +6,8 @@ const API_OPTIONS = ['mainnets', 'mainnets-dev', 'testnets'] as const
 type ApiOption = (typeof API_OPTIONS)[number]
 
 const isApiOption = (value: unknown): value is ApiOption =>
-  typeof value === 'string' && (API_OPTIONS as readonly string[]).includes(value)
+  typeof value === 'string' &&
+  (API_OPTIONS as readonly string[]).includes(value)
 
 export const BaseApiSwitcher: FC = () => {
   const router = useRouter()
@@ -23,11 +24,7 @@ export const BaseApiSwitcher: FC = () => {
           query: { ...router.query, api: selectedValue }
         })
       }}
-      style={{
-        border: '1px solid gray',
-        borderRadius: 4,
-        padding: '3.5px 10px'
-      }}
+      className="demo-select"
     >
       <option value="mainnets">Mainnets (Main)</option>
       <option value="mainnets-dev">Mainnets (Dev)</option>

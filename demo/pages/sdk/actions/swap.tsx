@@ -2,7 +2,6 @@ import { NextPage } from 'next'
 import { useEffect, useState } from 'react'
 import { Address } from 'viem'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
-import { ConnectButton } from 'components/ConnectButton'
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core'
 import { isEthereumWallet } from '@dynamic-labs/ethereum'
 import { isSolanaWallet } from '@dynamic-labs/solana'
@@ -19,7 +18,7 @@ import {
   LIGHTER_CHAIN_ID
 } from '@relayprotocol/relay-lighter-wallet-adapter'
 import { isBitcoinWallet } from '@dynamic-labs/bitcoin'
-import { BaseApiSwitcher } from 'components/navbar/BaseApiSwitcher'
+import { DemoPage } from 'components/DemoPage'
 
 const SwapActionPage: NextPage = () => {
   const client = useRelayClient()
@@ -53,143 +52,58 @@ const SwapActionPage: NextPage = () => {
   }, [])
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: 50,
-        gap: 12,
-        padding: 24,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 150
-      }}
-    >
-      <ConnectButton />
-      <BaseApiSwitcher />
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 12,
-          width: 'calc(100% - 48px)'
-        }}
-      >
-        <div
-          style={{
-            height: '100%',
-            width: '50%',
-            borderRight: '1px solid #000000'
-          }}
-        >
-          <div style={{ display: 'flex', gap: 12 }}>
-            <div
-              style={{
-                marginBottom: 14,
-                fontWeight: tab === 'logs' ? 600 : 400,
-                cursor: 'pointer'
-              }}
+    <DemoPage eyebrow="SDK write action" title="Swap" wide>
+      <div className="demo-columns">
+        <section className="demo-panel">
+          <div className="demo-tabs" role="tablist">
+            <button
+              role="tab"
+              aria-selected={tab === 'logs'}
               onClick={() => setTab('logs')}
             >
               Logs
-            </div>
-            <div
-              style={{
-                marginBottom: 14,
-                fontWeight: tab === 'quote' ? 600 : 400,
-                cursor: 'pointer'
-              }}
+            </button>
+            <button
+              role="tab"
+              aria-selected={tab === 'quote'}
               onClick={() => setTab('quote')}
             >
               Quote
-            </div>
+            </button>
           </div>
-          {error && <div style={{ color: 'red' }}>{error}</div>}
+          {error && <div className="demo-error">{error}</div>}
           {tab === 'logs' && (
-            <div
-              style={{
-                overflowY: 'scroll',
-                maxHeight: 'calc(100vh - 224px)',
-                wordWrap: 'break-word',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 12
-              }}
-            >
-              {logs.map((log, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: '#D7DBFF',
-                    borderRadius: '4px',
-                    padding: '4px 8px'
-                  }}
-                >
-                  {log.message}
-                </div>
-              ))}
+            <div className="demo-output">
+              {logs.length
+                ? logs.map((log, i) => <div key={i}>{log.message}</div>)
+                : 'No logs yet'}
             </div>
           )}
           {tab === 'quote' && (
-            <div
-              style={{
-                overflowY: 'scroll',
-                maxHeight: 'calc(100vh - 224px)',
-                wordWrap: 'break-word',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 12
-              }}
-            >
-              <pre>{JSON.stringify(quote, null, 2)}</pre>
-            </div>
+            <pre className="demo-output">{JSON.stringify(quote, null, 2)}</pre>
           )}
-        </div>
-        <div
-          style={{
-            width: '50%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: '0 8px 0 8px'
-          }}
-        >
-          <div>Paste in the quote JSON parameters below:</div>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 200,
-              fontStyle: 'italic',
-              marginTop: 4,
-              marginBottom: 14
-            }}
-          >
-            Note that user is not required as that is taken from the connected
-            wallet
+        </section>
+        <section className="demo-panel">
+          <div>
+            <label>Quote parameters (JSON)</label>
+            <div className="demo-hint">
+              Note that user is not required as that is taken from the connected
+              wallet
+            </div>
+            <textarea
+              style={{ minHeight: 320 }}
+              value={jsonPayload}
+              onChange={(e) => setJsonPayload(e.target.value)}
+            />
           </div>
-          <textarea
-            style={{ minHeight: 400, minWidth: 500 }}
-            value={jsonPayload}
-            onChange={(e) => setJsonPayload(e.target.value)}
-          />
-          <div>Paste in headers JSON parameters below (optional):</div>
-          <textarea
-            style={{ minHeight: 200, minWidth: 500 }}
-            value={headersPayload}
-            onChange={(e) => setHeadersPayload(e.target.value)}
-          />
+          <div>
+            <label>Headers (JSON, optional)</label>
+            <textarea
+              value={headersPayload}
+              onChange={(e) => setHeadersPayload(e.target.value)}
+            />
+          </div>
           <button
-            style={{
-              marginTop: 50,
-              padding: 24,
-              background: 'blue',
-              color: 'white',
-              fontSize: 18,
-              border: '1px solid #ffffff',
-              borderRadius: 8,
-              fontWeight: 800,
-              cursor: 'pointer'
-            }}
             onClick={async () => {
               setError(undefined)
               setLogs([])
@@ -333,9 +247,9 @@ const SwapActionPage: NextPage = () => {
           >
             Execute Swap
           </button>
-        </div>
+        </section>
       </div>
-    </div>
+    </DemoPage>
   )
 }
 

@@ -1,7 +1,6 @@
 import { NextPage } from 'next'
 import { SwapWidget, Token } from '@relayprotocol/relay-kit-ui'
 import { Layout } from 'components/Layout'
-import { useTheme } from 'next-themes'
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core'
 import { useState } from 'react'
 
@@ -36,23 +35,10 @@ const SingleWalletPage: NextPage = () => {
     logoURI: 'https://assets.relay.link/icons/currencies/eth.png'
   })
   const { setShowAuthFlow, primaryWallet } = useDynamicContext()
-  const { theme } = useTheme()
 
   return (
-    <Layout
-      styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '100%',
-          paddingTop: 50
-        }}
-      >
+    <Layout>
+      <div className="demo-widget-stage">
         <SwapWidget
           key={`swap-widget-${singleChainMode ? 'single' : 'multi'}-chain`}
           lockChainId={singleChainMode ? 8453 : undefined}
@@ -93,22 +79,15 @@ const SingleWalletPage: NextPage = () => {
             console.log('onSwapSuccess Triggered', data)
           }}
         />
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: '40px'
-        }}
-      >
-        <div>
-          <label>Single Chain Mode: </label>
-          <input
-            type="checkbox"
-            checked={singleChainMode}
-            onChange={(e) => setSingleChainMode(e.target.checked)}
-          />
+        <div className="demo-panel" style={{ width: '100%', maxWidth: 400 }}>
+          <div>
+            <label>Single Chain Mode</label>
+            <input
+              type="checkbox"
+              checked={singleChainMode}
+              onChange={(e) => setSingleChainMode(e.target.checked)}
+            />
+          </div>
         </div>
       </div>
     </Layout>

@@ -1,8 +1,8 @@
 import { NextPage } from 'next'
+import { DemoPage, DemoOutput } from 'components/DemoPage'
 import { useState } from 'react'
 import { useWalletClient } from 'wagmi'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
-import { ConnectButton } from 'components/ConnectButton'
 
 const ClaimAppFeesPage: NextPage = () => {
   const { data: wallet } = useWalletClient()
@@ -19,124 +19,73 @@ const ClaimAppFeesPage: NextPage = () => {
   const [error, setError] = useState<string | null>(null)
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 16,
-        padding: 24,
-        paddingTop: 150
-      }}
-    >
-      <ConnectButton />
-      <div>
-        <label>Chain Id: </label>
-        <input
-          value={chainId}
-          onChange={(e) => setChainId(Number(e.target.value))}
-          style={{ minWidth: 100 }}
-        />
-      </div>
-      <div>
-        <label>Currency: </label>
-        <input
-          type="text"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          style={{ minWidth: 100 }}
-        />
-      </div>
-      <div>
-        <label>Recipient: </label>
-        <input
-          type="text"
-          value={recipient}
-          onChange={(e) => setRecipient(e.target.value)}
-          style={{ minWidth: 350 }}
-        />
-      </div>
-      <div>
-        <label>Amount: </label>
-        <input
-          type="text"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          style={{ minWidth: 100 }}
-          placeholder="Optional"
-        />
-      </div>
-      <button
-        style={{
-          marginTop: 20,
-          padding: 16,
-          background: 'blue',
-          color: 'white',
-          fontSize: 16,
-          border: '1px solid #ffffff',
-          borderRadius: 8,
-          fontWeight: 700,
-          cursor: 'pointer'
-        }}
-        disabled={!wallet || !chainId || !currency || loading}
-        onClick={async () => {
-          setError(null)
-          setResult(null)
-          setProgress(null)
-          setLoading(true)
-          try {
-            if (!client) throw new Error('Missing Client!')
-            if (!wallet) throw new Error('Connect your wallet!')
-            const claim = await client.actions.claimAppFees({
-              wallet,
-              chainId,
-              currency,
-              recipient,
-              amount: amount || undefined,
-              onProgress: setProgress
-            })
-            setResult(claim.data)
-          } catch (e: any) {
-            setError(e?.message || String(e))
-          } finally {
-            setLoading(false)
-          }
-        }}
-      >
-        {loading ? 'Claiming...' : 'Claim App Fees'}
-      </button>
-      {error && <div style={{ color: 'red', marginTop: 10 }}>{error}</div>}
-      {progress && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: '10px',
-            background: '#f0f0f0',
-            borderRadius: '8px',
-            width: '100%',
-            maxWidth: 1000
+    <DemoPage eyebrow="SDK write action" title="Claim App Fees">
+      <div className="demo-panel">
+        <div>
+          <label>Chain Id</label>
+          <input
+            value={chainId}
+            onChange={(e) => setChainId(Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>Currency</label>
+          <input
+            type="text"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>Recipient</label>
+          <input
+            type="text"
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>Amount</label>
+          <input
+            type="text"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Optional"
+          />
+        </div>
+        <button
+          disabled={!wallet || !chainId || !currency || loading}
+          onClick={async () => {
+            setError(null)
+            setResult(null)
+            setProgress(null)
+            setLoading(true)
+            try {
+              if (!client) throw new Error('Missing Client!')
+              if (!wallet) throw new Error('Connect your wallet!')
+              const claim = await client.actions.claimAppFees({
+                wallet,
+                chainId,
+                currency,
+                recipient,
+                amount: amount || undefined,
+                onProgress: setProgress
+              })
+              setResult(claim.data)
+            } catch (e: any) {
+              setError(e?.message || String(e))
+            } finally {
+              setLoading(false)
+            }
           }}
         >
-          <b>Progress:</b>
-          <pre>{JSON.stringify(progress, null, 2)}</pre>
-        </div>
-      )}
-      {result && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: '10px',
-            background: '#e0ffe0',
-            borderRadius: '8px',
-            width: '100%',
-            maxWidth: 1000
-          }}
-        >
-          <b>Result:</b>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-        </div>
-      )}
-    </div>
+          {loading ? 'Claiming...' : 'Claim App Fees'}
+        </button>
+        {error && <div className="demo-error">{error}</div>}
+      </div>
+      {progress && <DemoOutput title="Progress" data={progress} />}
+      {result && <DemoOutput title="Result" data={result} />}
+    </DemoPage>
   )
 }
 

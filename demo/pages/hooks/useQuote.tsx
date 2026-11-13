@@ -1,4 +1,5 @@
 import { NextPage } from 'next'
+import { DemoPage, DemoOutput } from 'components/DemoPage'
 
 import { useQuote } from '@relayprotocol/relay-kit-hooks'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
@@ -34,31 +35,10 @@ const UseQuote: NextPage = () => {
   )
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: 50,
-        width: '100%',
-        gap: 12,
-        padding: 24,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 150
-      }}
-    >
-      <div
-        style={{
-          marginTop: 20,
-          padding: '10px',
-          background: '#f0f0f0',
-          borderRadius: '8px',
-          marginLeft: '12px',
-          marginRight: '12p',
-          wordBreak: 'break-word'
-        }}
-      >
+    <DemoPage eyebrow="Hook" title="useQuote">
+      <div className="demo-panel">
         <div>
-          <label>User: </label>
+          <label>User</label>
           <input
             type="string"
             placeholder="What user address?"
@@ -69,7 +49,7 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <div>
-          <label>OriginChainId: </label>
+          <label>OriginChainId</label>
           <input
             type="number"
             placeholder="Which origin chain id?"
@@ -78,7 +58,7 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <div>
-          <label>DestinationChainId: </label>
+          <label>DestinationChainId</label>
           <input
             type="number"
             placeholder="Which destination chain id?"
@@ -87,7 +67,7 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <div>
-          <label>OriginCurrency: </label>
+          <label>OriginCurrency</label>
           <input
             type="string"
             placeholder="What is the origin currency address?"
@@ -96,7 +76,7 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <div>
-          <label>DestinationCurrency: </label>
+          <label>DestinationCurrency</label>
           <input
             type="string"
             placeholder="What is the destination currency address?"
@@ -105,7 +85,7 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <div>
-          <label>Recipient: </label>
+          <label>Recipient</label>
           <input
             type="string"
             placeholder="Recipient?"
@@ -118,7 +98,7 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <div>
-          <label>TradeType: </label>
+          <label>TradeType</label>
           <select
             onChange={(e) => {
               setTradeType(e.target.value as any)
@@ -129,7 +109,7 @@ const UseQuote: NextPage = () => {
           </select>
         </div>
         <div>
-          <label>AppFees: </label>
+          <label>AppFees</label>
           <input
             type="string"
             placeholder="Recipient?"
@@ -148,7 +128,7 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <div>
-          <label>Amount: </label>
+          <label>Amount</label>
           <input
             type="string"
             placeholder="Amount?"
@@ -157,7 +137,6 @@ const UseQuote: NextPage = () => {
           />
         </div>
         <button
-          style={{ margin: '20px auto', marginBottom: 0, display: 'block' }}
           onClick={() => {
             setData({
               user: user ?? zeroAddress,
@@ -177,8 +156,8 @@ const UseQuote: NextPage = () => {
           Get Quote
         </button>
       </div>
-      <div style={{ wordBreak: 'break-word' }}>{JSON.stringify(response)}</div>
-    </div>
+      {response ? <DemoOutput title="Response" data={response} /> : null}
+    </DemoPage>
   )
 }
 
