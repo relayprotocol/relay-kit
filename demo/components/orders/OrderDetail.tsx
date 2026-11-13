@@ -106,7 +106,7 @@ export const OrderDetail: FC<Props> = ({
           if (mode === 'soft') {
             return client!.actions.cancelOrder({ orderId: order.id })
           }
-          await switchWalletChain(wallet!, order.originChainId)
+          if (wallet) await switchWalletChain(wallet, order.originChainId)
           return client!.actions.cancelOrder({
             orderId: order.id,
             onchain: true,
