@@ -84,10 +84,8 @@ const OrdersPlayground = () => {
             wallet={wallet}
             address={address}
             run={run}
-            onOrder={(order) => {
-              showOrder(order)
-              if (order) setTab('orders')
-            }}
+            onOrder={showOrder}
+            onViewOrder={() => setTab('orders')}
             draft={draft}
           />
         </div>

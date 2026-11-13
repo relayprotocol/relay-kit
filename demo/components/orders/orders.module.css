@@ -893,3 +893,165 @@
   margin: 80px auto;
   text-align: center;
 }
+
+.modal {
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 32px));
+  border: var(--panel-border);
+  border-radius: var(--radius-widget);
+  background: var(--panel);
+  color: var(--text);
+  padding: 24px;
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal[open] {
+  display: flex;
+}
+
+.modal::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.modalTitle {
+  margin: 0;
+  font-family: var(--heading-font);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.modalCenter {
+  text-align: center;
+}
+
+.modalSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--card);
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
+}
+
+.modalTrade {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.modalTrade .tokenLogo {
+  width: 20px;
+  height: 20px;
+}
+
+.modalSteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modalStep {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.modalStepText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.modalStepText > b {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.stepIcon {
+  flex: none;
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  border: 2px solid var(--border);
+}
+
+.stepIcon_done {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.stepIcon_failed {
+  background: var(--danger-solid);
+  border-color: var(--danger-solid);
+}
+
+.stepIcon_active {
+  border-color: var(--accent-soft);
+  border-top-color: var(--accent);
+  animation: orders-spin 0.8s linear infinite;
+}
+
+@keyframes orders-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.modalLink {
+  color: var(--accent-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.modalLink:hover {
+  text-decoration: underline;
+}
+
+.modalHero {
+  align-self: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.modalHeroSuccess {
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--success);
+}
+
+.modalHeroError {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.modalError {
+  margin: 0;
+  color: var(--danger);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.modalActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}

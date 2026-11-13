@@ -2,6 +2,7 @@ import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   CreateOrderBody,
   Order,
+  OrderProgressData,
   OrderSponsoredFeeComponent
 } from '@relayprotocol/relay-sdk'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
@@ -16,6 +17,7 @@ import { useReadContract } from 'wagmi'
 import type { RunAction } from './ActivityLog'
 import {
   cx,
+  errorInfo,
   formatNumber,
   isNativeToken,
   isSolverToken,
@@ -28,6 +30,7 @@ import {
   useUsdPrice,
   type TokenRef
 } from './common'
+import { OrderModal, type OrderModalState } from './OrderModal'
 import { TokenLogo, TokenPill } from './TokenPill'
 import { useDynamicContext } from '@dynamic-labs/sdk-react-core'
 import css from './orders.module.css'
@@ -61,6 +64,7 @@ type Props = {
   address?: string
   run: RunAction
   onOrder: (order?: Order) => void
+  onViewOrder: () => void
   draft?: OrderDraft
 }
 
@@ -81,6 +85,7 @@ export const CreateOrderForm: FC<Props> = ({
   address,
   run,
   onOrder,
+  onViewOrder,
   draft
 }) => {
   const client = useRelayClient()
@@ -113,7 +118,8 @@ export const CreateOrderForm: FC<Props> = ({
   const [sponsored, setSponsored] = useState<OrderSponsoredFeeComponent[]>([])
   const [maxSubsidizationAmount, setMaxSubsidizationAmount] = useState('')
   const [subsidizationBps, setSubsidizationBps] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [modal, setModal] = useState<OrderModalState>()
+  const submitting = modal?.status === 'running'
   const lastSubmit = useRef<
     { key: string; fields: string; expiresAt: string } | undefined
   >(undefined)
@@ -223,8 +229,8 @@ export const CreateOrderForm: FC<Props> = ({
     }
     lastSubmit.current = { key, fields, expiresAt: order.expiresAt }
     setIdempotencyKey(key)
-    setSubmitting(true)
-    const created = await run(
+    setModal({ status: 'running' })
+    await track(
       'createOrder',
       { order, idempotencyKey: key, wallet: 'connected wallet' },
       async (onProgress) => {
@@ -237,8 +243,59 @@ export const CreateOrderForm: FC<Props> = ({
         })
       }
     )
-    setSubmitting(false)
-    onOrder(created)
+  }
+
+  const track = async (
+    action: string,
+    params: unknown,
+    fn: (onProgress: (data: OrderProgressData) => void) => Promise<Order>,
+    existing?: Order
+  ) => {
+    let latest = existing
+    try {
+      const order = await run(
+        action,
+        params,
+        (onProgress) =>
+          fn((data) => {
+            latest = data.order
+            onProgress(data)
+            setModal((current) => ({ ...current!, ...data }))
+          }),
+        { rethrow: true }
+      )
+      setModal((current) => ({ ...current!, status: 'success', order }))
+      onOrder(order)
+    } catch (error) {
+      setModal((current) => ({
+        ...current!,
+        status: 'error',
+        error: errorInfo(error)
+      }))
+      onOrder(latest)
+    }
+  }
+
+  const retry = () => {
+    const order = modal?.order
+    if (!order) return submit()
+    setModal({ status: 'running', order, steps: modal.steps })
+    track(
+      `executeOrder (${order.id})`,
+      { orderId: order.id },
+      async (onProgress) => {
+        const { orders } = await client!.actions.getOrders({
+          orderId: order.id
+        })
+        await switchWalletChain(wallet!, order.originChainId)
+        return client!.actions.executeOrder({
+          order: orders[0] ?? order,
+          wallet: wallet!,
+          onProgress
+        })
+      },
+      order
+    )
   }
 
   const spentSymbol = spentMeta?.symbol ?? 'tokens'
@@ -720,6 +777,42 @@ export const CreateOrderForm: FC<Props> = ({
           <Json value={body} />
         </details>
       </section>
+
+      <OrderModal
+        state={modal}
+        summary={
+          <>
+            <div className={css.modalTrade}>
+              <TokenLogo meta={sellMeta} chainId={sellToken.chainId} />
+              <b>
+                {amount} {sellMeta?.symbol}
+              </b>
+              <span className={css.hint}>→</span>
+              <TokenLogo meta={buyMeta} chainId={buyToken.chainId} />
+              <b>
+                {receiveEstimate !== undefined
+                  ? `~${formatNumber(receiveEstimate)}`
+                  : '?'}{' '}
+                {buyMeta?.symbol}
+              </b>
+            </div>
+            <span className={css.hint}>
+              {side === 'sell' ? 'Sells' : 'Buys'} when 1 {targetSymbol} is
+              worth {side === 'sell' ? 'at least' : 'at most'} $
+              {formatNumber(priceNumber)}
+            </span>
+          </>
+        }
+        onRetry={retry}
+        onViewOrder={() => {
+          setModal(undefined)
+          onViewOrder()
+        }}
+        onClose={() => {
+          if (modal?.status === 'success') setAmount('')
+          setModal(undefined)
+        }}
+      />
     </div>
   )
 }
