@@ -57,20 +57,8 @@ const OnrampPage: NextPage = () => {
   })
 
   return (
-    <Layout
-      styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingTop: 50,
-          paddingInline: '10px'
-        }}
-      >
+    <Layout>
+      <div className="demo-widget-stage">
         <OnrampWidget
           moonPayApiKey={process.env.NEXT_PUBLIC_MOONPAY_API_KEY as string}
           supportedWalletVMs={['evm', 'svm', 'bvm']}

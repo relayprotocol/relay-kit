@@ -1,12 +1,10 @@
 import { NextPage } from 'next'
-import { Layout } from 'components/Layout'
-import { useTheme } from 'next-themes'
+import { DemoPage, DemoOutput } from 'components/DemoPage'
 import { Address, zeroAddress } from 'viem'
 import { useState } from 'react'
 import { Execute, getQuote, GetQuoteParameters } from '@relayprotocol/relay-sdk'
 
 const DepositAddressesPage: NextPage = () => {
-  const { theme } = useTheme()
   const [amount, setAmount] = useState<number | undefined>()
   const [refundAddress, setRefundAddress] = useState('')
   const [currencyAddress, setCurrencyAddress] = useState<string>(zeroAddress)
@@ -19,26 +17,10 @@ const DepositAddressesPage: NextPage = () => {
   const [depositAddress, setDepositAddress] = useState<string | undefined>()
   const [depositAmount, setDepositAmount] = useState<string | undefined>()
   return (
-    <Layout
-      styles={{
-        minHeight: '100%',
-        height: 'auto',
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingTop: 50,
-          paddingInline: '10px',
-          flexDirection: 'column',
-          gap: 20
-        }}
-      >
+    <DemoPage eyebrow="UI" title="Deposit Addresses">
+      <div className="demo-panel">
         <div>
-          <label>Amount (wei): </label>
+          <label>Amount (wei)</label>
           <input
             type="number"
             placeholder="How much to deposit?"
@@ -49,7 +31,7 @@ const DepositAddressesPage: NextPage = () => {
           />
         </div>
         <div>
-          <label>Refund Address: </label>
+          <label>Refund Address</label>
           <input
             type="string"
             placeholder="Where to send refunds to?"
@@ -58,7 +40,7 @@ const DepositAddressesPage: NextPage = () => {
           />
         </div>
         <div>
-          <label>Currency Address: </label>
+          <label>Currency Address</label>
           <input
             type="string"
             placeholder="What currency address?"
@@ -67,7 +49,7 @@ const DepositAddressesPage: NextPage = () => {
           />
         </div>
         <div>
-          <label>Origin Chain Id: </label>
+          <label>Origin Chain Id</label>
           <input
             type="string"
             placeholder="What origin chain id?"
@@ -80,7 +62,7 @@ const DepositAddressesPage: NextPage = () => {
           />
         </div>
         <div>
-          <label>Destination Chain Id: </label>
+          <label>Destination Chain Id</label>
           <input
             type="string"
             placeholder="What destination chain id?"
@@ -93,7 +75,7 @@ const DepositAddressesPage: NextPage = () => {
           />
         </div>
         <div>
-          <label>Recipient address: </label>
+          <label>Recipient address</label>
           <input
             type="string"
             placeholder="What is the recipient address?"
@@ -143,24 +125,19 @@ const DepositAddressesPage: NextPage = () => {
         >
           Get Quote
         </button>
-
-        {quote ? (
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 600 }}>
-              Instructions to relay:
-            </div>
-            <div>
-              Send {depositAmount} wei to this address: {depositAddress}
-            </div>
-            <br />
-            <div style={{ fontSize: 22, fontWeight: 600 }}>Quote Response:</div>
-            <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-              {JSON.stringify(quote, null, 2)}
-            </div>
-          </div>
-        ) : undefined}
       </div>
-    </Layout>
+      {quote ? (
+        <>
+          <section className="demo-panel">
+            <h2>Instructions to relay</h2>
+            <pre className="demo-output">
+              Send {depositAmount} wei to this address: {depositAddress}
+            </pre>
+          </section>
+          <DemoOutput title="Quote response" data={quote} />
+        </>
+      ) : undefined}
+    </DemoPage>
   )
 }
 

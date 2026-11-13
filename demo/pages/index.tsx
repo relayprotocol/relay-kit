@@ -1,60 +1,67 @@
-import { Layout } from 'components/Layout'
+import { DemoPage } from 'components/DemoPage'
 import { NextPage } from 'next'
 import Link from 'next/link'
 
+const SECTIONS = [
+  {
+    title: 'UI',
+    links: [
+      { href: '/ui/swap', label: 'SwapWidget' },
+      { href: '/ui/chain', label: 'ChainWidget' },
+      { href: '/ui/onramp', label: 'OnrampWidget' },
+      { href: '/ui/depositAddresses', label: 'Deposit Addresses' }
+    ]
+  },
+  {
+    title: 'SDK Write Actions',
+    links: [
+      { href: '/sdk/actions/call', label: 'Call' },
+      { href: '/sdk/actions/bridge', label: 'Bridge' },
+      { href: '/sdk/actions/swap', label: 'Swap' },
+      { href: '/sdk/actions/claimAppFees', label: 'Claim App Fees' },
+      { href: '/sdk/actions/fastFill', label: 'Fast Fill' }
+    ]
+  },
+  {
+    title: 'SDK Read Actions',
+    links: [
+      { href: '/sdk/actions/getCallQuote', label: 'getCallQuote' },
+      { href: '/sdk/actions/getBridgeQuote', label: 'getBridgeQuote' },
+      { href: '/sdk/actions/getSwapQuote', label: 'getSwapQuote' },
+      { href: '/sdk/actions/getAppFees', label: 'getAppFees' }
+    ]
+  },
+  {
+    title: 'Hooks',
+    links: [
+      { href: '/hooks/useRelayChains', label: 'useRelayChains' },
+      { href: '/hooks/useRequests', label: 'useRequests' },
+      { href: '/hooks/useTokenList', label: 'useTokenList' }
+    ]
+  }
+]
+
 const Index: NextPage = () => {
   return (
-    <Layout>
-      <div
-        style={{
-          display: 'flex',
-          height: '100%',
-          width: '100%',
-          gap: 12,
-          padding: 24,
-          flexDirection: 'column',
-          alignItems: 'flex-start'
-        }}
-      >
-        <h2>
-          <b>UI</b>
-        </h2>
-        <nav style={{ display: 'flex', gap: 15 }}>
-          <Link href="/ui/swap">SwapWidget</Link>
-          <Link href="/ui/chain">ChainWidget</Link>
-          <Link href="/ui/onramp">OnrampWidget</Link>
-          <Link href="/ui/depositAddresses">Deposit Addresses</Link>
-        </nav>
-        <h2>
-          <b>SDK Write Actions</b>
-        </h2>
-        <nav style={{ display: 'flex', gap: 15 }}>
-          <Link href="/sdk/actions/call">Call</Link>
-          <Link href="/sdk/actions/bridge">Bridge</Link>
-          <Link href="/sdk/actions/swap">Swap</Link>
-          <Link href="/sdk/actions/claimAppFees">Claim App Fees</Link>
-          <Link href="/sdk/actions/fastFill">Fast Fill</Link>
-        </nav>
-        <h2>
-          <b>SDK Read Actions</b>
-        </h2>
-        <nav style={{ display: 'flex', gap: 15 }}>
-          <Link href="/sdk/actions/getSolverCapacity">getSolverCapacity</Link>
-          <Link href="/sdk/actions/getCallQuote">getCallQuote</Link>
-          <Link href="/sdk/actions/getBridgeQuote">getBridgeQuote</Link>
-          <Link href="/sdk/actions/getSwapQuote">getSwapQuote</Link>
-          <Link href="/sdk/actions/getAppFees">getAppFees</Link>
-        </nav>
-        <h2>
-          <b>Hooks</b>
-        </h2>
-        <nav style={{ display: 'flex', gap: 15 }}>
-          <Link href="/hooks/useRelayChains">useRelayChains</Link>
-          <Link href="/hooks/useRequests">useRequests</Link>
-          <Link href="/hooks/useTokenList">useTokenList</Link>
-        </nav>
-      </div>
-    </Layout>
+    <DemoPage
+      eyebrow="Relay Kit"
+      title="Demo playground"
+      description="Try the UI widgets, SDK actions and hooks against the Relay API."
+      wide
+    >
+      {SECTIONS.map((section) => (
+        <section key={section.title} className="demo-panel">
+          <h2>{section.title}</h2>
+          <nav className="demo-links">
+            {section.links.map((link) => (
+              <Link key={link.href} href={link.href} className="demo-link">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </section>
+      ))}
+    </DemoPage>
   )
 }
 

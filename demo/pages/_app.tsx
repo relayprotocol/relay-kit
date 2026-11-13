@@ -1,6 +1,6 @@
+import '../global.css'
 import '@relayprotocol/relay-kit-ui/styles.css'
 import '../fonts.css'
-import '../global.css'
 
 import type { AppProps, AppContext } from 'next/app'
 import React, { ReactNode, FC, useEffect } from 'react'

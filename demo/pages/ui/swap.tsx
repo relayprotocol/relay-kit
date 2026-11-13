@@ -4,7 +4,6 @@ import {
   SwapWidget
 } from '@relayprotocol/relay-kit-ui'
 import { Layout } from 'components/Layout'
-import { useTheme } from 'next-themes'
 import {
   useDynamicContext,
   useDynamicEvents,
@@ -70,7 +69,6 @@ const SwapWidgetPage: NextPage = () => {
 
   const { setWalletFilter } = useWalletFilter()
   const { setShowAuthFlow, primaryWallet } = useDynamicContext()
-  const { theme } = useTheme()
   const [singleChainMode, setSingleChainMode] = useState(false)
   const [supportedWalletVMs, setSupportedWalletVMs] = useState<ChainVM[]>([
     ...WALLET_VM_TYPES
@@ -192,27 +190,12 @@ const SwapWidgetPage: NextPage = () => {
     useState(false)
 
   return (
-    <Layout
-      styles={{
-        background: theme === 'light' ? '#F7F8FF' : '#000'
-      }}
-    >
+    <Layout>
       <Head>
         <title>Swap Widget</title>
         <meta name="description" content="Swap Widget" />
       </Head>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          paddingTop: 40,
-          paddingBottom: 40,
-          paddingInline: '16px',
-          gap: 24
-        }}
-      >
+      <div className="demo-widget-stage">
         <div
           style={{
             display: 'flex',
