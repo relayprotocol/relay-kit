@@ -9,15 +9,15 @@ import {
   erc20Abi,
   formatUnits,
   parseUnits,
-  zeroAddress,
   type Address,
   type WalletClient
 } from 'viem'
-import { useBalance, useReadContract } from 'wagmi'
+import { useReadContract } from 'wagmi'
 import type { RunAction } from './ActivityLog'
 import {
   cx,
   formatNumber,
+  isNativeToken,
   Json,
   toDecimalString,
   tokenKey,
@@ -61,24 +61,16 @@ type Props = {
   draft?: OrderDraft
 }
 
-/** On-chain balance of the token being spent, read through wagmi */
+/** On-chain ERC-20 balance of the token being spent, read through wagmi */
 function useSpendBalance(token: TokenRef, user: string) {
-  const enabled = isAddress(user) && isAddress(token.address)
-  const isNative = token.address === zeroAddress
-  const native = useBalance({
-    address: user as Address,
-    chainId: token.chainId,
-    query: { enabled: enabled && isNative }
-  })
-  const erc20 = useReadContract({
+  return useReadContract({
     address: token.address as Address,
     abi: erc20Abi,
     functionName: 'balanceOf',
     args: [user as Address],
     chainId: token.chainId,
-    query: { enabled: enabled && !isNative }
-  })
-  return isNative ? native.data?.value : erc20.data
+    query: { enabled: isAddress(user) && isAddress(token.address) }
+  }).data
 }
 
 export const CreateOrderForm: FC<Props> = ({
@@ -213,14 +205,7 @@ export const CreateOrderForm: FC<Props> = ({
     ...(clientOrderId ? { clientOrderId } : {})
   }
 
-  const missing = [
-    !owner && 'user',
-    !hasPrice && 'target price',
-    !amountBase && 'amount',
-    !body.expiresAt && 'expiry'
-  ].filter(Boolean)
-
-  const submit = async (withWallet: boolean) => {
+  const submit = async () => {
     const key = newKeyEachSubmit ? crypto.randomUUID() : idempotencyKey
     const fields = JSON.stringify({
       ...body,
@@ -236,17 +221,13 @@ export const CreateOrderForm: FC<Props> = ({
     setIdempotencyKey(key)
     setSubmitting(true)
     const created = await run(
-      withWallet ? 'createOrder (create & sign)' : 'createOrder (create only)',
-      {
-        order,
-        idempotencyKey: key,
-        wallet: withWallet ? 'connected wallet' : undefined
-      },
+      'createOrder',
+      { order, idempotencyKey: key, wallet: 'connected wallet' },
       (onProgress) =>
         client!.actions.createOrder({
           order,
           idempotencyKey: key,
-          wallet: withWallet ? wallet : undefined,
+          wallet,
           onProgress
         })
     )
@@ -278,7 +259,6 @@ export const CreateOrderForm: FC<Props> = ({
           : undefined
         : orderValueUsd / priceNumber
       : undefined
-  const receiveSymbol = side === 'sell' ? settlementSymbol : targetSymbol
   const expiryDate = body.expiresAt ? new Date(body.expiresAt) : undefined
 
   const sellToken = side === 'sell' ? target : settlement
@@ -312,13 +292,15 @@ export const CreateOrderForm: FC<Props> = ({
       ? 'Connect wallet'
       : !targetMeta || !settlementMeta
         ? 'Select tokens'
-        : !hasPrice
-          ? 'Enter a target price'
-          : !amountBase
-            ? 'Enter an amount'
-            : !body.expiresAt
-              ? 'Choose an expiry'
-              : 'Place order'
+        : isNativeToken(target) || isNativeToken(settlement)
+          ? 'Use the wrapped native token'
+          : !hasPrice
+            ? 'Enter a target price'
+            : !amountBase
+              ? 'Enter an amount'
+              : !body.expiresAt
+                ? 'Choose an expiry'
+                : 'Place order'
 
   return (
     <div className={css.createLayout}>
@@ -526,16 +508,9 @@ export const CreateOrderForm: FC<Props> = ({
         <button
           className={css.cta}
           disabled={wallet ? submitting || cta !== 'Place order' : false}
-          onClick={() => (wallet ? submit(true) : setShowAuthFlow(true))}
+          onClick={() => (wallet ? submit() : setShowAuthFlow(true))}
         >
           {cta}
-        </button>
-        <button
-          className={css.linkBtn}
-          disabled={submitting || missing.length > 0}
-          onClick={() => submit(false)}
-        >
-          Create without signing
         </button>
 
         <dl className={css.details}>
@@ -554,23 +529,6 @@ export const CreateOrderForm: FC<Props> = ({
           <dt>Expires</dt>
           <dd>{expiryDate ? expiryDate.toLocaleString() : '—'}</dd>
         </dl>
-
-        <div className={css.notice}>
-          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
-            <path d="M8 1.5 15 14H1L8 1.5Z" fill="currentColor" opacity="0.9" />
-            <path
-              d="M8 6v3.5M8 11.5v.5"
-              stroke="white"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
-          <span>
-            Orders are priced in USD and fill when the all-in price reaches your
-            target. {receiveSymbol} amounts are estimates from Relay's current
-            prices.
-          </span>
-        </div>
       </section>
 
       <section className={css.settings}>
