@@ -1,7 +1,11 @@
 import { useMemo, type CSSProperties } from 'react'
-import type { Order, OrderStatus, RelayChain } from '@relayprotocol/relay-sdk'
+import type { Order, OrderStatus } from '@relayprotocol/relay-sdk'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
-import { useTokenList, useTokenPrice } from '@relayprotocol/relay-kit-hooks'
+import {
+  useRelayChains,
+  useTokenList,
+  useTokenPrice
+} from '@relayprotocol/relay-kit-hooks'
 import { formatUnits, zeroAddress } from 'viem'
 import css from './orders.module.css'
 
@@ -35,27 +39,36 @@ export const isNativeToken = ({ address }: TokenRef) =>
 export const tokenKey = ({ chainId, address }: TokenRef) =>
   `${chainId}:${address.toLowerCase()}`
 
+type SolverChains = {
+  id?: number
+  solverCurrencies?: { address?: string }[]
+}[]
+
 /**
- * ERC-20 currencies the solver holds on a chain, from `/chains` `solverCurrencies`,
- * as {@link tokenKey}s. Undefined when the chain doesn't list them.
+ * The Relay API's `/chains`, fetched through the page's API base (the orders
+ * proxy), for each chain's `solverCurrencies`. Undefined until it loads.
  */
-export const solverTokenKeys = (
-  chains: RelayChain[] | undefined,
-  chainId: number
-) =>
+export function useSolverChains(): SolverChains | undefined {
+  const client = useRelayClient()
+  return useRelayChains(client?.baseApiUrl, undefined, {
+    enabled: Boolean(client),
+    staleTime: 5 * 60_000
+  }).data?.chains
+}
+
+/** ERC-20 currencies the solver holds on a chain, as {@link tokenKey}s */
+export const solverTokenKeys = (chains: SolverChains, chainId: number) =>
   chains
-    ?.find((chain) => chain.id === chainId)
+    .find((chain) => chain.id === chainId)
     ?.solverCurrencies?.flatMap(({ address }) =>
       address && !isNativeToken({ chainId, address })
         ? [tokenKey({ chainId, address })]
         : []
-    )
+    ) ?? []
 
 /** Buy targets and settlement currencies must be held by the solver */
-export const isSolverToken = (
-  chains: RelayChain[] | undefined,
-  token: TokenRef
-) => solverTokenKeys(chains, token.chainId)?.includes(tokenKey(token)) ?? true
+export const isSolverToken = (chains: SolverChains, token: TokenRef) =>
+  solverTokenKeys(chains, token.chainId).includes(tokenKey(token))
 
 const isAddress = (value: string) => /^0x[0-9a-fA-F]{40}$/.test(value)
 

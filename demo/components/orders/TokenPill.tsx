@@ -6,6 +6,7 @@ import {
   cx,
   isNativeToken,
   solverTokenKeys,
+  useSolverChains,
   type TokenMeta,
   type TokenRef
 } from './common'
@@ -49,26 +50,29 @@ export const TokenPill: FC<Props> = ({
   const ref = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [custom, setCustom] = useState(false)
+  const solverChains = useSolverChains()
   const chains = (client?.chains ?? []).filter(
     (chain) =>
       chain.vmType === 'evm' &&
-      (!solverOnly || solverTokenKeys(client?.chains, chain.id)?.length !== 0)
+      (!solverOnly ||
+        (solverChains && solverTokenKeys(solverChains, chain.id).length > 0))
   )
-  const solverTokens = solverOnly
-    ? solverTokenKeys(client?.chains, value.chainId)
-    : undefined
+  const solverTokens =
+    solverOnly && solverChains
+      ? solverTokenKeys(solverChains, value.chainId)
+      : undefined
   const chainName = (id: number) =>
     chains.find((chain) => chain.id === id)?.displayName ?? `Chain ${id}`
 
   const { data: listedTokens } = useTokenList(
     client?.baseApiUrl,
-    solverTokens
-      ? { tokens: solverTokens, limit: solverTokens.length }
+    solverOnly
+      ? { tokens: solverTokens ?? [], limit: solverTokens?.length ?? 0 }
       : { chainIds: [value.chainId], verified: true, limit: 30 },
     {
       enabled:
         Boolean(client && value.chainId && (open || !value.address)) &&
-        solverTokens?.length !== 0,
+        (!solverOnly || Boolean(solverTokens?.length)),
       staleTime: Infinity
     }
   )
@@ -81,7 +85,7 @@ export const TokenPill: FC<Props> = ({
     (token) => token.address?.toLowerCase() === address
   )
   const unlisted = Boolean(chainTokens) && Boolean(value.address) && !listed
-  const showAddressInput = !solverTokens && (custom || unlisted)
+  const showAddressInput = !solverOnly && (custom || unlisted)
 
   useEffect(() => {
     if (!value.address && !custom && chainTokens?.[0]?.address) {
@@ -156,7 +160,13 @@ export const TokenPill: FC<Props> = ({
             ))}
           </select>
           <div className={css.tokenList} role="listbox" aria-label="Tokens">
-            {!chainTokens && <span className={css.hint}>Loading tokens…</span>}
+            {!chainTokens && (
+              <span className={css.hint}>
+                {solverOnly && solverTokens?.length === 0
+                  ? 'The solver holds no tokens on this chain.'
+                  : 'Loading tokens…'}
+              </span>
+            )}
             {chainTokens?.map((token) => {
               const tokenAddress = token.address?.toLowerCase() ?? ''
               const selected = !showAddressInput && tokenAddress === address
@@ -189,7 +199,7 @@ export const TokenPill: FC<Props> = ({
               )
             })}
           </div>
-          {solverTokens ? (
+          {solverOnly ? (
             unlisted && (
               <span className={css.error}>
                 The solver doesn't hold this token on this chain. Pick one from
