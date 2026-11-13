@@ -23,6 +23,10 @@ const SECTIONS = [
     ]
   },
   {
+    title: 'Limit Orders',
+    links: [{ href: '/orders', label: 'Orders (VPN only)', reload: true }]
+  },
+  {
     title: 'SDK Read Actions',
     links: [
       { href: '/sdk/actions/getCallQuote', label: 'getCallQuote' },
@@ -53,11 +57,17 @@ const Index: NextPage = () => {
         <section key={section.title} className="demo-panel">
           <h2>{section.title}</h2>
           <nav className="demo-links">
-            {section.links.map((link) => (
-              <Link key={link.href} href={link.href} className="demo-link">
-                {link.label}
-              </Link>
-            ))}
+            {section.links.map((link) =>
+              'reload' in link ? (
+                <a key={link.href} href={link.href} className="demo-link">
+                  {link.label}
+                </a>
+              ) : (
+                <Link key={link.href} href={link.href} className="demo-link">
+                  {link.label}
+                </Link>
+              )
+            )}
           </nav>
         </section>
       ))}

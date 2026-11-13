@@ -1082,6 +1082,43 @@ describe('Base tests', () => {
     ).toBeTruthy()
   })
 
+  it('Should execute flat quote/v3 steps like legacy steps', async () => {
+    const flatSwap = {
+      ...swapData,
+      requestId: '0xabc',
+      steps: swapData.steps.map(({ items, requestId, ...step }) => ({
+        ...step,
+        ...items[0]
+      }))
+    }
+
+    const result = await executeSteps(1, {}, wallet, () => {}, flatSwap)
+
+    expect(
+      wallet.handleSendTransactionStep.mock.calls.map(([, item, step]) => [
+        step.id,
+        item.data.to
+      ])
+    ).toEqual([
+      ['approve', swapData.steps[0].items[0].data.to],
+      ['swap', swapData.steps[1].items[0].data.to]
+    ])
+    expect(axiosRequestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: expect.stringContaining('/intents/status/v3?requestId=')
+      })
+    )
+    expect(result.steps.map((step) => step.requestId)).toEqual([
+      '0xabc',
+      '0xabc'
+    ])
+    expect(
+      result.steps.every((step) =>
+        step.items.every((item) => item.status === 'complete')
+      )
+    ).toBeTruthy()
+  })
+
   it('Should use gas fee estimations by default', async () => {
     const viem = await vi.importActual('viem')
     //@ts-ignore
