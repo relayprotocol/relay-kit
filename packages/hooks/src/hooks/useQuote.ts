@@ -68,7 +68,7 @@ export default function (
   config?: AxiosRequestConfig,
   baseApiUrl?: string
 ) {
-  const queryKey = ['useQuote', options]
+  const queryKey = ['useQuote', baseApiUrl ?? client?.baseApiUrl, options]
   const response = (useQuery as QueryType)({
     queryKey: queryKey,
     queryFn: () => {

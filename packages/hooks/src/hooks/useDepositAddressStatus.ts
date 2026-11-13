@@ -71,7 +71,7 @@ export default function useDepositAddressStatus(
   queryOptions?: Partial<QueryOptions>
 ) {
   const response = (useQuery as QueryType)({
-    queryKey: ['useDepositAddressStatus', options?.depositAddress],
+    queryKey: ['useDepositAddressStatus', baseApiUrl, options?.depositAddress],
     queryFn: () => queryDepositAddressStatus(baseApiUrl, options),
     enabled: options?.depositAddress !== undefined,
     retry: false,
@@ -83,7 +83,7 @@ export default function useDepositAddressStatus(
       ({
         ...response,
         data: response.error ? undefined : response.data,
-        queryKey: ['useDepositAddressStatus', options?.depositAddress]
+        queryKey: ['useDepositAddressStatus', baseApiUrl, options?.depositAddress]
       }) as Omit<ReturnType<QueryType>, 'data'> & {
         data?: DepositAddressStatusResponse
         queryKey: QueryKey
@@ -95,6 +95,7 @@ export default function useDepositAddressStatus(
       response.isFetching,
       response.isRefetching,
       response.dataUpdatedAt,
+      baseApiUrl,
       options?.depositAddress
     ]
   )
