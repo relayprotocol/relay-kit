@@ -19,6 +19,7 @@ import {
   formatNumber,
   isNativeToken,
   isSolverToken,
+  useSolverChains,
   Json,
   toDecimalString,
   tokenKey,
@@ -83,6 +84,7 @@ export const CreateOrderForm: FC<Props> = ({
 }) => {
   const client = useRelayClient()
   const { setShowAuthFlow } = useDynamicContext()
+  const solverChains = useSolverChains()
   const [side, setSide] = useState<'buy' | 'sell'>('sell')
   const [target, setTarget] = useState<TokenRef>({
     chainId: 8453,
@@ -295,16 +297,18 @@ export const CreateOrderForm: FC<Props> = ({
         ? 'Select tokens'
         : isNativeToken(target) || isNativeToken(settlement)
           ? 'Use the wrapped native token'
-          : !isSolverToken(client?.chains, settlement) ||
-              (side === 'buy' && !isSolverToken(client?.chains, target))
-            ? 'Pick a solver-held token'
-            : !hasPrice
-              ? 'Enter a target price'
-              : !amountBase
-                ? 'Enter an amount'
-                : !body.expiresAt
-                  ? 'Choose an expiry'
-                  : 'Place order'
+          : !solverChains
+            ? 'Loading solver currencies…'
+            : !isSolverToken(solverChains, settlement) ||
+                (side === 'buy' && !isSolverToken(solverChains, target))
+              ? 'Pick a solver-held token'
+              : !hasPrice
+                ? 'Enter a target price'
+                : !amountBase
+                  ? 'Enter an amount'
+                  : !body.expiresAt
+                    ? 'Choose an expiry'
+                    : 'Place order'
 
   return (
     <div className={css.createLayout}>
@@ -312,9 +316,10 @@ export const CreateOrderForm: FC<Props> = ({
         <div className={css.card}>
           <div className={css.spread}>
             <span className={css.cardLabel}>
-              When 1
+              {side === 'sell' ? 'Sell' : 'Buy'} when 1
               <TokenLogo meta={targetMeta} chainId={target.chainId} />
               <b className={css.cardToken}>{targetSymbol}</b> is worth
+              {side === 'sell' ? ' at least' : ' at most'}
             </span>
             {vsMarket !== undefined && (
               <span
@@ -370,11 +375,9 @@ export const CreateOrderForm: FC<Props> = ({
           </div>
           <span className={css.hint}>
             {targetUsd
-              ? `Market $${formatNumber(targetUsd)}. `
-              : 'No market price. '}
-            {side === 'sell'
-              ? `Sells once 1 ${targetSymbol} gets you at least this, after fees.`
-              : `Buys once 1 ${targetSymbol} costs at most this, including fees.`}
+              ? `Market $${formatNumber(targetUsd)}`
+              : 'No market price'}
+            {side === 'sell' ? ' · after fees' : ' · including fees'}
           </span>
         </div>
 
