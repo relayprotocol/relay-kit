@@ -25,7 +25,6 @@ const SECTIONS = [
   {
     title: 'SDK Read Actions',
     links: [
-      { href: '/sdk/actions/getSolverCapacity', label: 'getSolverCapacity' },
       { href: '/sdk/actions/getCallQuote', label: 'getCallQuote' },
       { href: '/sdk/actions/getBridgeQuote', label: 'getBridgeQuote' },
       { href: '/sdk/actions/getSwapQuote', label: 'getSwapQuote' },

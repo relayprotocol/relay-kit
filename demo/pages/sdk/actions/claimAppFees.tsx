@@ -26,7 +26,6 @@ const ClaimAppFeesPage: NextPage = () => {
           <input
             value={chainId}
             onChange={(e) => setChainId(Number(e.target.value))}
-            style={{ minWidth: 100 }}
           />
         </div>
         <div>
@@ -35,7 +34,6 @@ const ClaimAppFeesPage: NextPage = () => {
             type="text"
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            style={{ minWidth: 100 }}
           />
         </div>
         <div>
@@ -44,7 +42,6 @@ const ClaimAppFeesPage: NextPage = () => {
             type="text"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
-            style={{ minWidth: 350 }}
           />
         </div>
         <div>
@@ -53,7 +50,6 @@ const ClaimAppFeesPage: NextPage = () => {
             type="text"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            style={{ minWidth: 100 }}
             placeholder="Optional"
           />
         </div>
