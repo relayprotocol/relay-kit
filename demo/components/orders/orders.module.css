@@ -43,17 +43,15 @@
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   margin: 0 auto 24px;
   max-width: 1280px;
 }
 
 .tabs {
   display: flex;
+  justify-content: center;
   gap: 4px;
+  margin: 0 auto 24px;
 }
 
 .tab {
@@ -275,11 +273,6 @@
   cursor: pointer;
 }
 
-.widget > .linkBtn {
-  align-self: center;
-  padding: 2px 0 4px;
-}
-
 .linkBtn:hover:not(:disabled) {
   text-decoration: underline;
 }
@@ -307,24 +300,6 @@
   text-align: right;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-
-.notice {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  background: var(--panel);
-  border: var(--panel-border);
-  border-radius: var(--radius-card);
-  padding: 12px 14px;
-  font-size: 13px;
-  color: var(--text);
-}
-
-.notice > svg {
-  flex: none;
-  margin-top: 2px;
-  color: var(--muted);
 }
 
 .warnText,

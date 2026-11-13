@@ -1,7 +1,13 @@
 import { FC, useEffect, useRef, useState } from 'react'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
-import { chainIcon, cx, type TokenMeta, type TokenRef } from './common'
+import {
+  chainIcon,
+  cx,
+  isNativeToken,
+  type TokenMeta,
+  type TokenRef
+} from './common'
 import css from './orders.module.css'
 
 type Props = {
@@ -45,13 +51,17 @@ export const TokenPill: FC<Props> = ({
   const chainName = (id: number) =>
     chains.find((chain) => chain.id === id)?.displayName ?? `Chain ${id}`
 
-  const { data: chainTokens } = useTokenList(
+  const { data: listedTokens } = useTokenList(
     client?.baseApiUrl,
     { chainIds: [value.chainId], verified: true, limit: 30 },
     {
       enabled: Boolean(client && value.chainId && (open || !value.address)),
       staleTime: Infinity
     }
+  )
+  const chainTokens = listedTokens?.filter(
+    (token) =>
+      !isNativeToken({ chainId: value.chainId, address: token.address ?? '' })
   )
   const address = value.address.toLowerCase()
   const listed = chainTokens?.some(
@@ -189,12 +199,16 @@ export const TokenPill: FC<Props> = ({
                 autoFocus={custom}
                 className={cx(css.input, css.mono)}
               />
-              <span className={meta ? css.hint : css.error}>
-                {meta
-                  ? `${meta.symbol} · ${meta.decimals} decimals${meta.verified ? '' : ' · unverified'}`
-                  : metaLoading || !value.address
-                    ? 'Looking up token…'
-                    : 'Not found on currencies/v2. Check the chain and address.'}
+              <span
+                className={meta && !isNativeToken(value) ? css.hint : css.error}
+              >
+                {isNativeToken(value)
+                  ? 'Native currencies are not supported. Use the wrapped token, such as WETH.'
+                  : meta
+                    ? `${meta.symbol} · ${meta.decimals} decimals${meta.verified ? '' : ' · unverified'}`
+                    : metaLoading || !value.address
+                      ? 'Looking up token…'
+                      : 'Not found on currencies/v2. Check the chain and address.'}
               </span>
             </>
           )}

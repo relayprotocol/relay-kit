@@ -57,25 +57,26 @@ const OrdersPlayground = () => {
             the VPN-gated orders proxy.
           </p>
         </div>
-        <nav className={css.tabs} role="tablist">
-          {(
-            [
-              ['create', 'Create'],
-              ['orders', 'Orders']
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              role="tab"
-              aria-selected={tab === value}
-              className={cx(css.tab, tab === value && css.tabActive)}
-              onClick={() => setTab(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
       </header>
+
+      <nav className={css.tabs} role="tablist">
+        {(
+          [
+            ['create', 'Create'],
+            ['orders', 'Orders']
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            role="tab"
+            aria-selected={tab === value}
+            className={cx(css.tab, tab === value && css.tabActive)}
+            onClick={() => setTab(value)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
 
       <main className={css.content}>
         <div hidden={tab !== 'create'}>

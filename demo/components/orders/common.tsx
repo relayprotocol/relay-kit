@@ -2,7 +2,7 @@ import { useMemo, type CSSProperties } from 'react'
 import type { Order, OrderStatus } from '@relayprotocol/relay-sdk'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { useTokenList, useTokenPrice } from '@relayprotocol/relay-kit-hooks'
-import { formatUnits } from 'viem'
+import { formatUnits, zeroAddress } from 'viem'
 import css from './orders.module.css'
 
 export const OPEN_STATUSES: OrderStatus[] = [
@@ -27,6 +27,10 @@ export type TokenMeta = {
 
 export const chainIcon = (chainId: number) =>
   `https://assets.relay.link/icons/square/${chainId}/light.png`
+
+/** Orders only take ERC-20 tokens; native currencies must use their wrapped token */
+export const isNativeToken = ({ address }: TokenRef) =>
+  address.toLowerCase() === zeroAddress
 
 export const tokenKey = ({ chainId, address }: TokenRef) =>
   `${chainId}:${address.toLowerCase()}`
