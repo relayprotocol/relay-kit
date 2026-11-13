@@ -1,4 +1,5 @@
 import { NextPage } from 'next'
+import { DemoPage, DemoOutput } from 'components/DemoPage'
 import { MAINNET_RELAY_API } from '@relayprotocol/relay-sdk'
 
 import { useTokenList } from '@relayprotocol/relay-kit-hooks'
@@ -25,31 +26,10 @@ const UseRequests: NextPage = () => {
   })
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: 50,
-        width: '100%',
-        gap: 12,
-        padding: 24,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 150
-      }}
-    >
-      <div
-        style={{
-          marginTop: 20,
-          padding: '10px',
-          background: '#f0f0f0',
-          borderRadius: '8px',
-          marginLeft: '12px',
-          marginRight: '12p',
-          wordBreak: 'break-word'
-        }}
-      >
+    <DemoPage eyebrow="Hook" title="useTokenList">
+      <div className="demo-panel">
         <div>
-          <label>Term: </label>
+          <label>Term</label>
           <input
             type="string"
             placeholder="The search term"
@@ -58,7 +38,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>Address: </label>
+          <label>Address</label>
           <input
             type="string"
             placeholder="User address to search by"
@@ -67,7 +47,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>CurrencyId: </label>
+          <label>CurrencyId</label>
           <input
             type="string"
             placeholder="Search by currency id"
@@ -76,7 +56,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>Tokens: </label>
+          <label>Tokens</label>
           <input
             type="string"
             placeholder="Tokens to search by, delimited by a comma"
@@ -91,7 +71,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>ChainIds: </label>
+          <label>ChainIds</label>
           <input
             type="string"
             placeholder="ChainIds to filter by"
@@ -106,7 +86,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>Verified: </label>
+          <label>Verified</label>
           <input
             type="checkbox"
             placeholder="Return only verified results"
@@ -115,7 +95,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>DefaultList: </label>
+          <label>DefaultList</label>
           <input
             type="checkbox"
             placeholder="Return the default list"
@@ -124,7 +104,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>Limit: </label>
+          <label>Limit</label>
           <input
             type="number"
             placeholder="How many maximum requests per page?"
@@ -132,9 +112,9 @@ const UseRequests: NextPage = () => {
             onChange={(e) => setLimit(+e.target.value)}
           />
         </div>
-        {JSON.stringify(response)}
       </div>
-    </div>
+      {response ? <DemoOutput title="Response" data={response} /> : null}
+    </DemoPage>
   )
 }
 

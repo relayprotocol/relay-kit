@@ -1,7 +1,7 @@
 import { NextPage } from 'next'
 import { useEffect, useMemo, useState } from 'react'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
-import { ConnectButton } from 'components/ConnectButton'
+import { DemoPage, DemoOutput } from 'components/DemoPage'
 import {
   type QuoteBody,
   type AdaptedWallet,
@@ -211,247 +211,133 @@ const FastFillPage: NextPage = () => {
   }, [progress])
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 16,
-        padding: 24,
-        paddingTop: 150,
-        maxWidth: 1000,
-        margin: '0 auto'
-      }}
-    >
-      <ConnectButton />
+    <DemoPage eyebrow="SDK write action" title="Fast Fill">
+      <div className="demo-panel">
+        {adaptedWallet && (
+          <div className="demo-subtitle">
+            Connected wallet VM type: <b>{adaptedWallet.vmType}</b>
+          </div>
+        )}
 
-      {adaptedWallet && (
-        <div
-          style={{
-            width: '100%',
-            padding: '10px',
-            background: '#e0f0ff',
-            borderRadius: '8px',
-            marginBottom: 10
-          }}
-        >
-          <b>Connected Wallet VM Type:</b> {adaptedWallet.vmType}
+        <div>
+          <label>Quote Parameters (JSON)</label>
+          <div className="demo-hint">
+            Note that user/recipient are not required — they are taken from the
+            connected wallet. This demo now supports all wallet types: EVM,
+            Solana (SVM), Bitcoin (BVM), Tron (TVM), and Hyperliquid.
+          </div>
+          <textarea
+            value={quoteParams}
+            onChange={(e) => setQuoteParams(e.target.value)}
+            placeholder='{"originChainId": 1, "destinationChainId": 8453, "originCurrency": "0x0000000000000000000000000000000000000000", "destinationCurrency": "0x0000000000000000000000000000000000000000", "amount": "1000000000000000000", "tradeType": "EXACT_INPUT"}'
+            style={{ minHeight: 150 }}
+          />
         </div>
-      )}
 
-      <div style={{ width: '100%' }}>
-        <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-          Quote Parameters (JSON):
-        </label>
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 200,
-            fontStyle: 'italic',
-            marginBottom: 8,
-            color: '#666'
-          }}
+        <button
+          disabled={!adaptedWallet || loading || !quoteParams.trim()}
+          onClick={handleGetQuote}
         >
-          Note that user/recipient are not required — they are taken from the
-          connected wallet. This demo now supports all wallet types: EVM, Solana
-          (SVM), Bitcoin (BVM), Tron (TVM), and Hyperliquid.
-        </div>
-        <textarea
-          value={quoteParams}
-          onChange={(e) => setQuoteParams(e.target.value)}
-          placeholder='{"originChainId": 1, "destinationChainId": 8453, "originCurrency": "0x0000000000000000000000000000000000000000", "destinationCurrency": "0x0000000000000000000000000000000000000000", "amount": "1000000000000000000", "tradeType": "EXACT_INPUT"}'
-          style={{
-            width: '100%',
-            minHeight: 150,
-            padding: 12,
-            fontFamily: 'monospace',
-            fontSize: 12,
-            border: '1px solid #ccc',
-            borderRadius: 8
-          }}
-        />
-      </div>
+          {loading && !quote ? 'Getting Quote...' : 'Get Quote'}
+        </button>
 
-      <button
-        style={{
-          padding: 16,
-          background: 'blue',
-          color: 'white',
-          fontSize: 16,
-          border: '1px solid #ffffff',
-          borderRadius: 8,
-          fontWeight: 700,
-          cursor: 'pointer',
-          width: '100%'
-        }}
-        disabled={!adaptedWallet || loading || !quoteParams.trim()}
-        onClick={handleGetQuote}
-      >
-        {loading && !quote ? 'Getting Quote...' : 'Get Quote'}
-      </button>
+        {quote && quote.steps && (
+          <div>
+            <label>Quote obtained! Request ID</label>
+            <pre className="demo-output">
+              {quote.steps.find((step) => step.requestId)?.requestId ??
+                'No request ID found'}
+            </pre>
+          </div>
+        )}
 
-      {quote && quote.steps && (
-        <div
-          style={{
-            width: '100%',
-            padding: '10px',
-            background: '#e0ffe0',
-            borderRadius: '8px',
-            marginTop: 10
-          }}
-        >
-          <b>Quote obtained! Request ID:</b>
-          <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 200 }}>
-            {quote.steps.find((step) => step.requestId)?.requestId ?? 'No request ID found'}
-          </pre>
-        </div>
-      )}
-
-      <div style={{ width: '100%' }}>
-        <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-          Authentication Mode:
-        </label>
-        <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+        <div>
+          <label>Authentication Mode</label>
+          <div>
             <input
+              id="fast-fill-auth-password"
               type="radio"
               name="authMode"
               value="password"
               checked={authMode === 'password'}
               onChange={() => setAuthMode('password')}
             />
-            Password (server API key)
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+            <label htmlFor="fast-fill-auth-password">
+              Password (server API key)
+            </label>
+          </div>
+          <div>
             <input
+              id="fast-fill-auth-api-key"
               type="radio"
               name="authMode"
               value="apiKey"
               checked={authMode === 'apiKey'}
               onChange={() => setAuthMode('apiKey')}
             />
-            API Key (direct)
-          </label>
+            <label htmlFor="fast-fill-auth-api-key">API Key (direct)</label>
+          </div>
         </div>
+
         {authMode === 'password' ? (
-          <>
-            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-              Fast Fill Password:
-            </label>
+          <div>
+            <label>Fast Fill Password</label>
             <input
               type="password"
               value={fastFillPassword}
               onChange={(e) => setFastFillPassword(e.target.value)}
               placeholder="Enter fast fill password"
-              style={{
-                width: '100%',
-                padding: 12,
-                fontSize: 14,
-                border: '1px solid #ccc',
-                borderRadius: 8
-              }}
             />
-          </>
+          </div>
         ) : (
-          <>
-            <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-              API Key:
-            </label>
+          <div>
+            <label>API Key</label>
             <input
               type="password"
               value={fastFillApiKey}
               onChange={(e) => setFastFillApiKey(e.target.value)}
               placeholder="Enter your Relay API key"
-              style={{
-                width: '100%',
-                padding: 12,
-                fontSize: 14,
-                border: '1px solid #ccc',
-                borderRadius: 8
-              }}
             />
-          </>
+          </div>
         )}
-      </div>
 
-      <div style={{ width: '100%' }}>
-        <label style={{ display: 'block', marginBottom: 8, fontWeight: 600 }}>
-          Solver Input Currency Amount (Optional):
-        </label>
-        <input
-          type="text"
-          value={solverInputCurrencyAmount}
-          onChange={(e) => setSolverInputCurrencyAmount(e.target.value)}
-          placeholder="Enter solver input currency amount"
-          style={{
-            width: '100%',
-            padding: 12,
-            fontSize: 14,
-            border: '1px solid #ccc',
-            borderRadius: 8
-          }}
-        />
-      </div>
-
-      <button
-        style={{
-          marginTop: 20,
-          padding: 16,
-          background: 'green',
-          color: 'white',
-          fontSize: 16,
-          border: '1px solid #ffffff',
-          borderRadius: 8,
-          fontWeight: 700,
-          cursor: 'pointer',
-          width: '100%'
-        }}
-        disabled={!adaptedWallet || !quote || loading || !(authMode === 'password' ? fastFillPassword : fastFillApiKey).trim()}
-        onClick={handleExecute}
-      >
-        {loading ? 'Executing with Fast Fill...' : 'Execute with Fast Fill'}
-      </button>
-
-      {error && (
-        <div style={{ color: 'red', marginTop: 10, width: '100%' }}>
-          <b>Error:</b> {error}
+        <div>
+          <label>Solver Input Currency Amount (Optional)</label>
+          <input
+            type="text"
+            value={solverInputCurrencyAmount}
+            onChange={(e) => setSolverInputCurrencyAmount(e.target.value)}
+            placeholder="Enter solver input currency amount"
+          />
         </div>
-      )}
+
+        <button
+          disabled={
+            !adaptedWallet ||
+            !quote ||
+            loading ||
+            !(authMode === 'password'
+              ? fastFillPassword
+              : fastFillApiKey
+            ).trim()
+          }
+          onClick={handleExecute}
+        >
+          {loading ? 'Executing with Fast Fill...' : 'Execute with Fast Fill'}
+        </button>
+
+        {error && <div className="demo-error">{error}</div>}
+      </div>
 
       {progress && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: '10px',
-            background: '#f0f0f0',
-            borderRadius: '8px',
-            width: '100%'
-          }}
-        >
-          <b>Progress:</b>
-          <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 300 }}>
-            {progressString}
-          </pre>
-        </div>
+        <section className="demo-panel">
+          <h2>Progress</h2>
+          <pre className="demo-output">{progressString}</pre>
+        </section>
       )}
 
-      {result && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: '10px',
-            background: '#e0ffe0',
-            borderRadius: '8px',
-            width: '100%'
-          }}
-        >
-          <b>Result:</b>
-          <pre style={{ fontSize: 11, overflow: 'auto', maxHeight: 300 }}>
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </div>
-      )}
-    </div>
+      {result && <DemoOutput title="Result" data={result} />}
+    </DemoPage>
   )
 }
 
