@@ -77,6 +77,10 @@
     height: 30px;
   }
 
+  .dark .demo-brand img {
+    filter: brightness(0) invert(1);
+  }
+
   .demo-badge {
     padding: 2px 8px;
     border-radius: 999px;
