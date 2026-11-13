@@ -1,5 +1,13 @@
 # @reservoir0x/relay-sdk
 
+## 8.0.6
+
+### Patch Changes
+
+- 7ff99e9: Signature post and status check endpoints from API responses must stay on the configured `baseApiUrl` origin; executions with an endpoint that resolves to another host now fail. `isRelayApiUrl` compares origins instead of string prefixes, so the API key is only sent to the Relay API.
+- 1d64f9a: Set `checkStatus` to `failure` on a signature step item when the status check reports `failure`, as the refund branch and the transaction and websocket paths already do. Previously the item kept `pending` (or no status) after the step failed.
+- be8501c: Stop signature steps from polling on after the status check reports `failure` or `refund`. A `failure` whose `details` did not contain "Transaction failed" was retried until the polling limit and then surfaced as a generic "Failed to get an ok response" timeout, and a `refund` was never treated as final. `execute` now rejects on the first such status, with the reported `details` for a failure and "Transaction failed: Refunded" (so `refunded` is set) for a refund, matching transaction steps.
+
 ## 8.0.5
 
 ### Patch Changes
