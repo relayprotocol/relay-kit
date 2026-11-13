@@ -1,5 +1,5 @@
 import { useMemo, type CSSProperties } from 'react'
-import type { Order, OrderStatus } from '@relayprotocol/relay-sdk'
+import type { Order, OrderStatus, RelayChain } from '@relayprotocol/relay-sdk'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import { useTokenList, useTokenPrice } from '@relayprotocol/relay-kit-hooks'
 import { formatUnits, zeroAddress } from 'viem'
@@ -34,6 +34,28 @@ export const isNativeToken = ({ address }: TokenRef) =>
 
 export const tokenKey = ({ chainId, address }: TokenRef) =>
   `${chainId}:${address.toLowerCase()}`
+
+/**
+ * ERC-20 currencies the solver holds on a chain, from `/chains` `solverCurrencies`,
+ * as {@link tokenKey}s. Undefined when the chain doesn't list them.
+ */
+export const solverTokenKeys = (
+  chains: RelayChain[] | undefined,
+  chainId: number
+) =>
+  chains
+    ?.find((chain) => chain.id === chainId)
+    ?.solverCurrencies?.flatMap(({ address }) =>
+      address && !isNativeToken({ chainId, address })
+        ? [tokenKey({ chainId, address })]
+        : []
+    )
+
+/** Buy targets and settlement currencies must be held by the solver */
+export const isSolverToken = (
+  chains: RelayChain[] | undefined,
+  token: TokenRef
+) => solverTokenKeys(chains, token.chainId)?.includes(tokenKey(token)) ?? true
 
 const isAddress = (value: string) => /^0x[0-9a-fA-F]{40}$/.test(value)
 

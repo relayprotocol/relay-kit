@@ -5,6 +5,7 @@ import {
   chainIcon,
   cx,
   isNativeToken,
+  solverTokenKeys,
   type TokenMeta,
   type TokenRef
 } from './common'
@@ -16,6 +17,8 @@ type Props = {
   onChange: (token: TokenRef) => void
   meta?: TokenMeta
   metaLoading: boolean
+  /** Only offer the currencies the solver holds */
+  solverOnly?: boolean
 }
 
 export const TokenLogo: FC<{ meta?: TokenMeta; chainId: number }> = ({
@@ -39,23 +42,33 @@ export const TokenPill: FC<Props> = ({
   value,
   onChange,
   meta,
-  metaLoading
+  metaLoading,
+  solverOnly
 }) => {
   const client = useRelayClient()
   const ref = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [custom, setCustom] = useState(false)
   const chains = (client?.chains ?? []).filter(
-    (chain) => chain.vmType === 'evm'
+    (chain) =>
+      chain.vmType === 'evm' &&
+      (!solverOnly || solverTokenKeys(client?.chains, chain.id)?.length !== 0)
   )
+  const solverTokens = solverOnly
+    ? solverTokenKeys(client?.chains, value.chainId)
+    : undefined
   const chainName = (id: number) =>
     chains.find((chain) => chain.id === id)?.displayName ?? `Chain ${id}`
 
   const { data: listedTokens } = useTokenList(
     client?.baseApiUrl,
-    { chainIds: [value.chainId], verified: true, limit: 30 },
+    solverTokens
+      ? { tokens: solverTokens, limit: solverTokens.length }
+      : { chainIds: [value.chainId], verified: true, limit: 30 },
     {
-      enabled: Boolean(client && value.chainId && (open || !value.address)),
+      enabled:
+        Boolean(client && value.chainId && (open || !value.address)) &&
+        solverTokens?.length !== 0,
       staleTime: Infinity
     }
   )
@@ -67,8 +80,8 @@ export const TokenPill: FC<Props> = ({
   const listed = chainTokens?.some(
     (token) => token.address?.toLowerCase() === address
   )
-  const showAddressInput =
-    custom || (Boolean(chainTokens) && Boolean(value.address) && !listed)
+  const unlisted = Boolean(chainTokens) && Boolean(value.address) && !listed
+  const showAddressInput = !solverTokens && (custom || unlisted)
 
   useEffect(() => {
     if (!value.address && !custom && chainTokens?.[0]?.address) {
@@ -176,17 +189,29 @@ export const TokenPill: FC<Props> = ({
               )
             })}
           </div>
-          <button
-            aria-pressed={showAddressInput}
-            className={cx(css.tokenRow, showAddressInput && css.tokenRowActive)}
-            onClick={() => setCustom(true)}
-          >
-            <span className={cx(css.tokenLogo, css.logoFallback)}>+</span>
-            <span className={css.tokenRowText}>
-              <b>Enter address…</b>
-              <span className={css.hint}>Any token on currencies/v2</span>
-            </span>
-          </button>
+          {solverTokens ? (
+            unlisted && (
+              <span className={css.error}>
+                The solver doesn't hold this token on this chain. Pick one from
+                the list.
+              </span>
+            )
+          ) : (
+            <button
+              aria-pressed={showAddressInput}
+              className={cx(
+                css.tokenRow,
+                showAddressInput && css.tokenRowActive
+              )}
+              onClick={() => setCustom(true)}
+            >
+              <span className={cx(css.tokenLogo, css.logoFallback)}>+</span>
+              <span className={css.tokenRowText}>
+                <b>Enter address…</b>
+                <span className={css.hint}>Any token on currencies/v2</span>
+              </span>
+            </button>
+          )}
           {showAddressInput && (
             <>
               <input
