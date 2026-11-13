@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from 'react'
+import { FC, useMemo, useRef, useState } from 'react'
 import type {
   GetOrdersQuery,
   Order,
@@ -89,11 +89,22 @@ export const OrdersList: FC<Props> = ({
     limit
   }
   const waitingForWallet = userFilter === 'mine' && !address
+  const loggedReads = useRef(new Set<string>())
 
   const orders = useInfiniteQuery({
     queryKey: ['orders', client?.baseApiUrl, query],
-    queryFn: ({ pageParam }) =>
-      client!.actions.getOrders({ ...query, continuation: pageParam }),
+    queryFn: async ({ pageParam }) => {
+      const params = { ...query, continuation: pageParam }
+      const key = JSON.stringify(params)
+      if (loggedReads.current.has(key)) return client!.actions.getOrders(params)
+      loggedReads.current.add(key)
+      return (await run(
+        'getOrders',
+        params,
+        () => client!.actions.getOrders(params),
+        { rethrow: true }
+      ))!
+    },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.continuation || undefined,
     enabled: Boolean(client) && !waitingForWallet,
@@ -170,7 +181,10 @@ export const OrdersList: FC<Props> = ({
           </label>
           <button
             className={cx(css.btn, css.btnSmall)}
-            onClick={() => orders.refetch()}
+            onClick={() => {
+              loggedReads.current.clear()
+              orders.refetch()
+            }}
           >
             {orders.isFetching ? 'Refreshing…' : 'Refresh'}
           </button>
