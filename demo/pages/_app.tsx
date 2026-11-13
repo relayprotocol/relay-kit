@@ -298,6 +298,10 @@ const getInitialProps = async ({
       }
     }
 
+    if (isOrdersRoute(ctx.pathname)) {
+      ctx.res.setHeader('Cache-Control', 'private, no-store')
+    }
+
     if (
       isOrdersRoute(ctx.pathname) &&
       (!ctx.req || !isOrdersAccessAllowed(ctx.req))
@@ -339,10 +343,12 @@ const getInitialProps = async ({
       })
 
     // Set cache headers
-    ctx.res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=10, stale-while-revalidate=300'
-    )
+    if (!isOrdersRoute(ctx.pathname)) {
+      ctx.res.setHeader(
+        'Cache-Control',
+        'public, s-maxage=10, stale-while-revalidate=300'
+      )
+    }
 
     return {
       pageProps: {

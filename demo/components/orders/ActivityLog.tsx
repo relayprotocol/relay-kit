@@ -16,7 +16,8 @@ export type LogEntry = {
 export type RunAction = <T>(
   action: string,
   params: unknown,
-  fn: (onProgress: (progress: unknown) => void) => Promise<T>
+  fn: (onProgress: (progress: unknown) => void) => Promise<T>,
+  options?: { rethrow?: boolean }
 ) => Promise<T | undefined>
 
 /** Runs SDK actions and records their parameters, progress, result or error */
@@ -29,7 +30,7 @@ export function useActivityLog() {
       current.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry))
     )
 
-  const run: RunAction = useCallback(async (action, params, fn) => {
+  const run: RunAction = useCallback(async (action, params, fn, options) => {
     const id = nextId.current++
     setEntries((current) => [
       {
@@ -48,6 +49,7 @@ export function useActivityLog() {
     } catch (error) {
       console.error(action, error)
       update(id, { status: 'error', error: errorInfo(error) })
+      if (options?.rethrow) throw error
       return undefined
     }
   }, [])

@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from 'react'
+import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   CreateOrderBody,
   Order,
@@ -118,6 +118,9 @@ export const CreateOrderForm: FC<Props> = ({
   const [maxSubsidizationAmount, setMaxSubsidizationAmount] = useState('')
   const [subsidizationBps, setSubsidizationBps] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const lastSubmit = useRef<
+    { key: string; fields: string; expiresAt: string } | undefined
+  >(undefined)
 
   useEffect(() => setIdempotencyKey(crypto.randomUUID()), [])
 
@@ -218,8 +221,18 @@ export const CreateOrderForm: FC<Props> = ({
   ].filter(Boolean)
 
   const submit = async (withWallet: boolean) => {
-    const order = { ...body, expiresAt: expiresAt() }
     const key = newKeyEachSubmit ? crypto.randomUUID() : idempotencyKey
+    const fields = JSON.stringify({
+      ...body,
+      expiresAt: expiry === 'custom' ? body.expiresAt : expiry
+    })
+    const retry =
+      lastSubmit.current?.key === key && lastSubmit.current.fields === fields
+    const order = {
+      ...body,
+      expiresAt: retry ? lastSubmit.current!.expiresAt : expiresAt()
+    }
+    lastSubmit.current = { key, fields, expiresAt: order.expiresAt }
     setIdempotencyKey(key)
     setSubmitting(true)
     const created = await run(
