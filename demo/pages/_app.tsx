@@ -42,6 +42,19 @@ const resolveRelayProxy = (api: unknown): string => {
     ? `${window.location.origin}${path}`
     : path
 }
+
+// The limit orders pages send every Relay API request through the IP-gated
+// orders proxy (`pages/api/orders/[...path]`) instead.
+const isOrdersRoute = (pathname: string) =>
+  pathname === '/orders' || pathname.startsWith('/orders/')
+
+const resolveOrdersProxy = (api: unknown): string => {
+  const env = api === 'testnets' || api === 'mainnets-dev' ? api : 'mainnets'
+  const path = `/api/orders/${env}`
+  return typeof window !== 'undefined'
+    ? `${window.location.origin}${path}`
+    : path
+}
 import { configureViemChain } from '@relayprotocol/relay-sdk/chain-utils'
 import { ThemeProvider } from 'next-themes'
 import { useRouter } from 'next/router'
@@ -66,6 +79,7 @@ import { CustomizeProvider, useCustomize } from 'context/customizeContext'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
 import { RelayKitProviderWrapper } from 'components/providers/RelayKitProviderWrapper'
 import { Barlow, Chivo, Inter } from 'next/font/google'
+import { isOrdersAccessAllowed } from 'utils/ordersAccess'
 
 export const chivo = Chivo({
   weight: ['700', '800'],
@@ -192,7 +206,11 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
         disableTransitionOnChange
       >
         <RelayKitProviderWrapper
-          relayApi={relayApi}
+          relayApi={
+            isOrdersRoute(router.pathname)
+              ? resolveOrdersProxy(router.query.api)
+              : relayApi
+          }
           dynamicChains={dynamicChains}
         >
           <DynamicContextProvider
@@ -273,6 +291,17 @@ const getInitialProps = async ({
   try {
     // Skip fetching on client-side
     if (!ctx.res) {
+      return {
+        pageProps: {
+          dynamicChains: backupChains
+        }
+      }
+    }
+
+    if (
+      isOrdersRoute(ctx.pathname) &&
+      (!ctx.req || !isOrdersAccessAllowed(ctx.req))
+    ) {
       return {
         pageProps: {
           dynamicChains: backupChains
