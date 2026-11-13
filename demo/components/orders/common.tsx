@@ -1,12 +1,16 @@
 import { useMemo, type CSSProperties } from 'react'
-import type { Order, OrderStatus } from '@relayprotocol/relay-sdk'
+import {
+  adaptViemWallet,
+  type Order,
+  type OrderStatus
+} from '@relayprotocol/relay-sdk'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
 import {
   useRelayChains,
   useTokenList,
   useTokenPrice
 } from '@relayprotocol/relay-kit-hooks'
-import { formatUnits, zeroAddress } from 'viem'
+import { formatUnits, zeroAddress, type WalletClient } from 'viem'
 import css from './orders.module.css'
 
 export const OPEN_STATUSES: OrderStatus[] = [
@@ -121,6 +125,19 @@ export function useUsdPrice(token: TokenRef) {
   )
   const price = Number(data?.price)
   return valid && Number.isFinite(price) && price > 0 ? price : undefined
+}
+
+/**
+ * Switch the wallet to the chain the order's steps run on before executing
+ * them, as the swap widget does before executing a quote
+ */
+export const switchWalletChain = async (
+  wallet: WalletClient,
+  chainId: number
+) => {
+  if ((await wallet.getChainId()) !== chainId) {
+    await adaptViemWallet(wallet).switchChain(chainId)
+  }
 }
 
 /** A plain decimal string (no exponent), as the API expects for prices */

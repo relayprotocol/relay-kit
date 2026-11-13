@@ -19,6 +19,7 @@ import {
   formatNumber,
   isNativeToken,
   isSolverToken,
+  switchWalletChain,
   useSolverChains,
   Json,
   toDecimalString,
@@ -226,13 +227,15 @@ export const CreateOrderForm: FC<Props> = ({
     const created = await run(
       'createOrder',
       { order, idempotencyKey: key, wallet: 'connected wallet' },
-      (onProgress) =>
-        client!.actions.createOrder({
+      async (onProgress) => {
+        await switchWalletChain(wallet!, spent.chainId)
+        return client!.actions.createOrder({
           order,
           idempotencyKey: key,
           wallet,
           onProgress
         })
+      }
     )
     setSubmitting(false)
     onOrder(created)

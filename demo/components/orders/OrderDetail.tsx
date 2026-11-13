@@ -14,6 +14,7 @@ import {
   Json,
   orderTokens,
   spentMeta,
+  switchWalletChain,
   tokenKey,
   unfillableReason,
   useTokensMeta
@@ -84,8 +85,14 @@ export const OrderDetail: FC<Props> = ({
         await run(
           `executeOrder (${incomplete.map((step) => step.id).join(', ')})`,
           { orderId: order.id, steps: incomplete.map((step) => step.id) },
-          (onProgress) =>
-            client!.actions.executeOrder({ order, wallet: wallet!, onProgress })
+          async (onProgress) => {
+            await switchWalletChain(wallet!, order.originChainId)
+            return client!.actions.executeOrder({
+              order,
+              wallet: wallet!,
+              onProgress
+            })
+          }
         )
       )
     )
@@ -95,15 +102,18 @@ export const OrderDetail: FC<Props> = ({
       const updated = await run(
         mode === 'soft' ? 'cancelOrder (soft)' : 'cancelOrder (onchain)',
         { orderId: order.id, onchain: mode === 'onchain' || undefined },
-        (onProgress) =>
-          mode === 'soft'
-            ? client!.actions.cancelOrder({ orderId: order.id })
-            : client!.actions.cancelOrder({
-                orderId: order.id,
-                onchain: true,
-                wallet,
-                onProgress
-              })
+        async (onProgress) => {
+          if (mode === 'soft') {
+            return client!.actions.cancelOrder({ orderId: order.id })
+          }
+          await switchWalletChain(wallet!, order.originChainId)
+          return client!.actions.cancelOrder({
+            orderId: order.id,
+            onchain: true,
+            wallet,
+            onProgress
+          })
+        }
       )
       setCancelMode(undefined)
       onOrder(updated)
@@ -117,11 +127,8 @@ export const OrderDetail: FC<Props> = ({
         { orderId: order.id, typedData: sign },
         async () => {
           if (!wallet?.account) throw new Error('Connect a wallet')
-          if (
-            sign?.domain?.chainId &&
-            wallet.chain?.id !== Number(sign.domain.chainId)
-          ) {
-            await wallet.switchChain({ id: Number(sign.domain.chainId) })
+          if (sign?.domain?.chainId) {
+            await switchWalletChain(wallet, Number(sign.domain.chainId))
           }
           const signature = await wallet.signTypedData({
             account: wallet.account,
