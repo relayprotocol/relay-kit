@@ -9,7 +9,6 @@ import {
   useUserWallets,
   Wallet
 } from '@dynamic-labs/sdk-react-core'
-import { useTheme } from 'next-themes'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AdaptedWallet,
@@ -28,7 +27,6 @@ import { Token } from '@relayprotocol/relay-kit-ui'
 const ChainWidgetPage: NextPage = () => {
   const { setShowAuthFlow, primaryWallet } = useDynamicContext()
   const { setShowLinkNewWalletModal } = useDynamicModals()
-  const { theme } = useTheme()
   const [toToken, setToToken] = useState<Token | undefined>({
     chainId: 8453,
     address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
@@ -120,20 +118,8 @@ const ChainWidgetPage: NextPage = () => {
   }, [primaryWallet, primaryWallet?.address])
 
   return (
-    <Layout
-      styles={{
-        background: theme === 'light' ? 'rgba(245, 242, 255, 1)' : '#1c172b'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingTop: 50,
-          paddingInline: '10px'
-        }}
-      >
+    <Layout>
+      <div className="demo-widget-stage">
         <SwapWidget
           lockChainId={8453}
           wallet={wallet}

@@ -268,9 +268,9 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
     [updateThemeValue]
   )
 
-  const sidebarBg = isDark ? '#111' : '#fff'
-  const sidebarBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'
-  const sidebarText = isDark ? '#e5e5e5' : '#1a1a1a'
+  const sidebarBg = 'var(--relay-colors-widget-background)'
+  const sidebarBorder = 'var(--relay-colors-gray5)'
+  const sidebarText = 'var(--relay-colors-gray12)'
 
   return (
     <>
@@ -285,7 +285,7 @@ export const CustomizeSidebar: FC<CustomizeSidebarProps> = ({
             top: '50%',
             transform: 'translateY(-50%)',
             zIndex: 1000,
-            background: isDark ? '#222' : '#fff',
+            background: sidebarBg,
             border: `1px solid ${sidebarBorder}`,
             borderLeft: open ? 'none' : `1px solid ${sidebarBorder}`,
             borderRadius: '0 8px 8px 0',

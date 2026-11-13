@@ -1,4 +1,5 @@
 import { NextPage } from 'next'
+import { DemoPage, DemoOutput } from 'components/DemoPage'
 
 import { useRequests } from '@relayprotocol/relay-kit-hooks'
 import { useState } from 'react'
@@ -25,31 +26,10 @@ const UseRequests: NextPage = () => {
   )
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        height: 50,
-        width: '100%',
-        gap: 12,
-        padding: 24,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 150
-      }}
-    >
-      <div
-        style={{
-          marginTop: 20,
-          padding: '10px',
-          background: '#f0f0f0',
-          borderRadius: '8px',
-          marginLeft: '12px',
-          marginRight: '12p',
-          wordBreak: 'break-word'
-        }}
-      >
+    <DemoPage eyebrow="Hook" title="useRequests">
+      <div className="demo-panel">
         <div>
-          <label>Origin Chain Id: </label>
+          <label>Origin Chain Id</label>
           <input
             type="number"
             placeholder="Which origin chain?"
@@ -58,7 +38,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>Destination Chain Id: </label>
+          <label>Destination Chain Id</label>
           <input
             type="number"
             placeholder="Which destination chain?"
@@ -67,7 +47,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>Limit: </label>
+          <label>Limit</label>
           <input
             type="number"
             placeholder="How many maximum requests per page?"
@@ -76,7 +56,7 @@ const UseRequests: NextPage = () => {
           />
         </div>
         <div>
-          <label>User: </label>
+          <label>User</label>
           <input
             type="string"
             placeholder="User address?"
@@ -84,9 +64,9 @@ const UseRequests: NextPage = () => {
             onChange={(e) => setUser(e.target.value)}
           />
         </div>
-        {JSON.stringify(response)}
       </div>
-    </div>
+      {response ? <DemoOutput title="Response" data={response} /> : null}
+    </DemoPage>
   )
 }
 
