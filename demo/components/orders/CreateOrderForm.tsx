@@ -215,8 +215,13 @@ export const CreateOrderForm: FC<Props> = ({
     ...(clientOrderId ? { clientOrderId } : {})
   }
 
-  const submit = async () => {
-    const key = newKeyEachSubmit ? crypto.randomUUID() : idempotencyKey
+  const submit = async (resubmit = false) => {
+    const key =
+      resubmit && lastSubmit.current
+        ? lastSubmit.current.key
+        : newKeyEachSubmit
+          ? crypto.randomUUID()
+          : idempotencyKey
     const fields = JSON.stringify({
       ...body,
       expiresAt: expiry === 'custom' ? body.expiresAt : expiry
@@ -278,7 +283,7 @@ export const CreateOrderForm: FC<Props> = ({
 
   const retry = () => {
     const order = modal?.order
-    if (!order) return submit()
+    if (!order) return submit(true)
     setModal({ status: 'running', order, steps: modal.steps })
     track(
       `executeOrder (${order.id})`,
