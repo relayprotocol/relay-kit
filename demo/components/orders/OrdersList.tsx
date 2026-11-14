@@ -11,41 +11,91 @@ import {
   ALL_STATUSES,
   Badge,
   cx,
-  distanceToTarget,
   fillProgress,
-  formatBaseUnits,
-  formatDistance,
   formatNumber,
+  formatTimeLeft,
   OPEN_STATUSES,
+  orderSides,
   orderTokens,
-  shortHex,
-  spentMeta,
-  tokenKey,
+  statusLabel,
   unfillableReason,
-  useTokensMeta
+  useTokensMeta,
+  useUsdPrice,
+  type TokenMeta
 } from './common'
+import { TokenLogo } from './TokenPill'
 import css from './orders.module.css'
 
 type Tab = 'open' | 'history' | 'custom'
 
 type Props = {
   address?: string
-  selectedId?: string
   onSelect: (order: Order) => void
   run: RunAction
-  onChanged: () => void
+}
+
+const TITLES: Record<Tab, [string, string]> = {
+  open: ['Open orders', 'open order'],
+  history: ['Order history', 'closed order'],
+  custom: ['Orders by status', 'order']
+}
+
+const OrderRow: FC<{
+  order: Order
+  meta: Record<string, TokenMeta>
+  onSelect: (order: Order) => void
+}> = ({ order, meta, onSelect }) => {
+  const settlementUsd = useUsdPrice(orderTokens(order)[1])
+  const { pay, receive, valueUsd } = orderSides(order, meta, settlementUsd)
+  const warning = unfillableReason(order)
+  const progress = fillProgress(order)
+  const timeLeft = formatTimeLeft(order.expiresAt)
+  const subtitle =
+    order.status === 'closed'
+      ? `${order.outcome ? order.outcome[0].toUpperCase() + order.outcome.slice(1) : 'Closed'} · ${new Date(order.closedAt ?? order.updatedAt).toLocaleDateString()}`
+      : order.status === 'open'
+        ? timeLeft
+          ? `Expires in ${timeLeft}`
+          : 'Expired'
+        : statusLabel(order)
+  return (
+    <button
+      aria-label={`Order ${order.id}`}
+      onClick={() => onSelect(order)}
+      className={css.orderRow}
+    >
+      <TokenLogo meta={pay.meta} chainId={pay.token.chainId} />
+      <span className={css.orderRowMain}>
+        <b>
+          {pay.amount !== undefined ? formatNumber(pay.amount, 4) : '?'}{' '}
+          {pay.meta?.symbol} → {receive.meta?.symbol}
+        </b>
+        <span className={css.hint}>
+          {subtitle}
+          {progress > 0 && ` · ${progress}% filled`}
+          {warning && (
+            <>
+              {' '}
+              <Badge value={warning.replace(/_/g, ' ')} tone="warning" />
+            </>
+          )}
+        </span>
+      </span>
+      <span className={css.orderRowSide}>
+        <b>{valueUsd !== undefined ? `$${formatNumber(valueUsd, 4)}` : '—'}</b>
+        <span className={css.hint}>
+          {order.side === 'sell' ? 'Sell' : 'Buy'} at $
+          {formatNumber(Number(order.targetPrice))}
+        </span>
+      </span>
+    </button>
+  )
 }
 
 const toUnix = (value: string) =>
   value ? Math.floor(new Date(value).getTime() / 1000) : undefined
 
-export const OrdersList: FC<Props> = ({
-  address,
-  selectedId,
-  onSelect,
-  run,
-  onChanged
-}) => {
+export const OrdersList: FC<Props> = ({ address, onSelect, run }) => {
   const client = useRelayClient()
   const [tab, setTab] = useState<Tab>('open')
   const [statuses, setStatuses] = useState<OrderStatus[]>(ALL_STATUSES)
@@ -60,10 +110,7 @@ export const OrdersList: FC<Props> = ({
   const [sortBy, setSortBy] = useState<'createdAt' | 'updatedAt'>('createdAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [limit, setLimit] = useState(20)
-  const [autoRefresh, setAutoRefresh] = useState(true)
   const [lookupId, setLookupId] = useState('')
-  const [checked, setChecked] = useState<string[]>([])
-  const [bulkCancelling, setBulkCancelling] = useState(false)
 
   const query: GetOrdersQuery = {
     user:
@@ -108,7 +155,7 @@ export const OrdersList: FC<Props> = ({
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.continuation || undefined,
     enabled: Boolean(client) && !waitingForWallet,
-    refetchInterval: autoRefresh ? 5000 : false,
+    refetchInterval: 5000,
     retry: false
   })
 
@@ -118,10 +165,6 @@ export const OrdersList: FC<Props> = ({
   )
   const tokens = useMemo(() => list.flatMap(orderTokens), [list])
   const { meta } = useTokensMeta(tokens)
-  const chainName = (id: number) =>
-    client?.chains.find((chain) => chain.id === id)?.displayName ?? id
-  const symbol = (chainId: number, address: string) =>
-    meta[tokenKey({ chainId, address })]?.symbol ?? shortHex(address, 4)
 
   const lookup = async () => {
     const id = lookupId.trim()
@@ -136,23 +179,19 @@ export const OrdersList: FC<Props> = ({
     if (result?.orders[0]) onSelect(result.orders[0])
   }
 
-  const cancelChecked = async () => {
-    setBulkCancelling(true)
-    for (const orderId of checked) {
-      await run('cancelOrder (soft)', { orderId }, () =>
-        client!.actions.cancelOrder({ orderId })
-      )
-    }
-    setBulkCancelling(false)
-    setChecked([])
-    onChanged()
-  }
-
   const errorMessage = (orders.error as any)?.message
 
   return (
-    <section className={css.panel}>
+    <section className={cx(css.panel, css.ordersPanel)}>
       <div className={css.panelHeader}>
+        <div>
+          <h2 className={css.panelTitle}>{TITLES[tab][0]}</h2>
+          <span className={css.hint}>
+            {waitingForWallet
+              ? 'Connect a wallet'
+              : `${list.length}${orders.hasNextPage ? '+' : ''} ${TITLES[tab][1]}${list.length === 1 ? '' : 's'}`}
+          </span>
+        </div>
         <div className={css.segmented}>
           {(
             [
@@ -170,180 +209,138 @@ export const OrdersList: FC<Props> = ({
             </button>
           ))}
         </div>
-        <div className={css.row}>
-          <label className={cx(css.row, css.hint)}>
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
-            Auto-refresh
-          </label>
-          <button
-            className={cx(css.btn, css.btnSmall)}
-            onClick={() => {
-              loggedReads.current.clear()
-              orders.refetch()
-            }}
-          >
-            {orders.isFetching ? 'Refreshing…' : 'Refresh'}
-          </button>
-        </div>
       </div>
 
-      <div className={css.toolbar}>
-        {tab === 'custom' && (
-          <div className={css.row}>
-            {ALL_STATUSES.map((status) => (
-              <button
-                key={status}
-                className={cx(
-                  css.chip,
-                  statuses.includes(status) && css.chipActive
-                )}
-                onClick={() =>
-                  setStatuses(
-                    statuses.includes(status)
-                      ? statuses.filter((s) => s !== status)
-                      : [...statuses, status]
-                  )
-                }
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        )}
+      {tab === 'custom' && (
         <div className={css.row}>
-          {(['mine', 'all', 'custom'] as const).map((value) => (
+          {ALL_STATUSES.map((status) => (
             <button
-              key={value}
-              className={cx(css.chip, userFilter === value && css.chipActive)}
-              onClick={() => setUserFilter(value)}
+              key={status}
+              className={cx(
+                css.chip,
+                statuses.includes(status) && css.chipActive
+              )}
+              onClick={() =>
+                setStatuses(
+                  statuses.includes(status)
+                    ? statuses.filter((s) => s !== status)
+                    : [...statuses, status]
+                )
+              }
             >
-              {value === 'mine'
-                ? 'My wallet'
-                : value === 'all'
-                  ? 'All app orders'
-                  : 'Other address'}
+              {status}
             </button>
           ))}
-          {userFilter === 'custom' && (
-            <input
-              value={customUser}
-              onChange={(e) => setCustomUser(e.target.value.trim())}
-              placeholder="0x… user"
-              className={cx(css.input, css.mono, css.grow)}
-            />
-          )}
-        </div>
-        <details className={css.collapsible}>
-          <summary className={css.hint}>More filters</summary>
-          <div className={css.collapsibleBody}>
-            <div className={css.row}>
-              <input
-                value={originChainId}
-                onChange={(e) => setOriginChainId(e.target.value)}
-                placeholder="Origin chain id"
-                className={cx(css.input, css.grow)}
-              />
-              <input
-                value={destinationChainId}
-                onChange={(e) => setDestinationChainId(e.target.value)}
-                placeholder="Destination chain id"
-                className={cx(css.input, css.grow)}
-              />
-            </div>
-            <div className={css.row}>
-              <label className={cx(css.row, css.hint, css.grow)}>
-                From
-                <input
-                  type="datetime-local"
-                  value={start}
-                  onChange={(e) => setStart(e.target.value)}
-                  className={cx(css.input, css.grow)}
-                />
-              </label>
-              <label className={cx(css.row, css.hint, css.grow)}>
-                To
-                <input
-                  type="datetime-local"
-                  value={end}
-                  onChange={(e) => setEnd(e.target.value)}
-                  className={cx(css.input, css.grow)}
-                />
-              </label>
-            </div>
-            <div className={css.row}>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className={css.select}
-              >
-                <option value="createdAt">Sort by created</option>
-                <option value="updatedAt">Sort by updated</option>
-              </select>
-              <select
-                value={sortDirection}
-                onChange={(e) => setSortDirection(e.target.value as any)}
-                className={css.select}
-              >
-                <option value="desc">Newest first</option>
-                <option value="asc">Oldest first</option>
-              </select>
-              <label className={cx(css.row, css.hint)}>
-                Page size
-                <input
-                  type="number"
-                  aria-label="Page size"
-                  min={1}
-                  max={50}
-                  value={limit}
-                  onChange={(e) =>
-                    setLimit(
-                      Math.min(50, Math.max(1, Number(e.target.value) || 20))
-                    )
-                  }
-                  className={css.input}
-                  style={{ width: 64 }}
-                />
-              </label>
-            </div>
-            <div className={css.row}>
-              <input
-                value={lookupId}
-                onChange={(e) => setLookupId(e.target.value)}
-                placeholder="Order id"
-                className={cx(css.input, css.mono, css.grow)}
-              />
-              <button className={cx(css.btn, css.btnSmall)} onClick={lookup}>
-                Look up
-              </button>
-            </div>
-          </div>
-        </details>
-      </div>
-
-      {checked.length > 0 && (
-        <div className={cx(css.spread, css.callout)}>
-          <span>{checked.length} selected</span>
-          <div className={css.row}>
-            <button
-              className={cx(css.btn, css.btnSmall)}
-              onClick={() => setChecked([])}
-            >
-              Clear
-            </button>
-            <button
-              className={cx(css.btn, css.btnSmall, css.btnDangerSolid)}
-              disabled={bulkCancelling}
-              onClick={cancelChecked}
-            >
-              {bulkCancelling ? 'Cancelling…' : 'Soft cancel selected'}
-            </button>
-          </div>
         </div>
       )}
+      <details className={css.collapsible}>
+        <summary className={css.hint}>Filters</summary>
+        <div className={css.collapsibleBody}>
+          <div className={css.row}>
+            {(['mine', 'all', 'custom'] as const).map((value) => (
+              <button
+                key={value}
+                className={cx(css.chip, userFilter === value && css.chipActive)}
+                onClick={() => setUserFilter(value)}
+              >
+                {value === 'mine'
+                  ? 'My wallet'
+                  : value === 'all'
+                    ? 'All app orders'
+                    : 'Other address'}
+              </button>
+            ))}
+            {userFilter === 'custom' && (
+              <input
+                value={customUser}
+                onChange={(e) => setCustomUser(e.target.value.trim())}
+                placeholder="0x… user"
+                className={cx(css.input, css.mono, css.grow)}
+              />
+            )}
+          </div>
+          <div className={css.row}>
+            <input
+              value={originChainId}
+              onChange={(e) => setOriginChainId(e.target.value)}
+              placeholder="Origin chain id"
+              className={cx(css.input, css.grow)}
+            />
+            <input
+              value={destinationChainId}
+              onChange={(e) => setDestinationChainId(e.target.value)}
+              placeholder="Destination chain id"
+              className={cx(css.input, css.grow)}
+            />
+          </div>
+          <div className={css.row}>
+            <label className={cx(css.row, css.hint, css.grow)}>
+              From
+              <input
+                type="datetime-local"
+                value={start}
+                onChange={(e) => setStart(e.target.value)}
+                className={cx(css.input, css.grow)}
+              />
+            </label>
+            <label className={cx(css.row, css.hint, css.grow)}>
+              To
+              <input
+                type="datetime-local"
+                value={end}
+                onChange={(e) => setEnd(e.target.value)}
+                className={cx(css.input, css.grow)}
+              />
+            </label>
+          </div>
+          <div className={css.row}>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className={css.select}
+            >
+              <option value="createdAt">Sort by created</option>
+              <option value="updatedAt">Sort by updated</option>
+            </select>
+            <select
+              value={sortDirection}
+              onChange={(e) => setSortDirection(e.target.value as any)}
+              className={css.select}
+            >
+              <option value="desc">Newest first</option>
+              <option value="asc">Oldest first</option>
+            </select>
+            <label className={cx(css.row, css.hint)}>
+              Page size
+              <input
+                type="number"
+                aria-label="Page size"
+                min={1}
+                max={50}
+                value={limit}
+                onChange={(e) =>
+                  setLimit(
+                    Math.min(50, Math.max(1, Number(e.target.value) || 20))
+                  )
+                }
+                className={css.input}
+                style={{ width: 64 }}
+              />
+            </label>
+          </div>
+          <div className={css.row}>
+            <input
+              value={lookupId}
+              onChange={(e) => setLookupId(e.target.value)}
+              placeholder="Order id"
+              className={cx(css.input, css.mono, css.grow)}
+            />
+            <button className={cx(css.btn, css.btnSmall)} onClick={lookup}>
+              Look up
+            </button>
+          </div>
+        </div>
+      </details>
 
       {errorMessage && (
         <span className={css.error}>
@@ -352,7 +349,7 @@ export const OrdersList: FC<Props> = ({
         </span>
       )}
 
-      <div className={css.list}>
+      <div className={css.orderList}>
         {waitingForWallet && (
           <div className={css.empty}>
             Connect a wallet to see your orders, or pick another filter.
@@ -361,90 +358,14 @@ export const OrdersList: FC<Props> = ({
         {!waitingForWallet && !orders.isFetching && list.length === 0 && (
           <div className={css.empty}>No orders match these filters.</div>
         )}
-        {list.map((order) => {
-          const warning = unfillableReason(order)
-          const progress = fillProgress(order)
-          const closed = order.status === 'closed'
-          const crossChain = order.targetChainId !== order.settlementChainId
-          return (
-            <div
-              key={order.id}
-              role="button"
-              aria-label={`Order ${order.id}`}
-              onClick={() => onSelect(order)}
-              className={cx(
-                css.listItem,
-                order.id === selectedId && css.listItemActive
-              )}
-            >
-              <input
-                type="checkbox"
-                aria-label={`Select order ${order.id}`}
-                disabled={closed}
-                checked={checked.includes(order.id)}
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) =>
-                  setChecked(
-                    e.target.checked
-                      ? [...checked, order.id]
-                      : checked.filter((id) => id !== order.id)
-                  )
-                }
-              />
-              <div className={css.listMain}>
-                <div className={css.row}>
-                  {order.side === 'sell' ? (
-                    <span>
-                      <b>Sell</b>{' '}
-                      {formatBaseUnits(order.amount, spentMeta(order, meta))}{' '}
-                      <span className={css.hint}>for</span>{' '}
-                      {symbol(
-                        order.settlementChainId,
-                        order.settlementCurrency
-                      )}
-                    </span>
-                  ) : (
-                    <span>
-                      <b>Buy</b>{' '}
-                      {symbol(order.targetChainId, order.targetCurrency)}{' '}
-                      <span className={css.hint}>with</span>{' '}
-                      {formatBaseUnits(order.amount, spentMeta(order, meta))}
-                    </span>
-                  )}
-                  <span className={css.hint}>
-                    at ${formatNumber(Number(order.targetPrice))}
-                  </span>
-                </div>
-                <span className={css.hint}>
-                  <code>{shortHex(order.id, 4)}</code> ·{' '}
-                  {new Date(order.createdAt).toLocaleString()}
-                  {crossChain &&
-                    ` · ${chainName(order.targetChainId)} → ${chainName(order.settlementChainId)}`}
-                  {!closed &&
-                    formatDistance(distanceToTarget(order)) &&
-                    ` · ${formatDistance(distanceToTarget(order))}`}
-                </span>
-              </div>
-              <div className={css.listSide}>
-                <div className={css.row} style={{ gap: 4 }}>
-                  {warning && <Badge value={warning} tone="warning" />}
-                  <Badge value={order.outcome ?? order.status} />
-                </div>
-                {progress > 0 && (
-                  <div className={css.row} style={{ gap: 6 }}>
-                    <div className={css.progress}>
-                      <div
-                        className={css.progressBar}
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    <span className={css.hint}>{progress}%</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        })}
+        {list.map((order) => (
+          <OrderRow
+            key={order.id}
+            order={order}
+            meta={meta}
+            onSelect={onSelect}
+          />
+        ))}
       </div>
       {orders.hasNextPage && (
         <button

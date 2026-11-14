@@ -1,7 +1,7 @@
-import { FC, ReactNode, useEffect, useRef } from 'react'
+import { FC, ReactNode } from 'react'
 import type { Order, OrderProgressData } from '@relayprotocol/relay-sdk'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
-import { Badge, cx, shortHex, type ErrorInfo } from './common'
+import { Badge, cx, Modal, shortHex, type ErrorInfo } from './common'
 import css from './orders.module.css'
 
 export type OrderModalState = {
@@ -54,12 +54,6 @@ export const OrderModal: FC<{
   onClose: () => void
 }> = ({ state, summary, onRetry, onViewOrder, onClose }) => {
   const client = useRelayClient()
-  const dialog = useRef<HTMLDialogElement>(null)
-
-  useEffect(() => {
-    if (state && !dialog.current?.open) dialog.current?.showModal()
-    if (!state && dialog.current?.open) dialog.current.close()
-  }, [state])
 
   const txLinks = (step: Step) =>
     step.items.flatMap((item) =>
@@ -121,14 +115,10 @@ export const OrderModal: FC<{
   )
 
   return (
-    <dialog
-      ref={dialog}
-      className={css.modal}
-      aria-label="Place order"
-      onCancel={(event) => {
-        event.preventDefault()
-        if (state?.status !== 'running') onClose()
-      }}
+    <Modal
+      open={Boolean(state)}
+      label="Place order"
+      onClose={state?.status === 'running' ? undefined : onClose}
     >
       {state?.status === 'running' && (
         <>
@@ -203,6 +193,6 @@ export const OrderModal: FC<{
           )}
         </>
       )}
-    </dialog>
+    </Modal>
   )
 }
