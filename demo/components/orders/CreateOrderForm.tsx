@@ -46,6 +46,12 @@ type ExpiryPreset = keyof typeof EXPIRY_PRESETS | 'custom'
 
 const PRICE_STEPS = [0.01, 0.05, 0.1]
 
+const formatPercent = (value: number) => {
+  const rounded =
+    Math.abs(value) >= 10 ? Math.round(value) : Math.round(value * 10) / 10
+  return `${rounded > 0 ? '+' : rounded < 0 ? '−' : ''}${Math.abs(rounded)}%`
+}
+
 const SPONSORED_COMPONENTS: OrderSponsoredFeeComponent[] = [
   'execution',
   'swap',
@@ -353,6 +359,12 @@ export const CreateOrderForm: FC<Props> = ({
     BigInt(amountBase) > balance
   const presetPrice = (step: number) =>
     targetUsd ? toDecimalString(targetUsd * (1 + direction * step)) : ''
+  const customVsMarket =
+    vsMarket !== undefined &&
+    price !== toDecimalString(targetUsd!) &&
+    !PRICE_STEPS.some((step) => price === presetPrice(step))
+      ? vsMarket
+      : undefined
 
   const cta = submitting
     ? 'Placing order…'
@@ -386,17 +398,6 @@ export const CreateOrderForm: FC<Props> = ({
               <b className={css.cardToken}>{targetSymbol}</b> is worth
               {side === 'sell' ? ' at least' : ' at most'}
             </span>
-            {vsMarket !== undefined && (
-              <span
-                className={cx(
-                  css.delta,
-                  vsMarket * direction < 0 && css.deltaWarn
-                )}
-              >
-                {vsMarket >= 0 ? '+' : ''}
-                {vsMarket.toFixed(2)}% vs market
-              </span>
-            )}
           </div>
           <div className={css.amountRow}>
             <span className={css.currency}>$</span>
@@ -411,18 +412,52 @@ export const CreateOrderForm: FC<Props> = ({
             <span className={css.unit}>USD</span>
           </div>
           <div className={css.row}>
-            <button
-              className={cx(
-                css.chip,
-                targetUsd !== undefined &&
-                  price === toDecimalString(targetUsd) &&
-                  css.chipActive
-              )}
-              disabled={!targetUsd}
-              onClick={() => targetUsd && setPrice(toDecimalString(targetUsd))}
-            >
-              Market
-            </button>
+            {customVsMarket !== undefined ? (
+              <span className={css.chipGroup}>
+                <span
+                  className={cx(
+                    css.chip,
+                    css.chipActive,
+                    customVsMarket * direction < 0 && css.chipWarn
+                  )}
+                  title={
+                    customVsMarket * direction < 0
+                      ? 'Past the market price: the order can fill right away'
+                      : 'Compared with the market price'
+                  }
+                >
+                  {formatPercent(customVsMarket)}
+                </span>
+                <button
+                  className={cx(
+                    css.chip,
+                    css.chipActive,
+                    customVsMarket * direction < 0 && css.chipWarn
+                  )}
+                  aria-label="Reset to market price"
+                  onClick={() =>
+                    targetUsd && setPrice(toDecimalString(targetUsd))
+                  }
+                >
+                  ✕
+                </button>
+              </span>
+            ) : (
+              <button
+                className={cx(
+                  css.chip,
+                  targetUsd !== undefined &&
+                    price === toDecimalString(targetUsd) &&
+                    css.chipActive
+                )}
+                disabled={!targetUsd}
+                onClick={() =>
+                  targetUsd && setPrice(toDecimalString(targetUsd))
+                }
+              >
+                Market
+              </button>
+            )}
             {PRICE_STEPS.map((step) => (
               <button
                 key={step}
