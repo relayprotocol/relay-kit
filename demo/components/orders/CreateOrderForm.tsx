@@ -64,7 +64,7 @@ type Props = {
   address?: string
   run: RunAction
   onOrder: (order?: Order) => void
-  onViewOrder: () => void
+  onViewOrder: (order: Order) => void
   draft?: OrderDraft
 }
 
@@ -806,7 +806,7 @@ export const CreateOrderForm: FC<Props> = ({
         onRetry={retry}
         onViewOrder={() => {
           setModal(undefined)
-          onViewOrder()
+          if (modal?.order) onViewOrder(modal.order)
         }}
         onClose={() => {
           if (modal?.status === 'success') setAmount('')

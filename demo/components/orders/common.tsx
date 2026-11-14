@@ -1,4 +1,11 @@
-import { useMemo, type CSSProperties } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type FC,
+  type ReactNode
+} from 'react'
 import {
   adaptViemWallet,
   type Order,
@@ -259,6 +266,105 @@ export const unfillableReason = (order: Order) =>
         UNFILLABLE_REASONS.includes(order.latestCheck?.reason ?? '')
       ? order.latestCheck!.reason!
       : undefined
+
+/** Time left until `iso`, such as "6d 23h 59m" */
+export const formatTimeLeft = (iso: string) => {
+  const minutes = Math.floor((new Date(iso).getTime() - Date.now()) / 60000)
+  if (minutes <= 0) return undefined
+  const days = Math.floor(minutes / 1440)
+  const hours = Math.floor((minutes % 1440) / 60)
+  return [
+    days && `${days}d`,
+    (days || hours) && `${hours}h`,
+    `${minutes % 60}m`
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Awaiting signature',
+  open: 'Limit open',
+  processing: 'Filling',
+  requires_action: 'Needs action'
+}
+
+export const statusLabel = (order: Order) =>
+  order.status === 'closed'
+    ? `Limit ${order.outcome ?? 'closed'}`
+    : STATUS_LABELS[order.status]
+
+/**
+ * What the order spends and what it receives at its target price, with the
+ * order's USD value. Settlement amounts need the settlement token's USD price.
+ */
+export const orderSides = (
+  order: Order,
+  meta: Record<string, TokenMeta>,
+  settlementUsd?: number
+) => {
+  const [target, settlement] = orderTokens(order)
+  const sell = order.side === 'sell'
+  const pay = sell ? target : settlement
+  const receive = sell ? settlement : target
+  const payMeta = meta[tokenKey(pay)]
+  const price = Number(order.targetPrice)
+  const payAmount =
+    payMeta?.decimals !== undefined
+      ? Number(formatUnits(BigInt(order.amount), payMeta.decimals))
+      : undefined
+  const valueUsd =
+    payAmount === undefined
+      ? undefined
+      : sell
+        ? payAmount * price
+        : settlementUsd && payAmount * settlementUsd
+  const receiveAmount =
+    valueUsd === undefined
+      ? undefined
+      : sell
+        ? settlementUsd && valueUsd / settlementUsd
+        : valueUsd / price
+  return {
+    pay: { token: pay, meta: payMeta, amount: payAmount },
+    receive: {
+      token: receive,
+      meta: meta[tokenKey(receive)],
+      amount: receiveAmount || undefined
+    },
+    valueUsd: valueUsd || undefined
+  }
+}
+
+/** A native dialog; without `onClose` it can't be dismissed */
+export const Modal: FC<{
+  open: boolean
+  label: string
+  onClose?: () => void
+  children: ReactNode
+}> = ({ open, label, onClose, children }) => {
+  const dialog = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    if (open && !dialog.current?.open) dialog.current?.showModal()
+    if (!open && dialog.current?.open) dialog.current.close()
+  }, [open])
+  return (
+    <dialog
+      ref={dialog}
+      className={css.modal}
+      aria-label={label}
+      onCancel={(event) => {
+        event.preventDefault()
+        onClose?.()
+      }}
+      onClick={(event) => {
+        if (event.target === dialog.current) onClose?.()
+      }}
+    >
+      {open && children}
+    </dialog>
+  )
+}
 
 export const formatDistance = (distance?: number) =>
   distance === undefined

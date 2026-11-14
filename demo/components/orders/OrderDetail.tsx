@@ -11,14 +11,19 @@ import {
   formatBaseUnits,
   formatDistance,
   formatNumber,
+  formatTimeLeft,
   Json,
+  orderSides,
   orderTokens,
+  shortHex,
   spentMeta,
+  statusLabel,
   switchWalletChain,
-  tokenKey,
   unfillableReason,
-  useTokensMeta
+  useTokensMeta,
+  useUsdPrice
 } from './common'
+import { TokenLogo } from './TokenPill'
 import css from './orders.module.css'
 
 type Props = {
@@ -27,6 +32,7 @@ type Props = {
   run: RunAction
   onOrder: (order?: Order) => void
   onDuplicate: (order: Order) => void
+  onClose: () => void
 }
 
 const usd = (value: string | null | undefined) =>
@@ -37,7 +43,8 @@ export const OrderDetail: FC<Props> = ({
   wallet,
   run,
   onOrder,
-  onDuplicate
+  onDuplicate,
+  onClose
 }) => {
   const client = useRelayClient()
   const tokens = useMemo(() => orderTokens(order), [order])
@@ -54,13 +61,16 @@ export const OrderDetail: FC<Props> = ({
   const cancellable = order.status !== 'closed'
   const warning = unfillableReason(order)
   const spent = spentMeta(order, meta)
-  const symbol = (chainId: number, address: string) =>
-    meta[tokenKey({ chainId, address })]?.symbol ?? address
-  const targetSymbol = symbol(order.targetChainId, order.targetCurrency)
-  const settlementSymbol = symbol(
-    order.settlementChainId,
-    order.settlementCurrency
-  )
+  const targetUsd = useUsdPrice(tokens[0])
+  const settlementUsd = useUsdPrice(tokens[1])
+  const { pay, receive, valueUsd } = orderSides(order, meta, settlementUsd)
+  const targetMeta = order.side === 'sell' ? pay.meta : receive.meta
+  const settlementMeta = order.side === 'sell' ? receive.meta : pay.meta
+  const targetSymbol = targetMeta?.symbol ?? shortHex(order.targetCurrency, 4)
+  const settlementSymbol =
+    settlementMeta?.symbol ?? shortHex(order.settlementCurrency, 4)
+  const progress = fillProgress(order)
+  const timeLeft = formatTimeLeft(order.expiresAt)
   const chainName = (id: number) =>
     client?.chains.find((chain) => chain.id === id)?.displayName ?? `${id}`
 
@@ -70,14 +80,6 @@ export const OrderDetail: FC<Props> = ({
     setBusy(false)
     return result
   }
-
-  const refresh = () =>
-    act(async () => {
-      const result = await run('getOrders', { orderId: order.id }, () =>
-        client!.actions.getOrders({ orderId: order.id })
-      )
-      onOrder(result?.orders[0])
-    })
 
   const execute = () =>
     act(async () =>
@@ -155,52 +157,74 @@ export const OrderDetail: FC<Props> = ({
       )
     )
 
-  return (
-    <section className={cx(css.panel, css.sticky)}>
-      <div className={css.panelHeader}>
-        <div className={css.row}>
-          <Badge value={order.status} />
-          {order.outcome && <Badge value={order.outcome} />}
-          {order.cancelReason && (
-            <Badge value={`cancel: ${order.cancelReason}`} tone="cancelled" />
-          )}
-          {warning && <Badge value={warning} tone="warning" />}
-        </div>
-        <div className={css.row}>
-          <button
-            className={cx(css.btn, css.btnSmall)}
-            disabled={busy}
-            onClick={refresh}
-          >
-            Refresh
-          </button>
-          <button
-            className={cx(css.btn, css.btnSmall)}
-            onClick={() => onDuplicate(order)}
-          >
-            Duplicate
-          </button>
-        </div>
-      </div>
-
+  const amountRow = (side: typeof pay, approx: boolean) => (
+    <div className={css.amountLine}>
       <div>
-        <div className={css.headline}>
-          {order.side === 'sell'
-            ? `Sell ${formatBaseUnits(order.amount, spent)} for ${settlementSymbol}`
-            : `Buy ${targetSymbol} with ${formatBaseUnits(order.amount, spent)}`}
+        <div className={css.amountBig}>
+          {side.amount !== undefined
+            ? `${approx ? '≈' : ''}${formatNumber(side.amount)}`
+            : '?'}{' '}
+          {side.meta?.symbol}
         </div>
-        <span className={cx(css.hint, css.mono)}>{order.id}</span>
+        <span className={css.hint}>
+          {valueUsd !== undefined ? `$${formatNumber(valueUsd, 4)}` : '—'}
+        </span>
+      </div>
+      <TokenLogo meta={side.meta} chainId={side.token.chainId} />
+    </div>
+  )
+
+  return (
+    <>
+      <div className={css.spread}>
+        <h2 className={css.modalTitle}>Order details</h2>
+        <button className={css.closeBtn} aria-label="Close" onClick={onClose}>
+          ✕
+        </button>
       </div>
 
-      <dl className={css.summary}>
-        <dt>Target price</dt>
+      <div className={css.detailHead}>
+        <TokenLogo meta={pay.meta} chainId={pay.token.chainId} />
+        <div className={css.orderRowMain}>
+          <b>
+            {statusLabel(order)}{' '}
+            {warning && (
+              <Badge value={warning.replace(/_/g, ' ')} tone="warning" />
+            )}
+            {order.cancelReason === 'access_revoked' && (
+              <Badge value="access revoked" tone="cancelled" />
+            )}
+          </b>
+          <span className={css.hint}>
+            {new Date(order.createdAt).toLocaleString()}
+          </span>
+        </div>
+      </div>
+
+      <div className={cx(css.section, css.sectionDivider)}>
+        {amountRow(pay, false)}
+        <span className={css.hint}>↓</span>
+        {amountRow(receive, true)}
+      </div>
+
+      <dl className={cx(css.summary, css.sectionDivider)}>
+        <dt>{order.side === 'sell' ? 'Sell' : 'Buy'} price</dt>
         <dd>
-          {usd(order.targetPrice)} per {targetSymbol}
+          ${formatNumber(Number(order.targetPrice))} per {targetSymbol}
         </dd>
-        <dt>Market / all-in</dt>
+        {settlementUsd && (
+          <>
+            <dt>Rate</dt>
+            <dd>
+              1 {targetSymbol} ={' '}
+              {formatNumber(Number(order.targetPrice) / settlementUsd)}{' '}
+              {settlementSymbol}
+            </dd>
+          </>
+        )}
+        <dt>Market</dt>
         <dd>
-          {usd(order.latestCheck?.marketPrice)} /{' '}
-          {usd(order.latestCheck?.allInPrice)}
+          {usd(order.latestCheck?.marketPrice ?? targetUsd?.toString())}
           {cancellable && formatDistance(distanceToTarget(order)) && (
             <span className={css.hint}>
               {' '}
@@ -208,20 +232,20 @@ export const OrderDetail: FC<Props> = ({
             </span>
           )}
         </dd>
-        <dt>Last check</dt>
+        {progress > 0 && (
+          <>
+            <dt>Filled</dt>
+            <dd>
+              {progress}% · {formatBaseUnits(order.filledAmount, spent)}
+            </dd>
+          </>
+        )}
+        <dt>Expiry</dt>
         <dd>
-          {order.latestCheck
-            ? `${order.latestCheck.reason ?? 'ok'} · ${new Date(order.latestCheck.checkedAt).toLocaleTimeString()}`
-            : '—'}
-        </dd>
-        <dt>Filled</dt>
-        <dd>
-          {fillProgress(order)}% · {formatBaseUnits(order.filledAmount, spent)}
-        </dd>
-        <dt>Refunded / withdrawn</dt>
-        <dd>
-          {formatBaseUnits(order.refundedAmount, spent)} /{' '}
-          {formatBaseUnits(order.withdrawnAmount, spent)}
+          {new Date(order.expiresAt).toLocaleString()}
+          {cancellable && timeLeft && (
+            <span className={css.hint}> ({timeLeft})</span>
+          )}
         </dd>
         {order.targetChainId !== order.settlementChainId && (
           <>
@@ -232,17 +256,19 @@ export const OrderDetail: FC<Props> = ({
             </dd>
           </>
         )}
-        <dt>Expires</dt>
-        <dd>{new Date(order.expiresAt).toLocaleString()}</dd>
-        {order.closedAt && (
-          <>
-            <dt>Closed</dt>
-            <dd>{new Date(order.closedAt).toLocaleString()}</dd>
-          </>
-        )}
+        <dt>Order ID</dt>
+        <dd className={css.mono}>
+          <button
+            className={css.linkBtn}
+            title="Copy order ID"
+            onClick={() => navigator.clipboard.writeText(order.id)}
+          >
+            {shortHex(order.id, 4)} ⧉
+          </button>
+        </dd>
         {order.requestIds.length > 0 && (
           <>
-            <dt>Requests</dt>
+            <dt>Fills</dt>
             <dd>
               {order.requestIds.map((requestId) => (
                 <a
@@ -250,9 +276,10 @@ export const OrderDetail: FC<Props> = ({
                   href={`https://relay.link/transaction/${requestId}`}
                   target="_blank"
                   rel="noreferrer"
+                  className={css.modalLink}
                   style={{ display: 'block' }}
                 >
-                  {requestId.slice(0, 10)}…
+                  {shortHex(requestId, 4)} ↗
                 </a>
               ))}
             </dd>
@@ -260,56 +287,29 @@ export const OrderDetail: FC<Props> = ({
         )}
       </dl>
 
-      <div className={cx(css.section, css.sectionDivider)}>
-        <span className={css.label}>Steps</span>
-        {order.steps.length === 0 && (
-          <span className={css.hint}>No steps.</span>
-        )}
-        <div className={css.steps}>
-          {order.steps.map((step) => (
-            <div key={step.id} className={css.step}>
-              <Badge
-                value={step.status}
-                tone={step.status === 'complete' ? 'filled' : 'pending'}
-              />
-              <code>{step.id}</code>
-              <span className={css.hint}>
-                {step.action} · {step.kind}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {(nextStep || (cancellable && !cancelMode)) && (
+      {!cancelMode && (nextStep || cancellable) && (
         <div className={css.section}>
-          <div className={css.row}>
-            {nextStep && (
-              <button
-                className={cx(css.btn, css.btnPrimary)}
-                disabled={busy || !wallet}
-                onClick={execute}
-              >
-                {nextStep.id === 'cancel'
+          {nextStep && (
+            <button
+              className={css.cta}
+              disabled={busy || !wallet}
+              onClick={execute}
+            >
+              {!wallet
+                ? 'Connect a wallet'
+                : nextStep.id === 'cancel'
                   ? 'Send cancel transaction'
                   : 'Sign order'}
-              </button>
-            )}
-            {cancellable && !cancelMode && (
-              <button
-                className={cx(css.btn, css.btnDanger)}
-                disabled={busy}
-                onClick={() => setCancelMode('soft')}
-              >
-                Cancel order
-              </button>
-            )}
-          </div>
-          {nextStep && (
-            <span className={css.hint}>
-              Runs the incomplete steps with executeOrder.
-              {!wallet && ' Connect a wallet first.'}
-            </span>
+            </button>
+          )}
+          {cancellable && (
+            <button
+              className={cx(css.btn, css.btnBlock)}
+              disabled={busy}
+              onClick={() => setCancelMode('soft')}
+            >
+              Cancel order
+            </button>
           )}
         </div>
       )}
@@ -366,47 +366,101 @@ export const OrderDetail: FC<Props> = ({
         </div>
       )}
 
-      {authorize && (
-        <details className={css.collapsible}>
-          <summary>Sign manually (signOrder)</summary>
-          <div className={css.collapsibleBody}>
-            <span className={css.hint}>
-              Posts only the signature and skips any approve step; use Sign
-              order if the token still needs a Permit2 approval.
-            </span>
-            <div>
-              <button
-                className={css.btn}
-                disabled={busy || !wallet}
-                onClick={signWithWallet}
-              >
-                Sign typed data with wallet and submit
-              </button>
-            </div>
-            <div className={css.row}>
-              <input
-                value={signature}
-                onChange={(e) => setSignature(e.target.value.trim())}
-                placeholder="Or paste a signature 0x…"
-                className={cx(css.input, css.mono, css.grow)}
-              />
-              <button
-                className={css.btn}
-                disabled={busy || !signature}
-                onClick={submitSignature}
-              >
-                Submit signature
-              </button>
-            </div>
-            <Json value={authorize.data?.sign} />
-          </div>
-        </details>
-      )}
+      <button className={css.linkBtn} onClick={() => onDuplicate(order)}>
+        Duplicate into a new order
+      </button>
 
       <details className={css.collapsible}>
-        <summary>Order JSON</summary>
-        <Json value={order} />
+        <summary>Advanced</summary>
+        <div className={css.collapsibleBody}>
+          <dl className={css.summary}>
+            <dt>Status</dt>
+            <dd>
+              <Badge value={order.status} />{' '}
+              {order.outcome && <Badge value={order.outcome} />}
+            </dd>
+            <dt>Last check</dt>
+            <dd>
+              {order.latestCheck
+                ? `${order.latestCheck.reason ?? 'ok'} · all-in ${usd(order.latestCheck.allInPrice)} · ${new Date(order.latestCheck.checkedAt).toLocaleTimeString()}`
+                : '—'}
+            </dd>
+            <dt>Refunded / withdrawn</dt>
+            <dd>
+              {formatBaseUnits(order.refundedAmount, spent)} /{' '}
+              {formatBaseUnits(order.withdrawnAmount, spent)}
+            </dd>
+            {order.closedAt && (
+              <>
+                <dt>Closed</dt>
+                <dd>{new Date(order.closedAt).toLocaleString()}</dd>
+              </>
+            )}
+          </dl>
+          <span className={css.label}>Steps</span>
+          {order.steps.length === 0 && (
+            <span className={css.hint}>No steps.</span>
+          )}
+          <div className={css.steps}>
+            {order.steps.map((step) => (
+              <div key={step.id} className={css.step}>
+                <Badge
+                  value={step.status}
+                  tone={step.status === 'complete' ? 'filled' : 'pending'}
+                />
+                <code>{step.id}</code>
+                <span className={css.hint}>
+                  {step.action} · {step.kind}
+                </span>
+              </div>
+            ))}
+          </div>
+          {nextStep && (
+            <span className={css.hint}>
+              {nextStep.id === 'cancel'
+                ? 'Send cancel transaction'
+                : 'Sign order'}{' '}
+              runs the incomplete steps with executeOrder.
+            </span>
+          )}
+          {authorize && (
+            <>
+              <span className={css.label}>Sign manually (signOrder)</span>
+              <span className={css.hint}>
+                Posts only the signature and skips any approve step; use Sign
+                order if the token still needs a Permit2 approval.
+              </span>
+              <div>
+                <button
+                  className={css.btn}
+                  disabled={busy || !wallet}
+                  onClick={signWithWallet}
+                >
+                  Sign typed data with wallet and submit
+                </button>
+              </div>
+              <div className={css.row}>
+                <input
+                  value={signature}
+                  onChange={(e) => setSignature(e.target.value.trim())}
+                  placeholder="Or paste a signature 0x…"
+                  className={cx(css.input, css.mono, css.grow)}
+                />
+                <button
+                  className={css.btn}
+                  disabled={busy || !signature}
+                  onClick={submitSignature}
+                >
+                  Submit signature
+                </button>
+              </div>
+              <Json value={authorize.data?.sign} />
+            </>
+          )}
+          <span className={css.label}>Order JSON</span>
+          <Json value={order} />
+        </div>
       </details>
-    </section>
+    </>
   )
 }

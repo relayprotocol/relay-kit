@@ -12,7 +12,7 @@ import {
 } from 'components/orders/CreateOrderForm'
 import { OrderDetail } from 'components/orders/OrderDetail'
 import { OrdersList } from 'components/orders/OrdersList'
-import { cx } from 'components/orders/common'
+import { cx, Modal } from 'components/orders/common'
 import css from 'components/orders/orders.module.css'
 import { isOrdersAccessAllowed } from 'utils/ordersAccess'
 
@@ -39,10 +39,15 @@ const OrdersPlayground = () => {
     retry: false
   })
 
-  const showOrder = (order?: Order) => {
+  const updateOrder = (order?: Order) => {
     queryClient.invalidateQueries({ queryKey: ['orders'] })
-    if (!order) return
-    queryClient.setQueryData(['order', client?.baseApiUrl, order.id], order)
+    if (order) {
+      queryClient.setQueryData(['order', client?.baseApiUrl, order.id], order)
+    }
+  }
+
+  const showOrder = (order: Order) => {
+    updateOrder(order)
     setSelectedId(order.id)
   }
 
@@ -52,10 +57,6 @@ const OrdersPlayground = () => {
         <div>
           <p className="demo-eyebrow">Relay SDK</p>
           <h1 className="demo-title">Limit orders</h1>
-          <p className="demo-subtitle">
-            Test the SDK's order actions. Every Relay API request goes through
-            the VPN-gated orders proxy.
-          </p>
         </div>
       </header>
 
@@ -84,40 +85,40 @@ const OrdersPlayground = () => {
             wallet={wallet}
             address={address}
             run={run}
-            onOrder={showOrder}
-            onViewOrder={() => setTab('orders')}
+            onOrder={updateOrder}
+            onViewOrder={(order) => {
+              showOrder(order)
+              setTab('orders')
+            }}
             draft={draft}
           />
         </div>
-        <div hidden={tab !== 'orders'} className={css.ordersColumns}>
-          <OrdersList
-            address={address}
-            selectedId={selectedId}
-            onSelect={showOrder}
-            run={run}
-            onChanged={() =>
-              queryClient.invalidateQueries({ queryKey: ['order'] })
-            }
-          />
-          {selected.data ? (
-            <OrderDetail
-              key={selected.data.id}
-              order={selected.data}
-              wallet={wallet}
-              run={run}
-              onOrder={showOrder}
-              onDuplicate={(order) => {
-                setDraft({ key: Date.now(), order })
-                setTab('create')
-              }}
-            />
-          ) : (
-            <section className={cx(css.panel, css.empty)}>
-              Select an order to see its details, steps and actions.
-            </section>
-          )}
+        <div hidden={tab !== 'orders'}>
+          <OrdersList address={address} onSelect={showOrder} run={run} />
         </div>
       </main>
+
+      <Modal
+        open={tab === 'orders' && Boolean(selected.data)}
+        label="Order details"
+        onClose={() => setSelectedId(undefined)}
+      >
+        {selected.data && (
+          <OrderDetail
+            key={selected.data.id}
+            order={selected.data}
+            wallet={wallet}
+            run={run}
+            onOrder={updateOrder}
+            onDuplicate={(order) => {
+              setDraft({ key: Date.now(), order })
+              setSelectedId(undefined)
+              setTab('create')
+            }}
+            onClose={() => setSelectedId(undefined)}
+          />
+        )}
+      </Modal>
 
       <ActivityLog entries={entries} onClear={clear} />
     </div>
