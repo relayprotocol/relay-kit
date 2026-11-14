@@ -140,16 +140,6 @@
   font-weight: 600;
 }
 
-.delta {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent-text);
-}
-
-.deltaWarn {
-  color: var(--warn);
-}
-
 .amountRow {
   display: flex;
   align-items: center;
@@ -1062,4 +1052,26 @@
 .amountLine .tokenLogo {
   width: 40px;
   height: 40px;
+}
+
+.chipGroup {
+  display: inline-flex;
+}
+
+.chipGroup > :first-child {
+  border-radius: 999px 0 0 999px;
+  cursor: default;
+}
+
+.chipGroup > :last-child {
+  border-radius: 0 999px 999px 0;
+  border-left: none;
+  padding: 5px 10px;
+}
+
+.chipWarn,
+.chipWarn:hover:not(:disabled) {
+  border-color: var(--relay-colors-amber6);
+  background: var(--warn-soft);
+  color: var(--warn);
 }
