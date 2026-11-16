@@ -36,10 +36,13 @@ export async function isSolanaTokenAccount(
     throw new Error(data.error.message)
   }
 
-  if (!data.result || data.result.value === undefined) {
+  const value = data.result?.value
+  if (value === null) {
+    return false
+  }
+  if (typeof value?.owner !== 'string') {
     throw new Error('Unexpected getAccountInfo response')
   }
 
-  const owner: string | undefined = data.result.value?.owner
-  return owner !== undefined && SOLANA_TOKEN_PROGRAM_IDS.includes(owner)
+  return SOLANA_TOKEN_PROGRAM_IDS.includes(value.owner)
 }

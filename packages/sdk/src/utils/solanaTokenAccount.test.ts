@@ -119,8 +119,12 @@ describe('isSolanaTokenAccount', () => {
     ).rejects.toThrow('Invalid param')
   })
 
-  it('Should throw on a response without a result.', async () => {
-    mockRpc(() => ({ jsonrpc: '2.0', id: 1 }))
+  it.each([
+    ['without a result', { jsonrpc: '2.0', id: 1 }],
+    ['with an empty account', accountInfo({})],
+    ['with a non-string owner', accountInfo({ owner: 42 })]
+  ])('Should throw on a response %s.', async (_, response) => {
+    mockRpc(() => response)
     await expect(
       isSolanaTokenAccount(RPC_URL, USDC_TOKEN_ACCOUNT)
     ).rejects.toThrow('Unexpected getAccountInfo response')
