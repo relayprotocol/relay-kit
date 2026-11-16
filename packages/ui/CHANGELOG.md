@@ -1,5 +1,24 @@
 # @reservoir0x/relay-kit-ui
 
+## 12.1.0
+
+### Minor Changes
+
+- 138f30e: Add XRP support: new `@relayprotocol/relay-xrp-wallet-adapter` package exporting `adaptXrpWallet`, which sends native XRP deposits as XRPL Payments through a wallet-supplied `sendTransaction` callback and confirms them over JSON-RPC (configurable with `rpcUrl`). The SDK adds the `XrpReceipt` type and XRP fields on transaction step data, and the UI kit now accepts `xrpvm` in `supportedWalletVMs` and lists XRP as an origin chain when an XRP wallet is supported.
+
+### Patch Changes
+
+- 0e437fd: The recipient address modal now keeps Save disabled while an ENS name is being looked up again, not only on the first lookup. Re-entering a name that was resolved earlier in the session no longer lets you save the cached address while the on-chain refetch is still running, so a name whose record changed commits the refreshed address.
+- cd7d6ad: Fix the token amount shown under the Swap Widget's USD input. In USD input mode the token equivalent dropped trailing zeros from whole numbers, so $100 of USDC showed as `1 USDC` and an amount of 1,000 showed as `1,`. `formatNumber` now returns the `Intl.NumberFormat` output as is, which never ends the fraction with zeros.
+- Updated dependencies [7ff99e9]
+- Updated dependencies [2e00e6b]
+- Updated dependencies [2e00e6b]
+- Updated dependencies [1d64f9a]
+- Updated dependencies [be8501c]
+- Updated dependencies [138f30e]
+  - @relayprotocol/relay-sdk@8.1.0
+  - @relayprotocol/relay-kit-hooks@6.0.2
+
 ## 12.0.8
 
 ### Patch Changes
