@@ -167,6 +167,25 @@ describe('handleConfirmTransactionStep', () => {
     expect(fetchMock.mock.calls[0][0]).toBe('https://chain-rpc.example')
   })
 
+  it('times out when an RPC request never settles', async () => {
+    fetchMock.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) =>
+          init.signal?.addEventListener('abort', () =>
+            reject(new Error('aborted'))
+          )
+        )
+    )
+
+    const receipt = confirm()
+    const assertion = expect(receipt).rejects.toThrow(
+      'XRP transaction confirmation timed out'
+    )
+    await vi.advanceTimersByTimeAsync(120_000)
+    await assertion
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('times out when the transaction never validates', async () => {
     fetchMock.mockResolvedValue({ json: async () => NOT_FOUND })
 
@@ -174,7 +193,7 @@ describe('handleConfirmTransactionStep', () => {
     const assertion = expect(receipt).rejects.toThrow(
       'XRP transaction confirmation timed out'
     )
-    await vi.advanceTimersByTimeAsync(125_000)
+    await vi.advanceTimersByTimeAsync(120_000)
     await assertion
   })
 })

@@ -101,50 +101,72 @@ export const adaptXrpWallet = (
     handleConfirmTransactionStep: async (txHash, chainId) => {
       const client = getClient()
       const rpcUrl = getRpcUrl(chainId)
-      const start = Date.now()
 
-      // Poll `tx` until the transaction is in a validated ledger. RPC errors,
-      // `txnNotFound` and rate limits are retried until the timeout.
-      while (Date.now() - start < CONFIRM_TIMEOUT_MS) {
-        let result:
-          | {
-              hash?: string
-              validated?: boolean
-              ledger_index?: number
-              meta?: { TransactionResult?: string }
-            }
-          | undefined
-        try {
-          const response = await fetch(rpcUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              method: 'tx',
-              params: [{ transaction: txHash }]
+      // One deadline aborts the in-flight request and the wait between polls.
+      const controller = new AbortController()
+      const { signal } = controller
+      const deadline = setTimeout(() => controller.abort(), CONFIRM_TIMEOUT_MS)
+
+      try {
+        // Poll `tx` until the transaction is in a validated ledger. RPC errors,
+        // `txnNotFound` and rate limits are retried until the deadline.
+        while (!signal.aborted) {
+          let result:
+            | {
+                hash?: string
+                validated?: boolean
+                ledger_index?: number
+                meta?: { TransactionResult?: string }
+              }
+            | undefined
+          try {
+            const response = await fetch(rpcUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                method: 'tx',
+                params: [{ transaction: txHash }]
+              }),
+              signal
             })
+            result = (await response.json())?.result
+          } catch (error) {
+            client.log(
+              ['Error polling for XRP transaction', error],
+              LogLevel.Verbose
+            )
+          }
+
+          if (result?.validated === true) {
+            const code = result.meta?.TransactionResult
+            if (code !== 'tesSUCCESS') {
+              throw new Error(`XRP transaction failed: ${code}`)
+            }
+            return {
+              hash: result.hash ?? txHash,
+              ledgerIndex: result.ledger_index
+            }
+          }
+
+          if (signal.aborted) {
+            break
+          }
+          // Wait before the next poll, ending early at the deadline.
+          await new Promise<void>((resolve) => {
+            const done = () => {
+              clearTimeout(timer)
+              signal.removeEventListener('abort', done)
+              resolve()
+            }
+            const timer = setTimeout(done, CONFIRM_POLL_MS)
+            signal.addEventListener('abort', done)
           })
-          result = (await response.json())?.result
-        } catch (error) {
-          client.log(
-            ['Error polling for XRP transaction', error],
-            LogLevel.Verbose
-          )
         }
 
-        if (result?.validated === true) {
-          const code = result.meta?.TransactionResult
-          if (code !== 'tesSUCCESS') {
-            throw new Error(`XRP transaction failed: ${code}`)
-          }
-          return {
-            hash: result.hash ?? txHash,
-            ledgerIndex: result.ledger_index
-          }
-        }
-        await new Promise((resolve) => setTimeout(resolve, CONFIRM_POLL_MS))
+        throw new Error('XRP transaction confirmation timed out')
+      } finally {
+        clearTimeout(deadline)
       }
-
-      throw new Error('XRP transaction confirmation timed out')
     },
     getBalance: async (chainId, address, tokenAddress) => {
       // Native XRP only; the balance includes the account reserve.
