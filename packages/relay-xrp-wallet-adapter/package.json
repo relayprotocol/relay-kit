@@ -1,6 +1,6 @@
 {
     "name": "@relayprotocol/relay-xrp-wallet-adapter",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "An XRP Ledger wallet adapter for use in @relayprotocol/relay-sdk",
     "type": "module",
     "source": "./src/index.ts",
