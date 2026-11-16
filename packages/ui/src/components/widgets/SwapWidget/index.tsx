@@ -75,7 +75,7 @@ type BaseSwapWidgetProps = {
   lockChainId?: number
   singleChainMode?: boolean
   wallet?: AdaptedWallet
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   disableInputAutoFocus?: boolean
   popularChainIds?: number[]
   disablePasteWalletAddressOption?: boolean

@@ -72,7 +72,7 @@ export type TokenSelectorProps = {
   isValidAddress?: boolean
   multiWalletSupportEnabled?: boolean
   fromChainWalletVMSupported?: boolean
-  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   popularChainIds?: number[]
   setToken: (token: Token) => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
@@ -185,6 +185,7 @@ const TokenSelector: FC<TokenSelectorProps> = ({
             (chain.vmType === 'evm' ||
               chain.vmType === 'tvm' ||
               chain.vmType === 'tonvm' ||
+              chain.vmType === 'xrpvm' ||
               chain.vmType === 'hypevm' ||
               chain.id === solana.id ||
               chain.id === eclipse.id ||
