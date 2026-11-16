@@ -15,6 +15,11 @@ export type TonReceipt = {
   lt?: string
 }
 
+export type XrpReceipt = {
+  hash: string
+  ledgerIndex?: number
+}
+
 type HTTPMap<T extends string | number | symbol, U> = Record<T, U>[]
 export type LvmReceipt = {
   txHash: string
@@ -106,6 +111,7 @@ export type AdaptedWallet = {
     | TronReceipt // tvm
     | TonReceipt // tonvm
     | LvmReceipt // lvm
+    | XrpReceipt // xrpvm
   >
   address: () => Promise<string>
   switchChain: (chainId: number) => Promise<void>

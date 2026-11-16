@@ -38,7 +38,7 @@ export const isWalletVmTypeCompatible = (
 
 export const isChainVmTypeSupported = (
   chainVmType: ChainVM | undefined,
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
 ) => {
   if (!chainVmType) {
     return true
@@ -49,7 +49,7 @@ export const isChainVmTypeSupported = (
   }
 
   return supportedWalletVMs.includes(
-    chainVmType as Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>
+    chainVmType as Omit<ChainVM, 'hypevm' | 'lvm'>
   )
 }
 
@@ -57,7 +57,7 @@ export const isChainVmTypeSupported = (
 // support need a connected wallet VM to be used as the origin
 export const isOriginChainSupported = (
   chain?: RelayChain,
-  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+  supportedWalletVMs?: Omit<ChainVM, 'hypevm' | 'lvm'>[]
 ) => {
   if (!chain) {
     return true

@@ -26,7 +26,7 @@ import {
 
 type BaseOnrampWidgetProps = {
   defaultWalletAddress?: string
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   moonPayApiKey: string
   moonPayThemeId?: string
   moonPayThemeMode?: 'dark' | 'light'

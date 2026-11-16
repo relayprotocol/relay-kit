@@ -2,7 +2,8 @@ import type {
   SvmReceipt,
   TronReceipt,
   TonReceipt,
-  LvmReceipt
+  LvmReceipt,
+  XrpReceipt
 } from '../types/index.js'
 import type { paths } from './api.js'
 import type { AxiosRequestConfig } from 'axios'
@@ -61,6 +62,7 @@ export type Execute = {
         | TronReceipt
         | TonReceipt
         | LvmReceipt
+        | XrpReceipt
       checkStatus?:
         | 'refund'
         | 'waiting'

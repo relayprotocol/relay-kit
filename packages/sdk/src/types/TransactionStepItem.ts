@@ -53,6 +53,10 @@ export type TransactionStepItem = Pick<
       bounce?: boolean
       mode?: number
     }[]
+    // XRP (native Payment: `to` is the classic address, `amount` is in drops)
+    currency?: string
+    amount?: string
+    memo?: string
     // Lighter (LVM)
     action?: {
       type: 'transfer'
