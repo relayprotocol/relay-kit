@@ -183,10 +183,12 @@ export const CustomAddressModal: FC<Props> = ({
 
   const {
     isTokenAccount: isSolanaTokenAccount,
-    isChecking: isCheckingSolanaTokenAccount
+    isChecking: isCheckingSolanaTokenAccount,
+    isUnverified: isUnverifiedSolanaAccount
   } = useSolanaTokenAccount(toChain, address, !isKnownTokenContract)
 
-  const isBlockedAddress = isKnownTokenContract || isSolanaTokenAccount
+  const isBlockedAddress =
+    isKnownTokenContract || isSolanaTokenAccount || isUnverifiedSolanaAccount
 
   const isLoading =
     isFetchingENS ||
@@ -286,6 +288,11 @@ export const CustomAddressModal: FC<Props> = ({
             <Text color="red" style="subtitle2">
               This address is a token account, not a wallet. Enter the wallet
               address that owns it.
+            </Text>
+          ) : isUnverifiedSolanaAccount ? (
+            <Text color="red" style="subtitle2">
+              Could not verify this address is a wallet. Check your connection
+              and try again.
             </Text>
           ) : isLighterError ? (
             <Text color="red" style="subtitle2">

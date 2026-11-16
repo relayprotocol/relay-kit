@@ -12,13 +12,13 @@ const queryOptions = (rpcUrl: string, address: string) => ({
 const shouldCheck = (chain?: RelayChain, address?: string) =>
   Boolean(
     chain?.vmType === 'svm' &&
-      chain.httpRpcUrl &&
       address &&
       isValidAddress(chain.vmType, address, chain.id)
   )
 
 /**
- * Imperatively checks whether an address is a Solana token account; fails open on RPC errors and timeouts.
+ * Imperatively checks whether an address on an SVM chain is a token account.
+ * Fails closed: throws when the address cannot be checked.
  */
 export async function checkSolanaTokenAccount(
   queryClient: QueryClient,
@@ -29,17 +29,20 @@ export async function checkSolanaTokenAccount(
     return false
   }
   try {
+    if (!chain!.httpRpcUrl) {
+      throw new Error('Missing RPC URL')
+    }
     return await queryClient.fetchQuery(
-      queryOptions(chain!.httpRpcUrl!, address!)
+      queryOptions(chain!.httpRpcUrl, address!)
     )
   } catch {
-    return false
+    throw new Error('Could not verify the recipient address, try again')
   }
 }
 
 /**
- * Checks whether an address on an SVM chain is a token account rather than a wallet.
- * Keyed on the address so results are never stale; fails open on RPC errors and timeouts.
+ * Checks whether an address on an SVM chain (Solana, Eclipse) is a token account rather than a wallet.
+ * Keyed on the address so results are never stale; fails closed when the lookup errors, times out or has no RPC.
  */
 export default function useSolanaTokenAccount(
   chain?: RelayChain,
@@ -47,15 +50,18 @@ export default function useSolanaTokenAccount(
   enabled: boolean = true
 ) {
   const checkEnabled = enabled && shouldCheck(chain, address)
+  const rpcUrl = chain?.httpRpcUrl
 
-  const { data, isLoading } = useQuery({
-    ...queryOptions(chain?.httpRpcUrl ?? '', address ?? ''),
-    enabled: checkEnabled
+  const { data, isLoading, isError } = useQuery({
+    ...queryOptions(rpcUrl ?? '', address ?? ''),
+    enabled: checkEnabled && Boolean(rpcUrl)
   })
 
   return {
     isTokenAccount: checkEnabled && data === true,
     /** True while the lookup is in flight with no result yet */
-    isChecking: checkEnabled && isLoading
+    isChecking: checkEnabled && isLoading,
+    /** True when the address needs a check that could not complete */
+    isUnverified: checkEnabled && (!rpcUrl || isError)
   }
 }

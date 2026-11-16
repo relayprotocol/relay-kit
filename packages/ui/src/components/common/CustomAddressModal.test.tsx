@@ -19,6 +19,7 @@ import {
   type Hex
 } from 'viem'
 import {
+  axios,
   convertViemChainToRelayChain,
   createClient,
   type RelayChain
@@ -268,6 +269,120 @@ describe('CustomAddressModal ENS resolution', () => {
 
     fireEvent.click(saveButton())
 
+    expect(onConfirmed).not.toHaveBeenCalled()
+  })
+})
+
+const ECLIPSE_USDC_TOKEN_ACCOUNT =
+  '9hkQNZKRsShUnDgNEYSLAbd7v89QHzjzJxaZyg75VECf'
+const ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER =
+  'CBG9TQpCKSbt7ozAVUyHf7BGwFyFgvmAzqrjJH83ZGX1'
+const TOKEN_2022_PROGRAM_ID = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+
+describe('CustomAddressModal SVM recipient check', () => {
+  const svmRpcUrl = 'https://eclipse-rpc.test/'
+  let svmRpcDown = false
+
+  beforeEach(() => {
+    svmRpcDown = false
+    vi.spyOn(axios, 'post').mockImplementation(async (url, body: any) => {
+      if (url !== svmRpcUrl) {
+        throw new Error(`Unexpected request: ${url}`)
+      }
+      if (svmRpcDown) {
+        throw new Error('Service Unavailable')
+      }
+      const value =
+        body.params[0] === ECLIPSE_USDC_TOKEN_ACCOUNT
+          ? {
+              data: ['', 'base64'],
+              executable: false,
+              lamports: 20264,
+              owner: TOKEN_2022_PROGRAM_ID,
+              rentEpoch: 18446744073709551615,
+              space: 170
+            }
+          : null
+      return {
+        data: {
+          jsonrpc: '2.0',
+          id: body.id,
+          result: { context: { slot: 202917423 }, value }
+        }
+      }
+    })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const eclipseChain = (httpRpcUrl?: string) => ({
+    ...solanaChain,
+    id: 9286185,
+    name: 'eclipse',
+    displayName: 'Eclipse',
+    httpRpcUrl
+  })
+
+  const typeAddress = (value: string) =>
+    fireEvent.change(screen.getByRole('textbox'), { target: { value } })
+
+  it('blocks an Eclipse token account', async () => {
+    const { onConfirmed } = renderModal({
+      destination: eclipseChain(svmRpcUrl)
+    })
+
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT)
+
+    await screen.findByText(/This address is a token account/)
+    expect(saveButton()).toHaveProperty('disabled', true)
+    fireEvent.click(saveButton())
+    expect(onConfirmed).not.toHaveBeenCalled()
+  })
+
+  it('accepts the Eclipse wallet that owns the token account', async () => {
+    const { onConfirmed } = renderModal({
+      destination: eclipseChain(svmRpcUrl)
+    })
+
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+
+    await waitFor(() => expect(saveButton()).toHaveProperty('disabled', false))
+    fireEvent.click(saveButton())
+    expect(onConfirmed).toHaveBeenCalledWith(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+  })
+
+  it('blocks an address it cannot verify and accepts it once the RPC recovers', async () => {
+    svmRpcDown = true
+    const { onConfirmed } = renderModal({
+      destination: eclipseChain(svmRpcUrl)
+    })
+
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+
+    await screen.findByText(/Could not verify this address is a wallet/)
+    expect(saveButton()).toHaveProperty('disabled', true)
+    fireEvent.click(saveButton())
+    expect(onConfirmed).not.toHaveBeenCalled()
+
+    svmRpcDown = false
+    typeAddress('')
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+
+    await waitFor(() => expect(saveButton()).toHaveProperty('disabled', false))
+    fireEvent.click(saveButton())
+    expect(onConfirmed).toHaveBeenCalledWith(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+  })
+
+  it('blocks an address on an SVM chain without an RPC to check it', async () => {
+    const { onConfirmed } = renderModal({ destination: eclipseChain() })
+
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+
+    await screen.findByText(/Could not verify this address is a wallet/)
+    expect(saveButton()).toHaveProperty('disabled', true)
+    fireEvent.click(saveButton())
     expect(onConfirmed).not.toHaveBeenCalled()
   })
 })

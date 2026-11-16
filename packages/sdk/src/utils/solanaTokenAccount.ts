@@ -6,11 +6,12 @@ export const SOLANA_TOKEN_PROGRAM_IDS = [
 ]
 
 /**
- * Checks whether a Solana address is an account owned by the SPL Token or Token-2022 program.
- * @param rpcUrl - Solana JSON-RPC endpoint
+ * Checks whether an SVM (Solana, Eclipse) address is an account owned by the SPL Token or Token-2022 program.
+ * @param rpcUrl - SVM JSON-RPC endpoint
  * @param address - Base58 address to check
  * @param options - Abort signal and request timeout (defaults to 5000ms)
  * @returns true if the account exists and is owned by a token program
+ * @throws when the RPC request fails, times out, or returns an error or unexpected response
  */
 export async function isSolanaTokenAccount(
   rpcUrl: string,
@@ -35,6 +36,10 @@ export async function isSolanaTokenAccount(
     throw new Error(data.error.message)
   }
 
-  const owner: string | undefined = data.result?.value?.owner
+  if (!data.result || data.result.value === undefined) {
+    throw new Error('Unexpected getAccountInfo response')
+  }
+
+  const owner: string | undefined = data.result.value?.owner
   return owner !== undefined && SOLANA_TOKEN_PROGRAM_IDS.includes(owner)
 }
