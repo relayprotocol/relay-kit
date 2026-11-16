@@ -5,6 +5,7 @@ import type {
   LvmReceipt
 } from '../types/index.js'
 import type { paths } from './api.js'
+import type { OrderStepId } from './Order.js'
 import type { AxiosRequestConfig } from 'axios'
 import type { TransactionReceipt } from 'viem'
 
@@ -43,6 +44,7 @@ export type Execute = {
   details?: QuoteDetails
   error?: any // Manually added client error
   refunded?: boolean
+  requestId?: string
 
   steps: {
     error?: string
@@ -102,3 +104,8 @@ export type Execute = {
 
 export type ExecuteStep = NonNullable<Execute['steps']>['0']
 export type ExecuteStepItem = NonNullable<Execute['steps'][0]['items']>[0]
+
+/** A quote/v3 or Orders API step: `status`, `data` and `check` sit on the step instead of in `items` */
+export type FlatExecuteStep = Omit<ExecuteStep, 'items' | 'id'> & {
+  id: QuoteStepId | OrderStepId
+} & Pick<ExecuteStepItem, 'status' | 'data' | 'check'>
