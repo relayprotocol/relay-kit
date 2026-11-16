@@ -9,7 +9,7 @@ const ENV_TO_BASE: Record<string, string> = {
   'mainnets-dev': 'https://api.dev.relay.link'
 }
 
-const ORDER_ID = '[^/]+'
+const ORDER_ID = '[0-9A-Za-z-]+'
 const ALLOWED_ROUTES: Record<string, RegExp[]> = {
   GET: [/^orders$/, /^chains$/, /^currencies\/token\/price\/v2$/],
   POST: [
