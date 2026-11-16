@@ -3,7 +3,8 @@ import type {
   SvmReceipt,
   TronReceipt,
   TonReceipt,
-  LvmReceipt
+  LvmReceipt,
+  XrpReceipt
 } from '../types/index.js'
 import type { TenderlyErrorInfo } from '../utils/getTenderlyDetails.js'
 
@@ -14,6 +15,7 @@ export class TransactionConfirmationError extends Error {
     | TronReceipt
     | TonReceipt
     | LvmReceipt
+    | XrpReceipt
     | undefined
   tenderlyError: TenderlyErrorInfo | undefined
 
@@ -24,7 +26,8 @@ export class TransactionConfirmationError extends Error {
       | SvmReceipt
       | TronReceipt
       | TonReceipt
-      | LvmReceipt,
+      | LvmReceipt
+      | XrpReceipt,
     tenderlyError?: TenderlyErrorInfo | null
   ) {
     super(error)

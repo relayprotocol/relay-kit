@@ -83,7 +83,7 @@ type SwapWidgetRendererProps = {
   wallet?: AdaptedWallet
   linkedWallets?: LinkedWallet[]
   multiWalletSupportEnabled?: boolean
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   onConnectWallet?: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onSwapError?: (error: string, data?: Execute) => void
@@ -142,7 +142,7 @@ export type ChildrenProps = {
   isBvmSwap: boolean
   isValidFromAddress: boolean
   isValidToAddress: boolean
-  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm' | 'xrpvm'>[]
+  supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   fromChainWalletVMSupported: boolean
   toChainWalletVMSupported: boolean
   isRecipientLinked?: boolean

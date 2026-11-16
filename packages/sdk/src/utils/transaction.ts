@@ -8,7 +8,8 @@ import type {
   SvmReceipt,
   TronReceipt,
   TonReceipt,
-  LvmReceipt
+  LvmReceipt,
+  XrpReceipt
 } from '../types/index.js'
 import { axios } from '../utils/axios.js'
 import type {
@@ -59,6 +60,7 @@ export async function sendTransactionSafely(
       | TronReceipt
       | TonReceipt
       | LvmReceipt
+      | XrpReceipt
   ) => void,
   setCheckStatus?: (
     checkStatus: NonNullable<Execute['steps'][0]['items']>[0]['checkStatus']
@@ -88,6 +90,7 @@ export async function sendTransactionSafely(
     | TronReceipt
     | TonReceipt
     | LvmReceipt
+    | XrpReceipt
     | undefined
   let transactionCancelled = false
   let confirmationError = false
