@@ -1,5 +1,19 @@
 # @reservoir0x/relay-sdk
 
+## 8.1.0
+
+### Minor Changes
+
+- 2e00e6b: `executeSteps` now also runs quote/v3-style flat steps, where `status`, `data` and `check` sit on the step instead of in `items`, alongside the legacy `items` steps. Flat steps are converted to the `items` shape before execution, so `onProgress` and the returned steps keep the shape they have today, and a flat step without a `requestId` takes the response's top-level `requestId`. The `FlatExecuteStep` type is exported.
+- 2e00e6b: Add limit order actions for the Orders API: `createOrder` (`POST /orders`, with an optional `idempotencyKey` sent as `Idempotency-Key`), `getOrders` (`GET /orders`), `signOrder` (`POST /orders/:orderId/signature`), `cancelOrder` (`POST /orders/:orderId/cancel`, soft by default, `onchain` for the Permit2 nonce invalidation) and `executeOrder`. Given a `wallet`, `createOrder` and `cancelOrder` also run the order's steps (Permit2 approval, order signature, on-chain cancel) and report progress through `onProgress`; `executeOrder` resumes the steps of an order read with `getOrders`. Types such as `Order`, `OrderStatus` and `CreateOrderBody` are exported.
+- 138f30e: Add XRP support: new `@relayprotocol/relay-xrp-wallet-adapter` package exporting `adaptXrpWallet`, which sends native XRP deposits as XRPL Payments through a wallet-supplied `sendTransaction` callback and confirms them over JSON-RPC (configurable with `rpcUrl`). The SDK adds the `XrpReceipt` type and XRP fields on transaction step data, and the UI kit now accepts `xrpvm` in `supportedWalletVMs` and lists XRP as an origin chain when an XRP wallet is supported.
+
+### Patch Changes
+
+- 7ff99e9: Signature post and status check endpoints from API responses must stay on the configured `baseApiUrl` origin; executions with an endpoint that resolves to another host now fail. `isRelayApiUrl` compares origins instead of string prefixes, so the API key is only sent to the Relay API.
+- 1d64f9a: Set `checkStatus` to `failure` on a signature step item when the status check reports `failure`, as the refund branch and the transaction and websocket paths already do. Previously the item kept `pending` (or no status) after the step failed.
+- be8501c: Stop signature steps from polling on after the status check reports `failure` or `refund`. A `failure` whose `details` did not contain "Transaction failed" was retried until the polling limit and then surfaced as a generic "Failed to get an ok response" timeout, and a `refund` was never treated as final. `execute` now rejects on the first such status, with the reported `details` for a failure and "Transaction failed: Refunded" (so `refunded` is set) for a refund, matching transaction steps.
+
 ## 8.0.5
 
 ### Patch Changes
