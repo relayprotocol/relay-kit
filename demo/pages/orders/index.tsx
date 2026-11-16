@@ -1,4 +1,4 @@
-import { GetServerSideProps, NextPage } from 'next'
+import { NextPage } from 'next'
 import { useState } from 'react'
 import type { Order } from '@relayprotocol/relay-sdk'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
@@ -14,9 +14,7 @@ import { OrderDetail } from 'components/orders/OrderDetail'
 import { OrdersList } from 'components/orders/OrdersList'
 import { cx, Modal } from 'components/orders/common'
 import css from 'components/orders/orders.module.css'
-import { isOrdersAccessAllowed } from 'utils/ordersAccess'
 
-type Props = { ordersAllowed: boolean }
 type Tab = 'create' | 'orders'
 
 const OrdersPlayground = () => {
@@ -125,27 +123,10 @@ const OrdersPlayground = () => {
   )
 }
 
-const OrdersPage: NextPage<Props> = ({ ordersAllowed }) => (
+const OrdersPage: NextPage = () => (
   <Layout>
-    {ordersAllowed ? (
-      <OrdersPlayground />
-    ) : (
-      <div className={css.root}>
-        <div className={cx(css.panel, css.denied)}>
-          <h1 className="demo-title">VPN access required</h1>
-          <p className="demo-subtitle">
-            The limit orders page only works from an allowlisted IP address.
-          </p>
-        </div>
-      </div>
-    )}
+    <OrdersPlayground />
   </Layout>
 )
-
-export const getServerSideProps: GetServerSideProps<Props> = async ({
-  req
-}) => ({
-  props: { ordersAllowed: isOrdersAccessAllowed(req) }
-})
 
 export default OrdersPage

@@ -793,12 +793,6 @@
   list-style: none;
 }
 
-.denied {
-  max-width: 480px;
-  margin: 80px auto;
-  text-align: center;
-}
-
 .modal {
   box-sizing: border-box;
   width: min(420px, calc(100vw - 32px));
