@@ -60,6 +60,16 @@ const SPONSORED_COMPONENTS: OrderSponsoredFeeComponent[] = [
   'rent'
 ]
 
+const WALLET_CHAIN_INCOMPATIBLE: Record<string, number[]> = {
+  binance: [7777777, 8453],
+  binanceus: [7777777, 8453],
+  coinbase: [4663]
+}
+const WALLET_NAME_ALIASES: Record<string, string> = {
+  coinbasewalletevm: 'coinbase',
+  baseevm: 'coinbase'
+}
+
 const isAddress = (value: string): value is Address =>
   /^0x[0-9a-fA-F]{40}$/.test(value)
 
@@ -95,7 +105,7 @@ export const CreateOrderForm: FC<Props> = ({
   draft
 }) => {
   const client = useRelayClient()
-  const { setShowAuthFlow } = useDynamicContext()
+  const { setShowAuthFlow, primaryWallet } = useDynamicContext()
   const solverChains = useSolverChains()
   const [side, setSide] = useState<'buy' | 'sell'>('sell')
   const [target, setTarget] = useState<TokenRef>({
@@ -374,6 +384,21 @@ export const CreateOrderForm: FC<Props> = ({
       ? vsMarket
       : undefined
 
+  const walletName = primaryWallet?.connector.key ?? ''
+  const receivesInWallet =
+    Boolean(address) &&
+    (recipient || owner).toLowerCase() === address!.toLowerCase()
+  const walletCantReceive =
+    receivesInWallet &&
+    Boolean(
+      WALLET_CHAIN_INCOMPATIBLE[
+        WALLET_NAME_ALIASES[walletName] ?? walletName
+      ]?.includes(buyToken.chainId)
+    )
+  const buyChainName =
+    client?.chains.find((chain) => chain.id === buyToken.chainId)
+      ?.displayName ?? `chain ${buyToken.chainId}`
+
   const cta = submitting
     ? 'Placing order…'
     : !wallet
@@ -387,13 +412,15 @@ export const CreateOrderForm: FC<Props> = ({
             : !isSolverToken(solverChains, settlement) ||
                 (side === 'buy' && !isSolverToken(solverChains, target))
               ? 'Pick a solver-held token'
-              : !hasPrice
-                ? 'Enter a target price'
-                : !amountBase
-                  ? 'Enter an amount'
-                  : !body.expiresAt
-                    ? 'Choose an expiry'
-                    : 'Place order'
+              : walletCantReceive
+                ? `Wallet can't receive on ${buyChainName}, set a recipient`
+                : !hasPrice
+                  ? 'Enter a target price'
+                  : !amountBase
+                    ? 'Enter an amount'
+                    : !body.expiresAt
+                      ? 'Choose an expiry'
+                      : 'Place order'
 
   return (
     <div className={css.createLayout}>
