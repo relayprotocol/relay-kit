@@ -50,13 +50,25 @@ export const TokenPill: FC<Props> = ({
   const ref = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [custom, setCustom] = useState(false)
+  const [chainSearch, setChainSearch] = useState('')
   const solverChains = useSolverChains()
-  const chains = (client?.chains ?? []).filter(
-    (chain) =>
-      chain.vmType === 'evm' &&
-      (!solverOnly ||
-        (solverChains && solverTokenKeys(solverChains, chain.id).length > 0))
-  )
+  const chains = (client?.chains ?? [])
+    .filter(
+      (chain) =>
+        chain.vmType === 'evm' &&
+        (!solverOnly ||
+          (solverChains && solverTokenKeys(solverChains, chain.id).length > 0))
+    )
+    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+  const search = chainSearch.trim().toLowerCase()
+  const shownChains = search
+    ? chains.filter(
+        (chain) =>
+          chain.displayName.toLowerCase().includes(search) ||
+          chain.name.toLowerCase().includes(search) ||
+          String(chain.id) === search
+      )
+    : chains
   const solverTokens =
     solverOnly && solverChains
       ? solverTokenKeys(solverChains, value.chainId)
@@ -94,7 +106,10 @@ export const TokenPill: FC<Props> = ({
   }, [value, custom, chainTokens])
 
   useEffect(() => {
-    if (!open) return
+    if (!open) {
+      setChainSearch('')
+      return
+    }
     const close = (event: MouseEvent | KeyboardEvent) => {
       if (
         event instanceof KeyboardEvent
@@ -141,112 +156,136 @@ export const TokenPill: FC<Props> = ({
           role="dialog"
           aria-label={`${label} token`}
         >
-          <select
-            aria-label={`${label} chain`}
-            value={value.chainId}
-            onChange={(e) => {
-              setCustom(false)
-              onChange({ chainId: Number(e.target.value), address: '' })
-            }}
-            className={css.select}
-          >
-            {!chains.some((chain) => chain.id === value.chainId) && (
-              <option value={value.chainId}>{chainName(value.chainId)}</option>
-            )}
-            {chains.map((chain) => (
-              <option key={chain.id} value={chain.id}>
-                {chain.displayName} ({chain.id})
-              </option>
-            ))}
-          </select>
-          <div className={css.tokenList} role="listbox" aria-label="Tokens">
-            {!chainTokens && (
-              <span className={css.hint}>
-                {solverOnly && solverTokens?.length === 0
-                  ? 'The solver holds no tokens on this chain.'
-                  : 'Loading tokens…'}
-              </span>
-            )}
-            {chainTokens?.map((token) => {
-              const tokenAddress = token.address?.toLowerCase() ?? ''
-              const selected = !showAddressInput && tokenAddress === address
-              return (
-                <button
-                  key={tokenAddress}
-                  role="option"
-                  aria-selected={selected}
-                  className={cx(css.tokenRow, selected && css.tokenRowActive)}
-                  onClick={() => {
-                    setCustom(false)
-                    onChange({ ...value, address: token.address! })
-                    setOpen(false)
-                  }}
-                >
-                  <TokenLogo
-                    meta={{
-                      chainId: value.chainId,
-                      address: tokenAddress,
-                      symbol: token.symbol,
-                      logoURI: token.metadata?.logoURI
-                    }}
-                    chainId={value.chainId}
-                  />
-                  <span className={css.tokenRowText}>
-                    <b>{token.symbol}</b>
-                    <span className={css.hint}>{token.name}</span>
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-          {solverOnly ? (
-            unlisted && (
-              <span className={css.error}>
-                The solver doesn't hold this token on this chain. Pick one from
-                the list.
-              </span>
-            )
-          ) : (
-            <button
-              aria-pressed={showAddressInput}
-              className={cx(
-                css.tokenRow,
-                showAddressInput && css.tokenRowActive
-              )}
-              onClick={() => setCustom(true)}
+          <div className={css.chainColumn}>
+            <input
+              aria-label={`Search ${label.toLowerCase()} chains`}
+              value={chainSearch}
+              onChange={(e) => setChainSearch(e.target.value)}
+              placeholder="Search chains"
+              autoFocus
+              className={css.input}
+            />
+            <div
+              className={css.chainList}
+              role="listbox"
+              aria-label={`${label} chain`}
             >
-              <span className={cx(css.tokenLogo, css.logoFallback)}>+</span>
-              <span className={css.tokenRowText}>
-                <b>Enter address…</b>
-                <span className={css.hint}>Any token on currencies/v2</span>
-              </span>
-            </button>
-          )}
-          {showAddressInput && (
-            <>
-              <input
-                aria-label={`${label} address`}
-                value={value.address}
-                onChange={(e) =>
-                  onChange({ ...value, address: e.target.value.trim() })
-                }
-                placeholder="0x… token address"
-                autoFocus={custom}
-                className={cx(css.input, css.mono)}
-              />
-              <span
-                className={meta && !isNativeToken(value) ? css.hint : css.error}
+              {shownChains.length === 0 && (
+                <span className={css.hint}>No chains match.</span>
+              )}
+              {shownChains.map((chain) => {
+                const selected = chain.id === value.chainId
+                return (
+                  <button
+                    key={chain.id}
+                    role="option"
+                    aria-selected={selected}
+                    className={cx(css.chainRow, selected && css.tokenRowActive)}
+                    onClick={() => {
+                      if (selected) return
+                      setCustom(false)
+                      onChange({ chainId: chain.id, address: '' })
+                    }}
+                  >
+                    <img src={chainIcon(chain.id)} alt="" />
+                    {chain.displayName}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div className={css.tokenColumn}>
+            <div className={css.tokenList} role="listbox" aria-label="Tokens">
+              {!chainTokens && (
+                <span className={css.hint}>
+                  {solverOnly && solverTokens?.length === 0
+                    ? 'The solver holds no tokens on this chain.'
+                    : 'Loading tokens…'}
+                </span>
+              )}
+              {chainTokens?.map((token) => {
+                const tokenAddress = token.address?.toLowerCase() ?? ''
+                const selected = !showAddressInput && tokenAddress === address
+                return (
+                  <button
+                    key={tokenAddress}
+                    role="option"
+                    aria-selected={selected}
+                    className={cx(css.tokenRow, selected && css.tokenRowActive)}
+                    onClick={() => {
+                      setCustom(false)
+                      onChange({ ...value, address: token.address! })
+                      setOpen(false)
+                    }}
+                  >
+                    <TokenLogo
+                      meta={{
+                        chainId: value.chainId,
+                        address: tokenAddress,
+                        symbol: token.symbol,
+                        logoURI: token.metadata?.logoURI
+                      }}
+                      chainId={value.chainId}
+                    />
+                    <span className={css.tokenRowText}>
+                      <b>{token.symbol}</b>
+                      <span className={css.hint}>{token.name}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            {solverOnly ? (
+              unlisted && (
+                <span className={css.error}>
+                  The solver doesn't hold this token on this chain. Pick one
+                  from the list.
+                </span>
+              )
+            ) : (
+              <button
+                aria-pressed={showAddressInput}
+                className={cx(
+                  css.tokenRow,
+                  showAddressInput && css.tokenRowActive
+                )}
+                onClick={() => setCustom(true)}
               >
-                {isNativeToken(value)
-                  ? 'Native currencies are not supported. Use the wrapped token, such as WETH.'
-                  : meta
-                    ? `${meta.symbol} · ${meta.decimals} decimals${meta.verified ? '' : ' · unverified'}`
-                    : metaLoading || !value.address
-                      ? 'Looking up token…'
-                      : 'Not found on currencies/v2. Check the chain and address.'}
-              </span>
-            </>
-          )}
+                <span className={cx(css.tokenLogo, css.logoFallback)}>+</span>
+                <span className={css.tokenRowText}>
+                  <b>Enter address…</b>
+                  <span className={css.hint}>Any token on currencies/v2</span>
+                </span>
+              </button>
+            )}
+            {showAddressInput && (
+              <>
+                <input
+                  aria-label={`${label} address`}
+                  value={value.address}
+                  onChange={(e) =>
+                    onChange({ ...value, address: e.target.value.trim() })
+                  }
+                  placeholder="0x… token address"
+                  autoFocus={custom}
+                  className={cx(css.input, css.mono)}
+                />
+                <span
+                  className={
+                    meta && !isNativeToken(value) ? css.hint : css.error
+                  }
+                >
+                  {isNativeToken(value)
+                    ? 'Native currencies are not supported. Use the wrapped token, such as WETH.'
+                    : meta
+                      ? `${meta.symbol} · ${meta.decimals} decimals${meta.verified ? '' : ' · unverified'}`
+                      : metaLoading || !value.address
+                        ? 'Looking up token…'
+                        : 'Not found on currencies/v2. Check the chain and address.'}
+                </span>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>
