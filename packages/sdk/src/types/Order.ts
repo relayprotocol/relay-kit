@@ -5,15 +5,11 @@ export type OrderStatus =
   | 'requires_action'
   | 'closed'
 
-export type OrderOutcome =
-  | 'filled'
-  | 'refunded'
-  | 'withdrawn'
-  | 'cancelled'
-  | 'expired'
-  | 'failed'
+export type OrderOutcome = 'filled' | 'cancelled' | 'expired'
 
 export type OrderCancelReason = 'requested' | 'access_revoked'
+
+export type OrderRequiredAction = 'compliance_review' | 'manual_refund'
 
 export type OrderStepId = 'approve' | 'authorize' | 'cancel' | 'withdraw'
 
@@ -32,6 +28,7 @@ export type OrderCreateErrorCode =
   | 'NO_QUOTES'
   | 'INSUFFICIENT_FUNDS'
   | 'MAX_OPEN_ORDERS_REACHED'
+  | 'MAX_OPEN_ORDER_PAIRS_REACHED'
   | 'IDEMPOTENCY_KEY_REUSED'
   | 'CLIENT_ORDER_ID_EXISTS'
   | 'UNAUTHORIZED'
@@ -92,6 +89,12 @@ export type OrderPriceCheck = {
   checkedAt: string
 }
 
+/**
+ * An order as the Orders API returns it.
+ * @property outcome - How a closed order ended; null until it closes. A `cancelled` or `expired` order whose funds were already pulled shows the amount sent back in `refundedAmount`
+ * @property cancellationReason - Who cancelled the order; null unless the outcome is `cancelled`
+ * @property requiredAction - What Relay has to do before the order can continue; null unless the status is `requires_action`
+ */
 export type Order = Omit<
   CreateOrderBody,
   'recipient' | 'refundTo' | 'clientOrderId'
@@ -101,7 +104,8 @@ export type Order = Omit<
   orderHash: string
   status: OrderStatus
   outcome: OrderOutcome | null
-  cancelReason: OrderCancelReason | null
+  cancellationReason: OrderCancelReason | null
+  requiredAction: OrderRequiredAction | null
   recipient: string
   refundTo: string
   originChainId: number

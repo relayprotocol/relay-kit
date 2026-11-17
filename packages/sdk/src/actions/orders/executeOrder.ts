@@ -10,6 +10,7 @@ import {
   type AdaptViemWalletOptions
 } from '../../utils/viemWallet.js'
 import { getOrders } from './getOrders.js'
+import { isAlreadySigned } from './requestOrders.js'
 
 /** The order whose steps run, and the progress of those steps */
 export type OrderProgressData = {
@@ -27,7 +28,8 @@ export type ExecuteOrderParameters = {
  * Run the steps an order asks of its owner with {@link executeSteps}: an
  * optional Permit2 approval and the `authorize` signature for a `pending`
  * order, or the `cancel` transaction of an onchain cancel. Use it to resume an
- * order read with {@link getOrders}.
+ * order read with {@link getOrders}. An order that was already opened with the
+ * same signature, such as by an earlier run, is read again instead of failing.
  * @param parameters - {@link ExecuteOrderParameters}
  * @returns The order after its steps, read again from the API
  * @throws When the order is not listed for the client's API key afterwards
@@ -44,13 +46,17 @@ export async function executeOrder({
   const adaptedWallet = isViemWalletClient(wallet)
     ? adaptViemWallet(wallet, { disableCapabilitiesCheck })
     : wallet
-  await executeSteps(
-    order.originChainId,
-    {},
-    adaptedWallet,
-    ({ steps }) => onProgress?.({ order, steps }),
-    { steps: safeStructuredClone(order.steps) }
-  )
+  try {
+    await executeSteps(
+      order.originChainId,
+      {},
+      adaptedWallet,
+      ({ steps }) => onProgress?.({ order, steps }),
+      { steps: safeStructuredClone(order.steps) }
+    )
+  } catch (error) {
+    if (!isAlreadySigned(error)) throw error
+  }
   const { orders } = await getOrders({ orderId: order.id })
   if (!orders[0]) {
     throw new Error(

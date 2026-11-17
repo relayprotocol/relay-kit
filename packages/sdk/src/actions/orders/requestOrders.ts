@@ -14,3 +14,8 @@ export async function requestOrders<T>(config: AxiosRequestConfig): Promise<T> {
   })
   return res.data
 }
+
+/** Whether the API refused a signature because the order was already opened with it */
+export const isAlreadySigned = (error: unknown) =>
+  (error as { rawError?: { errorCode?: string } })?.rawError?.errorCode ===
+  'ORDER_ALREADY_SIGNED'
