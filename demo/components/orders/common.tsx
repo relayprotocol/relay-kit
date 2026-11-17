@@ -192,8 +192,6 @@ const BADGE_COLORS: Record<string, string> = {
   requires_action: 'var(--relay-colors-red11)',
   closed: 'var(--relay-colors-gray11)',
   filled: 'var(--relay-colors-green11)',
-  refunded: 'var(--relay-colors-amber11)',
-  withdrawn: 'var(--relay-colors-blue-11)',
   cancelled: 'var(--relay-colors-gray11)',
   expired: 'var(--relay-colors-gray11)',
   failed: 'var(--relay-colors-red11)',
@@ -258,10 +256,26 @@ export const fillProgress = (order: Order) => {
   }
 }
 
-/** The order's warning, if a price check says it can't fill or it needs action */
+/** Why the latest price check did not start a fill */
+export const CHECK_REASONS: Record<string, string> = {
+  price_not_reached: 'Price not reached',
+  no_route: 'No route quotes the order',
+  insufficient_balance: 'Wallet balance is below the order amount',
+  insufficient_allowance: 'Permit2 allowance is below the order amount'
+}
+
+/** What Relay has to do before a `requires_action` order can continue */
+export const REQUIRED_ACTIONS: Record<string, string> = {
+  compliance_review:
+    'A wallet check stopped the fill. Relay is reviewing it; the funds stay with Relay until then.',
+  manual_refund:
+    "The refund couldn't be sent. Relay will refund the funds manually."
+}
+
+/** The order's warning: the action it needs, or why a price check says it can't fill */
 export const unfillableReason = (order: Order) =>
   order.status === 'requires_action'
-    ? 'needs action'
+    ? (order.requiredAction ?? 'needs action')
     : order.status !== 'closed' &&
         UNFILLABLE_REASONS.includes(order.latestCheck?.reason ?? '')
       ? order.latestCheck!.reason!

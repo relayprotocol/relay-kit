@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { base } from 'viem/chains'
 import { createClient } from '../../client'
 import { MAINNET_RELAY_API } from '../../constants'
 import { axios } from '../../utils'
 import { convertViemChainToRelayChain } from '../../utils/chain'
 import type { Order, OrderStep } from '../../types'
+import type { OrderProgressData } from './executeOrder'
 
 const ORDER_ID = 'order_id_1'
 const USER = '0xAbC0000000000000000000000000000000000001'
@@ -93,6 +95,24 @@ const mockApi = (responses: Record<string, unknown>) =>
     return Promise.resolve({ data, status: 200 })
   })
 
+const mockAdapter = (
+  responses: Record<string, { status: number; data: unknown }>
+) => {
+  const adapter = vi.fn(async (config: InternalAxiosRequestConfig) => {
+    const path = new URL(config.url!).pathname
+    const { status, data } = responses[
+      `${config.method?.toUpperCase()} ${path}`
+    ] ?? { status: 404, data: { message: `Unexpected request ${path}` } }
+    const response = { data, status, statusText: '', headers: {}, config }
+    if (status >= 400) {
+      throw new AxiosError('Request failed', undefined, config, null, response)
+    }
+    return response
+  })
+  axios.defaults.adapter = adapter
+  return adapter
+}
+
 const relayCalls = (spy: ReturnType<typeof mockApi>) =>
   spy.mock.calls.map(([config]) => ({
     method: config.method,
@@ -104,6 +124,11 @@ const relayCalls = (spy: ReturnType<typeof mockApi>) =>
 
 describe('Limit order actions', () => {
   let client: ReturnType<typeof createClient>
+  const defaultAdapter = axios.defaults.adapter
+
+  afterEach(() => {
+    axios.defaults.adapter = defaultAdapter
+  })
 
   beforeEach(() => {
     vi.restoreAllMocks()
@@ -265,5 +290,78 @@ describe('Limit order actions', () => {
       expect.objectContaining({ id: 'cancel' })
     )
     expect(wallet.handleSignMessageStep).not.toHaveBeenCalled()
+  })
+
+  it('reads the order again when its signature was already posted', async () => {
+    const opened = order({ status: 'open' })
+    const adapter = mockAdapter({
+      [`POST /orders/${ORDER_ID}/signature`]: {
+        status: 409,
+        data: {
+          message: 'Order is already signed',
+          errorCode: 'ORDER_ALREADY_SIGNED'
+        }
+      },
+      'GET /orders': { status: 200, data: { orders: [opened] } }
+    })
+
+    const progress: OrderProgressData[] = []
+
+    const result = await client.actions.executeOrder({
+      order: order({ steps: [authorizeStep] }),
+      wallet: mockWallet(),
+      onProgress: (data) => progress.push(structuredClone(data))
+    })
+
+    expect(result).toEqual(opened)
+    expect(adapter).toHaveBeenCalledTimes(2)
+    expect(progress.some(({ steps }) => steps[0].items[0].error)).toBe(true)
+    const last = progress.at(-1)!
+    expect(last.order).toEqual(opened)
+    expect(last.steps[0].error).toBeUndefined()
+    expect(last.steps[0].items[0]).toMatchObject({ status: 'complete' })
+    expect(last.steps[0].items[0].error).toBeUndefined()
+  })
+
+  it('returns the current order when signOrder posts a signature again', async () => {
+    const opened = order({ status: 'open' })
+    mockAdapter({
+      [`POST /orders/${ORDER_ID}/signature`]: {
+        status: 409,
+        data: {
+          message: 'Order is already signed',
+          errorCode: 'ORDER_ALREADY_SIGNED'
+        }
+      },
+      'GET /orders': { status: 200, data: { orders: [opened] } }
+    })
+
+    await expect(
+      client.actions.signOrder({ orderId: ORDER_ID, signature: '0xsig' })
+    ).resolves.toEqual(opened)
+  })
+
+  it('still fails on a signature the order was not opened with', async () => {
+    mockAdapter({
+      [`POST /orders/${ORDER_ID}/signature`]: {
+        status: 409,
+        data: { message: 'Order is open', errorCode: 'ORDER_NOT_PENDING' }
+      },
+      'GET /orders': { status: 200, data: { orders: [order({})] } }
+    })
+
+    await expect(
+      client.actions.executeOrder({
+        order: order({ steps: [authorizeStep] }),
+        wallet: mockWallet()
+      })
+    ).rejects.toMatchObject({
+      rawError: { errorCode: 'ORDER_NOT_PENDING' }
+    })
+    await expect(
+      client.actions.signOrder({ orderId: ORDER_ID, signature: '0xsig' })
+    ).rejects.toMatchObject({
+      rawError: { errorCode: 'ORDER_NOT_PENDING' }
+    })
   })
 })
