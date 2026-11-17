@@ -5,6 +5,7 @@ import type { WalletClient } from 'viem'
 import type { RunAction } from './ActivityLog'
 import {
   Badge,
+  CHECK_REASONS,
   cx,
   distanceToTarget,
   fillProgress,
@@ -15,6 +16,7 @@ import {
   Json,
   orderSides,
   orderTokens,
+  REQUIRED_ACTIONS,
   shortHex,
   spentMeta,
   statusLabel,
@@ -191,7 +193,7 @@ export const OrderDetail: FC<Props> = ({
             {warning && (
               <Badge value={warning.replace(/_/g, ' ')} tone="warning" />
             )}
-            {order.cancelReason === 'access_revoked' && (
+            {order.cancellationReason === 'access_revoked' && (
               <Badge value="access revoked" tone="cancelled" />
             )}
           </b>
@@ -200,6 +202,16 @@ export const OrderDetail: FC<Props> = ({
           </span>
         </div>
       </div>
+
+      {order.status === 'requires_action' && (
+        <div className={css.callout}>
+          <b>Needs action</b>
+          <span className={css.hint}>
+            {REQUIRED_ACTIONS[order.requiredAction ?? ''] ??
+              'Relay has to act on this order before it can continue.'}
+          </span>
+        </div>
+      )}
 
       <div className={cx(css.section, css.sectionDivider)}>
         {amountRow(pay, false)}
@@ -232,12 +244,34 @@ export const OrderDetail: FC<Props> = ({
             </span>
           )}
         </dd>
+        {cancellable && order.latestCheck && (
+          <>
+            <dt>Last check</dt>
+            <dd>
+              {order.latestCheck.reason
+                ? (CHECK_REASONS[order.latestCheck.reason] ??
+                  order.latestCheck.reason)
+                : 'Fill starting'}
+              <span className={css.hint}>
+                {' '}
+                (all-in {usd(order.latestCheck.allInPrice)} ·{' '}
+                {new Date(order.latestCheck.checkedAt).toLocaleTimeString()})
+              </span>
+            </dd>
+          </>
+        )}
         {progress > 0 && (
           <>
             <dt>Filled</dt>
             <dd>
               {progress}% · {formatBaseUnits(order.filledAmount, spent)}
             </dd>
+          </>
+        )}
+        {order.refundedAmount !== '0' && (
+          <>
+            <dt>Refunded</dt>
+            <dd>{formatBaseUnits(order.refundedAmount, spent)}</dd>
           </>
         )}
         <dt>Expiry</dt>
@@ -379,16 +413,19 @@ export const OrderDetail: FC<Props> = ({
               <Badge value={order.status} />{' '}
               {order.outcome && <Badge value={order.outcome} />}
             </dd>
+            {order.requiredAction && (
+              <>
+                <dt>Required action</dt>
+                <dd>
+                  <code>{order.requiredAction}</code>
+                </dd>
+              </>
+            )}
             <dt>Last check</dt>
             <dd>
               {order.latestCheck
-                ? `${order.latestCheck.reason ?? 'ok'} · all-in ${usd(order.latestCheck.allInPrice)} · ${new Date(order.latestCheck.checkedAt).toLocaleTimeString()}`
+                ? `${order.latestCheck.reason ?? 'none'} · market ${usd(order.latestCheck.marketPrice)} · all-in ${usd(order.latestCheck.allInPrice)} · ${new Date(order.latestCheck.checkedAt).toLocaleTimeString()}`
                 : '—'}
-            </dd>
-            <dt>Refunded / withdrawn</dt>
-            <dd>
-              {formatBaseUnits(order.refundedAmount, spent)} /{' '}
-              {formatBaseUnits(order.withdrawnAmount, spent)}
             </dd>
             {order.closedAt && (
               <>

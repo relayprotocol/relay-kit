@@ -165,6 +165,19 @@ export const OrderModal: FC<{
             {state.error?.message}
             {state.error?.errorCode && <code> {state.error.errorCode}</code>}
           </p>
+          {state.error?.errorCode === 'MAX_OPEN_ORDERS_REACHED' && (
+            <p className={css.hint}>
+              The wallet is at its limit of open and filling orders. Cancel one,
+              or wait for one to close, before trying again.
+            </p>
+          )}
+          {state.error?.errorCode === 'MAX_OPEN_ORDER_PAIRS_REACHED' && (
+            <p className={css.hint}>
+              The wallet is at its limit of token pairs with open orders. Use a
+              pair it already has open orders on, or close every order on
+              another pair first.
+            </p>
+          )}
           {state.order && (
             <p className={css.hint}>
               The order stays pending until its steps finish. Retry them here or
