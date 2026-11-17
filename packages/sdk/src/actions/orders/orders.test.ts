@@ -6,6 +6,7 @@ import { MAINNET_RELAY_API } from '../../constants'
 import { axios } from '../../utils'
 import { convertViemChainToRelayChain } from '../../utils/chain'
 import type { Order, OrderStep } from '../../types'
+import type { OrderProgressData } from './executeOrder'
 
 const ORDER_ID = 'order_id_1'
 const USER = '0xAbC0000000000000000000000000000000000001'
@@ -304,13 +305,22 @@ describe('Limit order actions', () => {
       'GET /orders': { status: 200, data: { orders: [opened] } }
     })
 
+    const progress: OrderProgressData[] = []
+
     const result = await client.actions.executeOrder({
       order: order({ steps: [authorizeStep] }),
-      wallet: mockWallet()
+      wallet: mockWallet(),
+      onProgress: (data) => progress.push(structuredClone(data))
     })
 
     expect(result).toEqual(opened)
     expect(adapter).toHaveBeenCalledTimes(2)
+    expect(progress.some(({ steps }) => steps[0].items[0].error)).toBe(true)
+    const last = progress.at(-1)!
+    expect(last.order).toEqual(opened)
+    expect(last.steps[0].error).toBeUndefined()
+    expect(last.steps[0].items[0]).toMatchObject({ status: 'complete' })
+    expect(last.steps[0].items[0].error).toBeUndefined()
   })
 
   it('returns the current order when signOrder posts a signature again', async () => {

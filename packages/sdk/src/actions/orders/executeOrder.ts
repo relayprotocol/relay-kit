@@ -46,22 +46,44 @@ export async function executeOrder({
   const adaptedWallet = isViemWalletClient(wallet)
     ? adaptViemWallet(wallet, { disableCapabilitiesCheck })
     : wallet
+  let steps: Execute['steps'] = []
+  let alreadySigned = false
   try {
     await executeSteps(
       order.originChainId,
       {},
       adaptedWallet,
-      ({ steps }) => onProgress?.({ order, steps }),
+      (data) => {
+        steps = data.steps
+        onProgress?.({ order, steps })
+      },
       { steps: safeStructuredClone(order.steps) }
     )
   } catch (error) {
     if (!isAlreadySigned(error)) throw error
+    alreadySigned = true
   }
   const { orders } = await getOrders({ orderId: order.id })
   if (!orders[0]) {
     throw new Error(
       `Order ${order.id} ran its steps but is not listed for this API key`
     )
+  }
+  if (alreadySigned) {
+    steps = steps.map(({ error: _error, ...step }) =>
+      step.id === 'authorize'
+        ? {
+            ...step,
+            items: step.items.map(
+              ({ error: _itemError, errorData: _errorData, ...item }) => ({
+                ...item,
+                status: 'complete' as const
+              })
+            )
+          }
+        : step
+    )
+    onProgress?.({ order: orders[0], steps })
   }
   return orders[0]
 }
