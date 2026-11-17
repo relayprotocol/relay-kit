@@ -103,8 +103,16 @@ export const CreateOrderForm: FC<Props> = ({
     address: '0x4200000000000000000000000000000000000006'
   })
   const [settlement, setSettlement] = useState<TokenRef>({
-    chainId: 8453,
-    address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'
+    chainId: 4663,
+    address: '0x5fc5360d0400a0fd4f2af552add042d716f1d168'
+  })
+  const [openPicker, setOpenPicker] = useState<'sell' | 'buy'>()
+  const pickerProps = (picker: 'sell' | 'buy') => ({
+    open: openPicker === picker,
+    onOpenChange: (open: boolean) =>
+      setOpenPicker((current) =>
+        open ? picker : current === picker ? undefined : current
+      )
   })
   const [price, setPrice] = useState('')
   const [amount, setAmount] = useState('')
@@ -394,8 +402,16 @@ export const CreateOrderForm: FC<Props> = ({
           <div className={css.spread}>
             <span className={css.cardLabel}>
               {side === 'sell' ? 'Sell' : 'Buy'} when 1
-              <TokenLogo meta={targetMeta} chainId={target.chainId} />
-              <b className={css.cardToken}>{targetSymbol}</b> is worth
+              <button
+                className={css.cardTokenBtn}
+                aria-label={`Change ${side} token`}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={() => setOpenPicker(side)}
+              >
+                <TokenLogo meta={targetMeta} chainId={target.chainId} />
+                <b className={css.cardToken}>{targetSymbol}</b>
+              </button>
+              is worth
               {side === 'sell' ? ' at least' : ' at most'}
             </span>
           </div>
@@ -494,6 +510,7 @@ export const CreateOrderForm: FC<Props> = ({
                 className={css.amountInput}
               />
               <TokenPill
+                {...pickerProps('sell')}
                 label="Sell"
                 solverOnly={side === 'buy'}
                 value={sellToken}
@@ -561,6 +578,7 @@ export const CreateOrderForm: FC<Props> = ({
                   : '0'}
               </span>
               <TokenPill
+                {...pickerProps('buy')}
                 label="Buy"
                 solverOnly
                 value={buyToken}

@@ -20,6 +20,8 @@ type Props = {
   metaLoading: boolean
   /** Only offer the currencies the solver holds */
   solverOnly?: boolean
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export const TokenLogo: FC<{ meta?: TokenMeta; chainId: number }> = ({
@@ -44,11 +46,12 @@ export const TokenPill: FC<Props> = ({
   onChange,
   meta,
   metaLoading,
-  solverOnly
+  solverOnly,
+  open,
+  onOpenChange: setOpen
 }) => {
   const client = useRelayClient()
   const ref = useRef<HTMLDivElement>(null)
-  const [open, setOpen] = useState(false)
   const [custom, setCustom] = useState(false)
   const [chainSearch, setChainSearch] = useState('')
   const solverChains = useSolverChains()
