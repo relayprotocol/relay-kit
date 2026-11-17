@@ -5,7 +5,7 @@ import { DemoPage, DemoOutput } from 'components/DemoPage'
 import {
   type QuoteBody,
   type AdaptedWallet,
-  type Execute,
+  type Quote,
   adaptViemWallet
 } from '@relayprotocol/relay-sdk'
 import { createFastFillWallet } from 'utils/createFastFillWallet'
@@ -22,7 +22,7 @@ const FastFillPage: NextPage = () => {
   const client = useRelayClient()
   const { primaryWallet } = useDynamicContext()
   const [quoteParams, setQuoteParams] = useState<string>('')
-  const [quote, setQuote] = useState<Execute | null>(null)
+  const [quote, setQuote] = useState<Quote | null>(null)
   const [result, setResult] = useState<any>(null)
   const [progress, setProgress] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -245,8 +245,7 @@ const FastFillPage: NextPage = () => {
           <div>
             <label>Quote obtained! Request ID</label>
             <pre className="demo-output">
-              {quote.steps.find((step) => step.requestId)?.requestId ??
-                'No request ID found'}
+              {quote.requestId ?? 'No request ID found'}
             </pre>
           </div>
         )}

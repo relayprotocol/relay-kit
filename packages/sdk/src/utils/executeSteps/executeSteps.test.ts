@@ -1119,6 +1119,71 @@ describe('Base tests', () => {
     ).toBeTruthy()
   })
 
+  it('Should run the flat steps /execute/permits/v2 returns', async () => {
+    const signatureItem = executeBridgeAuthorize.steps[1].items[0]
+    const permitSwap = {
+      id: 'swap',
+      action: 'Confirm transaction in your wallet',
+      description: 'Swapping USDC for ETH',
+      kind: 'transaction',
+      status: 'incomplete',
+      data: {
+        to: '0x00000000bb6dd3b0032d930f72cac8e56166d93c',
+        data: '0x',
+        value: '0',
+        chainId: 1,
+        gas: '210000'
+      },
+      check: { endpoint: '/intents/status/v3?requestId=0xabc', method: 'GET' }
+    }
+    axiosRequestSpy = vi
+      .spyOn(axios, 'request')
+      .mockImplementation((config) => {
+        if (config.url?.includes('/execute/permits/v2')) {
+          return Promise.resolve({
+            data: { message: 'Success', steps: [permitSwap] },
+            status: 200
+          })
+        }
+        return Promise.resolve({
+          data: { status: 'success' },
+          status: 200
+        })
+      })
+
+    const result = await executeSteps(1, {}, wallet, () => {}, {
+      requestId: '0xabc',
+      steps: [
+        {
+          id: 'authorize',
+          action: 'Sign authorization',
+          description: 'Sign to approve swap of USDC for ETH',
+          kind: 'signature',
+          status: 'incomplete',
+          data: {
+            ...signatureItem.data,
+            post: {
+              ...signatureItem.data.post,
+              endpoint: '/execute/permits/v2'
+            }
+          }
+        }
+      ]
+    })
+
+    expect(
+      wallet.handleSendTransactionStep.mock.calls.map(([, item, step]) => [
+        step.id,
+        item.data.to
+      ])
+    ).toEqual([['swap', permitSwap.data.to]])
+    expect(result.steps[1]).toMatchObject({
+      id: 'swap',
+      requestId: '0xabc',
+      items: [{ status: 'complete', check: permitSwap.check }]
+    })
+  })
+
   it('Should use gas fee estimations by default', async () => {
     const viem = await vi.importActual('viem')
     //@ts-ignore

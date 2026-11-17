@@ -278,7 +278,7 @@ export const TransactionModalRenderer: FC<Props> = ({
 
   const isAutoSlippage = slippageTolerance === undefined
   const timeEstimate = calculatePriceTimeEstimate(quote?.details)
-  const _isGasSponsored = isGasSponsored(quote as Execute)
+  const _isGasSponsored = isGasSponsored(quote ?? undefined)
 
   return (
     <>

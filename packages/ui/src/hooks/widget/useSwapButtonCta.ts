@@ -46,7 +46,6 @@ export const useSwapButtonCta = ({
   operation
 }: UseSwapButtonCtaParams): string => {
   const firstStep = quote?.steps?.[0]
-  const firstStepItem = firstStep?.items?.[0]
 
   return useMemo(() => {
     if (!fromToken || !toToken) {
@@ -91,7 +90,7 @@ export const useSwapButtonCta = ({
       return `Enter ${toChain?.displayName} Address`
     }
 
-    if (firstStep?.id === 'approve' && firstStepItem?.status === 'incomplete') {
+    if (firstStep?.id === 'approve' && firstStep?.status === 'incomplete') {
       return 'Approve & Swap'
     }
 

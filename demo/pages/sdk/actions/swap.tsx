@@ -9,7 +9,7 @@ import { adaptSolanaWallet } from '@relayprotocol/relay-svm-wallet-adapter'
 import { adaptBitcoinWallet } from '@relayprotocol/relay-bitcoin-wallet-adapter'
 import {
   adaptViemWallet,
-  Execute,
+  Quote,
   GetQuoteParameters,
   LogLevel
 } from '@relayprotocol/relay-sdk'
@@ -28,7 +28,7 @@ const SwapActionPage: NextPage = () => {
   const [headersPayload, setHeadersPayload] = useState<any>()
   const [error, setError] = useState<string | undefined>()
   const [logs, setLogs] = useState<{ message: string[]; level: LogLevel }[]>([])
-  const [quote, setQuote] = useState<Execute | undefined>()
+  const [quote, setQuote] = useState<Quote | undefined>()
   const [tab, setTab] = useState<'logs' | 'quote'>('logs')
 
   useEffect(() => {

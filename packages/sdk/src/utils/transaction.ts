@@ -297,7 +297,7 @@ export async function sendTransactionSafely(
       client.log(['Polling for confirmation'], LogLevel.Verbose)
 
       let res: AxiosResponse<any, any> | undefined
-      if (check?.endpoint && !request?.data?.useExternalLiquidity) {
+      if (check?.endpoint) {
         let endpoint = check?.endpoint
 
         // Override v2 status endpoint to v3 to get 'submitted' status
@@ -511,18 +511,11 @@ export async function sendTransactionSafely(
     // We want synchronous execution in the following cases:
     // - Approval Signature step required first
     // - Bitcoin is the destination (need to poll status API for backend updates)
-    // - Canonical route used
     step.id === 'approve' ||
-    details?.currencyOut?.currency?.chainId === 8253038 ||
-    request?.data?.useExternalLiquidity
+    details?.currencyOut?.currency?.chainId === 8253038
   ) {
     await waitForTransaction().promise
-    //In the following cases we want to skip polling for confirmation:
-    // - Canonical route, lengthy fill time (skip polling)
-    // Note: Bitcoin destination now polls status API to get 'submitted' status
-    if (!request?.data?.useExternalLiquidity) {
-      await pollForConfirmation()
-    }
+    await pollForConfirmation()
   } else {
     const { promise: receiptPromise, controller: receiptController } =
       waitForTransaction()

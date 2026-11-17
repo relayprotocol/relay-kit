@@ -14,11 +14,14 @@ import {
   type AdaptViemWalletOptions
 } from '../utils/viemWallet.js'
 import { getClient, RelayClient } from '../client.js'
-import type { AdaptedWallet, Execute, paths } from '../types/index.js'
+import type { AdaptedWallet, Quote, paths } from '../types/index.js'
 import { getDeadAddress } from '../constants/address.js'
 
-export type QuoteBody = NonNullable<
-  paths['/quote/v2']['post']['requestBody']['content']['application/json']
+export type QuoteBody = Omit<
+  NonNullable<
+    paths['/quote/v2']['post']['requestBody']['content']['application/json']
+  >,
+  'useExternalLiquidity' | 'useFallbacks'
 >
 export type QuoteBodyOptions = Omit<
   QuoteBody,
@@ -82,7 +85,7 @@ export async function getQuote(
   parameters: GetQuoteParameters,
   includeDefaultParameters?: boolean,
   headers?: Record<string, string>
-): Promise<Execute> {
+): Promise<Quote> {
   const {
     toChainId,
     toCurrency,
@@ -162,7 +165,7 @@ export async function getQuote(
   }
 
   const request: AxiosRequestConfig = {
-    url: `${client.baseApiUrl}/quote/v2`,
+    url: `${client.baseApiUrl}/quote/v3`,
     method: 'post',
     data: query,
     headers: {
@@ -176,5 +179,5 @@ export async function getQuote(
   if (res.status !== 200) {
     throw new APIError(res?.data?.message, res.status, res.data)
   }
-  return { ...res.data, request } as Execute
+  return { ...res.data, request } as Quote
 }
