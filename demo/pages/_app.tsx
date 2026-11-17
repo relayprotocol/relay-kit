@@ -42,6 +42,19 @@ const resolveRelayProxy = (api: unknown): string => {
     ? `${window.location.origin}${path}`
     : path
 }
+
+// The limit orders pages send every Relay API request through the
+// orders proxy (`pages/api/orders/[...path]`) instead.
+const isOrdersRoute = (pathname: string) =>
+  pathname === '/orders' || pathname.startsWith('/orders/')
+
+const resolveOrdersProxy = (api: unknown): string => {
+  const env = api === 'testnets' || api === 'mainnets-dev' ? api : 'mainnets'
+  const path = `/api/orders/${env}`
+  return typeof window !== 'undefined'
+    ? `${window.location.origin}${path}`
+    : path
+}
 import { configureViemChain } from '@relayprotocol/relay-sdk/chain-utils'
 import { ThemeProvider } from 'next-themes'
 import { useRouter } from 'next/router'
@@ -192,7 +205,11 @@ const AppWrapper: FC<AppWrapperProps> = ({ children, dynamicChains }) => {
         disableTransitionOnChange
       >
         <RelayKitProviderWrapper
-          relayApi={relayApi}
+          relayApi={
+            isOrdersRoute(router.pathname)
+              ? resolveOrdersProxy(router.query.api)
+              : relayApi
+          }
           dynamicChains={dynamicChains}
         >
           <DynamicContextProvider
