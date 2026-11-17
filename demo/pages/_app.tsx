@@ -43,7 +43,7 @@ const resolveRelayProxy = (api: unknown): string => {
     : path
 }
 
-// The limit orders pages send every Relay API request through the IP-gated
+// The limit orders pages send every Relay API request through the
 // orders proxy (`pages/api/orders/[...path]`) instead.
 const isOrdersRoute = (pathname: string) =>
   pathname === '/orders' || pathname.startsWith('/orders/')
@@ -79,7 +79,6 @@ import { CustomizeProvider, useCustomize } from 'context/customizeContext'
 import { queryRelayChains } from '@relayprotocol/relay-kit-hooks'
 import { RelayKitProviderWrapper } from 'components/providers/RelayKitProviderWrapper'
 import { Barlow, Chivo, Inter } from 'next/font/google'
-import { isOrdersAccessAllowed } from 'utils/ordersAccess'
 
 export const chivo = Chivo({
   weight: ['700', '800'],
@@ -298,21 +297,6 @@ const getInitialProps = async ({
       }
     }
 
-    if (isOrdersRoute(ctx.pathname)) {
-      ctx.res.setHeader('Cache-Control', 'private, no-store')
-    }
-
-    if (
-      isOrdersRoute(ctx.pathname) &&
-      (!ctx.req || !isOrdersAccessAllowed(ctx.req))
-    ) {
-      return {
-        pageProps: {
-          dynamicChains: backupChains
-        }
-      }
-    }
-
     const baseApiUrl = resolveRelayApi(ctx.query.api)
 
     const url = new URL(`${baseApiUrl}/chains`)
@@ -343,12 +327,10 @@ const getInitialProps = async ({
       })
 
     // Set cache headers
-    if (!isOrdersRoute(ctx.pathname)) {
-      ctx.res.setHeader(
-        'Cache-Control',
-        'public, s-maxage=10, stale-while-revalidate=300'
-      )
-    }
+    ctx.res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=10, stale-while-revalidate=300'
+    )
 
     return {
       pageProps: {

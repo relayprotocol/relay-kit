@@ -1,7 +1,6 @@
 import { MAINNET_RELAY_API, TESTNET_RELAY_API } from '@relayprotocol/relay-sdk'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { isSameSite } from '../../../utils/proxyGuard'
-import { isOrdersAccessAllowed } from '../../../utils/ordersAccess'
 
 const ENV_TO_BASE: Record<string, string> = {
   mainnets: MAINNET_RELAY_API,
@@ -21,20 +20,14 @@ const ALLOWED_ROUTES: Record<string, RegExp[]> = {
 }
 
 /**
- * Relay API proxy for the limit orders page. Only answers IPs in
- * `VPN_EGRESS_CIDRS`, only forwards the routes in `ALLOWED_ROUTES`, and
- * sends `NEXT_RELAY_ORDERS_API_KEY`, the key of the app with limit orders
+ * Relay API proxy for the limit orders page. Only forwards same-site
+ * requests for the routes in `ALLOWED_ROUTES`, and sends `NEXT_RELAY_ORDERS_API_KEY`, the key of the app with limit orders
  * enabled. Point the SDK's `baseApiUrl` at `/api/orders/<env>`.
  */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (!isOrdersAccessAllowed(req)) {
-    res.status(403).json({ message: 'VPN access required' })
-    return
-  }
-
   if (!isSameSite(req)) {
     res.status(403).json({ message: 'Forbidden' })
     return

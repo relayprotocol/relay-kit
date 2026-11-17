@@ -24,7 +24,7 @@ const SECTIONS = [
   },
   {
     title: 'Limit Orders',
-    links: [{ href: '/orders', label: 'Orders (VPN only)', reload: true }]
+    links: [{ href: '/orders', label: 'Orders', reload: true }]
   },
   {
     title: 'SDK Read Actions',
