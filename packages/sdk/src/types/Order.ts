@@ -94,6 +94,7 @@ export type OrderPriceCheck = {
  * @property outcome - How a closed order ended; null until it closes. A `cancelled` or `expired` order whose funds were already pulled shows the amount sent back in `refundedAmount`
  * @property cancellationReason - Who cancelled the order; null unless the outcome is `cancelled`
  * @property requiredAction - What Relay has to do before the order can continue; null unless the status is `requires_action`
+ * @property latestPriceCheck - The order's latest price check; null until it is checked for the first time. Its reason is the first of insufficient_balance, insufficient_allowance, no_route and price_not_reached that stopped a fill, or null when nothing did
  */
 export type Order = Omit<
   CreateOrderBody,
@@ -122,7 +123,7 @@ export type Order = Omit<
   refundedAmount: string
   withdrawnAmount: string
   steps: OrderStep[]
-  latestCheck: OrderPriceCheck | null
+  latestPriceCheck: OrderPriceCheck | null
 }
 
 /**
