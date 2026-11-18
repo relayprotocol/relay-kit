@@ -40,7 +40,9 @@ deposit without it cannot be matched to the order.
 
 `handleConfirmTransactionStep` polls the XRPL JSON-RPC `tx` method until the
 transaction is in a validated ledger, and fails on any result other than
-`tesSUCCESS`. `getBalance` reads the account's XRP balance with `account_info`.
+`tesSUCCESS`. `getBalance` returns the account's spendable XRP: the
+`account_info` balance minus the reserve (base reserve plus the owner reserve
+for each object the account owns, read from `server_info`), floored at 0.
 Both use the XRP chain's `httpRpcUrl` from the Relay client's chain
 configuration by default; pass `rpcUrl` to use your own endpoint (e.g. a keyed
 provider for production):

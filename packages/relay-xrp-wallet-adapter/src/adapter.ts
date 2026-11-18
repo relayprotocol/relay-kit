@@ -169,25 +169,44 @@ export const adaptXrpWallet = (
       }
     },
     getBalance: async (chainId, address, tokenAddress) => {
-      // Native XRP only; the balance includes the account reserve.
+      // Native XRP only; returns the spendable balance, net of the account reserve.
       if (tokenAddress && tokenAddress !== 'xrp') {
         return undefined
       }
-      const response = await fetch(getRpcUrl(chainId), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          method: 'account_info',
-          params: [{ account: address, ledger_index: 'validated' }]
+      const rpcUrl = getRpcUrl(chainId)
+      const rpc = async (method: string, params: object) => {
+        const response = await fetch(rpcUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ method, params: [params] })
         })
-      })
-      const result = (await response.json())?.result
+        return (await response.json())?.result
+      }
+      const [account, server] = await Promise.all([
+        rpc('account_info', { account: address, ledger_index: 'validated' }),
+        rpc('server_info', {})
+      ])
       // An unfunded account does not exist on the ledger yet.
-      if (result?.error === 'actNotFound') {
+      if (account?.error === 'actNotFound') {
         return 0n
       }
-      const balance = result?.account_data?.Balance
-      return typeof balance === 'string' ? BigInt(balance) : undefined
+      const balance = account?.account_data?.Balance
+      const ownerCount = account?.account_data?.OwnerCount ?? 0
+      const { reserve_base_xrp, reserve_inc_xrp } =
+        server?.info?.validated_ledger ?? {}
+      if (
+        typeof balance !== 'string' ||
+        typeof reserve_base_xrp !== 'number' ||
+        typeof reserve_inc_xrp !== 'number'
+      ) {
+        return undefined
+      }
+      const toDrops = (xrp: number) => BigInt(Math.round(xrp * 1_000_000))
+      const reserve =
+        toDrops(reserve_base_xrp) +
+        BigInt(ownerCount) * toDrops(reserve_inc_xrp)
+      const spendable = BigInt(balance) - reserve
+      return spendable > 0n ? spendable : 0n
     },
     switchChain: () => Promise.resolve()
   }
