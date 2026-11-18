@@ -1,5 +1,13 @@
 # @relayprotocol/relay-ton-wallet-adapter
 
+## 4.0.8
+
+### Patch Changes
+
+- Updated dependencies [31ecc74]
+- Updated dependencies [31ecc74]
+  - @relayprotocol/relay-sdk@8.3.0
+
 ## 4.0.7
 
 ### Patch Changes
