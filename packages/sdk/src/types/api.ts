@@ -23,7 +23,14 @@ export interface paths {
                             chainId: number;
                             address: string;
                         };
-                    } & (Record<string, never> | Record<string, never>);
+                    } & ({
+                        orderId: string;
+                    } | {
+                        withdrawer: {
+                            chainId: number;
+                            address: string;
+                        };
+                    });
                 };
             };
             responses: {
@@ -52,7 +59,14 @@ export interface paths {
                                     sessionToken: string;
                                 };
                             };
-                        } & (Record<string, never> | Record<string, never>);
+                        } & ({
+                            orderId: string;
+                        } | {
+                            withdrawer: {
+                                chainId: number;
+                                address: string;
+                            };
+                        });
                     };
                 };
             };
@@ -95,7 +109,14 @@ export interface paths {
                                 /** @enum {string} */
                                 status: "required" | "pending" | "approved" | "resubmission_required" | "rejected";
                             };
-                        } & (Record<string, never> | Record<string, never>);
+                        } & ({
+                            orderId: string;
+                        } | {
+                            withdrawer: {
+                                chainId: number;
+                                address: string;
+                            };
+                        });
                     };
                 };
             };
