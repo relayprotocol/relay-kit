@@ -41,11 +41,11 @@ type RelayKitProviderOptions = {
    * directly at the Relay API instead of a proxy.
    *
    * This only silences the warnings — it does not change behavior. A proxy is
-   * the only supported configuration: the requests hooks never send
-   * `x-api-key` from the browser, so `GET /requests/v3` requires `baseApiUrl`
-   * to point at your backend proxy (which injects the key server-side). Setting
-   * an `apiKey` alongside a Relay `baseApiUrl` also exposes that key via other
-   * SDK calls (e.g. quotes). Only set this to `true` if you accept that
+   * the only supported configuration: `POST /quote/v3` and `GET /requests/v3`
+   * require an API key and the requests hooks never send `x-api-key` from the
+   * browser, so `baseApiUrl` must point at your backend proxy (which injects
+   * the key server-side). Setting an `apiKey` alongside a Relay `baseApiUrl`
+   * also exposes that key via other SDK calls (e.g. quotes). Only set this to `true` if you accept that
    * exposure (e.g. a public, rate-limited key).
    */
   acknowledgeApiKeyExposure?: boolean
@@ -263,7 +263,7 @@ export const RelayKitProvider: FC<RelayKitProviderProps> = function ({
     } else {
       console.warn(
         '[RelayKit] `baseApiUrl` points directly at the Relay API with no proxy. ' +
-          'GET /requests/v3 requires an API key and will fail without one — set `baseApiUrl` to a proxy on your backend that injects the `x-api-key` header. ' +
+          'POST /quote/v3 and GET /requests/v3 require an API key and will fail without one — set `baseApiUrl` to a proxy on your backend that injects the `x-api-key` header. ' +
           'Pass `acknowledgeApiKeyExposure: true` to silence this.'
       )
     }

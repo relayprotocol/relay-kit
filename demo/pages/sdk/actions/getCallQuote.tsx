@@ -1,7 +1,7 @@
 import { NextPage } from 'next'
 import { DemoPage, DemoOutput } from 'components/DemoPage'
 import { useState } from 'react'
-import { Execute } from '@relayprotocol/relay-sdk'
+import { Quote } from '@relayprotocol/relay-sdk'
 import { useWalletClient } from 'wagmi'
 import { base, baseGoerli, sepolia, zora } from 'viem/chains'
 import { useRelayClient } from '@relayprotocol/relay-kit-ui'
@@ -13,7 +13,7 @@ const GetCallQuotePage: NextPage = () => {
   const [toChainId, setToChainId] = useState<number>(zora.id)
   const [fromChainId, setFromChainId] = useState<number>(base.id)
   const { data: wallet } = useWalletClient()
-  const [response, setResponse] = useState<Execute | null>(null)
+  const [response, setResponse] = useState<Quote | null>(null)
   const client = useRelayClient()
 
   return (

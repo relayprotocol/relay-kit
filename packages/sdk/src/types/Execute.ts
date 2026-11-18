@@ -10,8 +10,29 @@ import type { OrderStepId } from './Order.js'
 import type { AxiosRequestConfig } from 'axios'
 import type { TransactionReceipt } from 'viem'
 
-export type QuoteFees =
-  paths['/quote/v2']['post']['responses']['200']['content']['application/json']['fees']
+type QuoteV2Response =
+  paths['/quote/v2']['post']['responses']['200']['content']['application/json']
+type RequestV3 = NonNullable<
+  paths['/requests/v3']['get']['responses']['200']['content']['application/json']['requests']
+>[0]
+
+export type QuoteFee = { usd: string; amount: string; amountFormatted: string }
+export type QuoteCurrencyAmount = NonNullable<
+  NonNullable<QuoteV2Response['details']>['currencyIn']
+>
+export type QuoteFees = {
+  execution?: QuoteFee
+  swap?: QuoteFee
+  platform?: QuoteFee
+  app?: QuoteFee
+  sponsored?: QuoteFee
+  currency?: QuoteCurrencyAmount['currency']
+}
+export type QuoteFeeSponsorship = NonNullable<
+  NonNullable<RequestV3['data']>['feeSponsorship']
+>
+export type DepositAddress = NonNullable<RequestV3['depositAddress']>
+export type QuoteProtocol = QuoteV2Response['protocol']
 // Inlined from the dropped /execute/swap schema; still returned on execute step payloads.
 export type SwapBreakdown =
   | {
@@ -19,17 +40,15 @@ export type SwapBreakdown =
       timeEstimate?: number
     }[]
   | undefined
-export type CheckApi = NonNullable<
-  NonNullable<
-    paths['/quote/v2']['post']['responses']['200']['content']['application/json']['steps']
-  >['0']['items']
->[0]['check']
-export type QuoteDetails = NonNullable<
-  paths['/quote/v2']['post']['responses']['200']['content']['application/json']['details']
->
-export type QuoteStepId = NonNullable<
-  paths['/quote/v2']['post']['responses']['200']['content']['application/json']['steps']
->['0']['id']
+export type CheckApi = { endpoint?: string; method?: string }
+export type QuoteDetails = Omit<
+  NonNullable<QuoteV2Response['details']>,
+  'expandedPriceImpact' | 'rate' | 'userBalance'
+> & {
+  rate?: string
+  userBalance?: string
+}
+export type QuoteStepId = 'deposit' | 'approve' | 'authorize' | 'swap' | 'send'
 
 export type TransactionStepState = 'confirming' | 'validating' | 'complete'
 export type SignatureStepState =
@@ -41,6 +60,9 @@ export type SignatureStepState =
 export type Execute = {
   errors?: { message?: string; orderId?: string }[]
   fees?: QuoteFees
+  originGas?: QuoteCurrencyAmount
+  feeSponsorship?: QuoteFeeSponsorship
+  protocol?: QuoteProtocol
   breakdown?: SwapBreakdown
   details?: QuoteDetails
   error?: any // Manually added client error
@@ -55,7 +77,8 @@ export type Execute = {
     kind: 'transaction' | 'signature'
     id: QuoteStepId
     requestId?: string
-    depositAddress?: string
+    depositAddress?: DepositAddress
+    depositAddressId?: string
     items: {
       status: 'complete' | 'incomplete'
       receipt?:
@@ -111,3 +134,13 @@ export type ExecuteStepItem = NonNullable<Execute['steps'][0]['items']>[0]
 export type FlatExecuteStep = Omit<ExecuteStep, 'items' | 'id'> & {
   id: QuoteStepId | OrderStepId
 } & Pick<ExecuteStepItem, 'status' | 'data' | 'check'>
+
+/** A step as POST /quote/v3 returns it */
+export type QuoteStep = Omit<FlatExecuteStep, 'id' | 'requestId'> & {
+  id: QuoteStepId
+}
+
+/** A POST /quote/v3 response, as returned by `getQuote` and `useQuote` */
+export type Quote = Omit<Execute, 'steps'> & {
+  steps: QuoteStep[]
+}

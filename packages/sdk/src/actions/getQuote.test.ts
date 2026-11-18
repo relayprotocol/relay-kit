@@ -158,6 +158,64 @@ describe('Should test the getQuote action.', () => {
     )
   })
 
+  it('Should return the /quote/v3 response with its flat steps', async () => {
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
+    })
+    const fee = { usd: '-0.02', amount: '5000', amountFormatted: '0.000005' }
+    const response = {
+      requestId: '0x92b9',
+      steps: [
+        {
+          id: 'deposit',
+          action: 'Confirm transaction in your wallet',
+          description: 'Depositing funds',
+          kind: 'transaction',
+          depositAddress: {
+            address: '0xdeposit',
+            type: 'open',
+            depositor: null,
+            depositTxHash: null,
+            recoveryAddress: null
+          },
+          status: 'incomplete',
+          data: { to: '0xa5f5', data: '0x', value: '1', chainId: 8453 },
+          check: {
+            endpoint: '/intents/status/v3?requestId=0x92b9',
+            method: 'GET'
+          }
+        }
+      ],
+      fees: {
+        execution: fee,
+        swap: fee,
+        platform: fee,
+        app: fee,
+        sponsored: fee,
+        currency: { chainId: 8453, address: zeroAddress, decimals: 18 }
+      },
+      originGas: { amount: '21000', amountUsd: '0.00007' },
+      details: { operation: 'bridge', rate: '1' }
+    }
+    axiosRequestSpy.mockResolvedValueOnce({ status: 200, data: response })
+
+    const { request, ...quote } = await client.actions.getQuote(
+      {
+        toChainId: 1,
+        chainId: 8453,
+        currency: zeroAddress,
+        toCurrency: zeroAddress,
+        tradeType: 'EXACT_INPUT',
+        amount: '1'
+      },
+      true
+    )
+
+    expect(request?.url).toBe(`${MAINNET_RELAY_API}/quote/v3`)
+    expect(quote).toEqual(response)
+  })
+
   it('Should use the XRP dead address as the default recipient for XRP destinations', async () => {
     client = createClient({
       baseApiUrl: MAINNET_RELAY_API,
