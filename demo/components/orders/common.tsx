@@ -238,7 +238,7 @@ export const spentMeta = (order: Order, meta: Record<string, TokenMeta>) =>
 
 /** How far the market must move to reach the target price, in % */
 export const distanceToTarget = (order: Order) => {
-  const market = Number(order.latestCheck?.marketPrice)
+  const market = Number(order.latestPriceCheck?.marketPrice)
   const target = Number(order.targetPrice)
   return market > 0 && target > 0
     ? ((target - market) / market) * 100
@@ -277,8 +277,8 @@ export const unfillableReason = (order: Order) =>
   order.status === 'requires_action'
     ? (order.requiredAction ?? 'needs action')
     : order.status !== 'closed' &&
-        UNFILLABLE_REASONS.includes(order.latestCheck?.reason ?? '')
-      ? order.latestCheck!.reason!
+        UNFILLABLE_REASONS.includes(order.latestPriceCheck?.reason ?? '')
+      ? order.latestPriceCheck!.reason!
       : undefined
 
 /** Time left until `iso`, such as "6d 23h 59m" */

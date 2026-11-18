@@ -236,7 +236,7 @@ export const OrderDetail: FC<Props> = ({
         )}
         <dt>Market</dt>
         <dd>
-          {usd(order.latestCheck?.marketPrice ?? targetUsd?.toString())}
+          {usd(order.latestPriceCheck?.marketPrice ?? targetUsd?.toString())}
           {cancellable && formatDistance(distanceToTarget(order)) && (
             <span className={css.hint}>
               {' '}
@@ -244,18 +244,21 @@ export const OrderDetail: FC<Props> = ({
             </span>
           )}
         </dd>
-        {cancellable && order.latestCheck && (
+        {cancellable && order.latestPriceCheck && (
           <>
             <dt>Last check</dt>
             <dd>
-              {order.latestCheck.reason
-                ? (CHECK_REASONS[order.latestCheck.reason] ??
-                  order.latestCheck.reason)
+              {order.latestPriceCheck.reason
+                ? (CHECK_REASONS[order.latestPriceCheck.reason] ??
+                  order.latestPriceCheck.reason)
                 : 'Fill starting'}
               <span className={css.hint}>
                 {' '}
-                (all-in {usd(order.latestCheck.allInPrice)} ·{' '}
-                {new Date(order.latestCheck.checkedAt).toLocaleTimeString()})
+                (all-in {usd(order.latestPriceCheck.allInPrice)} ·{' '}
+                {new Date(
+                  order.latestPriceCheck.checkedAt
+                ).toLocaleTimeString()}
+                )
               </span>
             </dd>
           </>
@@ -423,8 +426,8 @@ export const OrderDetail: FC<Props> = ({
             )}
             <dt>Last check</dt>
             <dd>
-              {order.latestCheck
-                ? `${order.latestCheck.reason ?? 'none'} · market ${usd(order.latestCheck.marketPrice)} · all-in ${usd(order.latestCheck.allInPrice)} · ${new Date(order.latestCheck.checkedAt).toLocaleTimeString()}`
+              {order.latestPriceCheck
+                ? `${order.latestPriceCheck.reason ?? 'none'} · market ${usd(order.latestPriceCheck.marketPrice)} · all-in ${usd(order.latestPriceCheck.allInPrice)} · ${new Date(order.latestPriceCheck.checkedAt).toLocaleTimeString()}`
                 : '—'}
             </dd>
             {order.closedAt && (
