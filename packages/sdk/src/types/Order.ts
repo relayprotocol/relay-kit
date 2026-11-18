@@ -1,150 +1,74 @@
-export type OrderStatus =
-  | 'pending'
-  | 'open'
-  | 'processing'
-  | 'requires_action'
-  | 'closed'
+import type { paths } from './api.js'
 
-export type OrderOutcome = 'filled' | 'cancelled' | 'expired'
+type OrdersRoute = paths['/orders']
+type ListOrdersResponse =
+  OrdersRoute['get']['responses']['200']['content']['application/json']
+type ApiOrder = ListOrdersResponse['orders'][number]
+type ApiOrderStep = NonNullable<ApiOrder['steps']>[number]
+type ApiPriceCheck = NonNullable<ApiOrder['latestPriceCheck']>
 
-export type OrderCancelReason = 'requested' | 'access_revoked'
+/** Body of `POST /orders`. */
+export type CreateOrderBody =
+  OrdersRoute['post']['requestBody']['content']['application/json']
 
-export type OrderRequiredAction = 'compliance_review' | 'manual_refund'
+export type OrderStatus = NonNullable<ApiOrder['status']>
 
-export type OrderStepId = 'approve' | 'authorize' | 'cancel' | 'withdraw'
+export type OrderOutcome = NonNullable<ApiOrder['outcome']>
 
-export type OrderCheckReason =
-  | 'price_not_reached'
-  | 'no_route'
-  | 'insufficient_balance'
-  | 'insufficient_allowance'
+export type OrderCancelReason = NonNullable<ApiOrder['cancellationReason']>
 
-export type OrderCreateErrorCode =
-  | 'INVALID_REQUEST_PARAMS'
-  | 'INVALID_ADDRESS'
-  | 'UNSUPPORTED_CURRENCY'
-  | 'UNSUPPORTED_ROUTE'
-  | 'AMOUNT_TOO_LOW'
-  | 'NO_QUOTES'
-  | 'INSUFFICIENT_FUNDS'
-  | 'MAX_OPEN_ORDERS_REACHED'
-  | 'MAX_OPEN_ORDER_PAIRS_REACHED'
-  | 'IDEMPOTENCY_KEY_REUSED'
-  | 'CLIENT_ORDER_ID_EXISTS'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'UNKNOWN_ERROR'
+export type OrderRequiredAction = NonNullable<ApiOrder['requiredAction']>
 
-export type OrderSponsoredFeeComponent =
-  | 'execution'
-  | 'swap'
-  | 'relay'
-  | 'app'
-  | 'rent'
+export type OrderStepId = NonNullable<ApiOrderStep['id']>
 
-export type OrderAppFee = { recipient: string; fee: string }
+export type OrderCheckReason = NonNullable<ApiPriceCheck['reason']>
 
-/**
- * Body of `POST /orders`.
- * @property targetPrice - USD per unit of targetCurrency, all-in. Sell: minimum net proceeds per unit. Buy: maximum total cost per unit
- * @property amount - Base units of the currency spent: targetCurrency for a sell, settlementCurrency for a buy
- * @property expiresAt - RFC 3339 time, at least 15 minutes and at most 7 days from now
- * @property clientOrderId - The integrator's own id for the order; each id can be used once
- */
-export type CreateOrderBody = {
-  type: 'limit'
-  user: string
-  recipient?: string
-  refundTo?: string
-  side: 'buy' | 'sell'
-  targetCurrency: string
-  targetChainId: number
-  settlementCurrency: string
-  settlementChainId: number
-  targetPrice: string
-  amount: string
-  expiresAt: string
-  appFees?: OrderAppFee[]
-  subsidizeFees?: boolean
-  sponsoredFeeComponents?: OrderSponsoredFeeComponent[]
-  maxSubsidizationAmount?: string
-  subsidizationBps?: number
-  clientOrderId?: string
-}
+export type OrderCreateErrorCode = NonNullable<
+  OrdersRoute['post']['responses']['400']['content']['application/json']['errorCode']
+>
 
-export type OrderStep = {
-  id: OrderStepId
-  action: string
-  description: string
-  kind: 'transaction' | 'signature'
-  status: 'incomplete' | 'complete'
+export type OrderSponsoredFeeComponent = NonNullable<
+  CreateOrderBody['sponsoredFeeComponents']
+>[number]
+
+export type OrderAppFee = NonNullable<CreateOrderBody['appFees']>[number]
+
+export type OrderStep = Required<Omit<ApiOrderStep, 'data' | 'check'>> & {
   data: any
   check?: { endpoint: string; method: 'GET' | 'POST' }
 }
 
-export type OrderPriceCheck = {
-  marketPrice: string | null
-  allInPrice: string | null
-  reason: OrderCheckReason | null
-  checkedAt: string
-}
+export type OrderPriceCheck = Required<ApiPriceCheck>
+
+type OptionalOrderField =
+  | 'appFees'
+  | 'subsidizeFees'
+  | 'sponsoredFeeComponents'
+  | 'maxSubsidizationAmount'
+  | 'subsidizationBps'
 
 /**
  * An order as the Orders API returns it.
- * @property outcome - How a closed order ended; null until it closes. A `cancelled` or `expired` order whose funds were already pulled shows the amount sent back in `refundedAmount`
- * @property cancellationReason - Who cancelled the order; null unless the outcome is `cancelled`
- * @property requiredAction - What Relay has to do before the order can continue; null unless the status is `requires_action`
- * @property latestPriceCheck - The order's latest price check; null until it is checked for the first time. Its reason is the first of insufficient_balance, insufficient_allowance, no_route and price_not_reached that stopped a fill, or null when nothing did
+ * @property latestPriceCheck - Its `reason` is the first of `insufficient_balance`, `insufficient_allowance`, `no_route` and `price_not_reached` that stopped a fill, or null when nothing did
  */
-export type Order = Omit<
-  CreateOrderBody,
-  'recipient' | 'refundTo' | 'clientOrderId'
-> & {
-  id: string
-  clientOrderId: string | null
-  orderHash: string
-  status: OrderStatus
-  outcome: OrderOutcome | null
-  cancellationReason: OrderCancelReason | null
-  requiredAction: OrderRequiredAction | null
-  recipient: string
-  refundTo: string
-  originChainId: number
-  originCurrency: string
-  destinationChainId: number
-  destinationCurrency: string
-  fees: Record<string, unknown>
-  createdAt: string
-  updatedAt: string
-  expiresAt: string
-  closedAt: string | null
-  requestIds: string[]
-  filledAmount: string
-  refundedAmount: string
-  withdrawnAmount: string
-  steps: OrderStep[]
-  latestPriceCheck: OrderPriceCheck | null
-}
+export type Order = Required<
+  Omit<
+    ApiOrder,
+    OptionalOrderField | 'steps' | 'latestPriceCheck' | 'closestPriceCheck'
+  >
+> &
+  Pick<CreateOrderBody, OptionalOrderField> & {
+    steps: OrderStep[]
+    latestPriceCheck: OrderPriceCheck | null
+    closestPriceCheck: OrderPriceCheck | null
+  }
 
-/**
- * Query of `GET /orders`.
- * @property status - Only orders in these statuses
- * @property startTimestamp - Unix seconds; filters on the sortBy field
- * @property endTimestamp - Unix seconds; filters on the sortBy field
- */
-export type GetOrdersQuery = {
-  orderId?: string
-  appId?: string
-  user?: string
-  status?: OrderStatus[]
-  originChainId?: number
-  destinationChainId?: number
-  limit?: number
-  continuation?: string
-  startTimestamp?: number
-  endTimestamp?: number
-  sortBy?: 'createdAt' | 'updatedAt'
-  sortDirection?: 'asc' | 'desc'
-}
+/** Query of `GET /orders`, with `status` as a list instead of a comma-separated string. */
+export type GetOrdersQuery = Omit<
+  NonNullable<OrdersRoute['get']['parameters']['query']>,
+  'status'
+> & { status?: OrderStatus[] }
 
-export type GetOrdersResponse = { orders: Order[]; continuation?: string }
+export type GetOrdersResponse = Omit<ListOrdersResponse, 'orders'> & {
+  orders: Order[]
+}
