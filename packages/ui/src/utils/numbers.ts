@@ -1,4 +1,4 @@
-import { formatUnits } from 'viem'
+import { formatUnits, parseUnits } from 'viem'
 import { isSafariBrowser } from './browser.js'
 
 const { format: formatUsdCurrency } = new Intl.NumberFormat('en-US', {
@@ -361,6 +361,28 @@ function formatAmountWithCommas(amount: string) {
     : groupedInteger
 }
 
+/**
+ * `parseUnits` for amount inputs that are empty or still being typed.
+ *
+ * Quote parameters are built on every render, including while the amount
+ * field is `''` (initial state, after a completed swap, after the user clears
+ * it). viem < 2.55.4 returned `0n` for `''`; from 2.55.4 `parseUnits` throws
+ * `InvalidDecimalNumberError` for a value with no digits (`''`, `'.'`, `'-'`),
+ * which unmounts the whole widget. Treat those in-progress values as zero —
+ * the quote hooks are already disabled for a zero amount — and defer to
+ * `parseUnits` for everything else, so genuinely malformed input still throws.
+ */
+function parseUnitsOrZero(
+  value: string | number | null | undefined,
+  decimals: number
+): bigint {
+  const normalized = `${value ?? ''}`.trim()
+  if (/^[-.]*$/.test(normalized)) {
+    return 0n
+  }
+  return parseUnits(normalized, decimals)
+}
+
 export {
   formatDollar,
   formatDollarCompact,
@@ -370,5 +392,6 @@ export {
   formatNumber,
   formatSignificantDigits,
   truncateBalance,
-  convertBpsToPercent
+  convertBpsToPercent,
+  parseUnitsOrZero
 }
