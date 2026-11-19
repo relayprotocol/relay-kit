@@ -43,7 +43,7 @@ export default function (
   queryOptions?: Partial<QueryOptions>
 ) {
   const response = (useQuery as QueryType)({
-    queryKey: ['useTokenPrice', options],
+    queryKey: ['useTokenPrice', baseApiUrl, options],
     queryFn: () => queryTokenPrice(baseApiUrl, options),
     retry: false,
     staleTime: 60_000,

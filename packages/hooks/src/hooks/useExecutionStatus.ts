@@ -67,7 +67,7 @@ export default function (
   onResponse?: (data: Execute) => void,
   queryOptions?: Partial<QueryOptions>
 ) {
-  const queryKey = ['useExecutionStatus', options]
+  const queryKey = ['useExecutionStatus', client?.baseApiUrl, options]
   const response = (useQuery as QueryType)({
     queryKey: queryKey,
     queryFn: () => {
