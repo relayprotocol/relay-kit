@@ -399,6 +399,12 @@ export const CreateOrderForm: FC<Props> = ({
   const buyChainName =
     client?.chains.find((chain) => chain.id === buyToken.chainId)
       ?.displayName ?? `chain ${buyToken.chainId}`
+  const vmTypeOf = (chainId: number) =>
+    client?.chains.find((chain) => chain.id === chainId)?.vmType
+  const spentVmType = vmTypeOf(spent.chainId)
+  const buyVmType = vmTypeOf(buyToken.chainId)
+  const needsRecipient =
+    buyVmType !== undefined && buyVmType !== 'evm' && buyVmType !== 'hypevm'
 
   const cta = submitting
     ? 'Placing order…'
@@ -406,23 +412,29 @@ export const CreateOrderForm: FC<Props> = ({
       ? 'Connect wallet'
       : !targetMeta || !settlementMeta
         ? 'Select tokens'
-        : isNativeToken(target) || isNativeToken(settlement)
-          ? 'Use the wrapped native token'
-          : !solverChains
-            ? 'Loading solver currencies…'
-            : !isSettlementToken(solverChains, settlement)
-              ? 'Pick an accepted stablecoin'
-              : side === 'buy' && !isSolverToken(solverChains, target)
-                ? 'Pick a solver-held token'
-                : walletCantReceive
-                  ? `Wallet can't receive on ${buyChainName}, set a recipient`
-                  : !hasPrice
-                    ? 'Enter a target price'
-                    : !amountBase
-                      ? 'Enter an amount'
-                      : !body.expiresAt
-                        ? 'Choose an expiry'
-                        : 'Place order'
+        : spentVmType !== undefined && spentVmType !== 'evm'
+          ? 'Sell a token on an EVM chain'
+          : isNativeToken(target)
+            ? 'Use the wrapped native token'
+            : !solverChains
+              ? 'Loading solver currencies…'
+              : !isSettlementToken(solverChains, settlement)
+                ? 'Pick an accepted stablecoin'
+                : side === 'buy' && !isSolverToken(solverChains, target)
+                  ? 'Pick a solver-held token'
+                  : tokenKey(target) === tokenKey(settlement)
+                    ? 'Pick two different tokens'
+                    : needsRecipient && (!recipient || isAddress(recipient))
+                      ? `Enter a ${buyChainName} recipient`
+                      : walletCantReceive
+                        ? `Wallet can't receive on ${buyChainName}, set a recipient`
+                        : !hasPrice
+                          ? 'Enter a target price'
+                          : !amountBase
+                            ? 'Enter an amount'
+                            : !body.expiresAt
+                              ? 'Choose an expiry'
+                              : 'Place order'
 
   return (
     <div className={css.createLayout}>
@@ -610,6 +622,7 @@ export const CreateOrderForm: FC<Props> = ({
                 {...pickerProps('buy')}
                 label="Buy"
                 currencies={side === 'sell' ? 'settlement' : 'solver'}
+                destination
                 value={buyToken}
                 onChange={setBuyToken}
                 meta={buyMeta}
@@ -626,6 +639,15 @@ export const CreateOrderForm: FC<Props> = ({
                 {side === 'sell' ? 'Minimum, estimated' : 'Estimated'}
               </span>
             </div>
+            {needsRecipient && (
+              <input
+                aria-label={`Recipient on ${buyChainName}`}
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value.trim())}
+                placeholder={`Recipient on ${buyChainName}`}
+                className={cx(css.input, css.mono)}
+              />
+            )}
           </div>
         </div>
 
