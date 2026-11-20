@@ -52,8 +52,23 @@ export const tokenKey = ({ chainId, address }: TokenRef) =>
 
 type SolverChains = {
   id?: number
-  solverCurrencies?: { address?: string }[]
+  solverCurrencies?: { id?: string; address?: string }[]
 }[]
+
+/**
+ * Currency ids the Orders API accepts as `settlementCurrency`, leaving out
+ * Arc's native USDC and Optimism's deposit-only legacy USDT
+ */
+export const SETTLEMENT_CURRENCY_IDS = [
+  'usdc',
+  'usdc.e',
+  'usdc.e-cronos',
+  'usdt',
+  'usdg',
+  'musd',
+  'pusd',
+  'cash'
+]
 
 /**
  * The Relay API's `/chains`, fetched through the page's API base (the orders
@@ -67,19 +82,35 @@ export function useSolverChains(): SolverChains | undefined {
   }).data?.chains
 }
 
-/** ERC-20 currencies the solver holds on a chain, as {@link tokenKey}s */
-export const solverTokenKeys = (chains: SolverChains, chainId: number) =>
+/**
+ * ERC-20 currencies the solver holds on a chain, as {@link tokenKey}s
+ *
+ * @param options.settlement - Only the accepted settlement stablecoins
+ */
+export const solverTokenKeys = (
+  chains: SolverChains,
+  chainId: number,
+  options: { settlement?: boolean } = {}
+) =>
   chains
     .find((chain) => chain.id === chainId)
-    ?.solverCurrencies?.flatMap(({ address }) =>
-      address && !isNativeToken({ chainId, address })
+    ?.solverCurrencies?.flatMap(({ id, address }) =>
+      address &&
+      !isNativeToken({ chainId, address }) &&
+      (!options.settlement || SETTLEMENT_CURRENCY_IDS.includes(id ?? ''))
         ? [tokenKey({ chainId, address })]
         : []
     ) ?? []
 
-/** Buy targets and settlement currencies must be held by the solver */
+/** Buy targets must be held by the solver */
 export const isSolverToken = (chains: SolverChains, token: TokenRef) =>
   solverTokenKeys(chains, token.chainId).includes(tokenKey(token))
+
+/** Settlement currencies must be accepted stablecoins the solver holds */
+export const isSettlementToken = (chains: SolverChains, token: TokenRef) =>
+  solverTokenKeys(chains, token.chainId, { settlement: true }).includes(
+    tokenKey(token)
+  )
 
 const isAddress = (value: string) => /^0x[0-9a-fA-F]{40}$/.test(value)
 
