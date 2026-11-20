@@ -47,17 +47,25 @@ export const isDeadAddress = (address?: string) => {
     return false
   }
 
+  // EVM hex addresses are case-insensitive: a checksummed dead address
+  // (0x...dEaD) is the same address as the lowercase constant. Lowercase
+  // 0x-prefixed input before comparing so the hex dead addresses match
+  // regardless of checksum casing. The base58/bech32 dead addresses stay
+  // exact-match because their alphabets are case-sensitive.
+
+  const candidate = address.startsWith('0x') ? address.toLowerCase() : address
+
   if (
-    address === eclipseDeadAddress ||
-    address === solDeadAddress ||
-    address === bitcoinDeadAddress ||
-    address === evmDeadAddress ||
-    address === tonDeadAddress ||
-    address === tronDeadAddress ||
-    address === zeroDeadAddress ||
-    address === xrpDeadAddress ||
-    address === lighterDeadAddress ||
-    address === robinhoodLighterDeadAddress
+    candidate === eclipseDeadAddress ||
+    candidate === solDeadAddress ||
+    candidate === bitcoinDeadAddress ||
+    candidate === evmDeadAddress ||
+    candidate === tonDeadAddress ||
+    candidate === tronDeadAddress ||
+    candidate === zeroDeadAddress ||
+    candidate === xrpDeadAddress ||
+    candidate === lighterDeadAddress ||
+    candidate === robinhoodLighterDeadAddress
   ) {
     return true
   }
