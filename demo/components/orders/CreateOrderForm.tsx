@@ -20,6 +20,7 @@ import {
   errorInfo,
   formatNumber,
   isNativeToken,
+  isSettlementToken,
   isSolverToken,
   switchWalletChain,
   useSolverChains,
@@ -110,7 +111,7 @@ export const CreateOrderForm: FC<Props> = ({
   const [side, setSide] = useState<'buy' | 'sell'>('sell')
   const [target, setTarget] = useState<TokenRef>({
     chainId: 8453,
-    address: '0x4200000000000000000000000000000000000006'
+    address: '0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf'
   })
   const [settlement, setSettlement] = useState<TokenRef>({
     chainId: 4663,
@@ -409,18 +410,19 @@ export const CreateOrderForm: FC<Props> = ({
           ? 'Use the wrapped native token'
           : !solverChains
             ? 'Loading solver currencies…'
-            : !isSolverToken(solverChains, settlement) ||
-                (side === 'buy' && !isSolverToken(solverChains, target))
-              ? 'Pick a solver-held token'
-              : walletCantReceive
-                ? `Wallet can't receive on ${buyChainName}, set a recipient`
-                : !hasPrice
-                  ? 'Enter a target price'
-                  : !amountBase
-                    ? 'Enter an amount'
-                    : !body.expiresAt
-                      ? 'Choose an expiry'
-                      : 'Place order'
+            : !isSettlementToken(solverChains, settlement)
+              ? 'Pick an accepted stablecoin'
+              : side === 'buy' && !isSolverToken(solverChains, target)
+                ? 'Pick a solver-held token'
+                : walletCantReceive
+                  ? `Wallet can't receive on ${buyChainName}, set a recipient`
+                  : !hasPrice
+                    ? 'Enter a target price'
+                    : !amountBase
+                      ? 'Enter an amount'
+                      : !body.expiresAt
+                        ? 'Choose an expiry'
+                        : 'Place order'
 
   return (
     <div className={css.createLayout}>
@@ -539,7 +541,7 @@ export const CreateOrderForm: FC<Props> = ({
               <TokenPill
                 {...pickerProps('sell')}
                 label="Sell"
-                solverOnly={side === 'buy'}
+                currencies={side === 'buy' ? 'settlement' : undefined}
                 value={sellToken}
                 onChange={setSellToken}
                 meta={sellMeta}
@@ -607,7 +609,7 @@ export const CreateOrderForm: FC<Props> = ({
               <TokenPill
                 {...pickerProps('buy')}
                 label="Buy"
-                solverOnly
+                currencies={side === 'sell' ? 'settlement' : 'solver'}
                 value={buyToken}
                 onChange={setBuyToken}
                 meta={buyMeta}

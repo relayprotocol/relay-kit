@@ -18,8 +18,8 @@ type Props = {
   onChange: (token: TokenRef) => void
   meta?: TokenMeta
   metaLoading: boolean
-  /** Only offer the currencies the solver holds */
-  solverOnly?: boolean
+  /** Only offer the currencies the solver holds, or only its accepted settlement stablecoins */
+  currencies?: 'solver' | 'settlement'
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -46,7 +46,7 @@ export const TokenPill: FC<Props> = ({
   onChange,
   meta,
   metaLoading,
-  solverOnly,
+  currencies,
   open,
   onOpenChange: setOpen
 }) => {
@@ -55,12 +55,15 @@ export const TokenPill: FC<Props> = ({
   const [custom, setCustom] = useState(false)
   const [chainSearch, setChainSearch] = useState('')
   const solverChains = useSolverChains()
+  const solverOnly = Boolean(currencies)
+  const settlement = currencies === 'settlement'
   const chains = (client?.chains ?? [])
     .filter(
       (chain) =>
         chain.vmType === 'evm' &&
         (!solverOnly ||
-          (solverChains && solverTokenKeys(solverChains, chain.id).length > 0))
+          (solverChains &&
+            solverTokenKeys(solverChains, chain.id, { settlement }).length > 0))
     )
     .sort((a, b) => a.displayName.localeCompare(b.displayName))
   const search = chainSearch.trim().toLowerCase()
@@ -74,7 +77,7 @@ export const TokenPill: FC<Props> = ({
     : chains
   const solverTokens =
     solverOnly && solverChains
-      ? solverTokenKeys(solverChains, value.chainId)
+      ? solverTokenKeys(solverChains, value.chainId, { settlement })
       : undefined
   const chainName = (id: number) =>
     chains.find((chain) => chain.id === id)?.displayName ?? `Chain ${id}`
@@ -86,7 +89,9 @@ export const TokenPill: FC<Props> = ({
       : { chainIds: [value.chainId], verified: true, limit: 30 },
     {
       enabled:
-        Boolean(client && value.chainId && (open || !value.address)) &&
+        Boolean(
+          client && value.chainId && (open || !value.address || settlement)
+        ) &&
         (!solverOnly || Boolean(solverTokens?.length)),
       staleTime: Infinity
     }
@@ -103,10 +108,14 @@ export const TokenPill: FC<Props> = ({
   const showAddressInput = !solverOnly && (custom || unlisted)
 
   useEffect(() => {
-    if (!value.address && !custom && chainTokens?.[0]?.address) {
+    if (
+      (!value.address || (settlement && unlisted)) &&
+      !custom &&
+      chainTokens?.[0]?.address
+    ) {
       onChange({ ...value, address: chainTokens[0].address })
     }
-  }, [value, custom, chainTokens])
+  }, [value, custom, chainTokens, settlement, unlisted])
 
   useEffect(() => {
     if (!open) {
@@ -202,7 +211,9 @@ export const TokenPill: FC<Props> = ({
               {!chainTokens && (
                 <span className={css.hint}>
                   {solverOnly && solverTokens?.length === 0
-                    ? 'The solver holds no tokens on this chain.'
+                    ? settlement
+                      ? 'The solver holds no accepted stablecoin on this chain.'
+                      : 'The solver holds no tokens on this chain.'
                     : 'Loading tokens…'}
                 </span>
               )}
