@@ -405,6 +405,9 @@ export const CreateOrderForm: FC<Props> = ({
   const buyVmType = vmTypeOf(buyToken.chainId)
   const needsRecipient =
     buyVmType !== undefined && buyVmType !== 'evm' && buyVmType !== 'hypevm'
+  const recipientInvalid = needsRecipient
+    ? !recipient || isAddress(recipient)
+    : Boolean(recipient) && !isAddress(recipient)
 
   const cta = submitting
     ? 'Placing order…'
@@ -424,7 +427,7 @@ export const CreateOrderForm: FC<Props> = ({
                   ? 'Pick a solver-held token'
                   : tokenKey(target) === tokenKey(settlement)
                     ? 'Pick two different tokens'
-                    : needsRecipient && (!recipient || isAddress(recipient))
+                    : recipientInvalid
                       ? `Enter a ${buyChainName} recipient`
                       : walletCantReceive
                         ? `Wallet can't receive on ${buyChainName}, set a recipient`
@@ -639,7 +642,7 @@ export const CreateOrderForm: FC<Props> = ({
                 {side === 'sell' ? 'Minimum, estimated' : 'Estimated'}
               </span>
             </div>
-            {needsRecipient && (
+            {(needsRecipient || recipientInvalid) && (
               <input
                 aria-label={`Recipient on ${buyChainName}`}
                 value={recipient}
