@@ -115,6 +115,38 @@ describe('Should test the getQuote action.', () => {
     )
   })
 
+  it('Should keep the user passed in when there is no wallet', async () => {
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
+    })
+
+    const user = '0x1111111111111111111111111111111111111111'
+
+    await client?.actions?.getQuote(
+      {
+        user,
+        toChainId: 1,
+        chainId: 8453,
+        currency: '0x0000000000000000000000000000000000000000',
+        toCurrency: '0x0000000000000000000000000000000000000000',
+        tradeType: 'EXACT_INPUT',
+        amount: '1000000000000000' // 0.001 ETH
+      },
+      true
+    )
+
+    expect(axiosRequestSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: expect.stringContaining('quote'),
+        data: expect.objectContaining({
+          user,
+          recipient: '0x000000000000000000000000000000000000dead'
+        })
+      })
+    )
+  })
+
   it('Should allow passing in additional txs', async () => {
     client = createClient({
       baseApiUrl: MAINNET_RELAY_API,
