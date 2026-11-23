@@ -1,4 +1,9 @@
-import type { AdaptedWallet, ProgressData, Execute } from '../types/index.js'
+import type {
+  AdaptedWallet,
+  ProgressData,
+  Execute,
+  Quote
+} from '../types/index.js'
 import { getClient } from '../client.js'
 import {
   executeSteps,
@@ -14,7 +19,7 @@ import {
 import { isDeadAddress } from '../constants/address.js'
 
 export type ExecuteActionParameters = {
-  quote: Execute
+  quote: Quote | Execute
   wallet: AdaptedWallet | WalletClient
   depositGasLimit?: string
   onProgress?: (data: ProgressData) => any

@@ -22,6 +22,7 @@ import AmountInput from '../../common/AmountInput.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SwitchIcon } from '../../../icons/index.js'
 import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
+import { normalizeSteps } from '@relayprotocol/relay-sdk'
 import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
@@ -1524,7 +1525,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               quote?.details,
                               quote?.fees,
                               quote?.steps
-                                ? (quote?.steps as Execute['steps'])
+                                ? normalizeSteps(quote.steps, quote.requestId)
                                 : null,
                               linkedWallet?.connector,
                               quoteParameters,

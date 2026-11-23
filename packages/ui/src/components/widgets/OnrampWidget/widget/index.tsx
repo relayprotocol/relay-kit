@@ -12,7 +12,7 @@ import TokenSelector from '../../../common/TokenSelector/TokenSelector.js'
 import { EventNames } from '../../../../constants/events.js'
 import { TokenTrigger } from '../../../common/TokenSelector/triggers/TokenTrigger.js'
 import type { LinkedWallet, Token } from '../../../../types/index.js'
-import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
+import type { ChainVM, Quote, RelayChain } from '@relayprotocol/relay-sdk'
 import { MultiWalletDropdown } from '../../../common/MultiWalletDropdown.js'
 import { CustomAddressModal } from '../../../common/CustomAddressModal.js'
 import { useAccount } from 'wagmi'
@@ -34,8 +34,8 @@ type BaseOnrampWidgetProps = {
   setToken?: (token: Token) => void
   disablePasteWalletAddressOption?: boolean
   onTokenChange?: (token?: Token) => void
-  onSuccess?: (data: Execute, moonpayRequestId: string) => void
-  onError?: (error: string, data?: Execute, moonpayRequestId?: string) => void
+  onSuccess?: (data: Quote, moonpayRequestId: string) => void
+  onError?: (error: string, data?: Quote, moonpayRequestId?: string) => void
   moonpayOnUrlSignatureRequested: (url: string) => Promise<string> | void
   onConnectWallet?: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void

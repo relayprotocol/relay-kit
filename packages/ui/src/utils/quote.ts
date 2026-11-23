@@ -17,7 +17,7 @@ import { sha256 } from './hashing.js'
 import type { FeeBreakdown } from '../types/FeeBreakdown.js'
 
 const formatUsdFee = (
-  amountUsd: string | undefined,
+  amountUsd: string | null | undefined,
   shouldFlipSign: boolean = false
 ) => {
   const value = Number(amountUsd ?? 0)
@@ -47,39 +47,34 @@ export const parseFees = (
   quote?: ReturnType<typeof useQuote>['data']
 ): FeeBreakdown => {
   const fees = quote?.fees
-  const expandedPriceImpact = quote?.details?.expandedPriceImpact
+  const originGas = quote?.originGas
 
-  const gasFee = BigInt(fees?.gas?.amount ?? 0)
+  const gasFee = BigInt(originGas?.amount ?? 0)
   const formattedGasFee = formatBN(
     gasFee,
     5,
-    Number(fees?.gas?.currency?.decimals ?? 18)
+    Number(originGas?.currency?.decimals ?? 18)
   )
 
-  // Execution fee
-  const executionFeeUsd = expandedPriceImpact?.execution?.usd
+  const executionFeeUsd = fees?.execution?.usd
+  const platformFeeUsd = fees?.platform?.usd
 
-  // Platform fee (v2 name: relay fee)
-  const relayFeeUsd = expandedPriceImpact?.relay?.usd
-
-  // App fee
-  const appFeeUsd = expandedPriceImpact?.app?.usd
+  const appFeeUsd = fees?.app?.usd
   const hasAppFee = appFeeUsd && Number(appFeeUsd) !== 0
 
-  const totalFeesUsd =
-    Number(fees?.relayer?.amountUsd ?? 0) + Number(fees?.app?.amountUsd ?? 0)
+  const totalFeesUsd = calculateTotalFeesUsd(quote)
   const _isGasSponsored = isGasSponsored(quote)
 
   const breakdown: BridgeFee[] = [
     {
       raw: gasFee,
       formatted: `${formattedGasFee}`,
-      usd: formatUsdFee(fees?.gas?.amountUsd, true),
+      usd: formatUsdFee(originGas?.amountUsd, true),
       name: `Deposit gas (${selectedFrom.displayName})`,
       tooltip: null,
       type: 'gas',
       id: 'origin-gas',
-      currency: fees?.gas?.currency
+      currency: originGas?.currency
     },
     {
       raw: 0n,
@@ -91,19 +86,19 @@ export const parseFees = (
       tooltip: null,
       type: 'gas',
       id: 'destination-gas',
-      currency: fees?.relayer?.currency
+      currency: fees?.currency
     },
     {
       raw: 0n,
       formatted: '0',
       usd: _isGasSponsored
         ? { value: 0, formatted: '0' }
-        : formatUsdFee(relayFeeUsd, false),
+        : formatUsdFee(platformFeeUsd, false),
       name: 'Platform Fee',
       tooltip: null,
       type: 'relayer',
       id: 'relayer-fee',
-      currency: fees?.relayer?.currency
+      currency: fees?.currency
     }
   ]
   if (hasAppFee) {
@@ -117,7 +112,7 @@ export const parseFees = (
       tooltip: null,
       type: 'relayer',
       id: 'app-fee',
-      currency: fees?.app?.currency
+      currency: fees?.currency
     })
   }
 
@@ -151,18 +146,27 @@ export const parseFees = (
           ? formatDollar(parseFloat(quote?.details?.totalImpact?.usd ?? 0))
           : undefined,
       priceImpactColor,
-      swapImpact: formatUsdFee(expandedPriceImpact?.swap?.usd, false)
+      swapImpact: formatUsdFee(fees?.swap?.usd, false)
     },
     isGasSponsored: _isGasSponsored
   }
 }
 
+/** Relay and app fees the user pays in USD after sponsorship, as a positive number */
+export const calculateTotalFeesUsd = (quote?: QuoteResponse) =>
+  -(
+    Number(quote?.fees?.execution?.usd ?? 0) +
+    Number(quote?.fees?.platform?.usd ?? 0) +
+    Number(quote?.fees?.app?.usd ?? 0) +
+    Number(quote?.fees?.sponsored?.usd ?? 0)
+  )
+
 export const calculateRelayerFeeProportionUsd = (quote?: QuoteResponse) => {
   const usdIn = quote?.details?.currencyIn?.amountUsd
     ? Number(quote.details.currencyIn.amountUsd)
     : null
-  const relayerServiceFeeUsd = quote?.fees?.relayerService?.amountUsd
-    ? Number(quote.fees.relayerService.amountUsd)
+  const relayerServiceFeeUsd = quote?.fees?.platform?.usd
+    ? -Number(quote.fees.platform.usd)
     : null
 
   if (!usdIn || !relayerServiceFeeUsd) {
@@ -188,8 +192,8 @@ export const isHighRelayerServiceFeeUsd = (quote?: QuoteResponse) => {
   const usdIn = quote?.details?.currencyIn?.amountUsd
     ? Number(quote.details.currencyIn.amountUsd)
     : null
-  const relayerServiceFeeUsd = quote?.fees?.relayerService?.amountUsd
-    ? Number(quote.fees.relayerService.amountUsd)
+  const relayerServiceFeeUsd = quote?.fees?.platform?.usd
+    ? -Number(quote.fees.platform.usd)
     : null
 
   if (!usdIn || !relayerServiceFeeUsd) {
@@ -205,16 +209,18 @@ export const isHighRelayerServiceFeeUsd = (quote?: QuoteResponse) => {
 }
 
 export const extractQuoteId = (
-  steps?: Execute['steps'] | QuoteResponse['steps'],
+  steps?: Execute['steps'],
   // Indicative quotes return no steps, so the id only exists at the top level
   requestId?: string
 ) => {
   return (steps && steps[0] ? steps[0].requestId : undefined) ?? requestId
 }
 
-export const extractDepositAddress = (steps?: Execute['steps']) => {
+export const extractDepositAddress = (
+  steps?: Pick<ExecuteStep, 'id' | 'depositAddress'>[]
+) => {
   const depositStep = steps?.find((step) => step.id === 'deposit')
-  return depositStep?.depositAddress
+  return depositStep?.depositAddress?.address
 }
 
 export const calculatePriceTimeEstimate = (
@@ -328,7 +334,8 @@ export const getSwapEventData = (
     chain_id_out: details?.currencyOut?.currency?.chainId,
     currency_in_usd: details?.currencyIn?.amountUsd,
     currency_out_usd: details?.currencyOut?.amountUsd,
-    deposit_address: steps?.find((step) => step.depositAddress)?.depositAddress,
+    deposit_address: steps?.find((step) => step.depositAddress)?.depositAddress
+      ?.address,
     txHashes: steps
       ?.map((step) => {
         let txHashes: { chainId: number; txHash: string }[] = []
@@ -359,7 +366,7 @@ export const getSwapEventData = (
       })
       .flat(),
     subsidized:
-      fees?.subsidized !== undefined && fees.subsidized.amount !== '0'
+      fees?.sponsored !== undefined && fees.sponsored.amount !== '0'
         ? true
         : false
   }
@@ -392,9 +399,9 @@ export const calculateUsdValue = (
   return undefined
 }
 
-export const isGasSponsored = (quote?: QuoteResponse) => {
+export const isGasSponsored = (quote?: Pick<QuoteResponse, 'fees'>) => {
   return (
-    quote?.fees?.subsidized?.amount != undefined &&
-    quote?.fees?.subsidized?.amount != '0'
+    quote?.fees?.sponsored?.amount != undefined &&
+    quote?.fees?.sponsored?.amount != '0'
   )
 }

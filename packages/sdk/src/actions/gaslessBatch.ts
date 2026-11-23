@@ -8,12 +8,17 @@ import {
   type WalletClient
 } from 'viem'
 import type { AxiosRequestConfig } from 'axios'
-import type { Execute } from '../types/Execute.js'
+import type { Execute, Quote } from '../types/Execute.js'
 import type { BatchCall, BatchExecutorConfig } from '../types/BatchExecutor.js'
 import type { paths } from '../types/api.js'
 import { getClient } from '../client.js'
 import { axios } from '../utils/axios.js'
-import { APIError, getApiKeyHeader, LogLevel } from '../utils/index.js'
+import {
+  APIError,
+  getApiKeyHeader,
+  LogLevel,
+  normalizeSteps
+} from '../utils/index.js'
 import { createCaliburExecutor } from '../utils/caliburExecutor.js'
 
 type ExecuteBody = NonNullable<
@@ -38,7 +43,7 @@ export type GaslessBatchProgress = {
 
 export type ExecuteGaslessBatchParameters = {
   /** The quote obtained from getQuote() */
-  quote: Execute
+  quote: Quote | Execute
   /** viem WalletClient with an account attached */
   walletClient: WalletClient
   /** Batch executor config — defaults to Calibur */
@@ -119,7 +124,7 @@ export async function executeGaslessBatch(
   let requestId: string | undefined
   let chainId: number | undefined
 
-  for (const step of quote.steps) {
+  for (const step of normalizeSteps(quote.steps, quote.requestId)) {
     if (step.kind !== 'transaction') continue
     for (const item of step.items) {
       if (!item.data) continue

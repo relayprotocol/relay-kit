@@ -11,7 +11,6 @@ const BridgeActionPage: NextPage = () => {
   const [amount, setAmount] = useState<string>('')
   const [currency, setCurrency] = useState<string>(zeroAddress)
   const [usePermit, setUsePermit] = useState(false)
-  const [canonical, setCanonical] = useState(false)
   const [useExactInput, setUseExactInput] = useState(false)
   const [toChainId, setToChainId] = useState<number>(zora.id)
   const [fromChainId, setFromChainId] = useState<number>(base.id)
@@ -73,17 +72,6 @@ const BridgeActionPage: NextPage = () => {
         </div>
 
         <div>
-          <label>Canonical</label>
-          <input
-            type="checkbox"
-            checked={canonical}
-            onChange={(e) => {
-              setCanonical(e.target.checked)
-            }}
-          />
-        </div>
-
-        <div>
           <label>Use Exact Input</label>
           <input
             type="checkbox"
@@ -131,8 +119,7 @@ const BridgeActionPage: NextPage = () => {
                 recipient: recipient ? (recipient as Address) : undefined,
                 tradeType: useExactInput ? 'EXACT_INPUT' : 'EXPECTED_OUTPUT',
                 options: {
-                  usePermit: usePermit,
-                  useExternalLiquidity: canonical
+                  usePermit: usePermit
                 }
               },
               true

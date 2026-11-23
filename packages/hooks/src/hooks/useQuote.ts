@@ -1,9 +1,11 @@
 import {
   MAINNET_RELAY_API,
   RelayClient,
+  getApiKeyHeader,
   type AdaptedWallet,
   type Execute,
-  type paths,
+  type Quote,
+  type QuoteBody,
   type ProgressData
 } from '@relayprotocol/relay-sdk'
 import { axiosPostFetcher } from '../fetcher.js'
@@ -16,11 +18,7 @@ import { useCallback, useMemo } from 'react'
 import type { WalletClient } from 'viem'
 import type { AxiosRequestConfig } from 'axios'
 
-type QuoteBody =
-  paths['/quote/v2']['post']['requestBody']['content']['application/json']
-
-export type QuoteResponse =
-  paths['/quote/v2']['post']['responses']['200']['content']['application/json']
+export type QuoteResponse = Quote
 
 type QueryType = typeof useQuery<
   QuoteResponse,
@@ -36,7 +34,7 @@ export const queryQuote = function (
   config?: AxiosRequestConfig
 ): Promise<QuoteResponse> {
   return new Promise((resolve, reject) => {
-    const href = `${baseApiUrl}/quote/v2`
+    const href = `${baseApiUrl}/quote/v3`
     axiosPostFetcher(href, options, config)
       .then((response) => {
         const request: AxiosRequestConfig = {
@@ -76,9 +74,11 @@ export default function (
       if (options && client?.source && !options.referrer) {
         options.referrer = client.source
       }
-      const promise = queryQuote(baseApiUrl ?? client?.baseApiUrl, options, {
+      const quoteApiUrl = baseApiUrl ?? client?.baseApiUrl
+      const promise = queryQuote(quoteApiUrl, options, {
         ...config,
         headers: {
+          ...getApiKeyHeader(client, quoteApiUrl),
           'relay-sdk-version': client?.version ?? 'unknown',
           'relay-kit-ui-version': client?.uiVersion ?? 'unknown'
         }
@@ -113,7 +113,7 @@ export default function (
 
       const promise = client?.actions?.execute({
         wallet,
-        quote: response.data as Execute,
+        quote: response.data,
         onProgress
       })
 

@@ -537,7 +537,7 @@ export const formatTransactionSteps = ({
     }
 
     // Step 2/1: Send
-    const sendStep = findStep(['deposit', 'send', 'authorize1'])
+    const sendStep = findStep(['deposit', 'send', 'authorize'])
     // Consider send step complete if all items are complete OR backend processing
     const isSendCompleted =
       sendStep?.items?.every(
