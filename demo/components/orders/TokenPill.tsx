@@ -20,6 +20,8 @@ type Props = {
   metaLoading: boolean
   /** Only offer the currencies the solver holds, or only its accepted settlement stablecoins */
   currencies?: 'solver' | 'settlement'
+  /** The order delivers this token, so it can be on any chain; the token spent must be on an EVM chain */
+  destination?: boolean
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -47,6 +49,7 @@ export const TokenPill: FC<Props> = ({
   meta,
   metaLoading,
   currencies,
+  destination,
   open,
   onOpenChange: setOpen
 }) => {
@@ -60,7 +63,7 @@ export const TokenPill: FC<Props> = ({
   const chains = (client?.chains ?? [])
     .filter(
       (chain) =>
-        chain.vmType === 'evm' &&
+        (destination || chain.vmType === 'evm') &&
         (!solverOnly ||
           (solverChains &&
             solverTokenKeys(solverChains, chain.id, { settlement }).length > 0))
@@ -80,7 +83,8 @@ export const TokenPill: FC<Props> = ({
       ? solverTokenKeys(solverChains, value.chainId, { settlement })
       : undefined
   const chainName = (id: number) =>
-    chains.find((chain) => chain.id === id)?.displayName ?? `Chain ${id}`
+    client?.chains.find((chain) => chain.id === id)?.displayName ??
+    `Chain ${id}`
 
   const { data: listedTokens } = useTokenList(
     client?.baseApiUrl,

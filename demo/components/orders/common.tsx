@@ -47,11 +47,13 @@ export const chainIcon = (chainId: number) =>
 export const isNativeToken = ({ address }: TokenRef) =>
   address.toLowerCase() === zeroAddress
 
+/** Keys a token by chain and address; only EVM-style hex addresses are case-insensitive */
 export const tokenKey = ({ chainId, address }: TokenRef) =>
-  `${chainId}:${address.toLowerCase()}`
+  `${chainId}:${address.startsWith('0x') ? address.toLowerCase() : address}`
 
 type SolverChains = {
   id?: number
+  currency?: { address?: string }
   solverCurrencies?: { id?: string; address?: string }[]
 }[]
 
@@ -83,24 +85,28 @@ export function useSolverChains(): SolverChains | undefined {
 }
 
 /**
- * ERC-20 currencies the solver holds on a chain, as {@link tokenKey}s
+ * Non-native currencies the solver holds on a chain, as {@link tokenKey}s
  *
- * @param options.settlement - Only the accepted settlement stablecoins
+ * @param options.settlement - Only the accepted settlement stablecoins, which
+ *   include a chain's native USDC where it is one, as on Hyperliquid
  */
 export const solverTokenKeys = (
   chains: SolverChains,
   chainId: number,
   options: { settlement?: boolean } = {}
-) =>
-  chains
-    .find((chain) => chain.id === chainId)
-    ?.solverCurrencies?.flatMap(({ id, address }) =>
+) => {
+  const chain = chains.find((chain) => chain.id === chainId)
+  return (
+    chain?.solverCurrencies?.flatMap(({ id, address }) =>
       address &&
-      !isNativeToken({ chainId, address }) &&
-      (!options.settlement || SETTLEMENT_CURRENCY_IDS.includes(id ?? ''))
+      (options.settlement
+        ? SETTLEMENT_CURRENCY_IDS.includes(id ?? '')
+        : address !== chain.currency?.address)
         ? [tokenKey({ chainId, address })]
         : []
     ) ?? []
+  )
+}
 
 /** Buy targets must be held by the solver */
 export const isSolverToken = (chains: SolverChains, token: TokenRef) =>
@@ -114,6 +120,18 @@ export const isSettlementToken = (chains: SolverChains, token: TokenRef) =>
 
 const isAddress = (value: string) => /^0x[0-9a-fA-F]{40}$/.test(value)
 
+/**
+ * Whether a token's address can be looked up: a full EVM address on EVM chains
+ * or chains not loaded yet, any address on other chains
+ */
+const isTokenAddress = (
+  chains: { id: number; vmType?: string }[] | undefined,
+  { chainId, address }: TokenRef
+) => {
+  const vmType = chains?.find((chain) => chain.id === chainId)?.vmType
+  return !vmType || vmType === 'evm' ? isAddress(address) : Boolean(address)
+}
+
 /** Token metadata from the Relay API's currencies/v2, keyed by {@link tokenKey} */
 export function useTokensMeta(tokens: TokenRef[]) {
   const client = useRelayClient()
@@ -122,11 +140,13 @@ export function useTokensMeta(tokens: TokenRef[]) {
       [
         ...new Set(
           tokens
-            .filter((token) => token.chainId && isAddress(token.address))
+            .filter(
+              (token) => token.chainId && isTokenAddress(client?.chains, token)
+            )
             .map(tokenKey)
         )
       ].sort(),
-    [tokens]
+    [tokens, client?.chains]
   )
   const { data, isFetching } = useTokenList(
     client?.baseApiUrl,
@@ -155,7 +175,7 @@ export function useTokensMeta(tokens: TokenRef[]) {
 /** USD price from the Relay API's currencies/token/price/v2 */
 export function useUsdPrice(token: TokenRef) {
   const client = useRelayClient()
-  const valid = Boolean(token.chainId && isAddress(token.address))
+  const valid = Boolean(token.chainId && isTokenAddress(client?.chains, token))
   const { data } = useTokenPrice(
     client?.baseApiUrl,
     { chainId: token.chainId, address: token.address },
