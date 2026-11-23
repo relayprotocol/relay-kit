@@ -78,39 +78,43 @@ const SPONSORABLE_FEE_COMPONENTS = [
   'rent'
 ]
 
-// Test-only sponsorship overrides set by RelayKitProviderWrapper from the
-// page's ?sponsor=, ?sponsorBps= and ?sponsorMax= query params. They apply to
-// every quote/v3 request, replacing the token-pair defaults above.
+// Test-only sponsorship overrides read from the requesting page's URL
+// (?sponsor=, ?sponsorBps=, ?sponsorMax=). Any invalid value skips the override.
 function applyQuoteOverrides(body: any, req: NextApiRequest) {
-  const raw = req.cookies['relay-demo-quote-overrides']
-  if (!raw) return body
-
-  let overrides: { sponsor?: string; sponsorBps?: string; sponsorMax?: string }
+  let params: URLSearchParams
   try {
-    overrides = JSON.parse(raw)
+    params = new URL(req.headers.referer ?? '').searchParams
   } catch {
     return body
   }
-  if (!overrides.sponsor) return body
 
-  const components = overrides.sponsor
-    .split(',')
-    .filter((component) => SPONSORABLE_FEE_COMPONENTS.includes(component))
-  const bps = Number(overrides.sponsorBps)
+  const sponsor = params.get('sponsor')
+  if (!sponsor) return body
+
+  const components =
+    sponsor === 'true' ? [] : sponsor.split(',').map((c) => c.trim())
+  if (components.some((c) => !SPONSORABLE_FEE_COMPONENTS.includes(c))) {
+    return body
+  }
+
+  const sponsorBps = params.get('sponsorBps')
+  const bps = Number(sponsorBps)
+  if (
+    sponsorBps !== null &&
+    !(/^[0-9]+$/.test(sponsorBps) && bps >= 0 && bps <= 10000)
+  ) {
+    return body
+  }
+
+  const sponsorMax = params.get('sponsorMax')
+  if (sponsorMax !== null && !/^[0-9]+$/.test(sponsorMax)) return body
 
   return {
     ...body,
     subsidizeFees: true,
-    maxSubsidizationAmount: /^[0-9]+$/.test(overrides.sponsorMax ?? '')
-      ? overrides.sponsorMax
-      : '1000000000000000000',
+    maxSubsidizationAmount: sponsorMax ?? '1000000000000000000',
     ...(components.length ? { sponsoredFeeComponents: components } : {}),
-    ...(Number.isInteger(bps) &&
-    bps >= 0 &&
-    bps <= 10000 &&
-    overrides.sponsorBps
-      ? { subsidizationBps: bps }
-      : {})
+    ...(sponsorBps !== null ? { subsidizationBps: bps } : {})
   }
 }
 

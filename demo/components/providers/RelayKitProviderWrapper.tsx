@@ -7,16 +7,11 @@ import { RelayKitProvider } from '@relayprotocol/relay-kit-ui'
 import type { HapticEventType } from '@relayprotocol/relay-kit-ui'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/router'
-import { FC, ReactNode, useCallback, useEffect, useMemo } from 'react'
+import { FC, ReactNode, useCallback, useMemo } from 'react'
 import { useCustomize } from 'context/customizeContext'
 import { useWebHaptics } from 'web-haptics/react'
 
 const APP_FEE_RECIPIENT = '0x03508bB71268BBA25ECaCC8F620e01866650532c'
-
-const QUOTE_OVERRIDES_COOKIE = 'relay-demo-quote-overrides'
-
-const readQueryString = (value: string | string[] | undefined) =>
-  typeof value === 'string' && value.length > 0 ? value : undefined
 
 const BASE_THEME = {
   font: 'var(--font-inter), -apple-system, Helvetica, sans-serif',
@@ -32,19 +27,11 @@ export const RelayKitProviderWrapper: FC<{
   const router = useRouter()
   const { themeOverrides, websocketsEnabled } = useCustomize()
   const appFeesEnabled = router.query.appFees === 'true'
-  const appFeeBps = readQueryString(router.query.appFeeBps) ?? '1000'
-  const sponsor = readQueryString(router.query.sponsor)
-  const sponsorBps = readQueryString(router.query.sponsorBps)
-  const sponsorMax = readQueryString(router.query.sponsorMax)
-
-  useEffect(() => {
-    if (!router.isReady) return
-    document.cookie = sponsor
-      ? `${QUOTE_OVERRIDES_COOKIE}=${encodeURIComponent(
-          JSON.stringify({ sponsor, sponsorBps, sponsorMax })
-        )}; path=/; SameSite=Lax`
-      : `${QUOTE_OVERRIDES_COOKIE}=; path=/; max-age=0`
-  }, [router.isReady, sponsor, sponsorBps, sponsorMax])
+  const appFeeBps =
+    typeof router.query.appFeeBps === 'string' &&
+    /^[0-9]+$/.test(router.query.appFeeBps)
+      ? router.query.appFeeBps
+      : '1000'
   const { trigger } = useWebHaptics({
     // enables audio feedback for testing on desktop
     // debug: true
