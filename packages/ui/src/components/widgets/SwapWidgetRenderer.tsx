@@ -53,8 +53,7 @@ import {
   addressWithFallback,
   isValidAddress,
   findSupportedWallet,
-  isChainVmTypeSupported,
-  originRefundAddress
+  isChainVmTypeSupported
 } from '../../utils/address.js'
 import {
   adaptViemWallet,
@@ -83,6 +82,7 @@ type SwapWidgetRendererProps = {
   defaultAmount?: string
   defaultTradeType?: TradeType
   slippageTolerance?: string
+  refundTo?: string
   context: 'Swap' | 'Deposit' | 'Withdraw'
   wallet?: AdaptedWallet
   linkedWallets?: LinkedWallet[]
@@ -191,6 +191,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   defaultAmount,
   defaultTradeType,
   slippageTolerance,
+  refundTo,
   context,
   wallet,
   multiWalletSupportEnabled = false,
@@ -508,12 +509,6 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
 
   const shouldSetQuoteParameters = fromToken && toToken
   const useDepositAddress = !fromChainWalletVMSupported
-  const refundTo =
-    fromToken?.chainId === 1337
-      ? address
-      : useDepositAddress
-        ? originRefundAddress(fromChain, recipient)
-        : undefined
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     shouldSetQuoteParameters
@@ -542,7 +537,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
             !useDepositAddress && (!isValidFromAddress || !isValidToAddress)
               ? true
               : undefined,
-          refundTo,
+          refundTo:
+            refundTo ?? (fromToken?.chainId === 1337 ? address : undefined),
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
           ...(linkedWallet?.vmType === 'bvm' && wallet?.metadata?.publicKey

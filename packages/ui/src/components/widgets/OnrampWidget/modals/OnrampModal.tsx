@@ -17,7 +17,6 @@ import {
   useTokenPrice
 } from '@relayprotocol/relay-kit-hooks'
 import { getRequestCurrencies } from '../../../../utils/relayTransaction.js'
-import { originRefundAddress } from '../../../../utils/address.js'
 import { parseUnits, zeroAddress } from 'viem'
 import {
   appendMetadataToRequest,
@@ -62,6 +61,7 @@ type OnrampModalProps = {
   toChain?: RelayChain
   fiatCurrency: FiatCurrency
   recipient?: string
+  refundTo?: string
   isPassthrough?: boolean
   moonPayCurrencyCode?: string
   usdRate?: number
@@ -82,6 +82,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   amount,
   amountFormatted,
   recipient,
+  refundTo,
   fromToken,
   toToken,
   toChain,
@@ -170,7 +171,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
           : parseUnits(`${ethAmount}`, fromToken.decimals).toString(),
       user: getDeadAddress(),
       recipient,
-      refundTo: originRefundAddress(fromChain, recipient)
+      refundTo
     },
     undefined,
     undefined,

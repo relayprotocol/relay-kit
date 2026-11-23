@@ -142,16 +142,6 @@ export const addressWithFallback = (
     : getDeadAddress(vmType, chainId)
 }
 
-export const originRefundAddress = (
-  originChain?: Pick<RelayChain, 'id' | 'vmType'>,
-  address?: string
-) =>
-  address &&
-  !isDeadAddress(address) &&
-  isValidAddress(originChain?.vmType, address, originChain?.id)
-    ? address
-    : undefined
-
 export function findSupportedWallet(
   chain: RelayChain,
   currentAddress: string | undefined,
