@@ -14,7 +14,8 @@
   "resolutions": {
     "@solana/web3.js": "1.98.2",
     "tronweb": "6.5.1",
-    "sharp": "^0.35.5"
+    "sharp": "^0.35.5",
+    "bitcoinjs-lib@<6.1.8": "6.1.8"
   },
   "scripts": {
     "demo": "pnpm --filter relay-sdk-demo dev",
