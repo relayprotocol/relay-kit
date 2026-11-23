@@ -5,6 +5,7 @@ import type {
   RelayChain
 } from '../../types/index.js'
 import { axios, getApiKeyHeader, resolveApiUrl } from '../index.js'
+import { normalizeSteps } from '../normalizeSteps.js'
 import type { AxiosRequestConfig } from 'axios'
 import { LogLevel } from '../logger.js'
 import type { RelayClient } from '../../client.js'
@@ -118,9 +119,12 @@ export async function handleSignatureStepItem({
 
       // Append new steps if returned in response
       if (res.data && res.data.steps && Array.isArray(res.data.steps)) {
-        json.steps = [...json.steps, ...res.data.steps]
+        json.steps = [
+          ...json.steps,
+          ...normalizeSteps(res.data.steps, json.requestId)
+        ]
         setState({
-          steps: [...json.steps, ...res.data.steps],
+          steps: [...json.steps],
           fees: { ...json.fees },
           breakdown: json.breakdown,
           details: json.details

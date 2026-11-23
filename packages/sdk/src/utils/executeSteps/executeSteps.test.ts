@@ -1151,25 +1151,32 @@ describe('Base tests', () => {
         })
       })
 
-    const result = await executeSteps(1, {}, wallet, () => {}, {
-      requestId: '0xabc',
-      steps: [
-        {
-          id: 'authorize',
-          action: 'Sign authorization',
-          description: 'Sign to approve swap of USDC for ETH',
-          kind: 'signature',
-          status: 'incomplete',
-          data: {
-            ...signatureItem.data,
-            post: {
-              ...signatureItem.data.post,
-              endpoint: '/execute/permits/v2'
+    const progress: Execute['steps'][] = []
+    const result = await executeSteps(
+      1,
+      {},
+      wallet,
+      ({ steps }) => progress.push(steps),
+      {
+        requestId: '0xabc',
+        steps: [
+          {
+            id: 'authorize',
+            action: 'Sign authorization',
+            description: 'Sign to approve swap of USDC for ETH',
+            kind: 'signature',
+            status: 'incomplete',
+            data: {
+              ...signatureItem.data,
+              post: {
+                ...signatureItem.data.post,
+                endpoint: '/execute/permits/v2'
+              }
             }
           }
-        }
-      ]
-    })
+        ]
+      }
+    )
 
     expect(
       wallet.handleSendTransactionStep.mock.calls.map(([, item, step]) => [
@@ -1182,6 +1189,10 @@ describe('Base tests', () => {
       requestId: '0xabc',
       items: [{ status: 'complete', check: permitSwap.check }]
     })
+    expect(
+      progress.every((steps) => steps.every((step) => step.items?.length))
+    ).toBe(true)
+    expect(progress.some((steps) => steps.length > 2)).toBe(false)
   })
 
   it('Should use gas fee estimations by default', async () => {
