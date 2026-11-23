@@ -111,6 +111,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
         onSuccess?.({
           steps: quote?.steps as Execute['steps'],
           fees: fees,
+          originGas: quote?.originGas,
           details: details
         })
       }}
