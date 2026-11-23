@@ -17,6 +17,7 @@ import {
   useTokenPrice
 } from '@relayprotocol/relay-kit-hooks'
 import { getRequestCurrencies } from '../../../../utils/relayTransaction.js'
+import { originRefundAddress } from '../../../../utils/address.js'
 import { parseUnits, zeroAddress } from 'viem'
 import {
   appendMetadataToRequest,
@@ -168,7 +169,8 @@ export const OnrampModal: FC<OnrampModalProps> = ({
           ? parseUnits(`${amount}`, 6).toString()
           : parseUnits(`${ethAmount}`, fromToken.decimals).toString(),
       user: getDeadAddress(),
-      recipient
+      recipient,
+      refundTo: originRefundAddress(fromChain, recipient)
     },
     undefined,
     undefined,

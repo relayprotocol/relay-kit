@@ -53,7 +53,8 @@ import {
   addressWithFallback,
   isValidAddress,
   findSupportedWallet,
-  isChainVmTypeSupported
+  isChainVmTypeSupported,
+  originRefundAddress
 } from '../../utils/address.js'
 import {
   adaptViemWallet,
@@ -507,6 +508,12 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
 
   const shouldSetQuoteParameters = fromToken && toToken
   const useDepositAddress = !fromChainWalletVMSupported
+  const refundTo =
+    fromToken?.chainId === 1337
+      ? address
+      : useDepositAddress
+        ? originRefundAddress(fromChain, recipient)
+        : undefined
 
   const quoteParameters: Parameters<typeof useQuote>['2'] =
     shouldSetQuoteParameters
@@ -535,7 +542,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
             !useDepositAddress && (!isValidFromAddress || !isValidToAddress)
               ? true
               : undefined,
-          refundTo: fromToken?.chainId === 1337 ? address : undefined,
+          refundTo,
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
           ...(linkedWallet?.vmType === 'bvm' && wallet?.metadata?.publicKey
