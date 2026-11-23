@@ -33,6 +33,7 @@ export type QuoteFeeSponsorship = NonNullable<
 >
 export type DepositAddress = NonNullable<RequestV3['depositAddress']>
 export type QuoteProtocol = QuoteV2Response['protocol']
+export type QuoteWarnings = { code: string; message: string }[]
 // Inlined from the dropped /execute/swap schema; still returned on execute step payloads.
 export type SwapBreakdown =
   | {
@@ -63,6 +64,7 @@ export type Execute = {
   originGas?: QuoteCurrencyAmount
   feeSponsorship?: QuoteFeeSponsorship
   protocol?: QuoteProtocol
+  warnings?: QuoteWarnings
   breakdown?: SwapBreakdown
   details?: QuoteDetails
   error?: any // Manually added client error

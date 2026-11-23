@@ -21,8 +21,18 @@ export type QuoteBody = Omit<
   NonNullable<
     paths['/quote/v2']['post']['requestBody']['content']['application/json']
   >,
-  'useExternalLiquidity' | 'useFallbacks'
->
+  'useExternalLiquidity' | 'useFallbacks' | 'sponsoredFeeComponents'
+> & {
+  sponsoredFeeComponents?: (
+    | 'execution'
+    | 'swap'
+    | 'platform'
+    | 'app'
+    | 'rent'
+  )[]
+  preferredSolverFillCurrency?: string
+  preferredSolverDepositCurrency?: string
+}
 export type QuoteBodyOptions = Omit<
   QuoteBody,
   | 'destinationChainId'
