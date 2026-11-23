@@ -152,14 +152,18 @@ export const parseFees = (
   }
 }
 
-/** Relay and app fees the user pays in USD after sponsorship, as a positive number */
-export const calculateTotalFeesUsd = (quote?: QuoteResponse) =>
-  -(
-    Number(quote?.fees?.execution?.usd ?? 0) +
-    Number(quote?.fees?.platform?.usd ?? 0) +
-    Number(quote?.fees?.app?.usd ?? 0) +
-    Number(quote?.fees?.sponsored?.usd ?? 0)
+/** Execution, platform and app fees the user pays in USD after sponsorship, as a positive number */
+export const calculateTotalFeesUsd = (quote?: QuoteResponse) => {
+  const components = ['execution', 'platform', 'app'] as const
+  const sponsorship = quote?.feeSponsorship?.quoted?.components
+  return components.reduce(
+    (total, component) =>
+      total -
+      Number(quote?.fees?.[component]?.usd ?? 0) -
+      Number(sponsorship?.[component]?.sponsored?.amountUsd ?? 0),
+    0
   )
+}
 
 export const calculateRelayerFeeProportionUsd = (quote?: QuoteResponse) => {
   const usdIn = quote?.details?.currencyIn?.amountUsd
