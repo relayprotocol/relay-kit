@@ -17,7 +17,7 @@ import { sha256 } from './hashing.js'
 import type { FeeBreakdown } from '../types/FeeBreakdown.js'
 
 const formatUsdFee = (
-  amountUsd: string | undefined,
+  amountUsd: string | null | undefined,
   shouldFlipSign: boolean = false
 ) => {
   const value = Number(amountUsd ?? 0)

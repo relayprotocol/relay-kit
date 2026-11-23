@@ -10,30 +10,18 @@ import type { OrderStepId } from './Order.js'
 import type { AxiosRequestConfig } from 'axios'
 import type { TransactionReceipt } from 'viem'
 
-type QuoteV2Response =
-  paths['/quote/v2']['post']['responses']['200']['content']['application/json']
-type RequestV3 = NonNullable<
-  paths['/requests/v3']['get']['responses']['200']['content']['application/json']['requests']
->[0]
+type QuoteV3Response =
+  paths['/quote/v3']['post']['responses']['200']['content']['application/json']
 
-export type QuoteFee = { usd: string; amount: string; amountFormatted: string }
-export type QuoteCurrencyAmount = NonNullable<
-  NonNullable<QuoteV2Response['details']>['currencyIn']
+export type QuoteFee = QuoteV3Response['fees']['platform']
+export type QuoteFees = Partial<QuoteV3Response['fees']>
+export type QuoteCurrencyAmount = NonNullable<QuoteV3Response['originGas']>
+export type QuoteFeeSponsorship = NonNullable<QuoteV3Response['feeSponsorship']>
+export type DepositAddress = NonNullable<
+  QuoteV3Response['steps'][0]['depositAddress']
 >
-export type QuoteFees = {
-  execution?: QuoteFee
-  swap?: QuoteFee
-  platform?: QuoteFee
-  app?: QuoteFee
-  sponsored?: QuoteFee
-  currency?: QuoteCurrencyAmount['currency']
-}
-export type QuoteFeeSponsorship = NonNullable<
-  NonNullable<RequestV3['data']>['feeSponsorship']
->
-export type DepositAddress = NonNullable<RequestV3['depositAddress']>
-export type QuoteProtocol = QuoteV2Response['protocol']
-export type QuoteWarnings = { code: string; message: string }[]
+export type QuoteProtocol = QuoteV3Response['protocol']
+export type QuoteWarnings = QuoteV3Response['warnings']
 // Inlined from the dropped /execute/swap schema; still returned on execute step payloads.
 export type SwapBreakdown =
   | {
@@ -42,13 +30,7 @@ export type SwapBreakdown =
     }[]
   | undefined
 export type CheckApi = { endpoint?: string; method?: string }
-export type QuoteDetails = Omit<
-  NonNullable<QuoteV2Response['details']>,
-  'expandedPriceImpact' | 'rate' | 'userBalance'
-> & {
-  rate?: string
-  userBalance?: string
-}
+export type QuoteDetails = QuoteV3Response['details']
 export type QuoteStepId = 'deposit' | 'approve' | 'authorize' | 'swap' | 'send'
 
 export type TransactionStepState = 'confirming' | 'validating' | 'complete'

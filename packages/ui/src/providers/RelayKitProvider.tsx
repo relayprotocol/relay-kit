@@ -13,7 +13,7 @@ import type { RelayKitTheme } from '../themes/index.js'
 import { generateCssVars } from '../utils/theme.js'
 
 export type AppFees =
-  paths['/quote/v2']['post']['requestBody']['content']['application/json']['appFees']
+  paths['/quote/v3']['post']['requestBody']['content']['application/json']['appFees']
 
 /**
  * Haptic feedback intensity/type for UI interactions.

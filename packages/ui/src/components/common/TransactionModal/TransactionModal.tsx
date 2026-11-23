@@ -115,8 +115,8 @@ export const TransactionModal: FC<TransactionModalProps> = (
         }
         if (fees?.execution && fees?.platform) {
           extraData.relayer_fee =
-            parseFloat(fees.execution.amountFormatted) +
-            parseFloat(fees.platform.amountFormatted)
+            Number(fees.execution.amountFormatted ?? 0) +
+            Number(fees.platform.amountFormatted ?? 0)
         }
         const quoteId = steps ? extractQuoteId(steps) : undefined
         haptic('success')

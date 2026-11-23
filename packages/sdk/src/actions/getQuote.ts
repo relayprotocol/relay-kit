@@ -17,22 +17,9 @@ import { getClient, RelayClient } from '../client.js'
 import type { AdaptedWallet, Quote, paths } from '../types/index.js'
 import { getDeadAddress } from '../constants/address.js'
 
-export type QuoteBody = Omit<
-  NonNullable<
-    paths['/quote/v2']['post']['requestBody']['content']['application/json']
-  >,
-  'useExternalLiquidity' | 'useFallbacks' | 'sponsoredFeeComponents'
-> & {
-  sponsoredFeeComponents?: (
-    | 'execution'
-    | 'swap'
-    | 'platform'
-    | 'app'
-    | 'rent'
-  )[]
-  preferredSolverFillCurrency?: string
-  preferredSolverDepositCurrency?: string
-}
+export type QuoteBody = NonNullable<
+  paths['/quote/v3']['post']['requestBody']['content']['application/json']
+>
 export type QuoteBodyOptions = Omit<
   QuoteBody,
   | 'destinationChainId'

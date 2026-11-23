@@ -4,7 +4,7 @@ import type { SimulateContractParameters } from 'viem'
 
 type QuoteCallBody = Omit<
   NonNullable<
-    paths['/quote/v2']['post']['requestBody']['content']['application/json']['txs']
+    paths['/quote/v3']['post']['requestBody']['content']['application/json']['txs']
   >[0],
   'originalTxValue'
 >

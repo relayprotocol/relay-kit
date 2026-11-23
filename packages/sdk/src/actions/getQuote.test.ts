@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { RelayClient, createClient } from '../client'
 import { convertViemChainToRelayChain } from '../utils/chain'
 import { http, zeroAddress } from 'viem'
+import { AxiosError } from 'axios'
 import {
   mainnet,
   base,
@@ -214,6 +215,49 @@ describe('Should test the getQuote action.', () => {
 
     expect(request?.url).toBe(`${MAINNET_RELAY_API}/quote/v3`)
     expect(quote).toEqual(response)
+  })
+
+  it('Should report the HTTP status of a /quote/v3 error', async () => {
+    client = createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: relayChains
+    })
+    axiosRequestSpy.mockRestore()
+    const adapter = axios.defaults.adapter
+    axios.defaults.adapter = (config) =>
+      Promise.reject(
+        new AxiosError('Request failed', '401', config, null, {
+          status: 401,
+          statusText: 'Unauthorized',
+          headers: {},
+          config,
+          data: {
+            message: 'Unauthorized: Check API Key or API session',
+            errorCode: 'UNAUTHORIZED_QUOTE'
+          }
+        })
+      )
+
+    try {
+      await expect(
+        client.actions.getQuote(
+          {
+            toChainId: 1,
+            chainId: 8453,
+            currency: zeroAddress,
+            toCurrency: zeroAddress,
+            tradeType: 'EXACT_INPUT',
+            amount: '1'
+          },
+          true
+        )
+      ).rejects.toMatchObject({
+        statusCode: 401,
+        rawError: { errorCode: 'UNAUTHORIZED_QUOTE' }
+      })
+    } finally {
+      axios.defaults.adapter = adapter
+    }
   })
 
   it('Should use the XRP dead address as the default recipient for XRP destinations', async () => {
