@@ -70,6 +70,50 @@ function applyGasSponsorship(body: any) {
   return augmented
 }
 
+const SPONSORABLE_FEE_COMPONENTS = [
+  'execution',
+  'swap',
+  'platform',
+  'app',
+  'rent'
+]
+
+// Test-only sponsorship overrides set by RelayKitProviderWrapper from the
+// page's ?sponsor=, ?sponsorBps= and ?sponsorMax= query params. They apply to
+// every quote/v3 request, replacing the token-pair defaults above.
+function applyQuoteOverrides(body: any, req: NextApiRequest) {
+  const raw = req.cookies['relay-demo-quote-overrides']
+  if (!raw) return body
+
+  let overrides: { sponsor?: string; sponsorBps?: string; sponsorMax?: string }
+  try {
+    overrides = JSON.parse(raw)
+  } catch {
+    return body
+  }
+  if (!overrides.sponsor) return body
+
+  const components = overrides.sponsor
+    .split(',')
+    .filter((component) => SPONSORABLE_FEE_COMPONENTS.includes(component))
+  const bps = Number(overrides.sponsorBps)
+
+  return {
+    ...body,
+    subsidizeFees: true,
+    maxSubsidizationAmount: /^[0-9]+$/.test(overrides.sponsorMax ?? '')
+      ? overrides.sponsorMax
+      : '1000000000000000000',
+    ...(components.length ? { sponsoredFeeComponents: components } : {}),
+    ...(Number.isInteger(bps) &&
+    bps >= 0 &&
+    bps <= 10000 &&
+    overrides.sponsorBps
+      ? { subsidizationBps: bps }
+      : {})
+  }
+}
+
 /**
  * Server-side proxy for the Relay API. Injects the `x-api-key` header (kept out
  * of the client bundle) so authenticated endpoints like GET /requests/v3 work.
@@ -125,7 +169,9 @@ export default async function handler(
 
   // Apply gas sponsorship to quote requests before forwarding.
   const body =
-    hasBody && path === 'quote/v3' ? applyGasSponsorship(req.body) : req.body
+    hasBody && path === 'quote/v3'
+      ? applyQuoteOverrides(applyGasSponsorship(req.body), req)
+      : req.body
 
   const upstream = await fetch(target.href, {
     method,
