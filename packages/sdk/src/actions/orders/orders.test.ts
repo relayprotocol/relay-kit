@@ -247,6 +247,24 @@ describe('Limit order actions', () => {
     })
   })
 
+  it("returns an open order's latest price check", async () => {
+    const latestPriceCheck = {
+      marketPrice: '3012.45',
+      allInPrice: '3020.10',
+      reason: 'insufficient_allowance' as const,
+      checkedAt: '2026-11-17T21:04:12.000Z'
+    }
+    mockApi({
+      'GET /orders': {
+        orders: [order({ status: 'open', latestPriceCheck })]
+      }
+    })
+
+    const { orders } = await client.actions.getOrders({ user: USER })
+
+    expect(orders[0].latestPriceCheck).toEqual(latestPriceCheck)
+  })
+
   it('soft cancels by default and sends no transaction', async () => {
     const cancelled = order({ status: 'closed', outcome: 'cancelled' })
     const api = mockApi({

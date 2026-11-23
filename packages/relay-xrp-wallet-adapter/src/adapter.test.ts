@@ -124,6 +124,65 @@ describe('handleSendTransactionStep', () => {
   })
 })
 
+describe('getBalance', () => {
+  // Recorded mainnet `server_info` validated_ledger (trimmed).
+  const SERVER_INFO = {
+    result: {
+      info: {
+        validated_ledger: {
+          seq: 108395981,
+          base_fee_xrp: 0.00001,
+          reserve_base_xrp: 1,
+          reserve_inc_xrp: 0.2
+        }
+      },
+      status: 'success'
+    }
+  }
+  const accountInfo = (Balance: string, OwnerCount: number) => ({
+    result: {
+      account_data: { Account: WALLET, Balance, OwnerCount },
+      validated: true,
+      status: 'success'
+    }
+  })
+  const mockRpc = (account: unknown) =>
+    fetchMock.mockImplementation(async (_url: string, init: RequestInit) => {
+      const { method } = JSON.parse(init.body as string)
+      return {
+        json: async () => (method === 'server_info' ? SERVER_INFO : account)
+      }
+    })
+  const getBalance = () =>
+    adaptXrpWallet(WALLET, vi.fn(), { rpcUrl: RPC_URL }).getBalance!(
+      537724,
+      WALLET,
+      'xrp'
+    )
+
+  it('subtracts the base reserve from the balance', async () => {
+    mockRpc(accountInfo('1264221', 0))
+    await expect(getBalance()).resolves.toBe(264221n)
+  })
+
+  it('subtracts the owner reserve for each owned ledger object', async () => {
+    mockRpc(accountInfo('1264221', 1))
+    await expect(getBalance()).resolves.toBe(64221n)
+  })
+
+  it('floors the spendable balance at 0', async () => {
+    mockRpc(accountInfo('1264221', 2))
+    await expect(getBalance()).resolves.toBe(0n)
+  })
+
+  it('returns 0 for an unfunded account', async () => {
+    mockRpc({
+      result: { error: 'actNotFound', error_code: 19, status: 'error' }
+    })
+    await expect(getBalance()).resolves.toBe(0n)
+  })
+})
+
 describe('handleConfirmTransactionStep', () => {
   const confirm = () =>
     adaptXrpWallet(WALLET, vi.fn(), {
