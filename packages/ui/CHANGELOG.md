@@ -1,5 +1,30 @@
 # @reservoir0x/relay-kit-ui
 
+## 13.0.0
+
+### Major Changes
+
+- 9be15f3: `getQuote`, `useQuote`, `queryQuote` and the Swap, Onramp and deposit address widgets now quote with `POST /quote/v3` instead of `POST /quote/v2`, which Relay deprecates on November 25, 2026 and retires on February 23, 2027. See https://docs.relay.link/references/api/api_guides/migrating-to-quote-v3.
+  
+  **Breaking**
+  
+  - `/quote/v3` requires authentication. Server-side clients set `apiKey`; browser apps point `baseApiUrl` at a proxy that adds `x-api-key`, as the UI kit already requires for `GET /requests/v3`. Unauthenticated requests fail with `401` and `errorCode: "UNAUTHORIZED_QUOTE"`. `useQuote` now sends the client's `apiKey` when `baseApiUrl` is the Relay API, like `getQuote`.
+  - `QuoteBody` no longer accepts `useExternalLiquidity` or `useFallbacks`, and the API rejects any parameter it does not know with `400` and `errorCode: "INVALID_REQUEST_PARAMS"`. Remove them, and any other extra field such as `source`, from `options`. `sponsoredFeeComponents` takes `platform` instead of `relay`, and `QuoteBody` gains `preferredSolverFillCurrency` and `preferredSolverDepositCurrency`.
+  - `Execute['fees']` (`QuoteFees`) is the quote/v3 fee breakdown: `execution`, `swap`, `platform`, `app` and `sponsored`, each `{ usd, amount, amountFormatted }` (strings that can be `null`), plus one `currency`. Costs have a negative `usd`. Read `fees.platform` instead of `fees.relayerService` or `details.expandedPriceImpact.relay`, `fees.sponsored` instead of `fees.subsidized`, and the new `Execute['originGas']` instead of `fees.gas`. `fees.relayer` and `fees.relayerGas` are gone, and `details.expandedPriceImpact` is removed; `details.rate` and `details.userBalance` are strings.
+  - `Execute['feeSponsorship']` uses the `GET /requests/v3` shape (`relay` is named `platform`, one shared `currency`). `Execute['protocol']` and `Execute['warnings']` (for example `FIXED_RATE_NOT_APPLIED` when a requested `fixedRate` was not applied) are added.
+  - A step's `depositAddress` is an object `{ address, type, depositor, depositTxHash, recoveryAddress }` instead of a string; read `depositAddress.address`.
+  - `QuoteStepId` is `'deposit' | 'approve' | 'authorize' | 'swap' | 'send'`: `authorize1` and `authorize2` are now both `authorize`. Tell repeated ids apart by position.
+  - Quotes return flat steps. `getQuote` returns the new `Quote` type and `useQuote`'s `QuoteResponse` is now `Quote`: each `QuoteStep` carries `status`, `data` and `check` directly, with no `items` array and no `step.requestId`. Read `quote.steps[i].data` instead of `quote.steps[i].items[0].data`, and use the top-level `quote.requestId`. The Onramp widget's `onSuccess` and `onError` now receive a `Quote`.
+  
+  `execute` and `executeGaslessBatch` take a `Quote`. Execution progress keeps its shape: `onProgress` and the result of `execute` still report steps with `items`. To read a quote's steps in that shape, call the new `normalizeSteps(quote.steps, quote.requestId)` export. Signature steps post to `/execute/permits/v2` and status checks use `/intents/status/v3`, as the quote's steps specify. Hyperliquid deposits now also poll `/intents/status/v3`. `paths` and `routes` add `/quote/v3`, `/execute/permits/v2` and `/requests/exports`, and the quote types derive from the `/quote/v3` schema. `APIError.statusCode` now falls back to the HTTP status when an error body has no `statusCode`, as quote/v3 errors don't, so a `401` no longer reports `500`.
+
+### Patch Changes
+
+- 9be15f3: Add a `refundTo` prop to `SwapWidget` and `OnrampWidget`. It is forwarded to `/quote/v3` as `refundTo`, so integrators can satisfy deposit-address routes that need a destination swap, which otherwise fail with "refundTo is required for deposit addresses that require a destination swap".
+- Updated dependencies [9be15f3]
+  - @relayprotocol/relay-sdk@9.0.0
+  - @relayprotocol/relay-kit-hooks@7.0.0
+
 ## 12.1.2
 
 ### Patch Changes
