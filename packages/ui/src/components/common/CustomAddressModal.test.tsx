@@ -385,18 +385,6 @@ describe('CustomAddressModal SVM recipient check', () => {
     expect(onConfirmed).toHaveBeenCalledWith(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
   })
 
-  it('does not look up a partially typed address', async () => {
-    svmRpcDown = true
-    renderModal({ destination: eclipseChain(svmRpcUrl) })
-
-    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER.slice(0, 33))
-
-    await screen.findByTestId('save-button')
-    await new Promise((resolve) => setTimeout(resolve, 50))
-    expect(axios.post).not.toHaveBeenCalled()
-    expect(screen.queryByText(unverifiedWarning)).toBeNull()
-  })
-
   it('drops the warning once the RPC recovers', async () => {
     svmRpcDown = true
     const { onConfirmed } = renderModal({

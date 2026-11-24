@@ -1,6 +1,6 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query'
 import { isSolanaTokenAccount, type RelayChain } from '@relayprotocol/relay-sdk'
-import { isSolanaPublicKey } from '../utils/solana.js'
+import { isSolanaAddress } from '../utils/solana.js'
 
 const queryOptions = (rpcUrl: string, address: string) => ({
   queryKey: ['useSolanaTokenAccount', rpcUrl, address],
@@ -10,7 +10,7 @@ const queryOptions = (rpcUrl: string, address: string) => ({
 })
 
 const shouldCheck = (chain?: RelayChain, address?: string) =>
-  Boolean(chain?.vmType === 'svm' && address && isSolanaPublicKey(address))
+  Boolean(chain?.vmType === 'svm' && address && isSolanaAddress(address))
 
 /**
  * Imperatively checks whether an address on an SVM chain is a token account.
