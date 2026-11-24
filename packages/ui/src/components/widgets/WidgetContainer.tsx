@@ -33,6 +33,7 @@ export type WidgetContainerProps = {
   onSwapValidating?: (data: Execute) => void
   invalidateBalanceQueries: () => void
   invalidateQuoteQuery: () => void
+  refundTo?: string
 } & Pick<
   ChildrenProps,
   | 'fromToken'
@@ -90,7 +91,8 @@ const WidgetContainer: FC<WidgetContainerProps> = ({
   onAnalyticEvent,
   invalidateBalanceQueries,
   invalidateQuoteQuery,
-  setCustomToAddress
+  setCustomToAddress,
+  refundTo
 }) => {
   const isMounted = useMounted()
   const { isConnected } = useAccount()
@@ -139,6 +141,7 @@ const WidgetContainer: FC<WidgetContainerProps> = ({
             debouncedOutputAmountValue={debouncedOutputAmountValue}
             address={address}
             recipient={recipient}
+            refundTo={refundTo}
             onAnalyticEvent={onAnalyticEvent}
             onSuccess={onSwapSuccess}
             invalidateBalanceQueries={invalidateBalanceQueries}

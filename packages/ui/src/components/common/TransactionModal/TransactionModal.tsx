@@ -90,6 +90,7 @@ export const TransactionModal: FC<TransactionModalProps> = (
         onSwapValidating?.({
           steps: steps,
           fees: fees,
+          originGas: quote?.originGas,
           details: details
         })
       }}
@@ -156,6 +157,7 @@ export const TransactionModal: FC<TransactionModalProps> = (
         onSuccess?.({
           steps: steps,
           fees: fees,
+          originGas: quote?.originGas,
           details: details
         })
       }}

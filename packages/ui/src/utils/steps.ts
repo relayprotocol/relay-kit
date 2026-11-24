@@ -322,7 +322,14 @@ export const formatTransactionSteps = ({
 
   // Helper to find steps by ID
   const findStep = (stepIds: string[]) => {
-    return executableSteps.find((step) => stepIds.includes(step.id))
+    const matchingSteps = executableSteps.filter((step) =>
+      stepIds.includes(step.id)
+    )
+    if (matchingSteps.length <= 1) return matchingSteps[0]
+    return {
+      ...matchingSteps[0],
+      items: matchingSteps.flatMap((step) => step.items ?? [])
+    }
   }
 
   // Helper to create a formatted step with sub-text

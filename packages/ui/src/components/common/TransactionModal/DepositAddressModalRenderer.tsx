@@ -79,6 +79,7 @@ type Props = {
   debouncedOutputAmountValue: string
   debouncedInputAmountValue: string
   recipient?: string
+  refundTo?: string
   customToAddress?: Address
   wallet?: AdaptedWallet
   invalidateBalanceQueries: () => void
@@ -100,6 +101,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
   debouncedInputAmountValue,
   debouncedOutputAmountValue,
   recipient,
+  refundTo,
   invalidateBalanceQueries,
   children,
   onSuccess,
@@ -160,7 +162,8 @@ export const DepositAddressModalRenderer: FC<Props> = ({
                 fromToken.decimals
               ).toString(),
               referrer: relayClient?.source ?? undefined,
-              useDepositAddress: true
+              useDepositAddress: true,
+              refundTo
             }
           : undefined
       const interval = get15MinuteInterval()
