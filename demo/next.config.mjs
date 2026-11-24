@@ -6,6 +6,9 @@
 const nextConfig = {
   /* config options here */
   bundlePagesRouterDependencies: true,
+  experimental: {
+    agentUpgrade: 'security'
+  },
   transpilePackages: [
     '@dynamic-labs/wagmi-connector',
     '@dynamic-labs/sdk-react-core',
