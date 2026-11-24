@@ -16,12 +16,12 @@ import { useMemo } from 'react'
 import type { AxiosRequestConfig } from 'axios'
 
 type ExecutionStatusParams =
-  paths['/intents/status/v2']['get']['parameters']['query'] & {
+  paths['/intents/status/v3']['get']['parameters']['query'] & {
     referrer?: string
   }
 
 export type ExecutionStatusResponse =
-  paths['/intents/status/v2']['get']['responses']['200']['content']['application/json']
+  paths['/intents/status/v3']['get']['responses']['200']['content']['application/json']
 
 type QueryType = typeof useQuery<
   ExecutionStatusResponse,
@@ -37,7 +37,7 @@ export const queryExecutionStatus = function (
   headers?: HeadersInit
 ): Promise<ExecutionStatusResponse> {
   return new Promise((resolve, reject) => {
-    const url = new URL(`${baseApiUrl}/intents/status/v2`)
+    const url = new URL(`${baseApiUrl}/intents/status/v3`)
     let query: ExecutionStatusParams = { ...options }
     setParams(url, query)
 
