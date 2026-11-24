@@ -82,6 +82,7 @@ type SwapWidgetRendererProps = {
   defaultAmount?: string
   defaultTradeType?: TradeType
   slippageTolerance?: string
+  refundTo?: string
   context: 'Swap' | 'Deposit' | 'Withdraw'
   wallet?: AdaptedWallet
   linkedWallets?: LinkedWallet[]
@@ -190,6 +191,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   defaultAmount,
   defaultTradeType,
   slippageTolerance,
+  refundTo,
   context,
   wallet,
   multiWalletSupportEnabled = false,
@@ -535,7 +537,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
             !useDepositAddress && (!isValidFromAddress || !isValidToAddress)
               ? true
               : undefined,
-          refundTo: fromToken?.chainId === 1337 ? address : undefined,
+          refundTo:
+            refundTo ?? (fromToken?.chainId === 1337 ? address : undefined),
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
           ...(linkedWallet?.vmType === 'bvm' && wallet?.metadata?.publicKey

@@ -61,6 +61,7 @@ type OnrampModalProps = {
   toChain?: RelayChain
   fiatCurrency: FiatCurrency
   recipient?: string
+  refundTo?: string
   isPassthrough?: boolean
   moonPayCurrencyCode?: string
   usdRate?: number
@@ -81,6 +82,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   amount,
   amountFormatted,
   recipient,
+  refundTo,
   fromToken,
   toToken,
   toChain,
@@ -168,7 +170,8 @@ export const OnrampModal: FC<OnrampModalProps> = ({
           ? parseUnits(`${amount}`, 6).toString()
           : parseUnits(`${ethAmount}`, fromToken.decimals).toString(),
       user: getDeadAddress(),
-      recipient
+      recipient,
+      refundTo
     },
     undefined,
     undefined,
