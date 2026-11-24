@@ -678,6 +678,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
           <>
             <WidgetContainer
               steps={steps}
+              refundTo={refundTo}
               setSteps={setSteps}
               quoteInProgress={quoteInProgress}
               setQuoteInProgress={setQuoteInProgress}
