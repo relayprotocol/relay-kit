@@ -26,6 +26,7 @@ import {
 
 type BaseOnrampWidgetProps = {
   defaultWalletAddress?: string
+  refundTo?: string
   supportedWalletVMs: Omit<ChainVM, 'hypevm' | 'lvm'>[]
   moonPayApiKey: string
   moonPayThemeId?: string
@@ -64,6 +65,7 @@ export type OnrampWidgetProps =
 
 const OnrampWidget: FC<OnrampWidgetProps> = ({
   defaultWalletAddress,
+  refundTo,
   moonPayApiKey,
   moonpayOnUrlSignatureRequested,
   linkedWallets,
@@ -595,6 +597,7 @@ const OnrampWidget: FC<OnrampWidgetProps> = ({
               amountToTokenFormatted={amountToTokenFormatted}
               fiatCurrency={fiatCurrency}
               recipient={recipient}
+              refundTo={refundTo}
               onSuccess={onSuccess}
               moonPayCurrencyCode={moonPayCurrencyCode}
               isPassthrough={isPassthrough}
