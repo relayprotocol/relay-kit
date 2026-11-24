@@ -15,6 +15,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner.js'
 import { EventNames } from '../../constants/events.js'
 import type { Token } from '../../types/index.js'
 import { faCircleCheck } from '@fortawesome/free-solid-svg-icons/faCircleCheck'
+import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons/faTriangleExclamation'
 import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons/faCircleXmark'
@@ -187,8 +188,16 @@ export const CustomAddressModal: FC<Props> = ({
     isUnverified: isUnverifiedSolanaAccount
   } = useSolanaTokenAccount(toChain, address, !isKnownTokenContract)
 
+  const [confirmedUnverifiedAddress, setConfirmedUnverifiedAddress] =
+    useState<string>()
+
+  const isUnverifiedAddressConfirmed = confirmedUnverifiedAddress === address
+
+  const needsUnverifiedConfirmation =
+    isUnverifiedSolanaAccount && !isUnverifiedAddressConfirmed
+
   const isBlockedAddress =
-    isKnownTokenContract || isSolanaTokenAccount || isUnverifiedSolanaAccount
+    isKnownTokenContract || isSolanaTokenAccount || needsUnverifiedConfirmation
 
   const isLoading =
     isFetchingENS ||
@@ -289,11 +298,6 @@ export const CustomAddressModal: FC<Props> = ({
               This address is a token account, not a wallet. Enter the wallet
               address that owns it.
             </Text>
-          ) : isUnverifiedSolanaAccount ? (
-            <Text color="red" style="subtitle2">
-              Could not verify this address is a wallet. Check your connection
-              and try again.
-            </Text>
           ) : isLighterError ? (
             <Text color="red" style="subtitle2">
               Failed to resolve Lighter address
@@ -313,6 +317,53 @@ export const CustomAddressModal: FC<Props> = ({
             <Text color="red" style="subtitle2">
               Not a valid address
             </Text>
+          ) : null}
+
+          {isUnverifiedSolanaAccount ? (
+            <>
+              <Flex
+                className="relay:bg-[var(--relay-colors-amber2)] relay:p-2 relay:rounded-lg relay:gap-2"
+                align="center"
+              >
+                <FontAwesomeIcon
+                  icon={faTriangleExclamation}
+                  color="#FFA01C"
+                  width={16}
+                  height={16}
+                  className="relay:shrink-0"
+                />
+                <Text style="subtitle3" color="warning">
+                  We couldn't verify this address is a wallet. Funds sent to a
+                  token account are lost permanently.
+                </Text>
+              </Flex>
+              <label className="relay:flex relay:items-center relay:gap-2 relay:cursor-pointer">
+                <span className="relay:relative relay:flex relay:shrink-0">
+                  <input
+                    type="checkbox"
+                    className="relay:appearance-none relay:m-0 relay:w-4 relay:h-4 relay:rounded relay:border relay:border-solid relay:border-[var(--relay-colors-gray8)] relay:bg-[var(--relay-colors-gray1)] relay:cursor-pointer relay:checked:bg-[var(--relay-colors-primary-button-background)] relay:checked:border-[var(--relay-colors-primary-button-background)]"
+                    checked={isUnverifiedAddressConfirmed}
+                    onChange={(e) => {
+                      haptic('light')
+                      setConfirmedUnverifiedAddress(
+                        e.target.checked ? address : undefined
+                      )
+                    }}
+                  />
+                  {isUnverifiedAddressConfirmed ? (
+                    <FontAwesomeIcon
+                      icon={faCheck}
+                      width={10}
+                      height={10}
+                      className="relay:absolute relay:inset-0 relay:m-auto relay:pointer-events-none relay:text-[color:var(--relay-colors-primary-button-color)]"
+                    />
+                  ) : null}
+                </span>
+                <Text style="subtitle3">
+                  I confirm this is a wallet address
+                </Text>
+              </label>
+            </>
           ) : null}
 
           {didResolveLighterFromEvm && resolvedLighterIndex ? (
@@ -357,7 +408,10 @@ export const CustomAddressModal: FC<Props> = ({
             </Flex>
           ) : null}
 
-          {!connectedAddressSet && address && isConnected ? (
+          {!connectedAddressSet &&
+          address &&
+          isConnected &&
+          !isUnverifiedSolanaAccount ? (
             <Flex
               className="relay:bg-[var(--relay-colors-amber2)] relay:p-2 relay:rounded-lg relay:gap-2"
               align="center"

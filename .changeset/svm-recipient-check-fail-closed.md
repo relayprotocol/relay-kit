@@ -3,4 +3,4 @@
 '@relayprotocol/relay-kit-ui': patch
 ---
 
-The SVM token-account recipient check in `CustomAddressModal` and the swap widget now fails closed on Solana and Eclipse: when the destination RPC errors, times out, or is not configured, the custom recipient is rejected with a "Could not verify this address is a wallet" message instead of being accepted. `isSolanaTokenAccount` now throws on a malformed `getAccountInfo` response instead of returning `false`.
+`CustomAddressModal` now warns when it cannot verify that a Solana or Eclipse recipient is a wallet (the destination RPC errors, times out, or is not configured), and requires the user to tick "I confirm this is a wallet address" before saving it. Confirmed token accounts are still blocked. `isSolanaTokenAccount` now throws on a malformed `getAccountInfo` response instead of returning `false`.

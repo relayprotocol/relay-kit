@@ -1,6 +1,6 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query'
 import { isSolanaTokenAccount, type RelayChain } from '@relayprotocol/relay-sdk'
-import { isValidAddress } from '../utils/address.js'
+import { isSolanaPublicKey } from '../utils/solana.js'
 
 const queryOptions = (rpcUrl: string, address: string) => ({
   queryKey: ['useSolanaTokenAccount', rpcUrl, address],
@@ -10,39 +10,32 @@ const queryOptions = (rpcUrl: string, address: string) => ({
 })
 
 const shouldCheck = (chain?: RelayChain, address?: string) =>
-  Boolean(
-    chain?.vmType === 'svm' &&
-      address &&
-      isValidAddress(chain.vmType, address, chain.id)
-  )
+  Boolean(chain?.vmType === 'svm' && address && isSolanaPublicKey(address))
 
 /**
  * Imperatively checks whether an address on an SVM chain is a token account.
- * Fails closed: throws when the address cannot be checked.
+ * Only a confirmed token account returns true; unverified addresses are confirmed by the user in the address modal.
  */
 export async function checkSolanaTokenAccount(
   queryClient: QueryClient,
   chain?: RelayChain,
   address?: string
 ): Promise<boolean> {
-  if (!shouldCheck(chain, address)) {
+  if (!shouldCheck(chain, address) || !chain!.httpRpcUrl) {
     return false
   }
   try {
-    if (!chain!.httpRpcUrl) {
-      throw new Error('Missing RPC URL')
-    }
     return await queryClient.fetchQuery(
       queryOptions(chain!.httpRpcUrl, address!)
     )
   } catch {
-    throw new Error('Could not verify the recipient address, try again')
+    return false
   }
 }
 
 /**
  * Checks whether an address on an SVM chain (Solana, Eclipse) is a token account rather than a wallet.
- * Keyed on the address so results are never stale; fails closed when the lookup errors, times out or has no RPC.
+ * Keyed on the address so results are never stale. Reports addresses it could not check (lookup error, timeout or no RPC) as unverified.
  */
 export default function useSolanaTokenAccount(
   chain?: RelayChain,

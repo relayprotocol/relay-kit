@@ -353,36 +353,79 @@ describe('CustomAddressModal SVM recipient check', () => {
     expect(onConfirmed).toHaveBeenCalledWith(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
   })
 
-  it('blocks an address it cannot verify and accepts it once the RPC recovers', async () => {
+  const unverifiedWarning = /couldn't verify this address is a wallet/
+  const confirmCheckbox = () =>
+    screen.getByRole('checkbox', { name: 'I confirm this is a wallet address' })
+
+  it('requires confirmation for an address it cannot verify, per address', async () => {
+    svmRpcDown = true
+    const { onConfirmed } = renderModal({
+      destination: eclipseChain(svmRpcUrl)
+    })
+
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT)
+
+    await screen.findByText(unverifiedWarning)
+    expect(saveButton()).toHaveProperty('disabled', true)
+    fireEvent.click(saveButton())
+    expect(onConfirmed).not.toHaveBeenCalled()
+
+    fireEvent.click(confirmCheckbox())
+    expect(saveButton()).toHaveProperty('disabled', false)
+
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+
+    await waitFor(() =>
+      expect(confirmCheckbox()).toHaveProperty('checked', false)
+    )
+    expect(saveButton()).toHaveProperty('disabled', true)
+
+    fireEvent.click(confirmCheckbox())
+    fireEvent.click(saveButton())
+    expect(onConfirmed).toHaveBeenCalledWith(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
+  })
+
+  it('does not look up a partially typed address', async () => {
+    svmRpcDown = true
+    renderModal({ destination: eclipseChain(svmRpcUrl) })
+
+    typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER.slice(0, 33))
+
+    await screen.findByTestId('save-button')
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(axios.post).not.toHaveBeenCalled()
+    expect(screen.queryByText(unverifiedWarning)).toBeNull()
+  })
+
+  it('drops the warning once the RPC recovers', async () => {
     svmRpcDown = true
     const { onConfirmed } = renderModal({
       destination: eclipseChain(svmRpcUrl)
     })
 
     typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
-
-    await screen.findByText(/Could not verify this address is a wallet/)
-    expect(saveButton()).toHaveProperty('disabled', true)
-    fireEvent.click(saveButton())
-    expect(onConfirmed).not.toHaveBeenCalled()
+    await screen.findByText(unverifiedWarning)
 
     svmRpcDown = false
     typeAddress('')
     typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
 
     await waitFor(() => expect(saveButton()).toHaveProperty('disabled', false))
+    expect(screen.queryByText(unverifiedWarning)).toBeNull()
     fireEvent.click(saveButton())
     expect(onConfirmed).toHaveBeenCalledWith(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
   })
 
-  it('blocks an address on an SVM chain without an RPC to check it', async () => {
+  it('requires confirmation on an SVM chain without an RPC to check it', async () => {
     const { onConfirmed } = renderModal({ destination: eclipseChain() })
 
     typeAddress(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
 
-    await screen.findByText(/Could not verify this address is a wallet/)
+    await screen.findByText(unverifiedWarning)
     expect(saveButton()).toHaveProperty('disabled', true)
+
+    fireEvent.click(confirmCheckbox())
     fireEvent.click(saveButton())
-    expect(onConfirmed).not.toHaveBeenCalled()
+    expect(onConfirmed).toHaveBeenCalledWith(ECLIPSE_USDC_TOKEN_ACCOUNT_OWNER)
   })
 })

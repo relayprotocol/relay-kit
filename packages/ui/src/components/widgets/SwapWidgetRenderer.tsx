@@ -413,8 +413,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
 
   const {
     isTokenAccount: recipientIsSolanaTokenAccount,
-    isChecking: isCheckingSolanaTokenAccount,
-    isUnverified: recipientIsUnverifiedSolanaAccount
+    isChecking: isCheckingSolanaTokenAccount
   } = useSolanaTokenAccount(
     toChain,
     customToAddress,
@@ -423,10 +422,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       !recipientMatchesKnownToken
   )
 
+  // Only confirmed matches invalidate the recipient
   const recipientIsNotWallet =
-    recipientMatchesKnownToken ||
-    recipientIsSolanaTokenAccount ||
-    recipientIsUnverifiedSolanaAccount
+    recipientMatchesKnownToken || recipientIsSolanaTokenAccount
 
   const isValidToAddress =
     !recipientIsDestinationToken &&
