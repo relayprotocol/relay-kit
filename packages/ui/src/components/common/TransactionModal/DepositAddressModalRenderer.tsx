@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { parseUnits, type Address } from 'viem'
 import {
+  normalizeSteps,
   type AdaptedWallet,
   type Execute,
   type RelayChain
@@ -32,8 +33,7 @@ import { ProviderOptionsContext } from '../../../providers/RelayKitProvider.js'
 import { useAccount } from 'wagmi'
 import {
   calculatePriceTimeEstimate,
-  extractDepositAddress,
-  extractQuoteId
+  extractDepositAddress
 } from '../../../utils/quote.js'
 import { getDeadAddress } from '@relayprotocol/relay-sdk'
 import { bitcoin } from '../../../utils/bitcoin.js'
@@ -79,6 +79,7 @@ type Props = {
   debouncedOutputAmountValue: string
   debouncedInputAmountValue: string
   recipient?: string
+  refundTo?: string
   customToAddress?: Address
   wallet?: AdaptedWallet
   invalidateBalanceQueries: () => void
@@ -100,6 +101,7 @@ export const DepositAddressModalRenderer: FC<Props> = ({
   debouncedInputAmountValue,
   debouncedOutputAmountValue,
   recipient,
+  refundTo,
   invalidateBalanceQueries,
   children,
   onSuccess,
@@ -160,7 +162,8 @@ export const DepositAddressModalRenderer: FC<Props> = ({
                 fromToken.decimals
               ).toString(),
               referrer: relayClient?.source ?? undefined,
-              useDepositAddress: true
+              useDepositAddress: true,
+              refundTo
             }
           : undefined
       const interval = get15MinuteInterval()
@@ -182,13 +185,16 @@ export const DepositAddressModalRenderer: FC<Props> = ({
           if (!open) {
             return
           }
-          setQuoteData(quote as Execute)
+          setQuoteData({
+            ...quote,
+            steps: normalizeSteps(quote.steps, quote.requestId)
+          })
           const interval = get15MinuteInterval()
           const quoteRequestId = sha256({ ...quoteParameters, interval })
           onAnalyticEvent?.(EventNames.QUOTE_RECEIVED, {
             parameters: quoteParameters,
             wallet_connector: connector?.name,
-            quote_id: quote.steps ? extractQuoteId(quote.steps) : undefined,
+            quote_id: quote.requestId,
             quote_request_id: quoteRequestId,
             amount_in: quote.details?.currencyIn?.amountFormatted,
             amount_in_raw: quote.details?.currencyIn?.amount,

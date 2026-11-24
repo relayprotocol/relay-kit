@@ -19,9 +19,6 @@ const UseQuote: NextPage = () => {
   const [tradeType, setTradeType] = useState<'EXACT_INPUT' | 'EXPECTED_OUTPUT'>(
     'EXPECTED_OUTPUT'
   )
-  const [source, setSource] = useState<string | undefined>()
-  const [useExternalLiquidity, setUseExternalLiquidity] =
-    useState<boolean>(false)
   const [appFees, setAppFees] = useState<{ recipient: string; fee: string }[]>()
   const [amount, setAmount] = useState<string>('1000')
   const [data, setData] = useState<any>(undefined)
@@ -147,9 +144,7 @@ const UseQuote: NextPage = () => {
               recipient,
               tradeType,
               appFees,
-              amount,
-              source,
-              useExternalLiquidity
+              amount
             })
           }}
         >

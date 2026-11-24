@@ -90,6 +90,7 @@ export const TransactionModal: FC<TransactionModalProps> = (
         onSwapValidating?.({
           steps: steps,
           fees: fees,
+          originGas: quote?.originGas,
           details: details
         })
       }}
@@ -110,11 +111,13 @@ export const TransactionModal: FC<TransactionModalProps> = (
           amount_out: parseFloat(`${details?.currencyOut?.amountFormatted}`),
           amount_out_raw: details?.currencyOut?.amount
         }
-        if (fees?.gas?.amountFormatted) {
-          extraData.gas_fee = parseFloat(fees.gas.amountFormatted)
+        if (quote?.originGas?.amountFormatted) {
+          extraData.gas_fee = parseFloat(quote.originGas.amountFormatted)
         }
-        if (fees?.relayer?.amountFormatted) {
-          extraData.relayer_fee = parseFloat(fees.relayer.amountFormatted)
+        if (fees?.execution && fees?.platform) {
+          extraData.relayer_fee =
+            Number(fees.execution.amountFormatted ?? 0) +
+            Number(fees.platform.amountFormatted ?? 0)
         }
         const quoteId = steps ? extractQuoteId(steps) : undefined
         haptic('success')
@@ -147,13 +150,14 @@ export const TransactionModal: FC<TransactionModalProps> = (
             .flat(),
           steps,
           subsidized:
-            fees?.subsidized !== undefined && fees.subsidized.amount !== '0'
+            fees?.sponsored !== undefined && fees.sponsored.amount !== '0'
               ? true
               : false
         })
         onSuccess?.({
           steps: steps,
           fees: fees,
+          originGas: quote?.originGas,
           details: details
         })
       }}

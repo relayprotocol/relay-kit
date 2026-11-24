@@ -2,7 +2,7 @@ import { NextPage } from 'next'
 import { DemoPage, DemoOutput } from 'components/DemoPage'
 import { Address, zeroAddress } from 'viem'
 import { useState } from 'react'
-import { Execute, getQuote, GetQuoteParameters } from '@relayprotocol/relay-sdk'
+import { Quote, getQuote, GetQuoteParameters } from '@relayprotocol/relay-sdk'
 
 const DepositAddressesPage: NextPage = () => {
   const [amount, setAmount] = useState<number | undefined>()
@@ -13,7 +13,7 @@ const DepositAddressesPage: NextPage = () => {
   const [destinationChainId, setDestinationChainId] = useState<
     number | undefined
   >()
-  const [quote, setQuote] = useState<Execute>()
+  const [quote, setQuote] = useState<Quote>()
   const [depositAddress, setDepositAddress] = useState<string | undefined>()
   const [depositAmount, setDepositAmount] = useState<string | undefined>()
   return (
@@ -110,13 +110,7 @@ const DepositAddressesPage: NextPage = () => {
             }
             const data = await getQuote(quoteData, true)
             setQuote(data)
-            const depositStepData =
-              data.steps &&
-              data.steps[0] &&
-              data.steps[0].items &&
-              data.steps[0].items[0]
-                ? data.steps[0].items[0].data
-                : undefined
+            const depositStepData = data.steps[0]?.data
             if (depositStepData) {
               setDepositAddress(depositStepData.to)
               setDepositAmount(depositStepData.value)

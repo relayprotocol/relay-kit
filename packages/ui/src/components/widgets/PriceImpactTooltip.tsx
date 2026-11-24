@@ -48,12 +48,19 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
             <Text style="subtitle3" color="subtle" className="relay:mr-auto">
               Swap Cost
             </Text>
-            <Text
-              style="subtitle3"
-              color={getFeeColor(feeBreakdown?.totalFees?.swapImpact?.value)}
-            >
-              {feeBreakdown?.totalFees?.swapImpact?.formatted}
-            </Text>
+            {feeBreakdown?.isGasSponsored &&
+            feeBreakdown.totalFees.swapImpact?.value === 0 ? (
+              <Text style="subtitle3" color="success">
+                Free
+              </Text>
+            ) : (
+              <Text
+                style="subtitle3"
+                color={getFeeColor(feeBreakdown?.totalFees?.swapImpact?.value)}
+              >
+                {feeBreakdown?.totalFees?.swapImpact?.formatted}
+              </Text>
+            )}
           </Flex>
           {feeBreakdown?.breakdown.map((fee) => {
             if (fee.id === 'origin-gas') {

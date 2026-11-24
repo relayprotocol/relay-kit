@@ -322,7 +322,14 @@ export const formatTransactionSteps = ({
 
   // Helper to find steps by ID
   const findStep = (stepIds: string[]) => {
-    return executableSteps.find((step) => stepIds.includes(step.id))
+    const matchingSteps = executableSteps.filter((step) =>
+      stepIds.includes(step.id)
+    )
+    if (matchingSteps.length <= 1) return matchingSteps[0]
+    return {
+      ...matchingSteps[0],
+      items: matchingSteps.flatMap((step) => step.items ?? [])
+    }
   }
 
   // Helper to create a formatted step with sub-text
@@ -537,7 +544,7 @@ export const formatTransactionSteps = ({
     }
 
     // Step 2/1: Send
-    const sendStep = findStep(['deposit', 'send', 'authorize1'])
+    const sendStep = findStep(['deposit', 'send', 'authorize'])
     // Consider send step complete if all items are complete OR backend processing
     const isSendCompleted =
       sendStep?.items?.every(

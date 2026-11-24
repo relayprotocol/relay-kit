@@ -48,7 +48,7 @@ function prepareHyperliquidSignatureStep(
           }
         },
         check: {
-          endpoint: `/intents/status?requestId=${step?.requestId}`,
+          endpoint: `/intents/status/v3?requestId=${step?.requestId}`,
           method: 'GET'
         }
       }

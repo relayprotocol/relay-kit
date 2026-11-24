@@ -28,6 +28,7 @@ type DepositAddressModalProps = {
   debouncedOutputAmountValue: string
   debouncedInputAmountValue: string
   recipient?: Address | string
+  refundTo?: string
   customToAddress?: Address | string
   invalidateBalanceQueries: () => void
   onAnalyticEvent?: (eventName: string, data?: any) => void
@@ -45,6 +46,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
     fromToken,
     toToken,
     recipient,
+    refundTo,
     debouncedInputAmountValue,
     debouncedOutputAmountValue,
     onOpenChange,
@@ -68,6 +70,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
       debouncedOutputAmountValue={debouncedOutputAmountValue}
       address={address}
       recipient={recipient}
+      refundTo={refundTo}
       invalidateBalanceQueries={invalidateBalanceQueries}
       onAnalyticEvent={onAnalyticEvent}
       onSuccess={(quote, executionStatus) => {
@@ -83,11 +86,13 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
           amount_in: parseFloat(`${details?.currencyIn?.amountFormatted}`),
           amount_out: parseFloat(`${details?.currencyOut?.amountFormatted}`)
         }
-        if (fees?.gas?.amountFormatted) {
-          extraData.gas_fee = parseFloat(fees.gas.amountFormatted)
+        if (quote?.originGas?.amountFormatted) {
+          extraData.gas_fee = parseFloat(quote.originGas.amountFormatted)
         }
-        if (fees?.relayer?.amountFormatted) {
-          extraData.relayer_fee = parseFloat(fees.relayer.amountFormatted)
+        if (fees?.execution && fees?.platform) {
+          extraData.relayer_fee =
+            Number(fees.execution.amountFormatted ?? 0) +
+            Number(fees.platform.amountFormatted ?? 0)
         }
         const quoteId = quote
           ? extractQuoteId(quote?.steps as Execute['steps'])
@@ -109,6 +114,7 @@ export const DepositAddressModal: FC<DepositAddressModalProps> = (
         onSuccess?.({
           steps: quote?.steps as Execute['steps'],
           fees: fees,
+          originGas: quote?.originGas,
           details: details
         })
       }}

@@ -34,7 +34,6 @@ import type { ChainVM, Execute } from '@relayprotocol/relay-sdk'
 import {
   calculatePriceTimeEstimate,
   calculateRelayerFeeProportionUsd,
-  extractQuoteId,
   getCurrentStep,
   getSwapEventData,
   isHighRelayerServiceFeeUsd,
@@ -56,7 +55,11 @@ import {
   findSupportedWallet,
   isChainVmTypeSupported
 } from '../../utils/address.js'
-import { adaptViemWallet, isDeadAddress } from '@relayprotocol/relay-sdk'
+import {
+  adaptViemWallet,
+  isDeadAddress,
+  normalizeSteps
+} from '@relayprotocol/relay-sdk'
 import { errorToJSON } from '../../utils/errors.js'
 import { useSwapButtonCta } from '../../hooks/widget/useSwapButtonCta.js'
 import { sha256 } from '../../utils/hashing.js'
@@ -79,6 +82,7 @@ type SwapWidgetRendererProps = {
   defaultAmount?: string
   defaultTradeType?: TradeType
   slippageTolerance?: string
+  refundTo?: string
   context: 'Swap' | 'Deposit' | 'Withdraw'
   wallet?: AdaptedWallet
   linkedWallets?: LinkedWallet[]
@@ -187,6 +191,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
   defaultAmount,
   defaultTradeType,
   slippageTolerance,
+  refundTo,
   context,
   wallet,
   multiWalletSupportEnabled = false,
@@ -532,7 +537,8 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
             !useDepositAddress && (!isValidFromAddress || !isValidToAddress)
               ? true
               : undefined,
-          refundTo: fromToken?.chainId === 1337 ? address : undefined,
+          refundTo:
+            refundTo ?? (fromToken?.chainId === 1337 ? address : undefined),
           slippageTolerance: slippageTolerance,
           topupGas: gasTopUpEnabled && gasTopUpRequired,
           ...(linkedWallet?.vmType === 'bvm' && wallet?.metadata?.publicKey
@@ -588,7 +594,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         details?.slippageTolerance?.origin?.percent,
       steps,
       quote_request_id: quoteRequestId,
-      quote_id: extractQuoteId(steps, requestId)
+      quote_id: requestId
     })
   }
 
@@ -920,7 +926,7 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
       const swapEventData = getSwapEventData(
         quote?.details,
         quote?.fees,
-        quote?.steps ? (quote?.steps as Execute['steps']) : null,
+        quote?.steps ? normalizeSteps(quote.steps, quote.requestId) : null,
         linkedWallet?.connector,
         quoteParameters,
         quote?.requestId
@@ -947,8 +953,9 @@ const SwapWidgetRenderer: FC<SwapWidgetRendererProps> = ({
         throw new Error('Recipient address is a token account, not a wallet')
       }
 
-      setSteps(quote?.steps as Execute['steps'])
-      setQuoteInProgress(quote as Execute)
+      const quoteSteps = normalizeSteps(quote.steps, quote.requestId)
+      setSteps(quoteSteps)
+      setQuoteInProgress({ ...quote, steps: quoteSteps })
       setTransactionModalOpen(true)
 
       const _wallet =

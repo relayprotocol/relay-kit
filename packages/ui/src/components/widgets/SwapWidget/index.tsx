@@ -22,6 +22,7 @@ import AmountInput from '../../common/AmountInput.js'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SwitchIcon } from '../../../icons/index.js'
 import type { ChainVM, Execute, RelayChain } from '@relayprotocol/relay-sdk'
+import { normalizeSteps } from '@relayprotocol/relay-sdk'
 import { getFeeBufferAmount } from '../../../utils/nativeMaxAmount.js'
 import { WidgetErrorWell } from '../WidgetErrorWell.js'
 import { BalanceDisplay } from '../../common/BalanceDisplay.js'
@@ -70,6 +71,7 @@ type BaseSwapWidgetProps = {
   defaultAmount?: string
   defaultTradeType?: 'EXACT_INPUT' | 'EXPECTED_OUTPUT'
   slippageTolerance?: string
+  refundTo?: string
   lockToToken?: boolean
   lockFromToken?: boolean
   lockChainId?: number
@@ -117,6 +119,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
   defaultAmount,
   defaultTradeType,
   slippageTolerance,
+  refundTo,
   onOpenSlippageConfig,
   lockToToken = false,
   lockFromToken = false,
@@ -199,6 +202,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
       fromToken={fromToken}
       setFromToken={setFromToken}
       slippageTolerance={slippageTolerance}
+      refundTo={refundTo}
       wallet={wallet}
       linkedWallets={linkedWallets}
       multiWalletSupportEnabled={multiWalletSupportEnabled}
@@ -674,6 +678,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
           <>
             <WidgetContainer
               steps={steps}
+              refundTo={refundTo}
               setSteps={setSteps}
               quoteInProgress={quoteInProgress}
               setQuoteInProgress={setQuoteInProgress}
@@ -1524,7 +1529,7 @@ const SwapWidget: FC<SwapWidgetProps> = ({
                               quote?.details,
                               quote?.fees,
                               quote?.steps
-                                ? (quote?.steps as Execute['steps'])
+                                ? normalizeSteps(quote.steps, quote.requestId)
                                 : null,
                               linkedWallet?.connector,
                               quoteParameters,

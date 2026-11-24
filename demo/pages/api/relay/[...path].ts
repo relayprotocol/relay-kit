@@ -27,9 +27,9 @@ const ALLOWED_ROUTES: Record<string, RegExp[]> = {
     new RegExp(`^app-fees\\/${WALLET_SEGMENT}\\/balances$`)
   ],
   POST: [
-    /^quote\/v2$/,
+    /^quote\/v3$/,
     /^currencies\/v2$/,
-    /^execute(\/permits)?$/,
+    /^execute(\/permits(\/v2)?)?$/,
     /^transactions\/(index|single)$/,
     /^requests\/metadata$/,
     new RegExp(`^app-fees\\/${WALLET_SEGMENT}\\/claim$`)
@@ -133,7 +133,7 @@ export default async function handler(
 
   // Apply gas sponsorship to quote requests before forwarding.
   const body =
-    hasBody && path === 'quote/v2' ? applyGasSponsorship(req.body) : req.body
+    hasBody && path === 'quote/v3' ? applyGasSponsorship(req.body) : req.body
 
   const upstream = await fetch(target.href, {
     method,

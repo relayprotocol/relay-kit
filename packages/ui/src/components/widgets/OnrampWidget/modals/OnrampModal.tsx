@@ -1,7 +1,7 @@
 import {
   getDeadAddress,
   LogLevel,
-  type Execute,
+  type Quote,
   type RelayChain
 } from '@relayprotocol/relay-sdk'
 import { type FC, useCallback, useEffect, useMemo, useState } from 'react'
@@ -16,13 +16,11 @@ import {
   useRequests,
   useTokenPrice
 } from '@relayprotocol/relay-kit-hooks'
-import {
-  extractDepositRequestId,
-  getRequestCurrencies
-} from '../../../../utils/relayTransaction.js'
+import { getRequestCurrencies } from '../../../../utils/relayTransaction.js'
 import { parseUnits, zeroAddress } from 'viem'
 import {
   appendMetadataToRequest,
+  calculateTotalFeesUsd,
   extractDepositAddress,
   parseTokenPrice
 } from '../../../../utils/quote.js'
@@ -63,6 +61,7 @@ type OnrampModalProps = {
   toChain?: RelayChain
   fiatCurrency: FiatCurrency
   recipient?: string
+  refundTo?: string
   isPassthrough?: boolean
   moonPayCurrencyCode?: string
   usdRate?: number
@@ -72,8 +71,8 @@ type OnrampModalProps = {
   moonpayOnUrlSignatureRequested: (url: string) => Promise<string> | void
   onAnalyticEvent?: (eventName: string, data?: any) => void
   onOpenChange: (open: boolean) => void
-  onSuccess?: (data: Execute, moonpayRequestId: string) => void
-  onError?: (error: string, data?: Execute, moonpayRequestId?: string) => void
+  onSuccess?: (data: Quote, moonpayRequestId: string) => void
+  onError?: (error: string, data?: Quote, moonpayRequestId?: string) => void
 }
 
 type TxHashes = { txHash: string; chainId: number }[]
@@ -83,6 +82,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   amount,
   amountFormatted,
   recipient,
+  refundTo,
   fromToken,
   toToken,
   toChain,
@@ -170,7 +170,8 @@ export const OnrampModal: FC<OnrampModalProps> = ({
           ? parseUnits(`${amount}`, 6).toString()
           : parseUnits(`${ethAmount}`, fromToken.decimals).toString(),
       user: getDeadAddress(),
-      recipient
+      recipient,
+      refundTo
     },
     undefined,
     undefined,
@@ -194,9 +195,8 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     quote?.fees && amount && !isPassthrough
       ? `${
           Math.floor(
-            (Number(quote.fees.relayer?.amountUsd ?? 0) +
-              Number(quote.fees.gas?.amountUsd ?? 0) +
-              Number(quote.fees.app?.amountUsd ?? 0) +
+            (calculateTotalFeesUsd(quote) +
+              Number(quote.originGas?.amountUsd ?? 0) +
               +amount) *
               100
           ) / 100
@@ -214,7 +214,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   )
 
   const depositAddress = useMemo(
-    () => extractDepositAddress(quote?.steps as Execute['steps']),
+    () => extractDepositAddress(quote?.steps),
     [quote]
   )
 
@@ -222,10 +222,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
     ? 'https://testnets.relay.link'
     : 'https://relay.link'
 
-  const quoteRequestId = useMemo(
-    () => extractDepositRequestId(quote?.steps as Execute['steps']),
-    [quote]
-  )
+  const quoteRequestId = quote?.requestId
 
   const { data: executionStatus } = useDepositAddressStatus(
     depositAddress ? { depositAddress } : undefined,
@@ -317,7 +314,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
         moonPayRequestId,
         isPassthrough
       })
-      onSuccess?.(quote as Execute, moonPayRequestId as string)
+      onSuccess?.(quote as Quote, moonPayRequestId as string)
       setProcessingStep(undefined)
     }
     if (
@@ -390,7 +387,7 @@ export const OnrampModal: FC<OnrampModalProps> = ({
   const onOnrampError = useCallback(
     (errorMsg: any, error: Error) => {
       if (step !== OnrampStep.Error) {
-        onError?.(error.message, quote as Execute, moonPayRequestId)
+        onError?.(error.message, quote, moonPayRequestId)
       }
       setStep(OnrampStep.Error)
       haptic('error')
