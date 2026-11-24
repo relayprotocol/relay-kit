@@ -21,7 +21,7 @@ const ALLOWED_ROUTES: Record<string, RegExp[]> = {
     /^chains$/,
     /^config\/v2$/,
     /^currencies\/trending$/,
-    /^currencies\/token\/price$/,
+    /^currencies\/token\/price\/v2$/,
     /^intents\/status(\/v2|\/v3)?$/,
     /^requests\/v3$/,
     new RegExp(`^app-fees\\/${WALLET_SEGMENT}\\/balances$`)
