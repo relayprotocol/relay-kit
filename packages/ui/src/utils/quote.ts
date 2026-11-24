@@ -56,14 +56,24 @@ export const parseFees = (
     Number(originGas?.currency?.decimals ?? 18)
   )
 
-  const executionFeeUsd = fees?.execution?.usd
-  const platformFeeUsd = fees?.platform?.usd
-
   const appFeeUsd = fees?.app?.usd
   const hasAppFee = appFeeUsd && Number(appFeeUsd) !== 0
 
   const totalFeesUsd = calculateTotalFeesUsd(quote)
   const _isGasSponsored = isGasSponsored(quote)
+  const sponsorship = quote?.feeSponsorship?.quoted?.components
+  const userPaysUsd = (
+    component: 'execution' | 'platform' | 'app' | 'swap',
+    coveredWithoutBreakdown: boolean
+  ) => {
+    if (!sponsorship) {
+      return coveredWithoutBreakdown ? '0' : fees?.[component]?.usd
+    }
+    const net =
+      Number(fees?.[component]?.usd ?? 0) +
+      Number(sponsorship[component]?.sponsored?.amountUsd ?? 0)
+    return String(Math.round(net * 1e6) / 1e6)
+  }
 
   const breakdown: BridgeFee[] = [
     {
@@ -79,9 +89,7 @@ export const parseFees = (
     {
       raw: 0n,
       formatted: '0',
-      usd: _isGasSponsored
-        ? { value: 0, formatted: '0' }
-        : formatUsdFee(executionFeeUsd, false),
+      usd: formatUsdFee(userPaysUsd('execution', _isGasSponsored), false),
       name: `Execution Cost (${selectedTo.displayName})`,
       tooltip: null,
       type: 'gas',
@@ -91,9 +99,7 @@ export const parseFees = (
     {
       raw: 0n,
       formatted: '0',
-      usd: _isGasSponsored
-        ? { value: 0, formatted: '0' }
-        : formatUsdFee(platformFeeUsd, false),
+      usd: formatUsdFee(userPaysUsd('platform', _isGasSponsored), false),
       name: 'Platform Fee',
       tooltip: null,
       type: 'relayer',
@@ -105,9 +111,7 @@ export const parseFees = (
     breakdown.push({
       raw: 0n,
       formatted: '0',
-      usd: _isGasSponsored
-        ? { value: 0, formatted: '0' }
-        : formatUsdFee(appFeeUsd, false),
+      usd: formatUsdFee(userPaysUsd('app', _isGasSponsored), false),
       name: 'App Fee',
       tooltip: null,
       type: 'relayer',
@@ -146,7 +150,7 @@ export const parseFees = (
           ? formatDollar(parseFloat(quote?.details?.totalImpact?.usd ?? 0))
           : undefined,
       priceImpactColor,
-      swapImpact: formatUsdFee(fees?.swap?.usd, false)
+      swapImpact: formatUsdFee(userPaysUsd('swap', false), false)
     },
     isGasSponsored: _isGasSponsored
   }
