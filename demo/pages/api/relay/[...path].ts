@@ -62,7 +62,15 @@ function applyGasSponsorship(body: any) {
   const from = normalize(body.originChainId, body.originCurrency)
   const to = normalize(body.destinationChainId, body.destinationCurrency)
 
-  const augmented = { ...body, referrer: 'relay.link' }
+  const {
+    subsidizeFees,
+    sponsoredFeeComponents,
+    maxSubsidizationAmount,
+    subsidizationBps,
+    subsidizeRent,
+    ...rest
+  } = body
+  const augmented = { ...rest, referrer: 'relay.link' }
   if (SPONSORED_TOKENS.includes(from) && SPONSORED_TOKENS.includes(to)) {
     augmented.subsidizeFees = true
     augmented.maxSubsidizationAmount = '1000000000000000000'
