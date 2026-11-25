@@ -56,7 +56,7 @@ export default function (
   queryOptions?: Partial<QueryOptions>
 ) {
   const response = (useInfiniteQuery as InfiniteQueryType)({
-    queryKey: ['useUserTransactions', options],
+    queryKey: ['useUserTransactions', baseApiUrl, options],
     enabled: options !== undefined,
     queryFn: (data) => queryRequests(baseApiUrl, options, data.pageParam),
     getNextPageParam: (data) => {

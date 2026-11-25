@@ -37,7 +37,7 @@ export default function (
   queryOptions?: Partial<QueryOptions>
 ) {
   const response = (useQuery as QueryType)({
-    queryKey: ['useTokenList', options],
+    queryKey: ['useTokenList', baseApiUrl, options],
     queryFn: () => queryTokenList(baseApiUrl, options),
     enabled: options ? true : false,
     retry: false,

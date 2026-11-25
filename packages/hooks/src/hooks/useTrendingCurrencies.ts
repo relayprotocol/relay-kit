@@ -41,7 +41,7 @@ export default (
   queryParams?: TrendingCurrenciesQuery,
   queryOptions?: Partial<QueryOptions>
 ) => {
-  const queryKey = ['useTrendingCurrencies', queryParams]
+  const queryKey = ['useTrendingCurrencies', baseApiUrl, queryParams]
 
   const response = (useQuery as QueryType)({
     queryKey: queryKey,
