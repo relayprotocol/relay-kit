@@ -1,5 +1,13 @@
 # @relayprotocol/relay-xrp-wallet-adapter
 
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [598e410]
+- Updated dependencies [821a5f3]
+  - @relayprotocol/relay-sdk@9.0.1
+
 ## 1.0.3
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @reservoir0x/relay-svm-wallet-adapter
 
+## 23.0.5
+
+### Patch Changes
+
+- Updated dependencies [598e410]
+- Updated dependencies [821a5f3]
+  - @relayprotocol/relay-sdk@9.0.1
+
 ## 23.0.4
 
 ### Patch Changes
