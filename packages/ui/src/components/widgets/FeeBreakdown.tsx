@@ -150,7 +150,8 @@ const FeeBreakdown: FC<Props> = ({
                       'relay:text-[color:var(--relay-colors-red11)]'
                   )}
                 >
-                  {feeBreakdown?.totalFees?.priceImpactPercentage}
+                  {feeBreakdown?.totalFees?.priceImpactPercentage ??
+                    'Unavailable'}
                 </Text>
                 <FontAwesomeIcon
                   icon={faInfoCircle}

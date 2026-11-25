@@ -27,19 +27,27 @@ export const PriceImpactTooltip: FC<PriceImpactTooltipProps> = ({
             <Text style="subtitle3" className="relay:mr-auto">
               Total Price Impact{' '}
             </Text>
-            <Text
-              style="subtitle3"
-              className="relay:mr-1 relay:ml-2"
-              color={feeBreakdown?.totalFees?.priceImpactColor}
-            >
-              {feeBreakdown?.totalFees.priceImpact}
-            </Text>
-            <Text
-              style="subtitle3"
-              color={feeBreakdown?.totalFees?.priceImpactColor}
-            >
-              ({feeBreakdown?.totalFees.priceImpactPercentage})
-            </Text>
+            {feeBreakdown?.totalFees.priceImpactPercentage ? (
+              <>
+                <Text
+                  style="subtitle3"
+                  className="relay:mr-1 relay:ml-2"
+                  color={feeBreakdown?.totalFees?.priceImpactColor}
+                >
+                  {feeBreakdown?.totalFees.priceImpact}
+                </Text>
+                <Text
+                  style="subtitle3"
+                  color={feeBreakdown?.totalFees?.priceImpactColor}
+                >
+                  ({feeBreakdown?.totalFees.priceImpactPercentage})
+                </Text>
+              </>
+            ) : (
+              <Text style="subtitle3" color="subtle" className="relay:ml-2">
+                Unavailable
+              </Text>
+            )}
           </Flex>
           <div
             className="relay:w-full relay:h-px relay:bg-[var(--relay-colors-slate-6)] relay:my-2"
