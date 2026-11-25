@@ -1,5 +1,15 @@
 # @reservoir0x/relay-kit-ui
 
+## 13.0.2
+
+### Patch Changes
+
+- 821a5f3: `/quote/v3` now returns `details.totalImpact` and `details.swapImpact` as `null` when the input or output token has no USD price, and the SDK's quote types now allow `null` for both. The swap widget no longer shows an empty `()` next to the output amount for these quotes, and the Price Impact row and its tooltip show "Unavailable" instead of a blank value.
+- Updated dependencies [598e410]
+- Updated dependencies [821a5f3]
+  - @relayprotocol/relay-sdk@9.0.1
+  - @relayprotocol/relay-kit-hooks@7.1.1
+
 ## 13.0.1
 
 ### Patch Changes

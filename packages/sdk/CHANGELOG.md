@@ -1,5 +1,12 @@
 # @reservoir0x/relay-sdk
 
+## 9.0.1
+
+### Patch Changes
+
+- 598e410: Report why Hyperliquid rejected a deposit: when `https://api.hyperliquid.xyz/exchange` rejects a signed action, `execute` now throws an `APIError` whose message includes Hyperliquid's reason, such as `Failed to send signature to HyperLiquid: Insufficient balance for withdrawal`, with the raw response on `rawError`. Previously it threw a bare string, so `error.message` and the step's `error` were `undefined`.
+- 821a5f3: `/quote/v3` now returns `details.totalImpact` and `details.swapImpact` as `null` when the input or output token has no USD price, and the SDK's quote types now allow `null` for both. The swap widget no longer shows an empty `()` next to the output amount for these quotes, and the Price Impact row and its tooltip show "Unavailable" instead of a blank value.
+
 ## 9.0.0
 
 ### Major Changes
