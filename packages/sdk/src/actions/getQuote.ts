@@ -48,6 +48,7 @@ const getDefaultQuoteParameters = async (
   client: RelayClient,
   toChainId: number,
   chainId: number,
+  user?: string,
   recipient?: string,
   adaptedWallet?: AdaptedWallet
 ): Promise<Partial<GetQuoteParameters>> => {
@@ -67,7 +68,8 @@ const getDefaultQuoteParameters = async (
   }
 
   return {
-    user: caller || originDeadAddress || zeroAddress,
+    // The dead address only stands in for a user that is not known
+    user: caller || user || originDeadAddress || zeroAddress,
     recipient: recipient
       ? (recipient as string)
       : caller || destinationDeadAddress || zeroAddress
@@ -130,6 +132,7 @@ export async function getQuote(
       client,
       toChainId,
       chainId,
+      user,
       recipient,
       adaptedWallet
     )
