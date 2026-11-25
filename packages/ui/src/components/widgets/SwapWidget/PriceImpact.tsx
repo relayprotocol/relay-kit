@@ -12,6 +12,7 @@ export const PriceImpact: FC<{
 }> = ({ toToken, isFetchingQuote, feeBreakdown, quote }) => {
   if (
     toToken &&
+    quote?.details?.totalImpact &&
     quote?.details?.currencyOut?.amountUsd &&
     quote?.details?.currencyOut?.amountUsd !== '0' &&
     !isFetchingQuote
