@@ -3,6 +3,7 @@ import type { Execute } from '../types/Execute.js'
 import axios from 'axios'
 import type { RelayClient } from '../client.js'
 import { LogLevel } from './logger.js'
+import { APIError } from './request.js'
 
 function prepareHyperliquidSignatureStep(
   step: Execute['steps'][0],
@@ -83,13 +84,19 @@ export async function postHyperliquidSignature(
     nonce,
     action
   })
-  if (
-    !res ||
-    !res.data ||
-    (res && res.status !== 200) ||
-    res.data.status != 'ok'
-  ) {
-    throw 'Failed to send signature to HyperLiquid'
+  if (res?.status !== 200 || res.data?.status !== 'ok') {
+    const reason = res?.data?.response ?? res?.data
+    throw new APIError(
+      `Failed to send signature to HyperLiquid: ${
+        typeof reason === 'string' ? reason : JSON.stringify(reason)
+      }`,
+      res?.status,
+      {
+        status: res?.data?.status,
+        response: reason,
+        endpoint: 'https://api.hyperliquid.xyz/exchange'
+      }
+    )
   }
   client.log(
     ['Execute Steps: Signature sent to Hyperliquid', res.data],
