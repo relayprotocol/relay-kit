@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import _axios from 'axios'
 import { axios } from '../axios'
 import { createClient } from '../../client'
 import { executeBridge } from '../../../tests/data/executeBridge'
@@ -1964,5 +1965,79 @@ describe('Same-chain step completion.', () => {
 
     expect(statusCallCount()).toBeLessThanOrEqual(1)
     expect(quote.steps[0].items?.[0].status).toBe('complete')
+  })
+})
+
+describe('Hyperliquid rejections.', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('Should surface the reason Hyperliquid rejected the action.', async () => {
+    const reason = 'Insufficient balance for withdrawal'
+    const exchange = vi.spyOn(_axios, 'post').mockResolvedValue({
+      status: 200,
+      data: { status: 'err', response: reason }
+    })
+    createClient({
+      baseApiUrl: MAINNET_RELAY_API,
+      chains: [
+        ...relayChains,
+        { ...relayChains[0], id: 1337, name: 'hyperliquid' }
+      ]
+    })
+    const hyperliquidWallet = {
+      ...wallet,
+      getChainId: () => Promise.resolve(42161),
+      handleSignMessageStep: vi
+        .fn()
+        .mockResolvedValue(`0x${'11'.repeat(32)}${'22'.repeat(32)}1b`)
+    }
+    const quote = {
+      steps: [
+        {
+          id: 'deposit',
+          kind: 'transaction',
+          requestId: '0x1',
+          items: [
+            {
+              status: 'incomplete',
+              data: {
+                action: {
+                  type: 'sendAsset',
+                  parameters: { destination: '0x2', amount: '1', nonce: 1 }
+                },
+                eip712Types: {},
+                eip712PrimaryType: 'HyperliquidTransaction:SendAsset'
+              }
+            }
+          ]
+        }
+      ]
+    } as unknown as Execute
+    let reported: Execute | undefined
+
+    const error = await executeSteps(
+      1337,
+      {},
+      hyperliquidWallet,
+      (state) => (reported = state as Execute),
+      quote,
+      undefined
+    ).catch((e) => e)
+
+    const message = `Failed to send signature to HyperLiquid: ${reason}`
+    expect(exchange).toHaveBeenCalledWith(
+      'https://api.hyperliquid.xyz/exchange',
+      expect.anything()
+    )
+    expect(error).toBeInstanceOf(Error)
+    expect(error.message).toBe(message)
+    expect(error.rawError).toMatchObject({ status: 'err', response: reason })
+    expect(reported?.steps[0].error).toBe(message)
+    expect(reported?.steps[0].items?.[0]).toMatchObject({
+      error: message,
+      errorData: { rawError: { response: reason } }
+    })
   })
 })
