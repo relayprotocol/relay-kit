@@ -1499,6 +1499,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @deprecated */
         post: {
             parameters: {
                 query: {
@@ -1555,6 +1556,14 @@ export interface paths {
                                     };
                                 }[];
                             }[];
+                            deprecation?: {
+                                message: string;
+                                deprecatedAt: string;
+                                throttledFrom?: string;
+                                sunsetAt?: string;
+                                successor?: string;
+                                migrationGuide: string;
+                            };
                         };
                     };
                 };
@@ -1719,7 +1728,7 @@ export interface paths {
         put?: never;
         /**
          * @deprecated
-         * @description This endpoint is deprecated. Use /quote/v2 instead.
+         * @description This endpoint is deprecated. Use /quote/v3 instead.
          */
         post: {
             parameters: {
@@ -4052,6 +4061,14 @@ export interface paths {
                                     };
                                 };
                             };
+                            deprecation?: {
+                                message: string;
+                                deprecatedAt: string;
+                                throttledFrom?: string;
+                                sunsetAt?: string;
+                                successor?: string;
+                                migrationGuide: string;
+                            };
                         };
                     };
                 };
@@ -4096,6 +4113,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             message?: string;
+                            successor?: string;
+                            migrationGuide?: string;
                         };
                     };
                 };
@@ -4129,6 +4148,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @deprecated */
         post: {
             parameters: {
                 query?: never;
@@ -6460,6 +6480,14 @@ export interface paths {
                                     };
                                 };
                             };
+                            deprecation?: {
+                                message: string;
+                                deprecatedAt: string;
+                                throttledFrom?: string;
+                                sunsetAt?: string;
+                                successor?: string;
+                                migrationGuide: string;
+                            };
                         };
                     };
                 };
@@ -6504,6 +6532,8 @@ export interface paths {
                     content: {
                         "application/json": {
                             message?: string;
+                            successor?: string;
+                            migrationGuide?: string;
                         };
                     };
                 };
@@ -6822,6 +6852,7 @@ export interface paths {
                                 };
                                 amount?: string;
                                 amountFormatted?: string;
+                                /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                 amountUsd?: string | null;
                                 minimumAmount?: string;
                             };
@@ -7189,6 +7220,7 @@ export interface paths {
                                     };
                                     amount?: string;
                                     amountFormatted?: string;
+                                    /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                     amountUsd?: string | null;
                                     minimumAmount?: string;
                                 };
@@ -7207,6 +7239,7 @@ export interface paths {
                                     };
                                     amount?: string;
                                     amountFormatted?: string;
+                                    /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                     amountUsd?: string | null;
                                     minimumAmount?: string;
                                 };
@@ -7225,6 +7258,7 @@ export interface paths {
                                     };
                                     amount?: string;
                                     amountFormatted?: string;
+                                    /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                     amountUsd?: string | null;
                                     minimumAmount?: string;
                                 };
@@ -7243,19 +7277,20 @@ export interface paths {
                                     };
                                     amount?: string;
                                     amountFormatted?: string;
+                                    /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                     amountUsd?: string | null;
                                     minimumAmount?: string;
                                 };
-                                /** @description The difference between the input and output values, including fees */
+                                /** @description The difference between the input and output values, including fees. Null when either input or output USD valuation is unavailable. */
                                 totalImpact?: {
                                     usd?: string;
                                     percent?: string;
-                                };
-                                /** @description The impact of the swap, not factoring in fees */
+                                } | null;
+                                /** @description The impact of the swap, not factoring in fees. Null when either input or output USD valuation is unavailable. */
                                 swapImpact?: {
                                     usd?: string;
                                     percent?: string;
-                                };
+                                } | null;
                                 /** @description The swap rate which is equal to 1 input unit in the output unit, e.g. 1 USDC -> x ETH. This value can fluctuate based on gas and fees. */
                                 rate?: string;
                                 slippageTolerance?: {
@@ -7302,6 +7337,7 @@ export interface paths {
                                             };
                                             amount?: string;
                                             amountFormatted?: string;
+                                            /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                             amountUsd?: string | null;
                                             minimumAmount?: string;
                                         };
@@ -7320,6 +7356,7 @@ export interface paths {
                                             };
                                             amount?: string;
                                             amountFormatted?: string;
+                                            /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                             amountUsd?: string | null;
                                             minimumAmount?: string;
                                         };
@@ -7343,6 +7380,7 @@ export interface paths {
                                             };
                                             amount?: string;
                                             amountFormatted?: string;
+                                            /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                             amountUsd?: string | null;
                                             minimumAmount?: string;
                                         };
@@ -7361,6 +7399,7 @@ export interface paths {
                                             };
                                             amount?: string;
                                             amountFormatted?: string;
+                                            /** @description USD valuation, or null when unavailable. A zero valuation for a nonzero token amount is treated as unavailable; zero token amounts retain their zero USD valuation. */
                                             amountUsd?: string | null;
                                             minimumAmount?: string;
                                         };
@@ -7507,6 +7546,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @deprecated */
         post: {
             parameters: {
                 query?: never;
@@ -7930,6 +7970,14 @@ export interface paths {
                                 timeEstimate?: number;
                                 /** @description The user's balance in the given currency on the origin chain */
                                 userBalance?: string;
+                            };
+                            deprecation?: {
+                                message: string;
+                                deprecatedAt: string;
+                                throttledFrom?: string;
+                                sunsetAt?: string;
+                                successor?: string;
+                                migrationGuide: string;
                             };
                         };
                     };
@@ -8372,6 +8420,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @deprecated */
         get: {
             parameters: {
                 query?: {
@@ -8408,6 +8457,14 @@ export interface paths {
                             time?: number;
                             originChainId?: number;
                             destinationChainId?: number;
+                            deprecation?: {
+                                message: string;
+                                deprecatedAt: string;
+                                throttledFrom?: string;
+                                sunsetAt?: string;
+                                successor?: string;
+                                migrationGuide: string;
+                            };
                         };
                     };
                 };
@@ -8428,6 +8485,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @deprecated */
         get: {
             parameters: {
                 query?: {
@@ -8463,6 +8521,14 @@ export interface paths {
                             destinationChainId?: number;
                             /** @description The timestamp when the quote request was created */
                             quoteCreatedAt?: number;
+                            deprecation?: {
+                                message: string;
+                                deprecatedAt: string;
+                                throttledFrom?: string;
+                                sunsetAt?: string;
+                                successor?: string;
+                                migrationGuide: string;
+                            };
                         };
                     };
                 };
@@ -11647,8 +11713,15 @@ export interface paths {
                                     } | null;
                                     /** @description Referrer — only returned when the caller authenticates as the request's creator integrator. */
                                     referrer?: string | null;
+                                    /** @description Fixed-spread deal ID, returned only for your own requests with includeAuthenticatedData=true. Null when no deal ID was recorded. */
+                                    fixedSpreadDealId?: string | null;
                                     /** @description Durable App attribution, returned only for your own requests with includeAuthenticatedData=true. Null when historical attribution is unavailable. */
                                     appId?: string | null;
+                                    /** @description The integrator that originated the request — only returned for authorized callers. Null when attribution is unavailable. */
+                                    integrator?: {
+                                        id: string;
+                                        name: string | null;
+                                    } | null;
                                     appName?: string | null;
                                     /** @description API key name — only returned when the caller authenticates as the request's creator integrator. */
                                     apiKeyName?: string | null;
