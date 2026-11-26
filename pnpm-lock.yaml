@@ -8,6 +8,7 @@ overrides:
   '@solana/web3.js': 1.98.2
   tronweb: 6.5.1
   sharp: ^0.35.5
+  bitcoinjs-lib@<6.1.8: 6.1.8
 
 importers:
 
@@ -235,8 +236,8 @@ importers:
         specifier: ^22.5.4
         version: 22.13.4
       bitcoinjs-lib:
-        specifier: 7.0.1
-        version: 7.0.1(typescript@5.4.5)
+        specifier: 7.0.2
+        version: 7.0.2(typescript@5.4.5)
       viem:
         specifier: '>=2.26.0'
         version: 2.29.4(bufferutil@4.0.9)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -3739,12 +3740,12 @@ packages:
   bitcoin-address-validation@3.0.0:
     resolution: {integrity: sha512-R1X1c9EdgjgjTpjshjk5e16TbgF7HYasxBcu7l5ScWMxVs53845vMUg5PvnQ/R/3h8Grly6Y52DgH6/77gazLQ==}
 
-  bitcoinjs-lib@6.1.5:
-    resolution: {integrity: sha512-yuf6xs9QX/E8LWE2aMJPNd0IxGofwfuVOiYdNUESkc+2bHHVKjhJd8qewqapeoolh9fihzHGoDCB5Vkr57RZCQ==}
+  bitcoinjs-lib@6.1.8:
+    resolution: {integrity: sha512-A6o+yq7BvwlmLj4F0NC5f3XX109rRe5evxi368S9zil5voOtUfiqfiMCzZYKHk4k7iIJ3+NmcQW05Ar4CBlKyg==}
     engines: {node: '>=8.0.0'}
 
-  bitcoinjs-lib@7.0.1:
-    resolution: {integrity: sha512-vwEmpL5Tpj0I0RBdNkcDMXePoaYSTeKY6mL6/l5esbnTs+jGdPDuLp4NY1hSh6Zk5wSgePygZ4Wx5JJao30Pww==}
+  bitcoinjs-lib@7.0.2:
+    resolution: {integrity: sha512-ugLk9SR+2gvhpNA7kqQL1eVDKyBNo/rbr+df72nrZj4OOdZvQRHDVtyogPGXAU2MLQimLL7EbUdz95QGh6Th5Q==}
     engines: {node: '>=18.0.0'}
 
   blakejs@1.2.1:
@@ -7718,7 +7719,7 @@ snapshots:
       '@dynamic-labs/wallet-connector-core': 4.102.0(@dynamic-labs-wallet/primitives@1.1.43)(@types/node@22.13.4)(bufferutil@4.0.9)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(utf-8-validate@5.0.10)
       '@wallet-standard/app': 1.0.1
       '@wallet-standard/base': 1.0.1
-      bitcoinjs-lib: 6.1.5
+      bitcoinjs-lib: 6.1.8
       ecpair: 2.1.0
       eventemitter3: 5.0.1
       jsontokens: 4.0.1
@@ -13879,7 +13880,7 @@ snapshots:
       bech32: 2.0.0
       sha256-uint8array: 0.10.7
 
-  bitcoinjs-lib@6.1.5:
+  bitcoinjs-lib@6.1.8:
     dependencies:
       '@noble/hashes': 1.8.0
       bech32: 2.0.0
@@ -13888,7 +13889,7 @@ snapshots:
       typeforce: 1.18.0
       varuint-bitcoin: 1.1.2
 
-  bitcoinjs-lib@7.0.1(typescript@5.4.5):
+  bitcoinjs-lib@7.0.2(typescript@5.4.5):
     dependencies:
       '@noble/hashes': 1.8.0
       bech32: 2.0.0
