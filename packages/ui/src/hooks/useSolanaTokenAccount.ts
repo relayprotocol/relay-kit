@@ -1,6 +1,6 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query'
 import { isSolanaTokenAccount, type RelayChain } from '@relayprotocol/relay-sdk'
-import { isValidAddress } from '../utils/address.js'
+import { isSolanaAddress } from '../utils/solana.js'
 
 const queryOptions = (rpcUrl: string, address: string) => ({
   queryKey: ['useSolanaTokenAccount', rpcUrl, address],
@@ -10,27 +10,23 @@ const queryOptions = (rpcUrl: string, address: string) => ({
 })
 
 const shouldCheck = (chain?: RelayChain, address?: string) =>
-  Boolean(
-    chain?.vmType === 'svm' &&
-      chain.httpRpcUrl &&
-      address &&
-      isValidAddress(chain.vmType, address, chain.id)
-  )
+  Boolean(chain?.vmType === 'svm' && address && isSolanaAddress(address))
 
 /**
- * Imperatively checks whether an address is a Solana token account; fails open on RPC errors and timeouts.
+ * Imperatively checks whether an address on an SVM chain is a token account.
+ * Only a confirmed token account returns true; unverified addresses are confirmed by the user in the address modal.
  */
 export async function checkSolanaTokenAccount(
   queryClient: QueryClient,
   chain?: RelayChain,
   address?: string
 ): Promise<boolean> {
-  if (!shouldCheck(chain, address)) {
+  if (!shouldCheck(chain, address) || !chain!.httpRpcUrl) {
     return false
   }
   try {
     return await queryClient.fetchQuery(
-      queryOptions(chain!.httpRpcUrl!, address!)
+      queryOptions(chain!.httpRpcUrl, address!)
     )
   } catch {
     return false
@@ -38,8 +34,8 @@ export async function checkSolanaTokenAccount(
 }
 
 /**
- * Checks whether an address on an SVM chain is a token account rather than a wallet.
- * Keyed on the address so results are never stale; fails open on RPC errors and timeouts.
+ * Checks whether an address on an SVM chain (Solana, Eclipse) is a token account rather than a wallet.
+ * Keyed on the address so results are never stale. Reports addresses it could not check (lookup error, timeout or no RPC) as unverified.
  */
 export default function useSolanaTokenAccount(
   chain?: RelayChain,
@@ -47,15 +43,18 @@ export default function useSolanaTokenAccount(
   enabled: boolean = true
 ) {
   const checkEnabled = enabled && shouldCheck(chain, address)
+  const rpcUrl = chain?.httpRpcUrl
 
-  const { data, isLoading } = useQuery({
-    ...queryOptions(chain?.httpRpcUrl ?? '', address ?? ''),
-    enabled: checkEnabled
+  const { data, isLoading, isError } = useQuery({
+    ...queryOptions(rpcUrl ?? '', address ?? ''),
+    enabled: checkEnabled && Boolean(rpcUrl)
   })
 
   return {
     isTokenAccount: checkEnabled && data === true,
     /** True while the lookup is in flight with no result yet */
-    isChecking: checkEnabled && isLoading
+    isChecking: checkEnabled && isLoading,
+    /** True when the address needs a check that could not complete */
+    isUnverified: checkEnabled && (!rpcUrl || isError)
   }
 }

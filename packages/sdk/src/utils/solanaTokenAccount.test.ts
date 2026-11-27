@@ -10,6 +10,11 @@ const RPC_URL = 'https://api.mainnet-beta.solana.com'
 const USDC_TOKEN_ACCOUNT = 'DZNKTc2Jaf5XEtN3GE5G2QNbiC7DjhUPLnDLtVXCE6ys'
 const USDC_TOKEN_ACCOUNT_OWNER = '3aa32ojP4CeoEg8KpMXFmjP9vSnBJtdUQnc6aWchkD6v'
 
+const ECLIPSE_RPC_URL = 'https://mainnetbeta-rpc.eclipse.xyz'
+// Eclipse USDC is a Token-2022 mint, so its token accounts are Token-2022 owned
+const ECLIPSE_USDC_TOKEN_ACCOUNT =
+  '9hkQNZKRsShUnDgNEYSLAbd7v89QHzjzJxaZyg75VECf'
+
 const accountInfo = (value: unknown) => ({
   jsonrpc: '2.0',
   result: { context: { apiVersion: '4.3.0', slot: 452667255 }, value },
@@ -32,6 +37,14 @@ const responses: Record<string, unknown> = {
     owner: '11111111111111111111111111111111',
     rentEpoch: 18446744073709551615,
     space: 0
+  }),
+  [ECLIPSE_USDC_TOKEN_ACCOUNT]: accountInfo({
+    data: ['', 'base64'],
+    executable: false,
+    lamports: 20264,
+    owner: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+    rentEpoch: 18446744073709551615,
+    space: 170
   })
 }
 
@@ -71,6 +84,13 @@ describe('isSolanaTokenAccount', () => {
     ).resolves.toBe(true)
   })
 
+  it('Should block an Eclipse USDC token account.', async () => {
+    mockRpc()
+    await expect(
+      isSolanaTokenAccount(ECLIPSE_RPC_URL, ECLIPSE_USDC_TOKEN_ACCOUNT)
+    ).resolves.toBe(true)
+  })
+
   it('Should allow a system-owned wallet.', async () => {
     mockRpc()
     await expect(
@@ -97,6 +117,17 @@ describe('isSolanaTokenAccount', () => {
     await expect(
       isSolanaTokenAccount(RPC_URL, 'not-an-address')
     ).rejects.toThrow('Invalid param')
+  })
+
+  it.each([
+    ['without a result', { jsonrpc: '2.0', id: 1 }],
+    ['with an empty account', accountInfo({})],
+    ['with a non-string owner', accountInfo({ owner: 42 })]
+  ])('Should throw on a response %s.', async (_, response) => {
+    mockRpc(() => response)
+    await expect(
+      isSolanaTokenAccount(RPC_URL, USDC_TOKEN_ACCOUNT)
+    ).rejects.toThrow('Unexpected getAccountInfo response')
   })
 
   it('Should reject when the RPC stalls past the timeout.', async () => {
